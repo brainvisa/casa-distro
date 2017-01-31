@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+set -x
+source ~/virtualenvs/$PUBLICATION_INSTANCE_NAME/bin/activate
+cp /tmp/imagen_migration_postcreate.py /home/imagen/virtualenvs/imagen_publication/share/cubicweb/cubes/imagen/migration/postcreate.py
+cubicweb-ctl create -a $PUBLICATION_CUBE_NAME $PUBLICATION_INSTANCE_NAME
+echo 'open("/tmp/ldap_source_config", "w").write(rql("Any X WHERE Y config X, Y type '"'"'ldapfeed'"'"'")[0][0])' > /tmp/save_ldap_config.py
+cubicweb-ctl shell imagen_publication /tmp/save_ldap_config.py
+source /tmp/db
+cubicweb-ctl db-create -a $PUBLICATION_INSTANCE_NAME
+cubicweb-ctl reset-admin-pwd -p $PWD $PUBLICATION_INSTANCE_NAME
+cubicweb-ctl db-restore $PUBLICATION_INSTANCE_NAME /tmp/imagen_dump_iteration6.cw
+echo 'rql("SET Y config %(config)s WHERE Y type '"'"'ldapfeed'"'"'", dict(config=unicode(open("/tmp/ldap_source_config").read())))' > /tmp/restore_ldap_config.py
+cubicweb-ctl shell imagen_publication /tmp/restore_ldap_config.py
