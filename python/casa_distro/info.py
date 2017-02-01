@@ -43,3 +43,4 @@ ORGANISATION = "CEA"
 DESCRIPTION = description
 LONG_DESCRIPTION = long_description
 BRAINVISA_BUILD_MODEL='pure_python'
+LICENSE='CeCILL-B'
