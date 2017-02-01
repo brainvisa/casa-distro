@@ -1,0 +1,27 @@
+version: 0.1
+log:
+  fields:
+    service: private_registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+  delete:
+    enabled: true
+auth:
+  htpasswd:
+    realm: BrainVISA private Docker registry
+    path: /var/lib/registry/htpasswd
+http:
+  addr: :5000
+  tls:
+    certificate: /etc/letsencrypt/live/$DOMAIN/fullchain.pem
+    key: /etc/letsencrypt/live/$DOMAIN/privkey.pem
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
