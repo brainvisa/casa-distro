@@ -1,3 +1,181 @@
 #! /usr/bin/env python
 
-print 'Coucou'
+from __future__ import print_function
+
+import sys
+import os
+import os.path as osp
+import re
+import yaml
+from pprint import pprint
+import argparse
+
+from brainvisa.maker.plugins.svn import get_latest_revision
+from brainvisa.maker.brainvisa_projects import url_per_component, project_per_component
+from brainvisa.maker.brainvisa_client_components import \
+                                                get_version_control_component, \
+                                                BranchType
+
+cmake_set_regexp = re.compile(r'set\(\s*([^\s]+)\s+(.*)\s*\)')
+def parse_cmake_variables(filename):
+    result = {}
+    for line in open(osp.join(build_dir, 'bv_maker.cmake')):
+        match = cmake_set_regexp.search(line)
+        if match:
+            var = match.group(1)
+            value = match.group(2)
+            try:
+                i = value.index(' CACHE ')
+                value = value[:i]
+            except ValueError:
+                pass
+            value = value.strip()
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            result[var] = value
+    return result
+
+def convert_github_url_to_svn(url):
+    if url.startswith('git'):
+        git, url, branch = url.split()[:3]
+        branch_type, branch= (['branch'] + branch.split(':',1))[-2:]
+        if branch_type == 'tag':
+            branch_type = 'tags'
+        else:
+            branch_type = 'branches'
+        url = 'svn %s/%s/%s' % (url, branch_type, branch)
+        vcs = 'git'
+    else:
+        vcs = 'svn'
+    return url, vcs
+
+def inspect_components_and_create_todo_list(components, verbose=None):
+    """
+    Returns a dictionary containing information about component sources state
+    and what to do during casa-distro creation. This dictionary has the 
+    following structure (in YAML style):
+    <project>: # name of a brainvisa-cmake project (as defined in
+               # components_definition.py)
+       <component>: # name of a brainvisa-cmake component
+         latest_release: # information about the latest release branch
+           vcs_type: <vcs> # Can be 'svn' if component uses Subversion or
+                           # 'git' for Git.
+           vcs_url: <url> # URL of component source branch
+           revision: <revision> # The Subversion revision or Git changeset
+                                # of the latest_release branch.
+           version: <version>   # The version of the component declared 
+                                # in project_info.cmake or info.py
+         bug_fix: # information about the bug_fix branch
+           vcs_type: <vcs> # Can be 'svn' if component uses Subversion or
+                           # 'git' for Git.
+           vcs_url: <url> # URL of component source branch
+           revision: <revision> # The Subversion revision or Git changeset
+                                # of the bug_fix branch.
+           version: <version>   # The version of the component declared 
+                                # in project_info.cmake or info.py
+         todo: # list of actions to perform for this component, possible
+               # actions are :
+           - [rename <source_url> <dest_url>]
+           - [copy <source_url> <dest_url>]
+           - [set_version <version> <url>]
+    """        
+    components_info_and_todo_list = {}
+    for component in components:
+        if verbose:
+            print('Inspecting component', component, file=verbose)
+            verbose.flush()
+        bug_fix_url = url_per_component[component].get('bug_fix')
+        component_dict = components_info_and_todo_list.setdefault(project_per_component[component],{}).setdefault(component,{})
+        if bug_fix_url:
+            url, vcs = convert_github_url_to_svn(bug_fix_url[0])
+            bug_fix_url = (url,) + bug_fix_url[1:]
+            latest_release_url = url_per_component[component].get('tag')
+            bug_fix_svn = url.split(None,1)[1]
+            vcc = get_version_control_component(
+                        project_per_component[ component ],
+                        component,
+                        bug_fix_url
+                    )
+            bug_fix_revision = get_latest_revision(bug_fix_svn)
+            bug_fix_version = vcc.branch_version(BranchType.BUG_FIX, bug_fix_svn.rsplit('/',1)[1])
+            component_dict['bug_fix'] = {
+                'vcs_type': vcs,
+                'vcs_url': bug_fix_svn,
+                'version': str(bug_fix_version),
+                'revision': bug_fix_revision,
+            }
+            if verbose:
+                print('  bug_fix version %s in %s (%s) with revision %s' % 
+                      (str(bug_fix_version), bug_fix_svn, vcs,
+                       bug_fix_revision), file=verbose)
+                verbose.flush()
+            if latest_release_url:
+                url, vcs = convert_github_url_to_svn(latest_release_url[0])
+                latest_release_url = (url,) + latest_release_url[1:]
+                latest_release_svn = url.split(None,1)[1]
+                latest_release_revision = get_latest_revision(latest_release_svn)
+                if latest_release_revision != bug_fix_revision:
+                    latest_release_version = vcc.branch_version(BranchType.RELEASE, latest_release_svn.rsplit('/',1)[1])
+                    component_dict['latest_release'] = {
+                        'vcs_type': vcs,
+                        'vcs_url': latest_release_svn,
+                        'version': str(latest_release_version),
+                        'revision': latest_release_revision,
+                    }
+                    if verbose:
+                        print('  latest_release version %s in %s (%s) with revision %s' % 
+                            (str(latest_release_version), latest_release_svn, vcs,
+                            latest_release_revision), file=verbose)
+                        verbose.flush()
+                    base_url, branch_type, branch = latest_release_svn.rsplit('/', 2)
+                    versioned_latest_release_svn = '%s/%s/%s' % (base_url, 'tags', str(latest_release_version))
+                    new_bug_fix_version = latest_release_version.increment()
+                    latest_release_version = None
+                    component_dict['latest_release']['todo'] = [
+                        ['rename', latest_release_svn, versioned_latest_release_svn],
+                        ['copy', bug_fix_svn, latest_release_svn],
+                        ['set_version', bug_fix_svn, str(new_bug_fix_version)],
+                    ]
+                else:
+                    if verbose:
+                        print('  latest_release identical to bug_fix in %s (%s) with revision %s' % 
+                              (latest_release_svn, vcs, latest_release_revision), file=verbose)
+                        verbose.flush()
+            else:
+                if verbose:
+                    print(component, '  no latest_release branch', file=verbose)
+                    verbose.flush()
+        else:
+            if verbose:
+                print(component, 'no bug_fix branch', file=verbose)
+                verbose.flush()
+    return components_info_and_todo_list
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Casa distribution creation tool')
+
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Display information during processing')
+    parser.add_argument('command', nargs=1, choices=['create', 'forum', 'apply'],
+                        help='"create": create a todo file by reading sources; "forum" send information to the CASA forum about things that would be done with todo file; "apply" apply actions defined in todo file')
+    parser.add_argument('todo_file', nargs=1,
+                        help='Name of the todo file.')
+    options = parser.parse_args()
+    verbose = (sys.stdout if options.verbose else None)
+
+    command = options.command[0]
+    if command == 'create':
+        components = list(url_per_component)
+        todo_file = open(options.todo_file[0], 'w')
+        todo = inspect_components_and_create_todo_list(components, verbose=verbose)
+        print(yaml.dump(todo, default_flow_style=False), file=todo_file)
+    elif command == 'forum':
+        print('ERROR: command', command, 'not implemented', file=sys.stderr)
+        sys.exit(1)
+    elif command == 'apply':
+        print('ERROR: command', command, 'not implemented', file=sys.stderr)
+        sys.exit(1)
+    else:
+        print('ERROR: invalid command', options.command[0], file=sys.stderr)
+        sys.exit(1)
+    
