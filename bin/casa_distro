@@ -10,11 +10,15 @@ import yaml
 from pprint import pprint
 import argparse
 
+import requests
+
 from brainvisa.maker.plugins.svn import get_latest_revision
 from brainvisa.maker.brainvisa_projects import url_per_component, project_per_component
 from brainvisa.maker.brainvisa_client_components import \
                                                 get_version_control_component, \
                                                 BranchType
+
+todo_list_wiki_url = 'https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Next_release.json'
 
 cmake_set_regexp = re.compile(r'set\(\s*([^\s]+)\s+(.*)\s*\)')
 def parse_cmake_variables(filename):
@@ -78,6 +82,11 @@ def inspect_components_and_create_todo_list(components, verbose=None):
            - [rename <source_url> <dest_url>]
            - [copy <source_url> <dest_url>]
            - [set_version <version> <url>]
+        info_messages: # Information messages about the component
+        warning_messages: # Messages indicating that a manager should pay
+                          # attention and double check to the component status
+        error_messages: # Message saying that something is wrong with the component,
+                        # a manager must investigate and fix the problem.
     """        
     components_info_and_todo_list = {}
     for component in components:
@@ -86,6 +95,9 @@ def inspect_components_and_create_todo_list(components, verbose=None):
             verbose.flush()
         bug_fix_url = url_per_component[component].get('bug_fix')
         component_dict = components_info_and_todo_list.setdefault(project_per_component[component],{}).setdefault(component,{})
+        info_messages = []
+        warning_messages = []
+        error_messages = []
         if bug_fix_url:
             url, vcs = convert_github_url_to_svn(bug_fix_url[0])
             bug_fix_url = (url,) + bug_fix_url[1:]
@@ -116,10 +128,11 @@ def inspect_components_and_create_todo_list(components, verbose=None):
                 latest_release_revision = get_latest_revision(latest_release_svn)
                 if latest_release_revision != bug_fix_revision:
                     latest_release_version = vcc.branch_version(BranchType.RELEASE, latest_release_svn.rsplit('/',1)[1])
+                    latest_release_version_string = str(latest_release_version)
                     component_dict['latest_release'] = {
                         'vcs_type': vcs,
                         'vcs_url': latest_release_svn,
-                        'version': str(latest_release_version),
+                        'version': latest_release_version_string,
                         'revision': latest_release_revision,
                     }
                     if verbose:
@@ -129,49 +142,130 @@ def inspect_components_and_create_todo_list(components, verbose=None):
                         verbose.flush()
                     base_url, branch_type, branch = latest_release_svn.rsplit('/', 2)
                     versioned_latest_release_svn = '%s/%s/%s' % (base_url, 'tags', str(latest_release_version))
-                    new_bug_fix_version = latest_release_version.increment()
-                    latest_release_version = None
-                    component_dict['latest_release']['todo'] = [
+                    
+                    if latest_release_version == bug_fix_version:
+                        warning_messages.append('Version of latest_release and bug_fix are the same.')
+                        new_bug_fix_version = latest_release_version.increment()
+                    elif latest_release_version > bug_fix_version:
+                        error_messages.append('latest_release version is higher than bug_fix version.')
+                        new_bug_fix_version = bug_fix_version
+                    else:
+                        new_bug_fix_version = bug_fix_version
+                    info_messages.append('Upgrade from version %s to version %s.' % (latest_release_version_string, new_bug_fix_version))
+                    component_dict['todo'] = [
                         ['rename', latest_release_svn, versioned_latest_release_svn],
                         ['copy', bug_fix_svn, latest_release_svn],
                         ['set_version', bug_fix_svn, str(new_bug_fix_version)],
                     ]
+                    latest_release_version = None
                 else:
                     if verbose:
                         print('  latest_release identical to bug_fix in %s (%s) with revision %s' % 
                               (latest_release_svn, vcs, latest_release_revision), file=verbose)
                         verbose.flush()
             else:
+                warning_messages.append('No latest_release branch.')                
                 if verbose:
                     print(component, '  no latest_release branch', file=verbose)
                     verbose.flush()
         else:
+            warning_messages.append('No bug_fix branch.')
             if verbose:
                 print(component, 'no bug_fix branch', file=verbose)
                 verbose.flush()
+        if info_messages:
+            component_dict['info_messages'] = info_messages
+        if warning_messages:
+            component_dict['warning_messages'] = warning_messages
+        if error_messages:
+            component_dict['error_messages'] = error_messages
     return components_info_and_todo_list
 
+
+
+def publish_todo_list_on_wiki(wiki_url, login, password, todo_file):
+    todo = yaml.load(open(todo_file))
+    content = ['''h1. Next release
+
+This is a test page whose content is automatically generated by @casa_distro@ script.
+
+|_. Project |_. Component |_. latest_release |_. bug_fix |_. todo |_. Comments |''']
+    modified = []
+    unmodified = []
+    color = ''
+    for project in sorted(todo):
+        for component in sorted(todo[project]):
+            bug_fix = todo[project][component].get('bug_fix')
+            if bug_fix is not None:
+                bug_fix = '"%s":%s' % (bug_fix.get('version', 'none'), bug_fix.get('vcs_url', 'unknown'))
+            else:
+                bug_fix = ''
+            latest_release = todo[project][component].get('latest_release')
+            if latest_release is not None:
+                latest_release = '"%s":%s' % (latest_release.get('version', 'none'), latest_release.get('vcs_url', 'unknown'))
+            else:
+                latest_release = ''
+            todo_list = ('yes' if todo[project][component].get('todo') else 'no')
+            infos = todo[project][component].get('info_messages', [])
+            warnings = todo[project][component].get('warning_messages', [])
+            errors = todo[project][component].get('error_messages', [])
+            comments = list(infos)
+            comments.extend('WARNING: %s' % i for i in warnings)
+            comments.extend('ERROR: %s' % i for i in errors)
+            comments = '\n'.join(comments)
+            if errors:
+                color = '#d50000'
+            elif warnings:
+                color = '#ff8a65'
+            elif todo_list == 'yes':
+                color = '#a5d6a7'
+            else:
+                color = '#b0bec5'
+            content.append('|-{{background:{0}}}. {1} |-{{background:{0}}}. _{2}_ |-{{background:{0}}}. {3} |-{{background:{0}}}. {4} |-{{background:{0}}}. {5} |-{{background:{0}}}. {6} |'.format(
+                color, 
+                project, 
+                component,
+                latest_release,
+                bug_fix,
+                todo_list,
+                comments))
+    content = '\n'.join(content)
+    
+    print(content)
+    
+    r = requests.put(wiki_url, auth=(login, password), json={'wiki_page':{'text': content}})
+    r.raise_for_status()
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Casa distribution creation tool')
 
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
-    parser.add_argument('command', nargs=1, choices=['create', 'forum', 'apply'],
-                        help='"create": create a todo file by reading sources; "forum" send information to the CASA forum about things that would be done with todo file; "apply" apply actions defined in todo file')
+    parser.add_argument('-c', '--component', dest='components', action='append',
+                        help='Process only selected component (can be used several times)')
+    parser.add_argument('-l', '--login',
+                        help='Bioproj login.')
+    parser.add_argument('-p', '--password', nargs='?', default=None,
+                        help='BioProj password.')
+    parser.add_argument('command', nargs=1, choices=['create', 'publish', 'apply'],
+                        help='"create": create a todo file by reading sources; "publish" send information to the CASA forum about things that would be done with todo file; "apply" apply actions defined in todo file')
     parser.add_argument('todo_file', nargs=1,
                         help='Name of the todo file.')
     options = parser.parse_args()
+
     verbose = (sys.stdout if options.verbose else None)
 
     command = options.command[0]
     if command == 'create':
-        components = list(url_per_component)
+        if options.components:
+            components = options.components
+        else:
+            components = list(url_per_component)
         todo_file = open(options.todo_file[0], 'w')
         todo = inspect_components_and_create_todo_list(components, verbose=verbose)
         print(yaml.dump(todo, default_flow_style=False), file=todo_file)
-    elif command == 'forum':
-        print('ERROR: command', command, 'not implemented', file=sys.stderr)
-        sys.exit(1)
+    elif command == 'publish':
+        publish_todo_list_on_wiki(todo_list_wiki_url, options.login, options.password, options.todo_file[0])
     elif command == 'apply':
         print('ERROR: command', command, 'not implemented', file=sys.stderr)
         sys.exit(1)
