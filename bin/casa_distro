@@ -13,6 +13,7 @@ import argparse
 import requests
 
 from brainvisa.maker.plugins.svn import get_latest_revision
+from brainvisa.maker.brainvisa_clients import read_remote_project_info
 from brainvisa.maker.brainvisa_projects import url_per_component, project_per_component
 from brainvisa.maker.brainvisa_client_components import \
                                                 get_version_control_component, \
@@ -109,7 +110,11 @@ def inspect_components_and_create_todo_list(components, verbose=None):
                         bug_fix_url
                     )
             bug_fix_revision = get_latest_revision(bug_fix_svn)
-            bug_fix_version = vcc.branch_version(BranchType.BUG_FIX, bug_fix_svn.rsplit('/',1)[1])
+            
+            #bug_fix_version = vcc.branch_version(BranchType.BUG_FIX, bug_fix_svn.rsplit('/',1)[1])
+            bug_fix_version = read_remote_project_info(vcc.client(), bug_fix_svn)
+            if bug_fix_version:
+                bug_fix_version = bug_fix_version[2]
             component_dict['bug_fix'] = {
                 'vcs_type': vcs,
                 'vcs_url': bug_fix_svn,
@@ -127,7 +132,10 @@ def inspect_components_and_create_todo_list(components, verbose=None):
                 latest_release_svn = url.split(None,1)[1]
                 latest_release_revision = get_latest_revision(latest_release_svn)
                 if latest_release_revision != bug_fix_revision:
-                    latest_release_version = vcc.branch_version(BranchType.RELEASE, latest_release_svn.rsplit('/',1)[1])
+                    #latest_release_version = vcc.branch_version(BranchType.RELEASE, latest_release_svn.rsplit('/',1)[1])
+                    latest_release_version = read_remote_project_info(vcc.client(), latest_release_svn)
+                    if latest_release_version:
+                        latest_release_version = latest_release_version[2]
                     latest_release_version_string = str(latest_release_version)
                     component_dict['latest_release'] = {
                         'vcs_type': vcs,
