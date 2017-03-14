@@ -68,10 +68,7 @@ RUN apt-get update && apt-get install -y \
     lftp \
     apt-utils \
     libffi-dev \
-    libgstreamer1.0-dev \
-    liborc-0.4-dev \
-    libmpich-dev \
-    libffi-dev \
+    libmpich1.0-dev \
     libgstreamer0.10-dev \
     liborc-dev \
   && apt-get clean

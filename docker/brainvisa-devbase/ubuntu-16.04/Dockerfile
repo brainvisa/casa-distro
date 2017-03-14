@@ -5,7 +5,7 @@ FROM cati/brainvisa-test:ubuntu-16.04
 USER root
 
 # Install system dependencies
-RUN apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     build-essential \
     ipython \
     cmake \
@@ -43,6 +43,7 @@ RUN apt-get install -y \
     python-numpy \
     gfortran \
     libsvm-dev \
+    python-epydoc \
     python-sphinx \
     python-matplotlib \
     python-qt4-gl \
@@ -74,7 +75,14 @@ RUN apt-get install -y \
     libqtwebkit-dev \
     libblas-dev \
     liblapack-dev \
+    libffi-dev \
+    libmpich-dev \
+    libgstreamer1.0-dev \
+    liborc-dev \
   && apt-get clean
+
+# delete all the apt list files since they're big and get stale quickly
+RUN rm -rf /var/lib/apt/lists/*
 
 # Install Qt Installer Framework
 COPY qt_installer_script /tmp/qt_installer_script
@@ -85,7 +93,7 @@ RUN wget -q http://download.qt.io/official_releases/qt-installer-framework/2.0.3
     rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
 
 RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
-RUN apt-get install -y automake
+
 # TODO: OpenSlide does not compile due to incompatibility in GLIB version
 #RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
