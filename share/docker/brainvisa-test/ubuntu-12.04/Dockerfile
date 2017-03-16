@@ -8,6 +8,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recomme
     libx11-xcb1 \
     libfontconfig1 \
     sudo \
+    libxrender1 \
+    libglib2.0-0 \
+    libxi6 \
   && apt-get clean
 
 # delete all the apt list files since they're big and get stale quickly
