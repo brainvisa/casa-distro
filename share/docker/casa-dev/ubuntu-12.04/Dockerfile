@@ -1,11 +1,11 @@
-# Dockerfile for image cati/brainvisa-devbase:ubuntu-16.04
+# Dockerfile for image cati/brainvisa-devbase:ubuntu-12.04
 
-FROM cati/brainvisa-test:ubuntu-16.04 
+FROM cati/casa-test:ubuntu-12.04 
 
 USER root
 
 # Install system dependencies
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+RUN apt-get update && apt-get install -y \
     build-essential \
     ipython \
     cmake \
@@ -43,11 +43,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python-numpy \
     gfortran \
     libsvm-dev \
-    python-epydoc \
     python-sphinx \
     python-matplotlib \
     python-qt4-gl \
-    openjdk-8-jdk \
+    openjdk-7-jdk \
     libltdl7-dev \
     libncurses5-dev \
     vim \
@@ -56,6 +55,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python-six \
     libgtk2.0 \
     libgtk2.0-dev \
+    libopenjpeg2 \
     libopenjpeg-dev \
     libgdk-pixbuf2.0-common \
     libgdk-pixbuf2.0-0 \
@@ -67,17 +67,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python-traits \
     lftp \
     apt-utils \
-#    python-pip \ # Needed ?
-    g++-4.9 \
-    libgfortran-4.9-dev \
-#    openslide-tools \  # Needed?
-#    libqtassistantclient4 \  # Needed?
-    libqtwebkit-dev \
-    libblas-dev \
-    liblapack-dev \
     libffi-dev \
-    libmpich-dev \
-    libgstreamer1.0-dev \
+    libmpich1.0-dev \
+    libgstreamer0.10-dev \
     liborc-dev \
   && apt-get clean
 
@@ -94,7 +86,6 @@ RUN wget -q http://download.qt.io/official_releases/qt-installer-framework/2.0.3
 
 RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
 
-# TODO: OpenSlide does not compile due to incompatibility in GLIB version
-#RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
+RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
 USER brainvisa

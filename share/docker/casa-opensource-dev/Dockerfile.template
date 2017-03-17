@@ -1,10 +1,11 @@
-# Dockerfile for image cati/brainvisa-opensource:ubuntu-12.04-bug_fix
+# Dockerfile for images cati/casa-opensource-dev on Ubuntu 12.04
 
-FROM cati/brainvisa-devbase:ubuntu-12.04 
+FROM %(base_image)s 
 
 COPY svn.secret /etc/brainvisa/svn.secret
 COPY bv_maker.cfg /etc/brainvisa/bv_maker.cfg
 COPY svn /home/brainvisa/bin/svn
+RUN chmod +x /home/brainvisa/bin/svn
 
 USER root
 RUN chown -R brainvisa:brainvisa /etc/brainvisa

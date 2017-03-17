@@ -1,0 +1,11 @@
+[ source $HOME/src ]
+  brainvisa opensource %(bv_maker_branch)s
+  brainvisa brainvisa-installer %(bv_maker_branch)s
+
+[ build $HOME/build ]
+  make_options = -j4 -k
+  build_type = Release
+  packaging_thirdparty = ON
+  brainvisa opensource %(bv_maker_branch)s $HOME/src
+  brainvisa brainvisa-installer %(bv_maker_branch)s $HOME/src
+  - morphologist-ui

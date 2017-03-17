@@ -1,0 +1,6 @@
+image_sources:
+  - name: casa-test
+    tags:
+      - latest
+      - ubuntu-12.04
+    visibility: public

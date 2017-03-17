@@ -1,3 +1,0 @@
-#!/bin/sh
-. "/etc/brainvisa/svn.secret"
-exec /usr/bin/svn --non-interactive --username $SVN_USERNAME --password $SVN_PASSWORD "$@"

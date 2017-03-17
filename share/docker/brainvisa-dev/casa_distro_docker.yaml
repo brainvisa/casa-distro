@@ -1,0 +1,39 @@
+dependencies:
+    - ../casa-opensource-dev
+image_sources:
+  - name: casa-brainvisa-dev
+    tags:
+      - latest
+      - ubuntu-12.04
+      - "%(casa_version)s"
+      - "%(casa_version)s-ubuntu-12.04"
+    visibility: private
+    template_files_parameters:
+        base_image: cati/casa-opensource-dev:%(casa_version)s-ubuntu-12.04
+        bv_maker_branch: latest_release
+  - name: casa-brainvisa-dev
+    tags:
+      - rc
+      - ubuntu-12.04-rc
+      - "%(casa_version)s-rc"
+      - "%(casa_version)s-ubuntu-12.04-rc"
+    visibility: private
+    template_files_parameters:
+        base_image: cati/casa-opensource-dev:%(casa_version)s-ubuntu-12.04
+        bv_maker_branch: bug_fix
+  - name: casa-brainvisa-dev
+    tags:
+      - ubuntu-16.04
+      - "%(casa_version)s-ubuntu-16.04"
+    visibility: private
+    template_files_parameters:
+        base_image: cati/casa-opensource-dev:%(casa_version)s-ubuntu-16.04
+        bv_maker_branch: latest_release
+  - name: casa-brainvisa-dev
+    tags:
+      - ubuntu-16.04-rc
+      - "%(casa_version)s-ubuntu-16.04-rc"
+    visibility: private
+    template_files_parameters:
+        base_image: cati/casa-dev:%(casa_version)s-ubuntu-16.04
+        bv_maker_branch: bug_fix

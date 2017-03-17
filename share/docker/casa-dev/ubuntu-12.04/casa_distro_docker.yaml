@@ -1,0 +1,8 @@
+dependencies:
+    - ../../casa-test
+image_sources:
+  - name: casa-dev
+    tags:
+      - latest
+      - ubuntu-12.04
+    visibility: public
