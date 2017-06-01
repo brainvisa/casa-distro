@@ -2,4 +2,4 @@
 
 FROM %(base_image)s 
 
-COPY bv_maker.cfg /home/brainvisa/.brainvisa/bv_maker.cfg
+COPY bv_maker.cfg $BRAINVISA_BUILD_CFG/bv_maker.cfg

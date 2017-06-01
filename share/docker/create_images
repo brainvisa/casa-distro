@@ -1,25 +1,26 @@
 docker pull ubuntu:12.04
 docker pull ubuntu:16.04
 
-BASE=$HOME/src/casa-distro/branches/bug_fix/docker
+BASE=`dirname "$0"`
+BASE=`realpath "$BASE"`
 for OS in ubuntu-12.04 ubuntu-16.04; do
-  echo Building cati/brainvisa-test:$OS. Log in $BASE/brainvisa-test:$OS.log
-  docker build -t cati/brainvisa-test:$OS $BASE/brainvisa-test/$OS > $BASE/brainvisa-test:$OS.log 2>&1
+  echo Building cati/casa-test:$OS. Log in $BASE/casa-test:$OS.log
+  docker build -t cati/casa-test:$OS $BASE/casa-test/$OS > $BASE/casa-test:$OS.log 2>&1
   if [ $? != 0 ]; then
     echo ERROR: build failed
     exit 1
   fi
-  echo Pushing cati/brainvisa-test:$OS
-  docker push cati/brainvisa-test:$OS
+  echo Pushing cati/casa-test:$OS
+  docker push cati/casa-test:$OS
 
-  echo Building cati/brainvisa-devbase:$OS. Log in $BASE/brainvisa-devbase:$OS.log
-  docker build -t cati/brainvisa-devbase:$OS $BASE/brainvisa-devbase/$OS > $BASE/brainvisa-devbase:$OS.log 2>&1
+  echo Building cati/casa-dev:$OS. Log in $BASE/casa-dev:$OS.log
+  docker build -t cati/casa-dev:$OS $BASE/casa-dev/$OS > $BASE/casa-dev:$OS.log 2>&1
   if [ $? != 0 ]; then
     echo ERROR: build failed
     exit 1
   fi
-  echo Pushing cati/brainvisa-devbase:$OS
-  docker push cati/brainvisa-devbase:$OS
+  echo Pushing cati/casa-dev:$OS
+  docker push cati/casa-dev:$OS
 
   for BRANCH in bug_fix trunk; do
     echo Building cati/brainvisa-dev-opensource:$OS-$BRANCH. Log in $BASE/brainvisa-dev-opensource:$OS-$BRANCH.log

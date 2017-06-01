@@ -12,14 +12,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recomme
     libxrender1 \
     libglib2.0-0 \
     libxi6 \
-  && apt-get clean
-
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 # delete all the apt list files since they're big and get stale quickly
-RUN rm -rf /var/lib/apt/lists/*
 
-RUN groupadd brainvisa && useradd -g brainvisa -G sudo -p "" -ms /bin/bash brainvisa
 COPY entrypoint /usr/local/bin/entrypoint
-USER brainvisa
-WORKDIR /home/brainvisa
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD []

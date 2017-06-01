@@ -16,10 +16,6 @@ RUN urpmi --no-recommends --auto \
     lib64sm6 \
     lib64xt6
 
-RUN groupadd brainvisa && useradd -g brainvisa -p "" -ms /bin/bash brainvisa
-RUN echo "brainvisa ALL=(ALL) ALL" > /etc/sudoers.d/brainvisa
 COPY entrypoint /usr/local/bin/entrypoint
-USER brainvisa
-WORKDIR /home/brainvisa
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD []

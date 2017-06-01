@@ -1,35 +1,34 @@
-# Dockerfile for images cati/casa-opensource-dev on Ubuntu 12.04
+# Dockerfile for images cati/casa-opensource-dev
 
 FROM %(base_image)s 
 
-COPY svn.secret /etc/brainvisa/svn.secret
-COPY bv_maker.cfg /etc/brainvisa/bv_maker.cfg
-COPY svn /home/brainvisa/bin/svn
-RUN chmod +x /home/brainvisa/bin/svn
+# Directory containing all files that are necessary only for building (source tree, build dir, etc.)
+ENV BRAINVISA_BUILD=/brainvisa-build
+RUN mkdir $BRAINVISA_BUILD
+# Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
+ENV BRAINVISA_BUILD_CONF=/brainvisa-build/conf
 
-USER root
-RUN chown -R brainvisa:brainvisa /etc/brainvisa
+COPY svn.secret $BRAINVISA_BUILD_CONF/svn.secret
+COPY bv_maker.cfg $BRAINVISA_BUILD_CONF/bv_maker.cfg
+COPY svn $BRAINVISA_BUILD/bin/svn
+RUN chmod +x $BRAINVISA_BUILD/bin/svn
+
 RUN mkdir /repository
-RUN chown brainvisa:brainvisa /repository
-USER brainvisa
 
-ENV PATH="/home/brainvisa/bin:${PATH}"
+ENV PATH="${BRAINVISA_BUILD}/bin:${PATH}"
 RUN mkdir ~/.brainvisa && \
-    ln -s /etc/brainvisa/bv_maker.cfg ~/.brainvisa/bv_maker.cfg
+    ln -s $BRAINVISA_BUILD_CONF/bv_maker.cfg ~/.brainvisa/bv_maker.cfg
 
-RUN /home/brainvisa/bin/svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix /tmp/brainvisa-cmake
+RUN $BRAINVISA_BUILD/bin/svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix /tmp/brainvisa-cmake
 WORKDIR /tmp/brainvisa-cmake
 RUN cmake -DCMAKE_INSTALL_PREFIX=. .
 RUN make install
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker sources
+RUN apt-get update && apt-get install -y libxslt-dev
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker configure
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker build
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker doc
 RUN rm -Rf /tmp/brainvisa-cmake
 
-WORKDIR /home/brainvisa
-VOLUME /etc/brainvisa
-VOLUME /repository
-
-ENTRYPOINT ["/home/brainvisa/build/bin/bv_env"]
+ENTRYPOINT ["${$BRAINVISA_BUILD}/build/bin/bv_env"]
 CMD []

@@ -35,5 +35,5 @@ image_sources:
       - "%(casa_version)s-ubuntu-16.04-rc"
     visibility: private
     template_files_parameters:
-        base_image: cati/casa-dev:%(casa_version)s-ubuntu-16.04
+        base_image: cati/casa-opensource-dev:%(casa_version)s-ubuntu-16.04
         bv_maker_branch: bug_fix

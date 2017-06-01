@@ -12,6 +12,7 @@ import argparse
 import requests
 import docker
 import json
+from subprocess import check_call
 
 from brainvisa.maker.plugins.svn import get_latest_revision
 from brainvisa.maker.brainvisa_clients import read_remote_project_info
@@ -197,6 +198,8 @@ def inspect_components_and_create_release_plan(components, verbose=None):
 
 
 def publish_release_plan_on_wiki(wiki_url, login, password, release_plan_file):
+    '''
+    '''
     release_plan = yaml.load(open(release_plan_file))
     next_casa_version = release_plan['casa']['casa-distro']['bug_fix']['version']
     content = ['''h1. Release plan for casa-distro %s
@@ -298,8 +301,25 @@ def find_docker_image_files(base_directory):
     
     return sorted(result, compare_with_dependencies)
 
-            
-if __name__ == '__main__':
+
+def apply_template_parameters(template, template_parameters):
+    while True:
+        result = template % template_parameters
+        if result == template:
+            break
+        template = result
+    return result
+
+
+def create_docker_images():
+    '''
+    Creates all docker images that are declared in 
+    find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
+    "docker" directory located in the directory casa_distro.share_directory.
+    
+    This function is still work in progress. Its paramaters and behaviour may
+    change.
+    '''
     import casa_distro
     
     docker_client = docker.from_env()
@@ -311,15 +331,15 @@ if __name__ == '__main__':
             template_parameters = { 'casa_version': casa_distro.info.__version__ }
             template_parameters.update(image_source.get('template_files_parameters', {}))
             
-            image_name = image_source['name'] % template_parameters
-            image_tags = [i % template_parameters for i in image_source['tags']]
+            image_name = apply_template_parameters(image_source['name'], template_parameters)
+            image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
             target_directory = osp.join(base_directory, image_name, image_tags[-1])
             os.makedirs(target_directory)
             for f in os.listdir(source_directory):
                 if f == filename:
                     continue
                 if f.endswith('.template'):
-                    content = open(osp.join(source_directory, f)).read() % template_parameters
+                    content = apply_template_parameters(open(osp.join(source_directory, f)).read(), template_parameters)
                     open(osp.join(target_directory, f[:-9]), 'w').write(content)
                 else:
                     content = open(osp.join(source_directory, f)).read()
@@ -329,9 +349,9 @@ if __name__ == '__main__':
             print('Creating image %s' % image_full_name)
             print('-'*40)
             build_stream = docker_client.api.build(path=target_directory,
-                                               tag=image_full_name,
-                                                rm=True,
-                                                forcerm=True)
+                                                   tag=image_full_name,
+                                                   rm=True,
+                                                   forcerm=True)
             for i in build_stream:
                 d = json.loads(i)
                 s = d.get('stream')
@@ -345,10 +365,19 @@ if __name__ == '__main__':
                     print(i)
             if error:
                 break
+            print('-'*40)
+            for tag in image_tags[:-1]:
+                src = 'cati/%s:%s' % (image_name, image_tags[-1])
+                dst = 'cati/%s:%s' % (image_name, tag)
+                print('Creating tag', dst, 'from', src)
+                # I do not know how to create a tag of an existing image with
+                # docker-py, therefore I use subprocess
+                check_call(['docker', 'tag', src, dst] )
+            print('-'*40)
         if error:
             break
-    sys.exit()
-    
+
+if __name__ == '__main__':    
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
         def _split_lines(self, text, width):
             result = []
@@ -371,9 +400,14 @@ if __name__ == '__main__':
                         help='Bioproj login.')
     parser.add_argument('-p', '--password', nargs='?', default=None,
                         help='BioProj password.')
-    parser.add_argument('command', nargs=1, choices=['create_release_plan', 'publish_release_plan', 'apply_release_plan'],
-                        help='"create_release_plan": create a release plan file by reading sources;\n\n"publish_release_plan" send information to the CASA forum about things that would be done with the release plan file;\n\n"apply_release_plan" apply actions defined in release plan file')
-    parser.add_argument('release_plan_file', nargs=1,
+    parser.add_argument('command', nargs=1, choices=['create_release_plan', 'publish_release_plan', 'apply_release_plan', 'create_docker', 'update_docker', 'publish_docker'],
+                        help='"create_release_plan": create a release plan file by reading sources;\n\n'
+                             '"publish_release_plan": send information to the CASA forum about things that would be done with the release plan file;\n\n'
+                             '"apply_release_plan": apply actions defined in release plan file;\n\n'
+                             '"create_docker": create all docker images for the current release status;\n\n'
+                             '"update_docker": update previously created docker images (updating source codes and restarting a build);\n\n'
+                             '"pubish_docker": publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images;\n\n')
+    parser.add_argument('release_plan_file', nargs='?', default=None,
                         help='Name of the release plan file.')
     options = parser.parse_args()
 
@@ -389,8 +423,17 @@ if __name__ == '__main__':
         release_plan = inspect_components_and_create_release_plan(components, verbose=verbose)
         print(yaml.dump(release_plan, default_flow_style=False), file=release_plan_file)
     elif command == 'publish_release_plan':
-        publish_release_plan_on_wiki(release_plan_wiki_url, options.login, options.password, options.release_plan_file[0])
-    elif command == 'apply_release_plan':
+        if not options.login:
+            print('ERROR: a BioProj login must be given to publish release plan', file=sys.stderr)
+            sys.exit(1)
+        if options.password is None:
+            password = getpass('BioProj password for %s: ' % options.login)
+        else:
+            password = options.password
+        publish_release_plan_on_wiki(release_plan_wiki_url, options.login, password, options.release_plan_file[0])
+    elif command == 'create_docker':
+        create_docker_images()
+    elif command in ('apply_release_plan', 'update_docker', 'publish_docker'):
         print('ERROR: command', command, 'not implemented', file=sys.stderr)
         sys.exit(1)
     else:

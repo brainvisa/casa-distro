@@ -2,8 +2,6 @@
 
 FROM cati/casa-test:ubuntu-16.04 
 
-USER root
-
 # Install system dependencies
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     build-essential \
@@ -96,5 +94,3 @@ RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_I
 
 # TODO: OpenSlide does not compile due to incompatibility in GLIB version
 #RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
-
-USER brainvisa
