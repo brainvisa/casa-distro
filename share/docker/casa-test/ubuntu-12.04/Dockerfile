@@ -16,5 +16,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recomme
 # delete all the apt list files since they're big and get stale quickly
 
 COPY entrypoint /usr/local/bin/entrypoint
+RUN chmod +x /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD []

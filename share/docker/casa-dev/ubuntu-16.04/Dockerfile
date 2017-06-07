@@ -77,6 +77,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libmpich-dev \
     libgstreamer1.0-dev \
     liborc-dev \
+    libxslt-dev \
   && apt-get clean
 
 # delete all the apt list files since they're big and get stale quickly
@@ -94,3 +95,4 @@ RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_I
 
 # TODO: OpenSlide does not compile due to incompatibility in GLIB version
 #RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
+

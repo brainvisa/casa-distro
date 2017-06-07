@@ -24,11 +24,10 @@ WORKDIR /tmp/brainvisa-cmake
 RUN cmake -DCMAKE_INSTALL_PREFIX=. .
 RUN make install
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker sources
-RUN apt-get update && apt-get install -y libxslt-dev
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker configure
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker build
 RUN /tmp/brainvisa-cmake/bin/bv_env_host bv_maker doc
-RUN rm -Rf /tmp/brainvisa-cmake
+#RUN rm -Rf /tmp/brainvisa-cmake
 
-ENTRYPOINT ["${$BRAINVISA_BUILD}/build/bin/bv_env"]
-CMD []
+ENTRYPOINT ["/brainvisa-build/build/bin/bv_env_host"]
+CMD ["/bin/bash"]

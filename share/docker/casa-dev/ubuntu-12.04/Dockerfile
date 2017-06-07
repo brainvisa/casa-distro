@@ -69,6 +69,7 @@ RUN apt-get update && apt-get install -y \
     libmpich1.0-dev \
     libgstreamer0.10-dev \
     liborc-dev \
+    libxslt-dev \
   && apt-get clean
 
 # delete all the apt list files since they're big and get stale quickly

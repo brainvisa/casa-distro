@@ -10,7 +10,7 @@ image_sources:
     visibility: private
     template_files_parameters:
         base_image: cati/casa-opensource-dev:%(casa_version)s-ubuntu-12.04
-        bv_maker_branch: latest_release
+        bv_maker_branch: tag
   - name: casa-brainvisa-dev
     tags:
       - rc
@@ -28,7 +28,7 @@ image_sources:
     visibility: private
     template_files_parameters:
         base_image: cati/casa-opensource-dev:%(casa_version)s-ubuntu-16.04
-        bv_maker_branch: latest_release
+        bv_maker_branch: tag
   - name: casa-brainvisa-dev
     tags:
       - ubuntu-16.04-rc
