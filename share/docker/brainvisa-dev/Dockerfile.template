@@ -1,5 +1,0 @@
-# Dockerfile for development image for BrainVISA release
-
-FROM %(base_image)s 
-
-COPY bv_maker.cfg $BRAINVISA_BUILD_CFG/bv_maker.cfg

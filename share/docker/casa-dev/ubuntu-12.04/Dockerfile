@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     ipython \
     cmake \
+    cmake-curses-gui \
     subversion \
     git \
     qt4-dev-tools \
@@ -84,5 +85,22 @@ RUN wget -q http://download.qt.io/official_releases/qt-installer-framework/2.0.3
     rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
 
 RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
-
 RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
+
+# Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
+ENV CASA_CONF=/casa/conf
+# Directory containing source code
+ENV CASA_SRC=/casa/src
+# Directory containing all files that are necessary only for building (source tree, build dir, etc.)
+ENV CASA_BUILD=/casa/build
+# Installation directory
+ENV CASA_INSTALL=/casa/install
+# Installation directory
+ENV CASA_PACK=/casa/pack
+# Default bv_maker branch
+ENV CASA_BRANCH=latest_release
+
+COPY svn.secret $CASA_CONF/svn.secret
+COPY svn /usr/local/bin/svn
+RUN chmod +x /usr/local/bin/svn
+
