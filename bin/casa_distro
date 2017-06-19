@@ -13,6 +13,8 @@ import requests
 import docker
 import json
 from subprocess import check_call
+import tempfile
+import shutil
 
 from brainvisa.maker.plugins.svn import get_latest_revision
 from brainvisa.maker.brainvisa_clients import read_remote_project_info
@@ -21,7 +23,7 @@ from brainvisa.maker.brainvisa_client_components import \
                                                 get_version_control_component, \
                                                 BranchType
 
-from casa_distro import os_ids, casa_branches
+import casa_distro
 
 
 release_plan_wiki_url = 'https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan.json'
@@ -314,75 +316,99 @@ def apply_template_parameters(template, template_parameters):
     return result
 
 
-#def create_docker_images():
-    #'''
-    #Creates all docker images that are declared in 
-    #find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
-    #"docker" directory located in the directory casa_distro.share_directory.
+def create_docker_images():
+    '''
+    Creates all docker images that are declared in 
+    find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
+    "docker" directory located in the directory casa_distro.share_directory.
     
-    #This function is still work in progress. Its paramaters and behaviour may
-    #change.
-    #'''
-    #import casa_distro
+    This function is still work in progress. Its paramaters and behaviour may
+    change.
+    '''
+    import casa_distro
     
-    #docker_client = docker.from_env()
-    #error = False
-    #for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
-        #base_directory = '/tmp/casa_distro'
-        #source_directory, filename = osp.split(images_dict['filename'])
-        #for image_source in images_dict['image_sources']:
-            #template_parameters = { 'casa_version': casa_distro.info.__version__ }
-            #template_parameters.update(image_source.get('template_files_parameters', {}))
-            
-            #image_name = apply_template_parameters(image_source['name'], template_parameters)
-            #image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
-            #target_directory = osp.join(base_directory, image_name, image_tags[-1])
-            #os.makedirs(target_directory)
-            #for f in os.listdir(source_directory):
-                #if f == filename:
-                    #continue
-                #if f.endswith('.template'):
-                    #content = apply_template_parameters(open(osp.join(source_directory, f)).read(), template_parameters)
-                    #open(osp.join(target_directory, f[:-9]), 'w').write(content)
-                #else:
-                    #content = open(osp.join(source_directory, f)).read()
-                    #open(osp.join(target_directory, f), 'w').write(content)
-            #image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
-            #print('-'*40)
-            #print('Creating image %s' % image_full_name)
-            #print('-'*40)
-            #build_stream = docker_client.api.build(path=target_directory,
-                                                   #tag=image_full_name,
-                                                   #rm=True,
-                                                   #forcerm=True)
-            #for i in build_stream:
-                #d = json.loads(i)
-                #s = d.get('stream')
-                #if s:
-                    #sys.stdout.write(s)
-                #elif 'error' in d:
-                    #print(d['error'], file=sys.stderr)
-                    #error = True
-                    #break
-                #else:
-                    #print(i)
-            #if error:
-                #break
-            #print('-'*40)
-            #for tag in image_tags[:-1]:
-                #src = 'cati/%s:%s' % (image_name, image_tags[-1])
-                #dst = 'cati/%s:%s' % (image_name, tag)
-                #print('Creating tag', dst, 'from', src)
-                ## I do not know how to create a tag of an existing image with
-                ## docker-py, therefore I use subprocess
-                #check_call(['docker', 'tag', src, dst] )
-            #print('-'*40)
-        #if error:
-            #break
+    docker_client = docker.from_env()
+    error = False
+    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
+        base_directory = tempfile.mkdtemp()
+        try:
+            source_directory, filename = osp.split(images_dict['filename'])
+            for image_source in images_dict['image_sources']:
+                template_parameters = { 'casa_version': casa_distro.info.__version__ }
+                template_parameters.update(image_source.get('template_files_parameters', {}))
+                
+                image_name = apply_template_parameters(image_source['name'], template_parameters)
+                image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
+                target_directory = osp.join(base_directory, image_name, image_tags[-1])
+                os.makedirs(target_directory)
+                for f in os.listdir(source_directory):
+                    if f == filename:
+                        continue
+                    if f.endswith('.template'):
+                        content = apply_template_parameters(open(osp.join(source_directory, f)).read(), template_parameters)
+                        open(osp.join(target_directory, f[:-9]), 'w').write(content)
+                    else:
+                        content = open(osp.join(source_directory, f)).read()
+                        open(osp.join(target_directory, f), 'w').write(content)
+                image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
+                print('-'*40)
+                print('Creating image %s' % image_full_name)
+                print('-'*40)
+                build_stream = docker_client.api.build(path=target_directory,
+                                                    tag=image_full_name,
+                                                    rm=True,
+                                                    forcerm=True,
+                                                    pull=True)
+                for i in build_stream:
+                    d = json.loads(i)
+                    s = d.get('stream')
+                    if s:
+                        sys.stdout.write(s)
+                    elif 'error' in d:
+                        print(d['error'], file=sys.stderr)
+                        error = True
+                        break
+                    else:
+                        print(i)
+                if error:
+                    break
+                print('-'*40)
+                for tag in image_tags[:-1]:
+                    src = 'cati/%s:%s' % (image_name, image_tags[-1])
+                    dst = 'cati/%s:%s' % (image_name, tag)
+                    print('Creating tag', dst, 'from', src)
+                    # I do not know how to create a tag of an existing image with
+                    # docker-py, therefore I use subprocess
+                    check_call(['docker', 'tag', src, dst] )
+                print('-'*40)
+            if error:
+                break
+        finally:
+            shutil.rmtree(base_directory)
 
-def create_docker_images(context_dir):
-    for os_id in os_ids:
-        
+def publish_docker_images():
+    '''
+    Publish, on DockerHub, all docker images that are declared in 
+    find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
+    "docker" directory located in the directory casa_distro.share_directory.
+    
+    This function is still work in progress. Its paramaters and behaviour may
+    change.
+    '''
+    import casa_distro
+    
+    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
+        base_directory = tempfile.mkdtemp()
+        source_directory, filename = osp.split(images_dict['filename'])
+        for image_source in images_dict['image_sources']:
+            template_parameters = { 'casa_version': casa_distro.info.__version__ }
+            template_parameters.update(image_source.get('template_files_parameters', {}))
+            
+            image_name = apply_template_parameters(image_source['name'], template_parameters)
+            image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
+            for tag in image_tags:
+                check_call(['docker', 'push', 'cati/%s:%s' % (image_name, tag)])
+
 
 if __name__ == '__main__':    
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
@@ -407,12 +433,11 @@ if __name__ == '__main__':
                         help='Bioproj login.')
     parser.add_argument('-p', '--password', nargs='?', default=None,
                         help='BioProj password.')
-    parser.add_argument('command', nargs=1, choices=['create_release_plan', 'publish_release_plan', 'apply_release_plan', 'create_docker', 'update_docker', 'publish_docker'],
+    parser.add_argument('command', nargs=1, choices=['create_release_plan', 'publish_release_plan', 'apply_release_plan', 'create_docker', 'publish_docker'],
                         help='"create_release_plan": create a release plan file by reading sources;\n\n'
                              '"publish_release_plan": send information to the CASA forum about things that would be done with the release plan file;\n\n'
                              '"apply_release_plan": apply actions defined in release plan file;\n\n'
                              '"create_docker": create all docker images for the current release status;\n\n'
-                             '"update_docker": update previously created docker images (updating source codes and restarting a build);\n\n'
                              '"pubish_docker": publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images;\n\n')
     parser.add_argument('release_plan_file', nargs='?', default=None,
                         help='Name of the release plan file.')
@@ -440,6 +465,8 @@ if __name__ == '__main__':
         publish_release_plan_on_wiki(release_plan_wiki_url, options.login, password, options.release_plan_file[0])
     elif command == 'create_docker':
         create_docker_images()
+    elif command == 'publish_docker':
+        publish_docker_images()
     elif command in ('apply_release_plan', 'update_docker', 'publish_docker'):
         print('ERROR: command', command, 'not implemented', file=sys.stderr)
         sys.exit(1)
