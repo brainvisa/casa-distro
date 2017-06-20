@@ -2,413 +2,119 @@
 
 from __future__ import print_function
 
-import sys
-import os
-import os.path as osp
-import re
-import yaml
-from pprint import pprint
 import argparse
-import requests
-import docker
-import json
-from subprocess import check_call
+from getpass import getpass
+import sys
+import zipfile
 import tempfile
 import shutil
+import os.path as osp
 
-from brainvisa.maker.plugins.svn import get_latest_revision
-from brainvisa.maker.brainvisa_clients import read_remote_project_info
-from brainvisa.maker.brainvisa_projects import url_per_component, project_per_component
-from brainvisa.maker.brainvisa_client_components import \
-                                                get_version_control_component, \
-                                                BranchType
-
-import casa_distro
+commands = []
+def command(f):
+    global commands
+    commands.append(f.__name__)
+    return f
 
 
-release_plan_wiki_url = 'https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan.json'
-
-cmake_set_regexp = re.compile(r'set\(\s*([^\s]+)\s+(.*)\s*\)')
-def parse_cmake_variables(filename):
-    result = {}
-    for line in open(osp.join(build_dir, 'bv_maker.cmake')):
-        match = cmake_set_regexp.search(line)
-        if match:
-            var = match.group(1)
-            value = match.group(2)
-            try:
-                i = value.index(' CACHE ')
-                value = value[:i]
-            except ValueError:
-                pass
-            value = value.strip()
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-            result[var] = value
-    return result
-
-def convert_github_url_to_svn(url):
-    if url.startswith('git'):
-        git, url, branch = url.split()[:3]
-        branch_type, branch= (['branch'] + branch.split(':',1))[-2:]
-        if branch_type == 'tag':
-            branch_type = 'tags'
-        else:
-            branch_type = 'branches'
-        url = 'svn %s/%s/%s' % (url, branch_type, branch)
-        vcs = 'git'
-    else:
-        vcs = 'svn'
-    return url, vcs
-
-def inspect_components_and_create_release_plan(components, verbose=None):
-    """
-    Returns a dictionary containing information about component sources state
-    and what to do during casa-distro creation. This dictionary has the 
-    following structure (in YAML style):
-    <project>: # name of a brainvisa-cmake project (as defined in
-               # components_definition.py)
-       <component>: # name of a brainvisa-cmake component
-         latest_release: # information about the latest release branch
-           vcs_type: <vcs> # Can be 'svn' if component uses Subversion or
-                           # 'git' for Git.
-           vcs_url: <url> # URL of component source branch
-           revision: <revision> # The Subversion revision or Git changeset
-                                # of the latest_release branch.
-           version: <version>   # The version of the component declared 
-                                # in project_info.cmake or info.py
-         bug_fix: # information about the bug_fix branch
-           vcs_type: <vcs> # Can be 'svn' if component uses Subversion or
-                           # 'git' for Git.
-           vcs_url: <url> # URL of component source branch
-           revision: <revision> # The Subversion revision or Git changeset
-                                # of the bug_fix branch.
-           version: <version>   # The version of the component declared 
-                                # in project_info.cmake or info.py
-         todo: # list of actions to perform for this component, possible
-               # actions are :
-           - [rename <source_url> <dest_url>]
-           - [copy <source_url> <dest_url>]
-           - [set_version <version> <url>]
-        info_messages: # Information messages about the component
-        warning_messages: # Messages indicating that a manager should pay
-                          # attention and double check to the component status
-        error_messages: # Message saying that something is wrong with the component,
-                        # a manager must investigate and fix the problem.
-    """        
-    components_info_and_release_plan = {}
-    for component in components:
-        if verbose:
-            print('Inspecting component', component, file=verbose)
-            verbose.flush()
-        bug_fix_url = url_per_component[component].get('bug_fix')
-        component_dict = components_info_and_release_plan.setdefault(project_per_component[component],{}).setdefault(component,{})
-        info_messages = []
-        warning_messages = []
-        error_messages = []
-        if bug_fix_url:
-            url, vcs = convert_github_url_to_svn(bug_fix_url[0])
-            bug_fix_url = (url,) + bug_fix_url[1:]
-            latest_release_url = url_per_component[component].get('tag')
-            bug_fix_svn = url.split(None,1)[1]
-            vcc = get_version_control_component(
-                        project_per_component[ component ],
-                        component,
-                        bug_fix_url
-                    )
-            bug_fix_revision = get_latest_revision(bug_fix_svn)
-            
-            bug_fix_version = read_remote_project_info(vcc.client(), bug_fix_svn)
-            if bug_fix_version:
-                bug_fix_version = bug_fix_version[2]
-            component_dict['bug_fix'] = {
-                'vcs_type': vcs,
-                'vcs_url': bug_fix_svn,
-                'version': str(bug_fix_version),
-                'revision': bug_fix_revision,
-            }
-            if verbose:
-                print('  bug_fix version %s in %s (%s) with revision %s' % 
-                      (str(bug_fix_version), bug_fix_svn, vcs,
-                       bug_fix_revision), file=verbose)
-                verbose.flush()
-            if latest_release_url:
-                url, vcs = convert_github_url_to_svn(latest_release_url[0])
-                latest_release_url = (url,) + latest_release_url[1:]
-                latest_release_svn = url.split(None,1)[1]
-                latest_release_revision = get_latest_revision(latest_release_svn)
-                if latest_release_revision != bug_fix_revision:
-                    latest_release_version = read_remote_project_info(vcc.client(), latest_release_svn)
-                    if latest_release_version:
-                        latest_release_version = latest_release_version[2]
-                    latest_release_version_string = str(latest_release_version)
-                    component_dict['latest_release'] = {
-                        'vcs_type': vcs,
-                        'vcs_url': latest_release_svn,
-                        'version': latest_release_version_string,
-                        'revision': latest_release_revision,
-                    }
-                    if verbose:
-                        print('  latest_release version %s in %s (%s) with revision %s' % 
-                            (str(latest_release_version), latest_release_svn, vcs,
-                            latest_release_revision), file=verbose)
-                        verbose.flush()
-                    base_url, branch_type, branch = latest_release_svn.rsplit('/', 2)
-                    versioned_latest_release_svn = '%s/%s/%s' % (base_url, 'tags', str(latest_release_version))
-                    
-                    if latest_release_version == bug_fix_version:
-                        warning_messages.append('Version of latest_release and bug_fix are the same.')
-                        new_bug_fix_version = latest_release_version.increment()
-                    elif latest_release_version > bug_fix_version:
-                        error_messages.append('latest_release version is higher than bug_fix version.')
-                        new_bug_fix_version = bug_fix_version
-                    else:
-                        new_bug_fix_version = bug_fix_version
-                    info_messages.append('Upgrade from version %s to version %s.' % (latest_release_version_string, new_bug_fix_version))
-                    component_dict['todo'] = [
-                        ['rename', latest_release_svn, versioned_latest_release_svn],
-                        ['copy', bug_fix_svn, latest_release_svn],
-                        ['set_version', bug_fix_svn, str(new_bug_fix_version)],
-                    ]
-                    latest_release_version = None
-                else:
-                    component_dict['latest_release'] = {
-                        'vcs_type': vcs,
-                        'vcs_url': latest_release_svn,
-                        'version': str(bug_fix_version),
-                        'revision': bug_fix_revision,
-                    }
-                    if verbose:
-                        print('  latest_release identical to bug_fix in %s (%s) with revision %s' % 
-                              (latest_release_svn, vcs, latest_release_revision), file=verbose)
-                        verbose.flush()
-            else:
-                warning_messages.append('No latest_release branch.')                
-                if verbose:
-                    print(component, '  no latest_release branch', file=verbose)
-                    verbose.flush()
-        else:
-            warning_messages.append('No bug_fix branch.')
-            if verbose:
-                print(component, 'no bug_fix branch', file=verbose)
-                verbose.flush()
-        if info_messages:
-            component_dict['info_messages'] = info_messages
-        if warning_messages:
-            component_dict['warning_messages'] = warning_messages
-        if error_messages:
-            component_dict['error_messages'] = error_messages
-    return components_info_and_release_plan
-
-
-
-def publish_release_plan_on_wiki(wiki_url, login, password, release_plan_file):
-    '''
-    '''
-    release_plan = yaml.load(open(release_plan_file))
-    next_casa_version = release_plan['casa']['casa-distro']['bug_fix']['version']
-    content = ['''h1. Release plan for casa-distro %s
-
-This is a test page whose content is automatically generated by @casa_distro@ script.
-
-|_. Project |_. Component |_. latest_release |_. bug_fix |_. todo |_. Comments |''' % next_casa_version]
-    modified = []
-    unmodified = []
-    color = ''
-    for project in sorted(release_plan):
-        for component in sorted(release_plan[project]):
-            bug_fix = release_plan[project][component].get('bug_fix')
-            if bug_fix is not None:
-                bug_fix = '"%s":%s' % (bug_fix.get('version', 'none'), bug_fix.get('vcs_url', 'unknown'))
-            else:
-                bug_fix = ''
-            latest_release = release_plan[project][component].get('latest_release')
-            if latest_release is not None:
-                latest_release = '"%s":%s' % (latest_release.get('version', 'none'), latest_release.get('vcs_url', 'unknown'))
-            else:
-                latest_release = ''
-            todo = ('yes' if release_plan[project][component].get('todo') else 'no')
-            infos = release_plan[project][component].get('info_messages', [])
-            warnings = release_plan[project][component].get('warning_messages', [])
-            errors = release_plan[project][component].get('error_messages', [])
-            comments = list(infos)
-            comments.extend('WARNING: %s' % i for i in warnings)
-            comments.extend('ERROR: %s' % i for i in errors)
-            comments = '\n'.join(comments)
-            if errors:
-                color = '#d50000'
-            elif warnings:
-                color = '#ff8a65'
-            elif todo == 'yes':
-                color = '#a5d6a7'
-            else:
-                color = '#b0bec5'
-            content.append('|-{{background:{0}}}. {1} |-{{background:{0}}}. _{2}_ |-{{background:{0}}}. {3} |-{{background:{0}}}. {4} |-{{background:{0}}}. {5} |-{{background:{0}}}. {6} |'.format(
-                color, 
-                project, 
-                component,
-                latest_release,
-                bug_fix,
-                todo,
-                comments))
-    content = '\n'.join(content)
-    
-    print(content)
-    
-    r = requests.put(wiki_url, auth=(login, password), json={'wiki_page':{'text': content}})
-    r.raise_for_status()
-
-
-
-        
-def find_docker_image_files(base_directory):
-    '''
-    Return a sorted list of dictionary corresponding to the content of
-    all the "casa_distro_docker.yaml" files located in given directory.
-    The result is sorted according to the depencies declared in the files.
-    '''
-    result = []
-    dependencies = {}
-    base_directory = osp.abspath(osp.normpath(base_directory))
-    for root, dirnames, filenames in os.walk(base_directory):
-        if 'casa_distro_docker.yaml' in filenames:
-            yaml_filename = osp.normpath(osp.join(root, 'casa_distro_docker.yaml'))
-            images_dict = yaml.load(open(yaml_filename))
-            images_dict['filename'] = yaml_filename
-            deps = images_dict.get('dependencies')
-            if deps:
-                for dependency in deps:
-                    for r, d, f in os.walk(osp.join(root, dependency)):
-                        if 'casa_distro_docker.yaml' in f:
-                            dependencies.setdefault(yaml_filename, set()).add(osp.normpath(osp.join(r, 'casa_distro_docker.yaml')))
-            result.append(images_dict)
-
-    propagate_dependencies = True
-    while propagate_dependencies:
-        propagate_dependencies = False
-        for i, d in dependencies.items():
-            for j in tuple(d):
-                for k in dependencies.get(j,()):
-                    i_deps = dependencies.setdefault(i, set())
-                    if k not in i_deps:
-                        i_deps.add(k)
-                        propagate_dependencies = True
-                        
-    def compare_with_dependencies(a,b):
-        if a['filename'] == b['filename']:
-            return 0
-        elif a['filename'] in dependencies.get(b['filename'],()):
-            return -1
-        elif b['filename'] in dependencies.get(a['filename'],()):
-            return 1
-        else:
-            return cmp(a['filename'], b['filename'])
-    
-    return sorted(result, compare_with_dependencies)
-
-
-def apply_template_parameters(template, template_parameters):
-    while True:
-        result = template % template_parameters
-        if result == template:
-            break
-        template = result
-    return result
-
-
-def create_docker_images():
-    '''
-    Creates all docker images that are declared in 
-    find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
-    "docker" directory located in the directory casa_distro.share_directory.
-    
-    This function is still work in progress. Its paramaters and behaviour may
-    change.
-    '''
+@command
+def package_casa_distro(build_workflows_repository):
+    '''Create a casa_distro.zip containing a usable version of casa_distro'''
     import casa_distro
-    
-    docker_client = docker.from_env()
-    error = False
-    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
-        base_directory = tempfile.mkdtemp()
-        try:
-            source_directory, filename = osp.split(images_dict['filename'])
-            for image_source in images_dict['image_sources']:
-                template_parameters = { 'casa_version': casa_distro.info.__version__ }
-                template_parameters.update(image_source.get('template_files_parameters', {}))
-                
-                image_name = apply_template_parameters(image_source['name'], template_parameters)
-                image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
-                target_directory = osp.join(base_directory, image_name, image_tags[-1])
-                os.makedirs(target_directory)
-                for f in os.listdir(source_directory):
-                    if f == filename:
-                        continue
-                    if f.endswith('.template'):
-                        content = apply_template_parameters(open(osp.join(source_directory, f)).read(), template_parameters)
-                        open(osp.join(target_directory, f[:-9]), 'w').write(content)
-                    else:
-                        content = open(osp.join(source_directory, f)).read()
-                        open(osp.join(target_directory, f), 'w').write(content)
-                image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
-                print('-'*40)
-                print('Creating image %s' % image_full_name)
-                print('-'*40)
-                build_stream = docker_client.api.build(path=target_directory,
-                                                    tag=image_full_name,
-                                                    rm=True,
-                                                    forcerm=True,
-                                                    pull=True)
-                for i in build_stream:
-                    d = json.loads(i)
-                    s = d.get('stream')
-                    if s:
-                        sys.stdout.write(s)
-                    elif 'error' in d:
-                        print(d['error'], file=sys.stderr)
-                        error = True
-                        break
-                    else:
-                        print(i)
-                if error:
-                    break
-                print('-'*40)
-                for tag in image_tags[:-1]:
-                    src = 'cati/%s:%s' % (image_name, image_tags[-1])
-                    dst = 'cati/%s:%s' % (image_name, tag)
-                    print('Creating tag', dst, 'from', src)
-                    # I do not know how to create a tag of an existing image with
-                    # docker-py, therefore I use subprocess
-                    check_call(['docker', 'tag', src, dst] )
-                print('-'*40)
-            if error:
-                break
-        finally:
-            shutil.rmtree(base_directory)
+    import brainvisa.maker
+    import tempfile
+    import shutil
+    import zipfile
+    import os
+    import os.path as osp
+    from fnmatch import fnmatch
+    dirs = {
+        osp.dirname(casa_distro.__file__): ('casa_distro', '*.py'),
+        osp.dirname(brainvisa.maker.__file__): ('brainvisa/maker', '*.py'),
+        casa_distro.share_directory: ('share', None),
+    }
+    tmp = tempfile.mkdtemp()
+    try:
+        # Copy files in temporary directory
+        os.mkdir(osp.join(tmp,'brainvisa'))
+        open(osp.join(tmp, 'brainvisa', '__init__.py'), 'w')
+        shutil.copy(__file__, osp.join(tmp, '__main__.py'))
+        for srcdir, dstdir_filter in dirs.items():
+            dstdir, filter = dstdir_filter
+            os.mkdir(osp.join(tmp, dstdir))
+            len_srcdir = len(srcdir) + 1
+            for dirpath, dirnames, filenames in os.walk(srcdir):
+                zipdir = osp.join(dstdir, dirpath[len_srcdir:])
+                for i in dirnames:
+                    os.mkdir(osp.join(tmp, zipdir, i))
+                for i in filenames:
+                    if not filter or fnmatch(i, filter):
+                        shutil.copy(osp.join(dirpath, i), osp.join(tmp, zipdir, i))
 
-def publish_docker_images():
-    '''
-    Publish, on DockerHub, all docker images that are declared in 
-    find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
-    "docker" directory located in the directory casa_distro.share_directory.
-    
-    This function is still work in progress. Its paramaters and behaviour may
-    change.
-    '''
-    import casa_distro
-    
-    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
-        base_directory = tempfile.mkdtemp()
-        source_directory, filename = osp.split(images_dict['filename'])
-        for image_source in images_dict['image_sources']:
-            template_parameters = { 'casa_version': casa_distro.info.__version__ }
-            template_parameters.update(image_source.get('template_files_parameters', {}))
-            
-            image_name = apply_template_parameters(image_source['name'], template_parameters)
-            image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
-            for tag in image_tags:
-                check_call(['docker', 'push', 'cati/%s:%s' % (image_name, tag)])
+        # Create zip archive of temporary directory
+        with zipfile.ZipFile(osp.join(build_workflows_repository, 'casa_distro.zip'), mode='w') as zip:
+            len_tmp = len(tmp)+1
+            for dirpath, dirnames, filenames in os.walk(tmp):
+                zipdir = dirpath[len_tmp:]
+                for i in filenames:
+                    f = zip.write(osp.join(dirpath,i), osp.join(zipdir,i))
+    finally:
+        shutil.rmtree(tmp)
 
+@command
+def create_release_plan(release_plan_file, components=None, verbose=None):
+    '''create a release plan file by reading sources.'''
+    from casa_distro.bv_maker import inspect_components_and_create_release_plan
+    import yaml # TODO move related code into bv_maker.py
+    
+    if components:
+        components = components.split(',')
+    release_plan_file = open(release_plan_file, 'w')
+    release_plan = inspect_components_and_create_release_plan(components, verbose=verbose)
+    print(yaml.dump(release_plan, default_flow_style=False), file=release_plan_file)
+
+
+@command
+def publish_release_plan(release_plan_file, login, password=None):
+    '''send information to the CASA forum about things that would be done with the release plan file'''
+    from casa_distro.bv_maker import publish_release_plan_on_wiki
+    if password is None:
+        password = getpass('BioProj password for %s: ' % login)
+    publish_release_plan_on_wiki(login, password, release_plan_file)
+
+
+@command
+def apply_release_plan(elease_plan_file, login, password=None):
+    '''apply actions defined in release plan file'''
+    print('ERROR: command cmd_apply_release_plan is not implemented', file=sys.stderr)
+    sys.exit(1)
+
+
+@command
+def create_docker():
+    '''create or update all casa-test and casa-dev docker images'''
+    from casa_distro.docker import create_docker_images
+    create_docker_images()
+
+
+@command
+def publish_docker():
+    '''publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images'''
+    from casa_distro.docker import publish_docker_images
+    publish_docker_images()
+
+
+@command
+def create_build_workflow(build_workflows_repository, distro='opensource', branch='latest_release', system=None):
+    '''create a new build workflow directory in a repository of build workflows'''
+    from casa_distro.docker import create_build_workflow
+    create_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system)
+
+@command
+def help(command):
+    '''print help about a command'''
+    command_help = globals()[command].__doc__
+    print(command_help)
 
 if __name__ == '__main__':    
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
@@ -427,49 +133,36 @@ if __name__ == '__main__':
 
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
-    parser.add_argument('-c', '--component', dest='components', action='append',
-                        help='Process only selected component (can be used several times)')
-    parser.add_argument('-l', '--login',
-                        help='Bioproj login.')
-    parser.add_argument('-p', '--password', nargs='?', default=None,
-                        help='BioProj password.')
-    parser.add_argument('command', nargs=1, choices=['create_release_plan', 'publish_release_plan', 'apply_release_plan', 'create_docker', 'publish_docker'],
-                        help='"create_release_plan": create a release plan file by reading sources;\n\n'
-                             '"publish_release_plan": send information to the CASA forum about things that would be done with the release plan file;\n\n'
-                             '"apply_release_plan": apply actions defined in release plan file;\n\n'
-                             '"create_docker": create all docker images for the current release status;\n\n'
-                             '"pubish_docker": publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images;\n\n')
-    parser.add_argument('release_plan_file', nargs='?', default=None,
-                        help='Name of the release plan file.')
+    parser.add_argument('command', nargs=1, choices=commands,
+                        help='\n\n'.join('"%s": %s;\n\n' % (i, globals()[i].__doc__) for i in commands))
+    parser.add_argument('command_options', nargs='*',
+                        help='command specific options (use help <command> to list these options).')
     options = parser.parse_args()
 
-    verbose = (sys.stdout if options.verbose else None)
-
-    command = options.command[0]
-    if command == 'create_release_plan':
-        if options.components:
-            components = options.components
-        else:
-            components = list(url_per_component)
-        release_plan_file = open(options.release_plan_file[0], 'w')
-        release_plan = inspect_components_and_create_release_plan(components, verbose=verbose)
-        print(yaml.dump(release_plan, default_flow_style=False), file=release_plan_file)
-    elif command == 'publish_release_plan':
-        if not options.login:
-            print('ERROR: a BioProj login must be given to publish release plan', file=sys.stderr)
-            sys.exit(1)
-        if options.password is None:
-            password = getpass('BioProj password for %s: ' % options.login)
-        else:
-            password = options.password
-        publish_release_plan_on_wiki(release_plan_wiki_url, options.login, password, options.release_plan_file[0])
-    elif command == 'create_docker':
-        create_docker_images()
-    elif command == 'publish_docker':
-        publish_docker_images()
-    elif command in ('apply_release_plan', 'update_docker', 'publish_docker'):
-        print('ERROR: command', command, 'not implemented', file=sys.stderr)
-        sys.exit(1)
-    else:
-        print('ERROR: invalid command', options.command[0], file=sys.stderr)
-        sys.exit(1)
+    tmp_share = None
+    try:
+        # Manage share directory in Zip file distribution
+        if not osp.exists(__file__) and osp.dirname(__file__).endswith('.zip'):
+            tmp_share = tempfile.mkdtemp()
+            with zipfile.ZipFile(osp.dirname(__file__)) as zip:
+                for i in zip.namelist():
+                    if i.startswith('share'):
+                        zip.extract(i, tmp_share)
+            import casa_distro
+            casa_distro.share_directory = osp.join(tmp_share, 'share')
+        
+        command = globals()[options.command[0]]
+        args = []
+        kwargs = {}
+        if options.verbose:
+            kwargs['verbose'] = sys.stdout
+        for i in options.command_options:
+            l = i.split('=', 1)
+            if len(l) == 2:
+                kwargs[l[0]] = l[1]
+            else:
+                args.append(i)
+        command(*args, **kwargs)
+    finally:
+        if tmp_share:
+            shutil.rmtree(tmp_share)
