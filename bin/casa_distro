@@ -16,9 +16,11 @@ def command(f):
     commands.append(f.__name__)
     return f
 
+default_build_workflow_repository = '/neurospin/cati/Users/cointepas/casa_distro'
+
 
 @command
-def package_casa_distro(build_workflows_repository):
+def package_casa_distro(build_workflows_repository=default_build_workflow_repository):
     '''Create a casa_distro.zip containing a usable version of casa_distro'''
     import casa_distro
     import brainvisa.maker
@@ -62,50 +64,51 @@ def package_casa_distro(build_workflows_repository):
         shutil.rmtree(tmp)
 
 @command
-def create_release_plan(release_plan_file, components=None, verbose=None):
+def create_release_plan(components=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''create a release plan file by reading sources.'''
     from casa_distro.bv_maker import inspect_components_and_create_release_plan
     import yaml # TODO move related code into bv_maker.py
     
     if components:
         components = components.split(',')
-    release_plan_file = open(release_plan_file, 'w')
+    release_plan_file = open(osp.join(build_workflows_repository, 'release_plan.yaml'), 'w')
     release_plan = inspect_components_and_create_release_plan(components, verbose=verbose)
     print(yaml.dump(release_plan, default_flow_style=False), file=release_plan_file)
 
 
 @command
-def publish_release_plan(release_plan_file, login, password=None):
+def publish_release_plan(login, password=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''send information to the CASA forum about things that would be done with the release plan file'''
     from casa_distro.bv_maker import publish_release_plan_on_wiki
     if password is None:
         password = getpass('BioProj password for %s: ' % login)
+    release_plan_file = osp.join(build_workflows_repository, 'release_plan.yaml')
     publish_release_plan_on_wiki(login, password, release_plan_file)
 
 
 @command
-def apply_release_plan(elease_plan_file, login, password=None):
+def apply_release_plan(login, password=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''apply actions defined in release plan file'''
     print('ERROR: command cmd_apply_release_plan is not implemented', file=sys.stderr)
     sys.exit(1)
 
 
 @command
-def create_docker():
+def create_docker(verbose=None):
     '''create or update all casa-test and casa-dev docker images'''
     from casa_distro.docker import create_docker_images
     create_docker_images()
 
 
 @command
-def publish_docker():
+def publish_docker(verbose=None):
     '''publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images'''
     from casa_distro.docker import publish_docker_images
     publish_docker_images()
 
 
 @command
-def create_build_workflow(build_workflows_repository, distro='opensource', branch='latest_release', system=None):
+def create_build_workflow(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''create a new build workflow directory in a repository of build workflows'''
     from casa_distro.docker import create_build_workflow
     create_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system)
@@ -131,6 +134,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Casa distribution creation tool',
                                      formatter_class=ArgumentLineBreakFormatter)
 
+    parser.add_argument('-r', '--repository', default=None,
+                        help='Path of the directory containing build workflow (default=/neurospin/cati/casa_distro)')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
     parser.add_argument('command', nargs=1, choices=commands,
@@ -156,6 +161,8 @@ if __name__ == '__main__':
         kwargs = {}
         if options.verbose:
             kwargs['verbose'] = sys.stdout
+        if options.repository:
+            kwargs['build_workflows_repository'] = options.repository
         for i in options.command_options:
             l = i.split('=', 1)
             if len(l) == 2:

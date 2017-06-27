@@ -98,7 +98,7 @@ def inspect_components_and_create_release_plan(components, verbose=None):
         if bug_fix_url:
             url, vcs = convert_github_url_to_svn(bug_fix_url[0])
             bug_fix_url = (url,) + bug_fix_url[1:]
-            latest_release_url = url_per_component[component].get('tag')
+            latest_release_url = url_per_component[component].get('latest_release')
             bug_fix_svn = url.split(None,1)[1]
             vcc = get_version_control_component(
                         project_per_component[ component ],
@@ -187,7 +187,6 @@ def inspect_components_and_create_release_plan(components, verbose=None):
             component_dict['warning_messages'] = warning_messages
         if error_messages:
             component_dict['error_messages'] = error_messages
-    print(yaml.dump(components_info_and_release_plan, default_flow_style=False), file=release_plan_file)
     return components_info_and_release_plan
 
 def publish_release_plan_on_wiki(login, password, release_plan_file):
