@@ -108,10 +108,30 @@ def publish_docker(verbose=None):
 
 
 @command
-def create_build_workflow(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+def create_build_workflow(distro='opensource', branch='latest_release', system=None, download=False, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''create a new build workflow directory in a repository of build workflows'''
     from casa_distro.docker import create_build_workflow
     create_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system)
+
+
+@command
+def pull_build_workflow(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+    '''Download a build workflow (except conf directory) from ssh://catidev.cea.fr/casa_distro.'''
+    print('ERROR: command pull_build_workflow is not implemented', file=sys.stderr)
+    sys.exit(1)
+
+@command
+def upload_build_workflow(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+    '''Upload a build workflow to ssh://catidev.cea.fr/casa_distro.'''
+    print('ERROR: command push_build_workflow is not implemented', file=sys.stderr)
+    sys.exit(1)
+
+@command
+def shell(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+    '''Download a build workflow (except conf directory) from ssh://catidev.cea.fr/casa_distro.'''
+    print('ERROR: command shell is not implemented', file=sys.stderr)
+    sys.exit(1)
+
 
 @command
 def help(command):
