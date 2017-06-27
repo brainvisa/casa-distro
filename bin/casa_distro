@@ -225,11 +225,12 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 
 @command
 def shell(distro='opensource', branch='latest_release', system=None,
-          build_workflows_repository=default_build_workflow_repository):
+          build_workflows_repository=default_build_workflow_repository,
+          args_list=[]):
     '''Start a bash shell in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_shell
     run_docker_shell(build_workflows_repository, distro=distro, branch=branch,
-                     system=system)
+                     system=system, args_list=args_list)
 
 @command
 def bv_maker(distro='opensource', branch='latest_release', system=None,
@@ -237,7 +238,19 @@ def bv_maker(distro='opensource', branch='latest_release', system=None,
              args_list=[]):
     '''Start bv_maker in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_bv_maker
-    run_docker_bv_maker(build_workflows_repository, distro=distro, branch=branch, system=system, args_list=args_list)
+    run_docker_bv_maker(build_workflows_repository, distro=distro,
+                        branch=branch, system=system, args_list=args_list)
+
+
+@command
+def run(distro='opensource', branch='latest_release', system=None,
+        build_workflows_repository=default_build_workflow_repository,
+        args_list=[], *args):
+    '''Start any command in Docker with the given repository configuration.
+    Command and args should be specified after --:
+    casa_distro -r /home/casa run branch=bug_fix -- ls -als /casa'''
+    from casa_distro.docker import run_docker
+    run_docker(build_workflows_repository, distro, branch, system, *args_list)
 
 
 @command
@@ -257,6 +270,12 @@ if __name__ == '__main__':
                 else:
                     result.append('')
             return result
+
+    args_list = []
+    if '--' in sys.argv:
+        ind = sys.argv.index('--')
+        args_list = sys.argv[ind + 1:]
+        sys.argv = sys.argv[:ind]
 
     parser = argparse.ArgumentParser(description='Casa distribution creation tool',
                                      formatter_class=ArgumentLineBreakFormatter)
@@ -285,8 +304,6 @@ if __name__ == '__main__':
 
         command = globals()[options.command[0]]
         args = []
-        args_list = []
-        have_args_list = False
         kwargs = {}
         if options.verbose:
             kwargs['verbose'] = sys.stdout
@@ -294,16 +311,11 @@ if __name__ == '__main__':
             kwargs['build_workflows_repository'] = options.repository
         for i in options.command_options:
             print(i)
-            if have_args_list:
-                args_list.append(i)
-            elif i == '-': # delimiter for additional raw args
-                have_args_list = True
+            l = i.split('=', 1)
+            if len(l) == 2:
+                kwargs[l[0]] = l[1]
             else:
-                l = i.split('=', 1)
-                if len(l) == 2:
-                    kwargs[l[0]] = l[1]
-                else:
-                    args.append(i)
+                args.append(i)
         if len(args_list) != 0:
             kwargs['args_list'] = args_list
         command(*args, **kwargs)

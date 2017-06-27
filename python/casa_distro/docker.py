@@ -153,12 +153,10 @@ def create_build_workflow_directory(build_workflow_directory,
     #cmd = [i % template_params for i in docker_command_template]
     #print(' '.join(cmd), file=open(osp.join(bwf_dir, 'build.sh'), 'w'))
 
-    print('docker build -t %(image_name)s %(build_workflow_dir)s\n'
-          % template_params,
-          file=open(osp.join(bwf_dir, 'build.sh'), 'w'))
-    os.chmod(osp.join(bwf_dir, 'build.sh'),
-             stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH | stat.S_IWRITE
-             | stat.S_IEXEC | stat.S_IWGRP)
+    print('Creating personal docker image...')
+    cmd = ['docker', 'build', '-t', local_image_name, bwf_dir]
+    print(*cmd)
+    check_call(cmd)
 
     print(docker_run_template % template_params,
           file=open(osp.join(bwf_dir, 'run_docker.sh'), 'w'))
@@ -170,9 +168,10 @@ def create_build_workflow_directory(build_workflow_directory,
         print('DOCKER_OPTIONS=\n',
               file=open(osp.join(bwf_dir, 'conf', 'docker_options'), 'w'))
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11')):
-        print('DOCKER_OPTIONS="$DOCKER_OPTIONS"\n',
+        print('DOCKER_OPTIONS="$DOCKER_OPTIONS '
+              '-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 '
+              '--privileged -e DISPLAY=$DISPLAY"\n',
               file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11'), 'w'))
-
 
 
 
@@ -327,13 +326,15 @@ def publish_docker_images():
                 check_call(['docker', 'push', 'cati/%s:%s' % (image_name, tag)])
 
 
-def create_build_workflow(bwf_repository, distro='opensource', branch='latest_release', system=None):
+def create_build_workflow(bwf_repository, distro='opensource',
+                          branch='latest_release', system=None):
     if system is None:
         system = casa_distro.linux_os_ids[0]
     bwf_directory = osp.join(bwf_repository, '%s' % distro, '%s_%s' % (branch, system))
     if not osp.exists(bwf_directory):
         os.makedirs(bwf_directory)
     create_build_workflow_directory(bwf_directory, distro, branch, system)
+
 
 if __name__ == '__main__':
     import sys
@@ -365,10 +366,10 @@ def run_docker(bwf_repository, distro='opensource',
 
 
 def run_docker_shell(bwf_repository, distro='opensource',
-                     branch='latest_release', system=None):
+                     branch='latest_release', system=None, args_list=[]):
     '''Run a bash shell in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, '/bin/bash')
+    run_docker(bwf_repository, distro, branch, system, '/bin/bash', *args_list)
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
