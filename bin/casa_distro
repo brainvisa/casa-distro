@@ -32,6 +32,9 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
     import os
     import os.path as osp
     from fnmatch import fnmatch
+    
+    from casa_distro.info import __version__ as casa_distro_version
+
     dirs = {
         osp.dirname(casa_distro.__file__): ('casa_distro', '*.py'),
         osp.dirname(brainvisa.maker.__file__): ('brainvisa/maker', '*.py'),
@@ -56,7 +59,7 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
                         shutil.copy(osp.join(dirpath, i), osp.join(tmp, zipdir, i))
 
         # Create zip archive of temporary directory
-        with zipfile.ZipFile(osp.join(build_workflows_repository, 'casa_distro.zip'), mode='w') as zip:
+        with zipfile.ZipFile(osp.join(build_workflows_repository, 'casa_distro-%s.zip' % casa_distro_version), mode='w') as zip:
             len_tmp = len(tmp)+1
             for dirpath, dirnames, filenames in os.walk(tmp):
                 zipdir = dirpath[len_tmp:]
@@ -64,6 +67,38 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
                     f = zip.write(osp.join(dirpath,i), osp.join(zipdir,i))
     finally:
         shutil.rmtree(tmp)
+
+@command
+def publish_casa_distro(build_workflows_repository=default_build_workflow_repository, 
+                        repository_server=default_repository_server, 
+                        repository_server_directory=default_repository_server_directory,
+                        login=None, verbose=None):
+    '''Publish casa_distro.zip file previously created with package_casa_distro to the sftp server'''
+    from subprocess import check_call
+    
+    from casa_distro.info import __version__ as casa_distro_version
+    
+    
+    lftp_script = tempfile.NamedTemporaryFile()
+    if login:
+        remote = 'sftp://%s@%s' % (login, repository_server)
+    else:
+        remote = 'sftp://%s' % repository_server
+    print('connect', remote, file=lftp_script)
+    print('cd', repository_server_directory, file=lftp_script)
+            
+    print('put %s/casa_distro-%s.zip' % (build_workflows_repository, casa_distro_version), file=lftp_script)
+    print('rm -f casa_distro.zip', file=lftp_script)
+    print('ln -s casa_distro-%s.zip casa_distro.zip' % casa_distro_version, file=lftp_script)
+    lftp_script.flush()
+    cmd = ['lftp', '-f', lftp_script.name]
+    if verbose:
+        print('Running', *cmd, file=verbose)
+        print('-' * 10, lftp_script.name, '-'*10, file=verbose)
+        print(open(lftp_script.name).read(), file=verbose)
+        print('-'*40, file=verbose)
+    check_call(cmd)
+    
 
 @command
 def create_release_plan(components=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
@@ -155,11 +190,11 @@ def pull_build_workflows(distro='*', branch='*', system='*',
 
 
 @command
-def upload_build_workflows(distro='*', branch='*', system='*', 
-                           build_workflows_repository=default_build_workflow_repository, 
-                           repository_server=default_repository_server, 
-                           repository_server_directory=default_repository_server_directory,
-                           login=None, verbose=None):
+def publish_build_workflows(distro='*', branch='*', system='*', 
+                            build_workflows_repository=default_build_workflow_repository, 
+                            repository_server=default_repository_server, 
+                            repository_server_directory=default_repository_server_directory,
+                            login=None, verbose=None):
     '''Upload a build workflow to sftp server (require lftp command to be installed).'''
     
     from subprocess import check_call
