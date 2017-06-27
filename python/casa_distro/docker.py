@@ -65,6 +65,7 @@ RUN make install
 ENV PATH=$PATH:$CASA_INSTALL/bin:/casa/brainvisa-cmake/bin
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CASA_INSTALL/lib::/casa/brainvisa-cmake/lib
 ENV PYHONPATH=$PYTHONPATH:$CASA_INSTALL/python::/casa/brainvisa-cmake/python
+ENV CASA_BRANCH=%(casa_branch)s
 '''
 
 docker_run_template = '''#!/bin/bash
@@ -116,6 +117,7 @@ def create_build_workflow_directory(build_workflow_directory,
 
     '''
     bwf_dir = osp.normpath(osp.abspath(build_workflow_directory))
+    print('build_workflow_directory:', build_workflow_directory)
     distro_dir = osp.join(share_directory, 'docker', distro)
     os_dir = osp.join(distro_dir, system)
     all_subdirs = ('conf', 'src', 'build', 'install', 'pack')
@@ -355,6 +357,8 @@ def run_docker(bwf_repository, distro='opensource',
     if bool(X):
         cmd.append('-X11')
     cmd += list(args)
+    print('RUN DOCKER COMMAND:')
+    print(*cmd)
     check_call(cmd)
 
 
@@ -372,7 +376,8 @@ def run_docker_bv_maker(bwf_repository, distro='opensource',
                         args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, 'bv_maker', *args_list)
+    run_docker(bwf_repository, distro, branch, system, X, 'bv_maker',
+               *args_list)
 
 
 
