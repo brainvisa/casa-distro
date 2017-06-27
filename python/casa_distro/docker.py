@@ -217,8 +217,6 @@ def create_docker_images():
     change.
     '''
     
-    import docker
-    print(docker.__file__)
     docker_client = docker.from_env()
     error = False
     for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
