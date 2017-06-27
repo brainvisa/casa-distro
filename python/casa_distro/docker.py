@@ -71,6 +71,12 @@ docker_run_template = '''#!/bin/bash
 if [ -f %(build_workflow_dir)s/conf/docker_options ]; then
     . %(build_workflow_dir)s/conf/docker_options
 fi
+if [ "$1" == "-X11" ]; then
+    shift
+    if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
+        . %(build_workflow_dir)s/conf/docker_options_x11
+    fi
+fi
 docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf -v %(build_workflow_dir)s/src:/casa/src -v %(build_workflow_dir)s/build:/casa/build -v %(build_workflow_dir)s/install:/casa/install --net=host ${DOCKER_OPTIONS} %(image_name)s "$@"
 '''
 
@@ -336,10 +342,44 @@ def create_build_workflow(bwf_repository, distro='opensource',
     create_build_workflow_directory(bwf_directory, distro, branch, system)
 
 
+def run_docker(bwf_repository, distro='opensource',
+               branch='latest_release', system=None, X=False, *args):
+    '''Run any command in docker with the config of the given repository
+    '''
+    if system is None:
+        system = casa_distro.linux_os_ids[0]
+    bwf_directory = osp.join(bwf_repository, '%s' % distro,
+                             '%s_%s' % (branch, system))
+    run_docker = osp.join(bwf_directory, 'run_docker.sh')
+    cmd = ['/bin/bash', run_docker]
+    if bool(X):
+        cmd.append('-X11')
+    cmd += list(args)
+    check_call(cmd)
+
+
+def run_docker_shell(bwf_repository, distro='opensource',
+                     branch='latest_release', system=None, X=False,
+                     args_list=[]):
+    '''Run a bash shell in docker with the config of the given repository
+    '''
+    run_docker(bwf_repository, distro, branch, system, X, '/bin/bash',
+               *args_list)
+
+
+def run_docker_bv_maker(bwf_repository, distro='opensource',
+                        branch='latest_release', system=None, X=False,
+                        args_list=[]):
+    '''Run bv_maker in docker with the config of the given repository
+    '''
+    run_docker(bwf_repository, distro, branch, system, 'bv_maker', *args_list)
+
+
+
 if __name__ == '__main__':
     import sys
     import casa_distro.docker
-    
+
     function = getattr(casa_distro.docker, sys.argv[1])
     args=[]
     kwargs={}
@@ -350,32 +390,4 @@ if __name__ == '__main__':
         else:
             args.append(i)
     function(*args, **kwargs)
-
-
-def run_docker(bwf_repository, distro='opensource',
-               branch='latest_release', system=None, *args):
-    '''Run any command in docker with the config of the given repository
-    '''
-    if system is None:
-        system = casa_distro.linux_os_ids[0]
-    bwf_directory = osp.join(bwf_repository, '%s' % distro,
-                             '%s_%s' % (branch, system))
-    run_docker = osp.join(bwf_directory, 'run_docker.sh')
-    cmd = ['/bin/bash', run_docker] + list(args)
-    check_call(cmd)
-
-
-def run_docker_shell(bwf_repository, distro='opensource',
-                     branch='latest_release', system=None, args_list=[]):
-    '''Run a bash shell in docker with the config of the given repository
-    '''
-    run_docker(bwf_repository, distro, branch, system, '/bin/bash', *args_list)
-
-
-def run_docker_bv_maker(bwf_repository, distro='opensource',
-                        branch='latest_release', system=None, args_list=[]):
-    '''Run bv_maker in docker with the config of the given repository
-    '''
-    run_docker(bwf_repository, distro, branch, system, 'bv_maker', *args_list)
-
 

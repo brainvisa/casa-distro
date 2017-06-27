@@ -226,31 +226,32 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 @command
 def shell(distro='opensource', branch='latest_release', system=None,
           build_workflows_repository=default_build_workflow_repository,
-          args_list=[]):
+          X=False, args_list=[]):
     '''Start a bash shell in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_shell
     run_docker_shell(build_workflows_repository, distro=distro, branch=branch,
-                     system=system, args_list=args_list)
+                     system=system, X=X, args_list=args_list)
 
 @command
 def bv_maker(distro='opensource', branch='latest_release', system=None,
              build_workflows_repository=default_build_workflow_repository,
-             args_list=[]):
+             X=False, args_list=[]):
     '''Start bv_maker in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_bv_maker
     run_docker_bv_maker(build_workflows_repository, distro=distro,
-                        branch=branch, system=system, args_list=args_list)
+                        branch=branch, system=system, X=X, args_list=args_list)
 
 
 @command
 def run(distro='opensource', branch='latest_release', system=None,
         build_workflows_repository=default_build_workflow_repository,
-        args_list=[], *args):
+        args_list=[], X=False, *args):
     '''Start any command in Docker with the given repository configuration.
     Command and args should be specified after --:
     casa_distro -r /home/casa run branch=bug_fix -- ls -als /casa'''
     from casa_distro.docker import run_docker
-    run_docker(build_workflows_repository, distro, branch, system, *args_list)
+    run_docker(build_workflows_repository, distro, branch, system, X,
+               *args_list)
 
 
 @command
