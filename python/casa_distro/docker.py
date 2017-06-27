@@ -15,6 +15,7 @@ from subprocess import check_call
 import sys
 import tempfile
 import yaml
+import stat
 
 import casa_distro
 from casa_distro import share_directory, linux_os_ids
@@ -28,37 +29,33 @@ def cp(src, dst):
             raise
         shutil.copy2(src, dst)
 
-docker_compose_template = '''version: '2'
+#docker_compose_template = '''version: '2'
 
-services:
-  bwf:
-    image: %(image_name)s
-    build:
-      context: %(build_workflow_dir)s
-    container_name: %(container_name)s
-    volumes:
-     - %(build_workflow_dir)s/conf:/casa/conf
-     - %(build_workflow_dir)s/src:/casa/src
-     - %(build_workflow_dir)s/build:/casa/build
-     - %(build_workflow_dir)s/install:/casa/install
-     - %(build_workflow_dir)s/pack:/casa/pack
-    environment:
-     - CASA_BRANCH=%(casa_branch)s
-'''
+#services:
+  #bwf:
+    #image: %(image_name)s
+    #build:
+      #context: %(build_workflow_dir)s
+    #container_name: %(container_name)s
+    #volumes:
+     #- %(build_workflow_dir)s/conf:/casa/conf
+     #- %(build_workflow_dir)s/src:/casa/src
+     #- %(build_workflow_dir)s/build:/casa/build
+     #- %(build_workflow_dir)s/install:/casa/install
+     #- %(build_workflow_dir)s/pack:/casa/pack
+    #environment:
+     #- CASA_BRANCH=%(casa_branch)s
+#'''
 
 dockerfile_template = '''FROM cati/casa-dev:ubuntu-12.04
-ARG UID=%(uid)s
-ARG GID=%(gid)s
-ARG USER=%(user)s
-ARG GROUP=%(group)s
-ARG HOME=/home/user
+RUN addgroup --gid %(gid)s %(group)s
+RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
+RUN chown -R %(user)s:%(group)s /casa
+USER %(user)s
+RUN mkdir /home/user/.brainvisa && \
+    ln -s $CASA_CONF/bv_maker.cfg /home/user/.brainvisa/bv_maker.cfg
 
-RUN addgroup --gid $GID $GROUP
-RUN adduser --disabled-login --home $HOME --uid $UID --gid $GID $USER
-USER $USER
-RUN mkdir $HOME/.brainvisa && \
-    ln -s $CASA_CONF/bv_maker.cfg $HOME/.brainvisa/bv_maker.cfg
-
+RUN mkdir -p $CASA_SRC/development/brainvisa-cmake
 RUN /usr/local/bin/svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix
 RUN mkdir /tmp/brainvisa-cmake
 WORKDIR /tmp/brainvisa-cmake
@@ -68,6 +65,13 @@ RUN make install
 ENV PATH=$PATH:$CASA_INSTALL/bin:/casa/brainvisa-cmake/bin
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CASA_INSTALL/lib::/casa/brainvisa-cmake/lib
 ENV PYHONPATH=$PYTHONPATH:$CASA_INSTALL/python::/casa/brainvisa-cmake/python
+'''
+
+docker_run_template = '''#!/bin/bash
+if [ -f %(build_workflow_dir)s/conf/docker_options ]; then
+    . %(build_workflow_dir)s/conf/docker_options
+fi
+docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf -v %(build_workflow_dir)s/src:/casa/src -v %(build_workflow_dir)s/build:/casa/build -v %(build_workflow_dir)s/install:/casa/install --net=host ${DOCKER_OPTIONS} %(image_name)s "$@"
 '''
 
 
@@ -139,12 +143,27 @@ def create_build_workflow_directory(build_workflow_directory,
     }
 
     print(dockerfile_template % template_params, file=open(osp.join(bwf_dir, 'Dockerfile'), 'w'))
-    print(docker_compose_template % template_params, file=open(osp.join(bwf_dir, 'docker-compose.yml'), 'w'))
+
+    # warning: docker-compose is recent and is not available in older
+    # docker releases, which limits somewhat when we don't absolutely
+    # need it.
+    #print(docker_compose_template % template_params, file=open(osp.join(bwf_dir, 'docker-compose.yml'), 'w'))
     
-    cmd = [i % template_params for i in docker_command_template]
-    print(' '.join(cmd), file=open(osp.join(bwf_dir, 'build.sh'), 'w'))
+    #cmd = [i % template_params for i in docker_command_template]
+    #print(' '.join(cmd), file=open(osp.join(bwf_dir, 'build.sh'), 'w'))
 
+    print('docker build -t %(image_name)s %(build_workflow_dir)s\n'
+          % template_params,
+          file=open(osp.join(bwf_dir, 'build.sh'), 'w'))
+    os.chmod(osp.join(bwf_dir, 'build.sh'),
+             stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH | stat.S_IWRITE
+             | stat.S_IEXEC | stat.S_IWGRP)
 
+    print(docker_run_template % template_params,
+          file=open(osp.join(bwf_dir, 'run_docker.sh'), 'w'))
+    os.chmod(osp.join(bwf_dir, 'run_docker.sh'),
+             stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH | stat.S_IWRITE
+             | stat.S_IEXEC | stat.S_IWGRP)
 
 
 
