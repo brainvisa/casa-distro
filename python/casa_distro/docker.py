@@ -47,7 +47,7 @@ def cp(src, dst):
      #- CASA_BRANCH=%(casa_branch)s
 #'''
 
-dockerfile_template = '''FROM cati/casa-dev:ubuntu-12.04
+dockerfile_template = '''FROM cati/casa-dev:%(system)s
 RUN addgroup --gid %(gid)s %(group)s
 RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
 RUN chown -R %(user)s:%(group)s /casa
@@ -137,6 +137,7 @@ def create_build_workflow_directory(build_workflow_directory,
         'group': grp.getgrgid(os.getgid()).gr_name,
         'gid': os.getgid(),
         'container_name': 'casa_bwf_%s_%s_%s' % (distro, casa_branch, system),
+        'system': system,
         'build_workflow_dir': bwf_dir,
         'image_name': local_image_name,
         'casa_branch': casa_branch,        
@@ -164,6 +165,13 @@ def create_build_workflow_directory(build_workflow_directory,
     os.chmod(osp.join(bwf_dir, 'run_docker.sh'),
              stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH | stat.S_IWRITE
              | stat.S_IEXEC | stat.S_IWGRP)
+    # create a default options file
+    if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options')):
+        print('DOCKER_OPTIONS=\n',
+              file=open(osp.join(bwf_dir, 'conf', 'docker_options'), 'w'))
+    if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11')):
+        print('DOCKER_OPTIONS="$DOCKER_OPTIONS"\n',
+              file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11'), 'w'))
 
 
 
@@ -341,4 +349,32 @@ if __name__ == '__main__':
         else:
             args.append(i)
     function(*args, **kwargs)
-        
+
+
+def run_docker(bwf_repository, distro='opensource',
+               branch='latest_release', system=None, *args):
+    '''Run any command in docker with the config of the given repository
+    '''
+    if system is None:
+        system = casa_distro.linux_os_ids[0]
+    bwf_directory = osp.join(bwf_repository, '%s' % distro,
+                             '%s_%s' % (branch, system))
+    run_docker = osp.join(bwf_directory, 'run_docker.sh')
+    cmd = ['/bin/bash', run_docker] + list(args)
+    check_call(cmd)
+
+
+def run_docker_shell(bwf_repository, distro='opensource',
+                     branch='latest_release', system=None):
+    '''Run a bash shell in docker with the config of the given repository
+    '''
+    run_docker(bwf_repository, distro, branch, system, '/bin/bash')
+
+
+def run_docker_bv_maker(bwf_repository, distro='opensource',
+                        branch='latest_release', system=None):
+    '''Run bv_maker in docker with the config of the given repository
+    '''
+    run_docker(bwf_repository, distro, branch, system, 'bv_maker')
+
+

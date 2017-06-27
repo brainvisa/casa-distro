@@ -128,9 +128,15 @@ def upload_build_workflow(distro='opensource', branch='latest_release', system=N
 
 @command
 def shell(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
-    '''Download a build workflow (except conf directory) from ssh://catidev.cea.fr/casa_distro.'''
-    print('ERROR: command shell is not implemented', file=sys.stderr)
-    sys.exit(1)
+    '''Start a bash shell in Docker with the given repository configuration.'''
+    from casa_distro.docker import run_docker_shell
+    run_docker_shell(build_workflows_repository, distro=distro, branch=branch, system=system)
+
+@command
+def bv_maker(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+    '''Start bv_maker in Docker with the given repository configuration.'''
+    from casa_distro.docker import run_docker_bv_maker
+    run_docker_bv_maker(build_workflows_repository, distro=distro, branch=branch, system=system)
 
 
 @command
