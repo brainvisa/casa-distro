@@ -113,7 +113,11 @@ def publish_docker(verbose=None):
 def create_build_workflow(distro='opensource', branch='latest_release', system=None, download=False, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''create a new build workflow directory in a repository of build workflows'''
     from casa_distro.docker import create_build_workflow
-    create_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system)
+    if download:
+        print('ERROR: download option of create_build_workflow is not implemented', file=sys.stderr)
+        sys.exit(1)
+    else:
+        create_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system)
 
 
 @command
@@ -135,11 +139,11 @@ def pull_build_workflows(distro='*', branch='*', system='*',
     print('cd', repository_server_directory, file=lftp_script)
     for bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
         relative_bwf_dir = bwf_dir[len(build_workflows_repository)+1:]
-        
-        cmd = ['mirror', relative_bwf_dir, bwf_dir]
-        if verbose:
-            cmd.insert(2, '-v')
-        print(*cmd, file=lftp_script)
+        for d in ('src', 'build', 'install', 'pack'):
+            cmd = ['mirror', osp.join(relative_bwf_dir,d), osp.join(bwf_dir,d)]
+            if verbose:
+                cmd.insert(2, '-v')
+            print(*cmd, file=lftp_script)
     lftp_script.flush()
     cmd = ['lftp', '-f', lftp_script.name]
     if verbose:
