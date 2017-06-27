@@ -189,16 +189,20 @@ def upload_build_workflows(distro='*', branch='*', system='*',
     check_call(cmd)
 
 @command
-def shell(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+def shell(distro='opensource', branch='latest_release', system=None,
+          build_workflows_repository=default_build_workflow_repository):
     '''Start a bash shell in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_shell
-    run_docker_shell(build_workflows_repository, distro=distro, branch=branch, system=system)
+    run_docker_shell(build_workflows_repository, distro=distro, branch=branch,
+                     system=system)
 
 @command
-def bv_maker(distro='opensource', branch='latest_release', system=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+def bv_maker(distro='opensource', branch='latest_release', system=None,
+             build_workflows_repository=default_build_workflow_repository,
+             args_list=[]):
     '''Start bv_maker in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_bv_maker
-    run_docker_bv_maker(build_workflows_repository, distro=distro, branch=branch, system=system)
+    run_docker_bv_maker(build_workflows_repository, distro=distro, branch=branch, system=system, args_list=args_list)
 
 
 @command
@@ -243,20 +247,30 @@ if __name__ == '__main__':
                         zip.extract(i, tmp_share)
             import casa_distro
             casa_distro.share_directory = osp.join(tmp_share, 'share')
-        
+
         command = globals()[options.command[0]]
         args = []
+        args_list = []
+        have_args_list = False
         kwargs = {}
         if options.verbose:
             kwargs['verbose'] = sys.stdout
         if options.repository:
             kwargs['build_workflows_repository'] = options.repository
         for i in options.command_options:
-            l = i.split('=', 1)
-            if len(l) == 2:
-                kwargs[l[0]] = l[1]
+            print(i)
+            if have_args_list:
+                args_list.append(i)
+            elif i == '-': # delimiter for additional raw args
+                have_args_list = True
             else:
-                args.append(i)
+                l = i.split('=', 1)
+                if len(l) == 2:
+                    kwargs[l[0]] = l[1]
+                else:
+                    args.append(i)
+        if len(args_list) != 0:
+            kwargs['args_list'] = args_list
         command(*args, **kwargs)
     finally:
         if tmp_share:

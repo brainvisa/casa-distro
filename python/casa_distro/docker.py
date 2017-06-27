@@ -372,9 +372,9 @@ def run_docker_shell(bwf_repository, distro='opensource',
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
-                        branch='latest_release', system=None):
+                        branch='latest_release', system=None, args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, 'bv_maker')
+    run_docker(bwf_repository, distro, branch, system, 'bv_maker', *args_list)
 
 
