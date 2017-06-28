@@ -110,3 +110,6 @@ RUN chmod +x /usr/local/bin/svn
 # allow sudo apt without password
 RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/bin/apt, /usr/bin/apt-get, /usr/bin/aptitude" > /etc/sudoers.d/90_sudoers-apt
 RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
+# allow attach gdb to a process
+RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
+
