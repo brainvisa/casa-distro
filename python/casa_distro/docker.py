@@ -61,10 +61,11 @@ WORKDIR /tmp/brainvisa-cmake
 RUN cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix
 RUN make install
 
-ENV PATH=$PATH:$CASA_INSTALL/bin:/casa/brainvisa-cmake/bin
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CASA_INSTALL/lib::/casa/brainvisa-cmake/lib
-ENV PYHONPATH=$PYTHONPATH:$CASA_INSTALL/python::/casa/brainvisa-cmake/python
-ENV CASA_BRANCH=%(casa_branch)s
+RUN echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.sh" "$CASA_BUILD"; fi' >> /home/user/.bashrc
+
+ENV PATH=$PATH:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
+ENV LD_LIBRARY_PATH=$CASA_BUILD/lib:/casa/brainvisa-cmake/lib
+ENV PYHONPATH=$CASA_BUILD/python:/casa/brainvisa-cmake/python
 '''
 
 docker_run_template = '''#!/bin/bash
@@ -77,7 +78,7 @@ if [ "$1" == "-X11" ]; then
         . %(build_workflow_dir)s/conf/docker_options_x11
     fi
 fi
-docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf -v %(build_workflow_dir)s/src:/casa/src -v %(build_workflow_dir)s/build:/casa/build -v %(build_workflow_dir)s/install:/casa/install --net=host ${DOCKER_OPTIONS} %(image_name)s "$@"
+docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf -v %(build_workflow_dir)s/src:/casa/src -v %(build_workflow_dir)s/build:/casa/build -v %(build_workflow_dir)s/install:/casa/install -e CASA_BRANCH=%(casa_branch)s --net=host ${DOCKER_OPTIONS} %(image_name)s "$@"
 '''
 
 
@@ -89,6 +90,7 @@ docker_command_template = [
     'bwf',
     '/bin/bash'
 ]
+
 
 def create_build_workflow_directory(build_workflow_directory, 
                                     distro='opensource',
