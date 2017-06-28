@@ -340,8 +340,6 @@ def run_docker(bwf_repository, distro='opensource',
     if bool(X):
         cmd.append('-X11')
     cmd += list(args)
-    print('RUN DOCKER COMMAND:')
-    print(*cmd)
     check_call(cmd)
 
 
