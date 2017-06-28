@@ -275,10 +275,12 @@ def create_docker_images():
                         content = open(osp.join(source_directory, f)).read()
                         open(osp.join(target_directory, f), 'w').write(content)
                 image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
+                cmd = ['docker', 'build', '--force-rm', '--tag', image_full_name, target_directory]
                 print('-'*40)
                 print('Creating image %s' % image_full_name)
+                print(*cmd)
                 print('-'*40)
-                check_call(['docker', 'build', '--pull', '--force-rm', '--tag', image_full_name, target_directory])
+                check_call(cmd)
                 print('-'*40)
                 for tag in image_tags[:-1]:
                     src = 'cati/%s:%s' % (image_name, image_tags[-1])
