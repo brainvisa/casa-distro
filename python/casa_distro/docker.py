@@ -82,14 +82,14 @@ docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf -v %(build_workflo
 '''
 
 
-docker_command_template = [
-    'docker-compose',  
-    '-f', '%(build_workflow_dir)s/docker-compose.yml', 
-    'run',
-    '--rm',
-    'bwf',
-    '/bin/bash'
-]
+#docker_command_template = [
+    #'docker-compose',
+    #'-f', '%(build_workflow_dir)s/docker-compose.yml',
+    #'run',
+    #'--rm',
+    #'bwf',
+    #'/bin/bash'
+#]
 
 
 def create_build_workflow_directory(build_workflow_directory, 
