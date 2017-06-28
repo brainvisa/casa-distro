@@ -79,6 +79,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libgstreamer1.0-dev \
     liborc-dev \
     libxslt-dev \
+    libicu55 \
+    gdb \
+    mesa-utils \
   && apt-get clean
 
 # delete all the apt list files since they're big and get stale quickly
@@ -112,4 +115,10 @@ ENV CASA_BRANCH=latest_release
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn
+
+# allow sudo apt without password
+RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/bin/apt, /usr/bin/apt-get, /usr/bin/aptitude" > /etc/sudoers.d/90_sudoers-apt
+RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
+# allow attach gdb to a process
+RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
