@@ -71,6 +71,9 @@ RUN apt-get update && apt-get install -y \
     libgstreamer0.10-dev \
     liborc-dev \
     libxslt-dev \
+    libicu48 \
+    gdb \
+    mesa-utils \
   && apt-get clean
 
 # delete all the apt list files since they're big and get stale quickly
@@ -104,3 +107,6 @@ COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn
 
+# allow sudo apt without password
+RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/bin/apt, /usr/bin/apt-get, /usr/bin/aptitude" > /etc/sudoers.d/90_sudoers-apt
+RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
