@@ -20,6 +20,8 @@ def command(f):
 default_build_workflow_repository = '/neurospin/cati/Users/cointepas/casa_distro'
 default_repository_server = 'catidev.cea.fr'
 default_repository_server_directory = 'casa_distro'
+default_repository_login = 'casa'
+
 
 @command
 def package_casa_distro(build_workflows_repository=default_build_workflow_repository):
@@ -156,11 +158,22 @@ def create_build_workflow(distro='opensource', branch='latest_release', system=N
 
 
 @command
+def list_build_workflows(distro='*', branch='*', system='*', 
+                         build_workflows_repository=default_build_workflow_repository,
+                         verbose=None):
+    '''List (eventually selected) build workflows created by create_build_workflow.'''
+    from casa_distro import iter_build_workflow
+    
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
+        print('distro=%s' % d,'branch=%s' % b, 'system=%s' % s)
+        print('  directory:', bwf_dir)
+
+@command
 def pull_build_workflows(distro='*', branch='*', system='*', 
                          build_workflows_repository=default_build_workflow_repository, 
                          repository_server=default_repository_server, 
                          repository_server_directory=default_repository_server_directory,
-                         login=None, verbose=None):
+                         login=default_repository_login, verbose=None):
     '''Download a build workflow (except conf directory) from sftp server (require lftp command to be installed).'''
     from subprocess import check_call
     from casa_distro import iter_build_workflow
@@ -172,7 +185,7 @@ def pull_build_workflows(distro='*', branch='*', system='*',
         remote = 'sftp://%s' % repository_server
     print('connect', remote, file=lftp_script)
     print('cd', repository_server_directory, file=lftp_script)
-    for bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
         relative_bwf_dir = bwf_dir[len(build_workflows_repository)+1:]
         for d in ('src', 'build', 'install', 'pack'):
             cmd = ['mirror', osp.join(relative_bwf_dir,d), osp.join(bwf_dir,d)]
