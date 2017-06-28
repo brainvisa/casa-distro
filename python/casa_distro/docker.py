@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import docker
 import errno
 import grp
 import json
@@ -251,7 +250,6 @@ def create_docker_images():
     change.
     '''
     
-    docker_client = docker.from_env()
     error = False
     for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
         base_directory = tempfile.mkdtemp()
@@ -278,24 +276,7 @@ def create_docker_images():
                 print('-'*40)
                 print('Creating image %s' % image_full_name)
                 print('-'*40)
-                build_stream = docker_client.api.build(path=target_directory,
-                                                    tag=image_full_name,
-                                                    rm=True,
-                                                    forcerm=True,
-                                                    pull=True)
-                for i in build_stream:
-                    d = json.loads(i)
-                    s = d.get('stream')
-                    if s:
-                        sys.stdout.write(s)
-                    elif 'error' in d:
-                        print(d['error'], file=sys.stderr)
-                        error = True
-                        break
-                    else:
-                        print(i)
-                if error:
-                    break
+                check_call(['docker', 'build', '--pull', '--force-rm', '--tag', image_full_name, target_directory])
                 print('-'*40)
                 for tag in image_tags[:-1]:
                     src = 'cati/%s:%s' % (image_name, image_tags[-1])
