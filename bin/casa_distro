@@ -74,7 +74,7 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
 def publish_casa_distro(build_workflows_repository=default_build_workflow_repository, 
                         repository_server=default_repository_server, 
                         repository_server_directory=default_repository_server_directory,
-                        login=None, verbose=None):
+                        login=default_repository_login, verbose=None):
     '''Publish casa_distro.zip file previously created with package_casa_distro to the sftp server'''
     from subprocess import check_call
     
@@ -207,7 +207,7 @@ def publish_build_workflows(distro='*', branch='*', system='*',
                             build_workflows_repository=default_build_workflow_repository, 
                             repository_server=default_repository_server, 
                             repository_server_directory=default_repository_server_directory,
-                            login=None, verbose=None):
+                            login=default_repository_login, verbose=None):
     '''Upload a build workflow to sftp server (require lftp command to be installed).'''
     
     from subprocess import check_call
