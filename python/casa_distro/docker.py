@@ -79,7 +79,15 @@ if [ "$1" == "-X11" ]; then
         . %(build_workflow_dir)s/conf/docker_options_x11
     fi
 fi
-docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf -v %(build_workflow_dir)s/src:/casa/src -v %(build_workflow_dir)s/build:/casa/build -v %(build_workflow_dir)s/install:/casa/install -e CASA_BRANCH=%(casa_branch)s --net=host ${DOCKER_OPTIONS} %(image_name)s "$@"
+docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
+                    -v %(build_workflow_dir)s/src:/casa/src \
+                    -v %(build_workflow_dir)s/build:/casa/build \
+                    -v %(build_workflow_dir)s/install:/casa/install \
+                    -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
+                    -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
+                    -e CASA_BRANCH=%(casa_branch)s \
+                    --net=host ${DOCKER_OPTIONS} %(image_name)s \
+                    "$@"
 '''
 
 docker_x11_options = '''# options to setup X11 in docker
@@ -126,7 +134,7 @@ def create_build_workflow_directory(build_workflow_directory,
     print('build_workflow_directory:', build_workflow_directory)
     distro_dir = osp.join(share_directory, 'docker', distro)
     os_dir = osp.join(distro_dir, system)
-    all_subdirs = ('conf', 'src', 'build', 'install', 'pack')
+    all_subdirs = ('conf', 'src', 'build', 'install', 'pack', 'custom', 'custom/src', 'custom/build')
     if not osp.exists(bwf_dir):
         os.mkdir(bwf_dir)
     for subdir in all_subdirs:
@@ -277,6 +285,7 @@ def create_docker_images():
                 print('-'*40)
                 print('Creating image %s' % image_full_name)
                 print(*cmd)
+                print('Docker context:', os.listdir(target_directory))
                 print('-'*40)
                 check_call(cmd)
                 print('-'*40)
