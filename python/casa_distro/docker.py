@@ -55,6 +55,7 @@ RUN mkdir /home/user/.brainvisa && \
     ln -s $CASA_CONF/bv_maker.cfg /home/user/.brainvisa/bv_maker.cfg
 
 RUN mkdir -p $CASA_SRC/development/brainvisa-cmake
+RUN mkdir -p $CASA_CUSTOM_BUILD
 RUN /usr/local/bin/svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix
 RUN mkdir /tmp/brainvisa-cmake
 WORKDIR /tmp/brainvisa-cmake
@@ -179,8 +180,20 @@ def create_build_workflow_directory(build_workflow_directory,
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11')):
         print('DOCKER_OPTIONS="$DOCKER_OPTIONS '
               '-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 '
-              '--privileged -e DISPLAY=$DISPLAY"\n',
+              '--privileged -e DISPLAY=$DISPLAY '
+              '-v /usr/share/X11/locale:/usr/share/X11/locale:ro"\n',
               file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11'), 'w'))
+    if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11_nv')):
+        print('NV_DIR=/usr/lib/nvidia-???\n'
+              'DOCKER_OPTIONS="$DOCKER_OPTIONS '
+              '-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 '
+              '--privileged -e DISPLAY=$DISPLAY '
+              '-v /usr/share/X11/locale:/usr/share/X11/locale:ro '
+              '--device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl '
+              '-v $NV_DIR:/usr/lib/nvidia-drv '
+              '-e LD_LIBRARY_PATH=/usr/lib/nvidia-drv"\n',
+              file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11_nv'),
+                        'w'))
 
 
 

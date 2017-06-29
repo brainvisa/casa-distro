@@ -74,6 +74,7 @@ RUN apt-get update && apt-get install -y \
     libicu48 \
     gdb \
     mesa-utils \
+    x11proto-gl-dev \
   && apt-get clean
 
 # delete all the apt list files since they're big and get stale quickly
@@ -102,6 +103,11 @@ ENV CASA_INSTALL=/casa/install
 ENV CASA_PACK=/casa/pack
 # Default bv_maker branch
 ENV CASA_BRANCH=latest_release
+# Tests data directory
+ENV CASA_TESTS=/casa/tests
+# Custom projects
+ENV CASA_CUSTOM_SRC=/casa/custom/src
+ENV CASA_CUSTOM_BUILD=/casa/custom/build
 
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
