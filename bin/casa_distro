@@ -17,7 +17,9 @@ def command(f):
     commands.append(f.__name__)
     return f
 
-default_build_workflow_repository = '/neurospin/cati/Users/cointepas/casa_distro'
+default_build_workflow_repository = os.environ.get('CASA_DEFAULT_REPOSITORY')
+if not default_build_workflow_repository:
+    default_build_workflow_repository = osp.expanduser('~/casa_distro')
 default_repository_server = 'catidev.cea.fr'
 default_repository_server_directory = 'casa_distro'
 default_repository_login = 'casa'
