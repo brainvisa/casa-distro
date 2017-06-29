@@ -16,4 +16,4 @@ make
 make install
 cd ..
 rm -Rf mesa-17.0.0
-cp cp /tmp/mesa/lib/libGL.so.1 /tmp/mesa/lib/libglapi.so.0 /tmp/
+cp /tmp/mesa/lib/libGL.so.1 /tmp/mesa/lib/libglapi.so.0 /tmp/mesa_libs/

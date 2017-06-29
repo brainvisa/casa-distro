@@ -6,4 +6,5 @@
 # casa-test images.
 
 cd $(dirname $0)
-docker run --rm -v /tmp:/tmp -v $(pwd)/build_mesa.sh:/tmp/build_mesa.sh cati/casa-dev:ubuntu-12.04 sh /tmp/build_mesa.sh
+mkdir /tmp/mesa_libs
+docker run --rm -v /tmp/mesa_libs:/tmp/mesa_libs -v $(pwd)/build_mesa.sh:/tmp/build_mesa.sh -u $(id -u):$(id -g) -e USER=$USER cati/casa-dev:ubuntu-12.04 sh /tmp/build_mesa.sh
