@@ -246,13 +246,16 @@ def shell(distro='opensource', branch='latest_release', system=None,
                      system=system, X=X, args_list=args_list)
 
 @command
-def bv_maker(distro='opensource', branch='latest_release', system=None,
+def bv_maker(distro='*', branch='*', system='*',
              build_workflows_repository=default_build_workflow_repository,
              X=False, args_list=[]):
-    '''Start bv_maker in Docker with the given repository configuration.'''
+    '''Start bv_maker in Docker for all the selected build workflows (by default, all created build workflows).'''
     from casa_distro.docker import run_docker_bv_maker
-    run_docker_bv_maker(build_workflows_repository, distro=distro,
-                        branch=branch, system=system, X=X, args_list=args_list)
+    from casa_distro import iter_build_workflow
+
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
+        run_docker_bv_maker(build_workflows_repository, distro=d,
+                            branch=b, system=s, X=X, args_list=args_list)
 
 
 @command
