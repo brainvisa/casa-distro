@@ -83,6 +83,8 @@ docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
                     -v %(build_workflow_dir)s/src:/casa/src \
                     -v %(build_workflow_dir)s/build:/casa/build \
                     -v %(build_workflow_dir)s/install:/casa/install \
+                    -v %(build_workflow_dir)s/pack:/casa/pack \
+                    -v %(build_workflow_dir)s/tests:/casa/tests \
                     -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
                     -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
                     -e CASA_BRANCH=%(casa_branch)s \
@@ -165,7 +167,8 @@ def create_build_workflow_directory(build_workflow_directory,
         'casa_branch': casa_branch,        
     }
 
-    os.mkdir(osp.join(bwf_dir, 'docker'))
+    if not os.path.isdir(osp.join(bwf_dir, 'docker')):
+        os.mkdir(osp.join(bwf_dir, 'docker'))
     print(dockerfile_template % template_params,
           file=open(osp.join(bwf_dir, 'docker', 'Dockerfile'), 'w'))
 
