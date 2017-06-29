@@ -12,9 +12,15 @@ RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recomme
     libxrender1 \
     libglib2.0-0 \
     libxi6 \
+    wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 # delete all the apt list files since they're big and get stale quickly
+
+# copy a software-only mesa libGL in /usr/local/lib
+COPY libGL.so.1 /usr/local/lib/libGL.so.1
+COPY libglapi.so.0 /usr/local/lib/libglapi.so.0
+RUN ldconfig
 
 COPY entrypoint /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
