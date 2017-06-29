@@ -184,13 +184,13 @@ def create_build_workflow_directory(build_workflow_directory,
               '-v /usr/share/X11/locale:/usr/share/X11/locale:ro"\n',
               file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11'), 'w'))
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11_nv')):
-        print('NV_DIR=/usr/lib/nvidia-???\n'
+        print('NV_DIR=$(\ls -d /usr/lib/nvidia-???)\n'
               'DOCKER_OPTIONS="$DOCKER_OPTIONS '
               '-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 '
               '--privileged -e DISPLAY=$DISPLAY '
               '-v /usr/share/X11/locale:/usr/share/X11/locale:ro '
               '--device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl '
-              '-v $NV_DIR:/usr/lib/nvidia-drv '
+              '-v $NV_DIR:/usr/lib/nvidia-drv:ro '
               '-e LD_LIBRARY_PATH=/usr/lib/nvidia-drv"\n',
               file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11_nv'),
                         'w'))
