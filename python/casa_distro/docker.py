@@ -157,18 +157,13 @@ def create_build_workflow_directory(build_workflow_directory,
         'casa_branch': casa_branch,        
     }
 
-    print(dockerfile_template % template_params, file=open(osp.join(bwf_dir, 'Dockerfile'), 'w'))
-
-    # warning: docker-compose is recent and is not available in older
-    # docker releases, which limits somewhat when we don't absolutely
-    # need it.
-    #print(docker_compose_template % template_params, file=open(osp.join(bwf_dir, 'docker-compose.yml'), 'w'))
-    
-    #cmd = [i % template_params for i in docker_command_template]
-    #print(' '.join(cmd), file=open(osp.join(bwf_dir, 'build.sh'), 'w'))
+    os.mkdir(osp.join(bwf_dir, 'docker'))
+    print(dockerfile_template % template_params,
+          file=open(osp.join(bwf_dir, 'docker', 'Dockerfile'), 'w'))
 
     print('Creating personal docker image...')
-    cmd = ['docker', 'build', '-t', local_image_name, bwf_dir]
+    cmd = ['docker', 'build', '-t', local_image_name,
+           osp.join(bwf_dir, 'docker')]
     print(*cmd)
     check_call(cmd)
 
