@@ -82,16 +82,20 @@ fi
 docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf -v %(build_workflow_dir)s/src:/casa/src -v %(build_workflow_dir)s/build:/casa/build -v %(build_workflow_dir)s/install:/casa/install -e CASA_BRANCH=%(casa_branch)s --net=host ${DOCKER_OPTIONS} %(image_name)s "$@"
 '''
 
+docker_x11_options = '''# options to setup X11 in docker
+# the script tries to setect and setup nvidia drivers and libGL,
+# unless the following USE_NVIDIA variable is unset or set empty.
+USE_NVIDIA=1
 
-#docker_command_template = [
-    #'docker-compose',
-    #'-f', '%(build_workflow_dir)s/docker-compose.yml',
-    #'run',
-    #'--rm',
-    #'bwf',
-    #'/bin/bash'
-#]
+DOCKER_OPTIONS="$DOCKER_OPTIONS -v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 --privileged -e DISPLAY=$DISPLAY -v /usr/share/X11/locale:/usr/share/X11/locale:ro"
 
+if [ -n "$USE_NVIDIA" ] ; then
+    if [ -c "/dev/nvidiactl" ]; then
+        NV_DIR=$(\ls -d /usr/lib/nvidia-???)
+        DOCKER_OPTIONS="$DOCKER_OPTIONS --device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl -v $NV_DIR:/usr/lib/nvidia-drv:ro -e LD_LIBRARY_PATH=/usr/lib/nvidia-drv"
+    fi
+fi
+'''
 
 def create_build_workflow_directory(build_workflow_directory, 
                                     distro='opensource',
@@ -178,22 +182,8 @@ def create_build_workflow_directory(build_workflow_directory,
         print('DOCKER_OPTIONS=\n',
               file=open(osp.join(bwf_dir, 'conf', 'docker_options'), 'w'))
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11')):
-        print('DOCKER_OPTIONS="$DOCKER_OPTIONS '
-              '-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 '
-              '--privileged -e DISPLAY=$DISPLAY '
-              '-v /usr/share/X11/locale:/usr/share/X11/locale:ro"\n',
+        print(docker_x11_options,
               file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11'), 'w'))
-    if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11_nv')):
-        print('NV_DIR=$(\ls -d /usr/lib/nvidia-???)\n'
-              'DOCKER_OPTIONS="$DOCKER_OPTIONS '
-              '-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 '
-              '--privileged -e DISPLAY=$DISPLAY '
-              '-v /usr/share/X11/locale:/usr/share/X11/locale:ro '
-              '--device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl '
-              '-v $NV_DIR:/usr/lib/nvidia-drv:ro '
-              '-e LD_LIBRARY_PATH=/usr/lib/nvidia-drv"\n',
-              file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11_nv'),
-                        'w'))
 
 
 
