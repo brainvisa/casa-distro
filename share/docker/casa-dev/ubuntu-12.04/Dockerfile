@@ -75,10 +75,29 @@ RUN apt-get update && apt-get install -y \
     gdb \
     mesa-utils \
     x11proto-gl-dev \
-  && apt-get clean
+    python-setuptools \
+    python-pip \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-# delete all the apt list files since they're big and get stale quickly
-RUN rm -rf /var/lib/apt/lists/*
+# ipython / jupyter
+RUN pip install -U pip && hash && hash pip
+RUN pip install -U 'ipython>=5.0,<6.0'
+RUN pip install jupyter
+
+# install xmltodict and other python packages
+RUN pip install xmltodict
+RUN pip install python_jenkins
+
+# install Pycluster
+RUN cd /tmp \
+  && wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz \
+  && tar xfz Pycluster-1.52.tar.gz \
+  && cd Pycluster-1.52 \
+  && python setup.py build \
+  && python setup.py install \
+  && cd .. \
+  && \rm -r Pycluster-1.52 Pycluster-1.52.tar.gz
 
 # Install Qt Installer Framework
 COPY qt_installer_script /tmp/qt_installer_script
