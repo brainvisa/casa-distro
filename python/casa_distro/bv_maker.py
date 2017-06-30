@@ -39,14 +39,20 @@ def parse_cmake_variables(filename):
 
 def convert_github_url_to_svn(url):
     if url.startswith('git'):
+        # Due to a bug/feature in github API, the default branch must be 
+        # accessed through keyword trunk, otherwise svn commit may fail.
+        # So it is necessary to access using trunk keyword to default branch.
         git, url, branch = url.split()[:3]
         branch_type, branch= (['branch'] + branch.split(':',1))[-2:]
         print(git, url, branch_type, branch)
-        if branch_type == 'tag':
-            branch_type = 'tags'
+        if branch_type == 'default':
+            branch_spec = [url, 'trunk']
+        elif branch_type == 'tag':
+            branch_spec = [url, 'tags', branch]
         else:
-            branch_type = 'branches'
-        url = 'svn %s/%s/%s' % (url, branch_type, branch)
+            branch_spec = [url, 'branches', branch]
+
+        url = 'svn %s' % '/'.join(branch_spec)
         vcs = 'git'
     else:
         vcs = 'svn'
