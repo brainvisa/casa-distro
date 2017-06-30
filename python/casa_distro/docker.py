@@ -28,28 +28,13 @@ def cp(src, dst):
             raise
         shutil.copy2(src, dst)
 
-#docker_compose_template = '''version: '2'
-
-#services:
-  #bwf:
-    #image: %(image_name)s
-    #build:
-      #context: %(build_workflow_dir)s
-    #container_name: %(container_name)s
-    #volumes:
-     #- %(build_workflow_dir)s/conf:/casa/conf
-     #- %(build_workflow_dir)s/src:/casa/src
-     #- %(build_workflow_dir)s/build:/casa/build
-     #- %(build_workflow_dir)s/install:/casa/install
-     #- %(build_workflow_dir)s/pack:/casa/pack
-    #environment:
-     #- CASA_BRANCH=%(casa_branch)s
-#'''
-
 dockerfile_template = '''FROM cati/casa-dev:%(system)s
 RUN addgroup --gid %(gid)s %(group)s
 RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
 RUN chown -R %(user)s:%(group)s /casa
+# set rsa key of guest (localhost) in user ssh config at login time
+RUN sed -i 's/#!\/bin\/sh/#!\/bin\/sh\\nssh-keyscan localhost >> $HOME\/.ssh\/known_hosts/' /usr/local/bin/entrypoint
+
 USER %(user)s
 RUN mkdir /home/user/.brainvisa && \
     ln -s $CASA_CONF/bv_maker.cfg /home/user/.brainvisa/bv_maker.cfg
@@ -67,6 +52,7 @@ RUN echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.
 ENV PATH=$PATH:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
 ENV LD_LIBRARY_PATH=$CASA_BUILD/lib:/casa/brainvisa-cmake/lib
 ENV PYHONPATH=$CASA_BUILD/python:/casa/brainvisa-cmake/python
+RUN mkdir /home/user/.ssh
 '''
 
 docker_run_template = '''#!/bin/bash
@@ -87,9 +73,42 @@ docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
                     -v %(build_workflow_dir)s/tests:/casa/tests \
                     -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
                     -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
+                    -v $HOME/.ssh/id_rsa:/home/user/.ssh/id_rsa \
+                    -v $HOME/.ssh/id_rsa.pub:/home/user/.ssh/id_rsa.pub \
                     -e CASA_BRANCH=%(casa_branch)s \
-                    --net=host ${DOCKER_OPTIONS} %(image_name)s \
+                    -e CASA_HOST_DIR=%(build_workflow_dir)s \
+                    --net=host ${DOCKER_OPTIONS} \
+                    %(image_name)s \
                     "$@"
+'''
+
+docker_test_run_template = '''#!/bin/bash
+if [ -f %(build_workflow_dir)s/conf/docker_options ]; then
+    . %(build_workflow_dir)s/conf/docker_options
+fi
+if [ "$1" == "-X11" ]; then
+    shift
+    if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
+        . %(build_workflow_dir)s/conf/docker_options_x11
+    fi
+fi
+docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
+                -v %(build_workflow_dir)s/src:/casa/src \
+                -v %(build_workflow_dir)s/build:/casa/build \
+                -v %(build_workflow_dir)s/install:/casa/install \
+                -v %(build_workflow_dir)s/pack:/casa/pack \
+                -v %(build_workflow_dir)s/tests:/casa/tests \
+                -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
+                -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
+                -u  %(uid)s:%(gid)s \
+                -e USER=%(user)s \
+                -e HOME=/home/user \
+                -v $HOME/.ssh/id_rsa:/home/user/.ssh/id_rsa \
+                -v $HOME/.ssh/id_rsa.pub:/home/user/.ssh/id_rsa.pub \
+                -e CASA_BRANCH=%(casa_branch)s \
+                --net=bridge ${DOCKER_OPTIONS} \
+                cati/casa-test:%(system)s \
+                "$@"
 '''
 
 docker_x11_options = '''# options to setup X11 in docker
@@ -160,11 +179,11 @@ def create_build_workflow_directory(build_workflow_directory,
         'uid': os.getuid(),
         'group': grp.getgrgid(os.getgid()).gr_name,
         'gid': os.getgid(),
-        'container_name': 'casa_bwf_%s_%s_%s' % (distro, casa_branch, system),
+        #'container_name': 'casa_bwf_%s_%s_%s' % (distro, casa_branch, system),
         'system': system,
         'build_workflow_dir': bwf_dir,
         'image_name': local_image_name,
-        'casa_branch': casa_branch,        
+        'casa_branch': casa_branch,
     }
 
     if not os.path.isdir(osp.join(bwf_dir, 'docker')):
@@ -183,9 +202,14 @@ def create_build_workflow_directory(build_workflow_directory,
     os.chmod(osp.join(bwf_dir, 'run_docker.sh'),
              stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH | stat.S_IWRITE
              | stat.S_IEXEC | stat.S_IWGRP)
+    print(docker_test_run_template % template_params,
+          file=open(osp.join(bwf_dir, 'run_docker_test.sh'), 'w'))
+    os.chmod(osp.join(bwf_dir, 'run_docker_test.sh'),
+             stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH | stat.S_IWRITE
+             | stat.S_IEXEC | stat.S_IWGRP)
     # create a default options file
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options')):
-        print('DOCKER_OPTIONS=\n',
+        print('DOCKER_OPTIONS="$DOCKER_OPTIONS"\n',
               file=open(osp.join(bwf_dir, 'conf', 'docker_options'), 'w'))
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11')):
         print(docker_x11_options,
