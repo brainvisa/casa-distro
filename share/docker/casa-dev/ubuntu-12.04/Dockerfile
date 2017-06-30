@@ -86,6 +86,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install -U pip && hash && hash pip
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install jupyter
+RUN pip install -U zmq
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
