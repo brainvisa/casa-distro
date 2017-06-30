@@ -77,6 +77,7 @@ RUN apt-get update && apt-get install -y \
     x11proto-gl-dev \
     python-setuptools \
     python-pip \
+    kdesdk-scripts \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
