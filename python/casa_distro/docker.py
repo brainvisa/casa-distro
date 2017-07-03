@@ -204,7 +204,7 @@ cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
                 -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                 -e CASA_BRANCH=%(casa_branch)s \
                 --net=bridge ${DOCKER_OPTIONS} \
-                cati/casa-test:%(system)s \
+                cati/casa-test:ubuntu-16.04 \
                 $docker_cmd"
 echo "$cmd"
 exec $cmd
