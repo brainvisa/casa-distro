@@ -66,13 +66,57 @@ docker_run_template = '''#!/bin/bash
 if [ -f %(build_workflow_dir)s/conf/docker_options ]; then
     . %(build_workflow_dir)s/conf/docker_options
 fi
-if [ "$1" == "-X11" ]; then
-    shift
-    if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
-        . %(build_workflow_dir)s/conf/docker_options_x11
+
+docker_cmd=
+docker_arg=0
+
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    if [ "$docker_arg" == 1 ]; then
+
+        if [ "$1" == "--" ]; then
+            # end of docker options
+            docker_arg=0
+        else
+            DOCKER_OPTIONS="$DOCKER_OPTIONS $1"
+        fi
+
+    else
+
+        case $key in
+            -h|--help)
+            echo "$0 [options] command [args]"
+            echo "run command (with args) in docker using %(image_name)s image, casa-distro mount points, and host user. The script %(build_workflow_dir)s/conf/docker_options will be sourced to get additional docker options in the variable DOCKER_OPTIONS."
+            echo "options:"
+            echo "-X11         source an additional options script %(build_workflow_dir)s/conf/docker_options_x11"
+            echo "             which will complete DOCKER_OPTIONS with X config."
+            echo "-d|--docker  pass additional options to Docker. Following options will"
+            echo "             be appended to DOCKER_OPTIONS. To end up docker options and"
+            echo "             specify the command and its ards, the option delimier \"--\""
+            echo "             should be used. Ex:"
+            echo "             $0 -d -v /data_dir:/docker_data_dir -- ls /docker_data_dir"
+            exit 1
+            ;;
+
+            -X11)
+            if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
+                . %(build_workflow_dir)s/conf/docker_options_x11
+            fi
+            ;;
+            -d|--docker)
+            docker_arg=1
+            ;;
+            *)
+            docker_cmd="$docker_cmd $1"
+            ;;
+        esac
     fi
-fi
-docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
+    shift # past argument or value
+done
+
+cmd="docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
                     -v %(build_workflow_dir)s/src:/casa/src \
                     -v %(build_workflow_dir)s/build:/casa/build \
                     -v %(build_workflow_dir)s/install:/casa/install \
@@ -86,20 +130,66 @@ docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
                     -e CASA_HOST_DIR=%(build_workflow_dir)s \
                     --net=host ${DOCKER_OPTIONS} \
                     %(image_name)s \
-                    "$@"
+                    $docker_cmd"
+echo "$cmd"
+exec $cmd
 '''
 
 docker_test_run_template = '''#!/bin/bash
 if [ -f %(build_workflow_dir)s/conf/docker_options ]; then
     . %(build_workflow_dir)s/conf/docker_options
 fi
-if [ "$1" == "-X11" ]; then
-    shift
-    if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
-        . %(build_workflow_dir)s/conf/docker_options_x11
+
+docker_cmd=
+docker_arg=0
+
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    if [ "$docker_arg" == 1 ]; then
+
+        if [ "$1" == "--" ]; then
+            # end of docker options
+            docker_arg=0
+        else
+            DOCKER_OPTIONS="$DOCKER_OPTIONS $1"
+        fi
+
+    else
+
+        case $key in
+            -h|--help)
+            echo "$0 [options] command [args]"
+            echo "run command (with args) in docker using cati/casa-test:%(system)s image, casa-distro mount points, and host user. The script %(build_workflow_dir)s/conf/docker_options will be sourced to get additional docker options in the variable DOCKER_OPTIONS."
+            echo "options:"
+            echo "-X11         source an additional options script %(build_workflow_dir)s/conf/docker_options_x11"
+            echo "             which will complete DOCKER_OPTIONS with X config."
+            echo "-d|--docker  pass additional options to Docker. Following options will"
+            echo "             be appended to DOCKER_OPTIONS. To end up docker options and"
+            echo "             specify the command and its ards, the option delimier \"--\""
+            echo "             should be used. Ex:"
+            echo "             $0 -d -v /data_dir:/docker_data_dir -- ls /docker_data_dir"
+            exit 1
+            ;;
+
+            -X11)
+            if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
+                . %(build_workflow_dir)s/conf/docker_options_x11
+            fi
+            ;;
+            -d|--docker)
+            docker_arg=1
+            ;;
+            *)
+            docker_cmd="$docker_cmd $1"
+            ;;
+        esac
     fi
-fi
-docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
+    shift # past argument or value
+done
+
+cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
                 -v %(build_workflow_dir)s/src:/casa/src \
                 -v %(build_workflow_dir)s/build:/casa/build \
                 -v %(build_workflow_dir)s/install:/casa/install \
@@ -115,7 +205,9 @@ docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
                 -e CASA_BRANCH=%(casa_branch)s \
                 --net=bridge ${DOCKER_OPTIONS} \
                 cati/casa-test:%(system)s \
-                "$@"
+                $docker_cmd"
+echo "$cmd"
+exec $cmd
 '''
 
 docker_x11_options = '''# options to setup X11 in docker
