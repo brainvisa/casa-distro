@@ -29,15 +29,13 @@ def cp(src, dst):
         shutil.copy2(src, dst)
 
 dockerfile_template = '''FROM cati/casa-dev:%(system)s
-RUN addgroup --gid %(gid)s %(group)s
-RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
-RUN chown -R %(user)s:%(group)s /casa
 # set rsa key of guest (localhost) in user ssh config at login time
 RUN sed -i 's/#!\/bin\/sh/#!\/bin\/sh\\nssh-keyscan localhost >> $HOME\/.ssh\/known_hosts/' /usr/local/bin/entrypoint
 
-USER %(user)s
-RUN mkdir /home/user/.brainvisa && \
-    ln -s $CASA_CONF/bv_maker.cfg /home/user/.brainvisa/bv_maker.cfg
+%(non_root_commands)s
+
+RUN mkdir %(home)s/.brainvisa && \
+    ln -s $CASA_CONF/bv_maker.cfg %(home)s/.brainvisa/bv_maker.cfg
 
 RUN mkdir -p $CASA_SRC/development/brainvisa-cmake
 RUN mkdir -p $CASA_CUSTOM_BUILD
@@ -47,13 +45,22 @@ WORKDIR /tmp/brainvisa-cmake
 RUN cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix
 RUN make install
 
-RUN echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.sh" "$CASA_BUILD"; fi' >> /home/user/.bashrc
+RUN echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.sh" "$CASA_BUILD"; fi' >> %(home)s/.bashrc
 
 ENV PATH=$PATH:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
 ENV LD_LIBRARY_PATH=$CASA_BUILD/lib:/casa/brainvisa-cmake/lib
 ENV PYHONPATH=$CASA_BUILD/python:/casa/brainvisa-cmake/python
-RUN mkdir /home/user/.ssh
+RUN mkdir %(home)s/.ssh
 '''
+
+# For testing purpose, it may be necessary to run casa_distro as root in a Docker container.
+# In that case only, the folowing commands are not included in the Dockerfile.
+dockerfile_nonroot_commands = '''RUN addgroup --gid %(gid)s %(group)s
+RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
+RUN chown -R %(user)s:%(group)s /casa
+USER %(user)s
+'''
+
 
 docker_run_template = '''#!/bin/bash
 if [ -f %(build_workflow_dir)s/conf/docker_options ]; then
@@ -73,8 +80,8 @@ docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
                     -v %(build_workflow_dir)s/tests:/casa/tests \
                     -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
                     -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
-                    -v $HOME/.ssh/id_rsa:/home/user/.ssh/id_rsa \
-                    -v $HOME/.ssh/id_rsa.pub:/home/user/.ssh/id_rsa.pub \
+                    -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
+                    -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                     -e CASA_BRANCH=%(casa_branch)s \
                     -e CASA_HOST_DIR=%(build_workflow_dir)s \
                     --net=host ${DOCKER_OPTIONS} \
@@ -102,9 +109,9 @@ docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
                 -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
                 -u  %(uid)s:%(gid)s \
                 -e USER=%(user)s \
-                -e HOME=/home/user \
-                -v $HOME/.ssh/id_rsa:/home/user/.ssh/id_rsa \
-                -v $HOME/.ssh/id_rsa.pub:/home/user/.ssh/id_rsa.pub \
+                -e HOME=%(home)s \
+                -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
+                -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                 -e CASA_BRANCH=%(casa_branch)s \
                 --net=bridge ${DOCKER_OPTIONS} \
                 cati/casa-test:%(system)s \
@@ -184,10 +191,17 @@ def create_build_workflow_directory(build_workflow_directory,
         'build_workflow_dir': bwf_dir,
         'image_name': local_image_name,
         'casa_branch': casa_branch,
+        'home': ('/home/user' if os.getuid() else '/root'), 
     }
 
     if not os.path.isdir(osp.join(bwf_dir, 'docker')):
         os.mkdir(osp.join(bwf_dir, 'docker'))
+    
+    if os.getuid():
+        template_params['non_root_commands'] = dockerfile_nonroot_commands % template_params
+    else:
+        template_params['non_root_commands'] = ''
+    
     print(dockerfile_template % template_params,
           file=open(osp.join(bwf_dir, 'docker', 'Dockerfile'), 'w'))
 
