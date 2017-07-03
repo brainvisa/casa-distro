@@ -109,13 +109,21 @@ RUN cd /tmp \
   && cd .. \
   && \rm -r Pycluster-1.52 Pycluster-1.52.tar.gz
 
-# Install Qt Installer Framework
-COPY qt_installer_script /tmp/qt_installer_script
-RUN wget -q http://download.qt.io/official_releases/qt-installer-framework/2.0.3/QtInstallerFramework-linux-x64.run -O /tmp/QtInstallerFramework-linux-x64.run && \
-    chmod +x /tmp/QtInstallerFramework-linux-x64.run && \
-    xvfb-run /tmp/QtInstallerFramework-linux-x64.run --script /tmp/qt_installer_script && \
-    ln -s /usr/local/qt-installer/bin/* /usr/local/bin/ && \
-    rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
+# Install Qt Installer Framework (prebuilt on Mandriva 2008)
+RUN cd /tmp \
+  && wget http://brainvisa.info/static/qt_installer-1.6.tar.gz \
+  && cd /usr/local \
+  && tar xfz /tmp/qt_installer-1.6.tar.gz \
+  && ln -s qt_installer-1.6 qt_installer \
+  && cd /usr/local/bin \
+  && ln -s ../qt_installer/bin/* .
+
+# COPY qt_installer_script /tmp/qt_installer_script
+# RUN wget -q http://download.qt.io/official_releases/qt-installer- framework/2.0.3/QtInstallerFramework-linux-x64.run -O /tmp/QtInstallerFramework-linux-x64.run && \
+#    chmod +x /tmp/QtInstallerFramework-linux-x64.run && \
+#    xvfb-run /tmp/QtInstallerFramework-linux-x64.run --script /tmp/qt_installer_script && \
+#    ln -s /usr/local/qt-installer/bin/* /usr/local/bin/ && \
+#    rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
 
 RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
 # TODO: OpenSlide does not compile due to incompatibility in GLIB version
