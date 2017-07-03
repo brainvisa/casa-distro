@@ -259,7 +259,7 @@ def publish_build_workflows(distro='*', branch='*', system='*',
         remote = 'sftp://%s' % repository_server
     print('connect', remote, file=lftp_script)
     print('cd', repository_server_directory, file=lftp_script)
-    for bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
         relative_bwf_dir = bwf_dir[len(build_workflows_repository)+1:]
         
         cmd = ['mirror', '-R', '--delete', bwf_dir, relative_bwf_dir]
