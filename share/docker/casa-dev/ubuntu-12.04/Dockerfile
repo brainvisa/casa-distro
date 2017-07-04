@@ -5,7 +5,7 @@ FROM cati/casa-test:ubuntu-12.04
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    ipython \
+#     ipython \
     cmake \
     cmake-curses-gui \
     subversion \
@@ -51,7 +51,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     nano \
     wget \
-    python-six \
+#     python-six \
     libgtk2.0 \
     libgtk2.0-dev \
     libopenjpeg2 \
@@ -71,19 +71,19 @@ RUN apt-get update && apt-get install -y \
     libgstreamer0.10-dev \
     liborc-dev \
     libxslt-dev \
-    libicu48 \
+    libicu-dev \
     gdb \
     mesa-utils \
     x11proto-gl-dev \
     python-setuptools \
-    python-pip \
+#     python-pip \
     kdesdk-scripts \
     net-tools \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 # ipython / jupyter
-RUN pip install -U pip && hash && hash pip
+RUN easy_install pip
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install jupyter
 RUN pip install -U zmq
@@ -109,7 +109,8 @@ RUN cd /tmp \
   && tar xfz /tmp/qt_installer-1.6.tar.gz \
   && ln -s qt_installer-1.6 qt_installer \
   && cd /usr/local/bin \
-  && ln -s ../qt_installer/bin/* .
+  && ln -s ../qt_installer/bin/* . \
+  && rm /tmp/qt_installer-1.6.tar.gz
 
 # COPY qt_installer_script /tmp/qt_installer_script
 # RUN wget -q http://download.qt.io/official_releases/qt-installer- framework/2.0.3/QtInstallerFramework-linux-x64.run -O /tmp/QtInstallerFramework-linux-x64.run && \
