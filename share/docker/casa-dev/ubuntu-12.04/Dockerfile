@@ -38,7 +38,6 @@ RUN apt-get update && apt-get install -y \
     pyro \
     python-paramiko \
     libxml2-dev \
-    python-numpy \
     gfortran \
     libsvm-dev \
     python-sphinx \
@@ -59,7 +58,6 @@ RUN apt-get update && apt-get install -y \
     libgdk-pixbuf2.0-dev \
     automake \
     texlive-fonts-recommended \
-    python-scipy \
     python-dicom \
     python-traits \
     lftp \
@@ -81,7 +79,10 @@ RUN apt-get update && apt-get install -y \
     libbz2-dev \
     libzmq-dev \
     libgsl0-dev \
+    libjasper-dev \
+    locate \
     libgstreamer-plugins-base0.10-dev \
+    libaudio-dev \
 #     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -91,6 +92,8 @@ RUN easy_install pip
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install jupyter
 RUN pip install -U zmq
+RUN pip install -U numpy
+RUN pip install -U scipy
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
@@ -126,6 +129,20 @@ RUN cd /tmp \
 RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
 RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
+# install a version of netcdf with fewer dependencies
+RUN cd /tmp \
+  && wget http://brainvisa.info/static/netcdf-4.1.1-ubuntu-12.04.tar.gz \
+  && cd /usr/local \
+  && tar xfz /tmp/netcdf-4.1.1-ubuntu-12.04.tar.gz \
+  && ln -s netcdf-4.1.1 netcdf \
+  && cd lib \
+  && ln -s ../netcdf/lib/lib* . \
+  && cd pkgconfig \
+  && ln -s ../../netcdf/lib/pkgconfig/*.pc . \
+  && cd ../../bin \
+  && ln -s ../netcdf/bin/* . \
+  && rm /tmp/netcdf-4.1.1-ubuntu-12.04.tar.gz
+
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
 ENV CASA_CONF=/casa/conf
 # Directory containing source code
@@ -154,3 +171,5 @@ RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
+# newer additions, to be placed in the other apt line, later
+# RUN apt-get update && apt-get install something-dev
