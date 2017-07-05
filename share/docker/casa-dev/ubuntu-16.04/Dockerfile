@@ -5,7 +5,6 @@ FROM cati/casa-test:ubuntu-16.04
 # Install system dependencies
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     build-essential \
-    ipython \
     cmake \
     cmake-curses-gui \
     subversion \
@@ -39,7 +38,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     pyro \
     python-paramiko \
     libxml2-dev \
-    python-numpy \
     gfortran \
     libsvm-dev \
     python-epydoc \
@@ -52,7 +50,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     vim \
     nano \
     wget \
-    python-six \
     libgtk2.0 \
     libgtk2.0-dev \
     libopenjpeg-dev \
@@ -61,7 +58,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libgdk-pixbuf2.0-dev \
     automake \
     texlive-fonts-recommended \
-    python-scipy \
     python-dicom \
     python-traits \
     lftp \
@@ -78,22 +74,33 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libgstreamer1.0-dev \
     liborc-dev \
     libxslt-dev \
-    libicu55 \
+    libicu-dev \
     gdb \
     mesa-utils \
     x11proto-gl-dev \
     python-setuptools \
-    python-pip \
     kdesdk-scripts \
     net-tools \
+    liblapack-dev \
+    libatlas-dev \
+    libbz2-dev \
+    libzmq-dev \
+    libgsl0-dev \
+    libjasper-dev \
+    locate \
+    libgstreamer-plugins-base0.10-dev \
+    libaudio-dev \
+#     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 # ipython / jupyter
-RUN pip install -U pip && hash && hash pip
+RUN easy_install pip
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install jupyter
 RUN pip install -U zmq
+RUN pip install -U numpy
+RUN pip install -U scipy
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
@@ -116,7 +123,8 @@ RUN cd /tmp \
   && tar xfz /tmp/qt_installer-1.6.tar.gz \
   && ln -s qt_installer-1.6 qt_installer \
   && cd /usr/local/bin \
-  && ln -s ../qt_installer/bin/* .
+  && ln -s ../qt_installer/bin/* . \
+  && rm /tmp/qt_installer-1.6.tar.gz
 
 # COPY qt_installer_script /tmp/qt_installer_script
 # RUN wget -q http://download.qt.io/official_releases/qt-installer- framework/2.0.3/QtInstallerFramework-linux-x64.run -O /tmp/QtInstallerFramework-linux-x64.run && \
@@ -128,6 +136,20 @@ RUN cd /tmp \
 RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
 # TODO: OpenSlide does not compile due to incompatibility in GLIB version
 #RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
+
+# install a version of netcdf with fewer dependencies
+# RUN cd /tmp \
+#   && wget http://brainvisa.info/static/netcdf-4.1.1-ubuntu-12.04.tar.gz \
+#   && cd /usr/local \
+#   && tar xfz /tmp/netcdf-4.1.1-ubuntu-12.04.tar.gz \
+#   && ln -s netcdf-4.1.1 netcdf \
+#   && cd lib \
+#   && ln -s ../netcdf/lib/lib* . \
+#   && cd pkgconfig \
+#   && ln -s ../../netcdf/lib/pkgconfig/*.pc . \
+#   && cd ../../bin \
+#   && ln -s ../netcdf/bin/* . \
+#   && rm /tmp/netcdf-4.1.1-ubuntu-12.04.tar.gz
 
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
 ENV CASA_CONF=/casa/conf
@@ -157,3 +179,5 @@ RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
+# newer additions, to be placed in the other apt line, later
+# RUN apt-get update && apt-get install something-dev
