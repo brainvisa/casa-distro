@@ -199,7 +199,7 @@ cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
                 -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
                 -u  %(uid)s:%(gid)s \
                 -e USER=%(user)s \
-                -e HOME=%(home)s \
+                -e HOME=/casa/tests \
                 -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
                 -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                 -e CASA_BRANCH=%(casa_branch)s \
