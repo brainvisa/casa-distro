@@ -5,7 +5,6 @@ FROM cati/casa-test:ubuntu-12.04
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-#     ipython \
     cmake \
     cmake-curses-gui \
     subversion \
@@ -51,7 +50,6 @@ RUN apt-get update && apt-get install -y \
     vim \
     nano \
     wget \
-#     python-six \
     libgtk2.0 \
     libgtk2.0-dev \
     libopenjpeg2 \
@@ -76,9 +74,15 @@ RUN apt-get update && apt-get install -y \
     mesa-utils \
     x11proto-gl-dev \
     python-setuptools \
-#     python-pip \
     kdesdk-scripts \
     net-tools \
+    liblapack-dev \
+    libatlas-dev \
+    libbz2-dev \
+    libzmq-dev \
+    libgsl0-dev \
+    libgstreamer-plugins-base0.10-dev \
+#     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
