@@ -9,8 +9,9 @@
 # Use the host-side script: build_mesa_host.sh to run this one inside docker.
 
 NETCDF_VERSION=4.4.1.1
+OLD=
 # NETCDF_VERSION=4.1.1
-OLD=old/
+# OLD=old/
 
 cd /tmp
 wget ftp://ftp.unidata.ucar.edu/pub/netcdf/${OLD}netcdf-$NETCDF_VERSION.tar.gz
