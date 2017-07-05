@@ -43,7 +43,8 @@ RUN /usr/local/bin/svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/de
 RUN mkdir /tmp/brainvisa-cmake
 WORKDIR /tmp/brainvisa-cmake
 RUN cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix
-RUN make install
+RUN make install && cd .. && rm -r /tmp/brainvisa-cmake
+WORKDIR /casa
 
 RUN echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.sh" "$CASA_BUILD"; fi' >> %(home)s/.bashrc
 
