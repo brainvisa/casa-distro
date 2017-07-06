@@ -18,8 +18,13 @@ wget ftp://ftp.unidata.ucar.edu/pub/netcdf/${OLD}netcdf-$NETCDF_VERSION.tar.gz
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 mkdir netcdf_build
 cd netcdf_build
-cmake ../netcdf-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/tmp/netcdf -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF
+cmake ../netcdf-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETCDF_VERSION -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF
 make -j4
 make -j4 install
-cd ..
-rm -Rf netcdf_build netcdf-$NETCDF_VERSION
+ln -s netcdf-$NETCDF_VERSION /usr/local/netcdf
+cd /usr/local/lib
+ln -s ../netcdf/lib/*.so* .
+cd pkgconfig
+ln -s ../../netcdf/lib/pkgconfig/*.pc .
+cd ../..
+rm -Rf netcdf_build netcdf-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz

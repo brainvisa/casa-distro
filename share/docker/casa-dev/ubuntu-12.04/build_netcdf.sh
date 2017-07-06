@@ -18,15 +18,15 @@ wget ftp://ftp.unidata.ucar.edu/pub/netcdf/${OLD}netcdf-$NETCDF_VERSION.tar.gz
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 # build usinf configure
 cd netcdf-$NETCDF_VERSION
-CPPFLAGS=-I/usr/include/mpi ./configure --prefix=/usr/local/netcdf --enable-shared --enable-netcdf4 --disable-pnetcdf --disable-cxx-4 --disable-dap --disable-fortran --disable-cxx --disable-static --disable-utilities
+CPPFLAGS=-I/usr/include/mpi ./configure --prefix=/usr/local/netcdf-$NETCDF_VERSION --enable-shared --enable-netcdf4 --disable-pnetcdf --disable-cxx-4 --disable-dap --disable-fortran --disable-cxx --disable-static --disable-utilities
 make -j4
 make -j4 install
 cd ..
-rm -Rf netcdf-$NETCDF_VERSION
+rm -Rf netcdf-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz
 ln -s netcdf-$NETCDF_VERSION /usr/local/netcdf
 cd /usr/local/lib
 ln -s ../netcdf/lib/*.so* .
 cd pkgconfig
 ln -s ../../netcdf/lib/pkgconfig/*.pc .
 cd ../..
-ln -s ../netcdf/netcdf.h /usr/local/include/
+ln -s ../netcdf/include/netcdf.h /usr/local/include/
