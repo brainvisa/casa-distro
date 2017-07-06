@@ -47,9 +47,12 @@ To use Casa-Distro, a user (or rather a developer) must have a system with the f
 
 * A system which supports Docker: `Docker <https://www.docker.com>`_ only runs on reasonably recent Linux systems, recent Mac systems, and Windows.
 * Administrator permissions on the machine: Docker can only be used by users with advanced permissions, as it allows to change user and write files on the host system with any user identity.
+* `Docker <https://www.docker.com>`_ muste be installed and setup for the user on the host system.
 * Python >= 2.7 to run the ``casa_distro`` command on the host system.
 
-The rest takes place inside Docker containers, so are normally not restricted by the host system, (as long as it has enough memory).
+The rest takes place inside Docker containers, so are normally not restricted by the host system, (as long as it has enough memory and disk space).
+
+* To run graphical software, a X server and OpenGL have to be running on the host system (unless a virtual X/VNC solution is used)
 
 
 Install
