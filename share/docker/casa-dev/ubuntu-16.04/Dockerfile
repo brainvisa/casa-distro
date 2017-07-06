@@ -138,6 +138,8 @@ RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_I
 #RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
 # install a version of netcdf with fewer dependencies
+COPY build_netcdf.sh /tmp/build_netcdf.sh
+RUN bash /tmp/build_netcdf.sh && rm /tmp/build_netcdf.sh
 # RUN cd /tmp \
 #   && wget http://brainvisa.info/static/netcdf-4.1.1-ubuntu-12.04.tar.gz \
 #   && cd /usr/local \
