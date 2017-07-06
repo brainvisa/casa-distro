@@ -42,7 +42,8 @@ extensions = [ 'sphinx.ext.autodoc',
                'sphinx.ext.ifconfig',
                'sphinx.ext.autosummary',
                'sphinx.ext.viewcode',
-               'numpy_ext.numpydoc'
+               'numpy_ext.numpydoc',
+               'sphinx.ext.extlinks',
              ]
 
 # Remove some numpy-linked warnings
@@ -232,6 +233,18 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
+bv_cmake_version = '1.0'
+try:
+    from brainvisa.maker import version as bv_cmake_v
+    bv_cmake_version = '%s.%s' % (bv_cmake_v.version_major,
+                                  bv_cmake_v.version_minor)
+except ImportError:
+    pass
 
 # Example configuration for intersphinx: refer to the Python standard library.
 #intersphinx_mapping = {'http://docs.python.org/': None}
+
+extlinks = {
+    'bv-cmake': ('../brainvisa-cmake-' + bv_cmake_version + '/%s',
+                 'brainvisa cmake ' ),
+}
