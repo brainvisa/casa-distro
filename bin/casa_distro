@@ -10,6 +10,7 @@ import tempfile
 import shutil
 import os
 import os.path as osp
+import inspect
 
 commands = []
 def command(f):
@@ -314,6 +315,17 @@ def help(command):
     '''print help about a command'''
     command_help = globals()[command].__doc__
     print(command_help)
+    cargs = inspect.getargspec(globals()[command])
+    if cargs.args:
+        print()
+        print('options (= default values):')
+        print('---------------------------')
+        for i, arg in enumerate(cargs.args):
+            if cargs.defaults is not None and len(cargs.defaults) > i:
+                print(arg, '=', cargs.defaults[i])
+            else:
+                print(arg)
+
 
 if __name__ == '__main__':    
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
