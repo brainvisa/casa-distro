@@ -255,7 +255,8 @@ def create_build_workflow_directory(build_workflow_directory,
     print('build_workflow_directory:', build_workflow_directory)
     distro_dir = osp.join(share_directory, 'docker', distro)
     os_dir = osp.join(distro_dir, system)
-    all_subdirs = ('conf', 'src', 'build', 'install', 'pack', 'custom', 'custom/src', 'custom/build')
+    all_subdirs = ('conf', 'src', 'build', 'install', 'tests', 'pack',
+                   'custom', 'custom/src', 'custom/build')
     if not osp.exists(bwf_dir):
         os.mkdir(bwf_dir)
     for subdir in all_subdirs:
