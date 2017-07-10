@@ -90,3 +90,12 @@ Note that graphical software need to run Docker containers with a graphical "bri
 
 Remember that software run that way live in a Docker container, which is more or less isolated from the host system. To access data, it casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the DOCKER_OPTIONS variable of the script ``docker_options`` found in ``<casa_distro_build_workflow>/conf/docker_options``.
 
+
+:doc:`casa_distro_command`
+==========================
+
+.. toctree::
+
+    casa_distro_command
+
+
