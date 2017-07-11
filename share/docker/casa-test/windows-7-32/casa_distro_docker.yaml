@@ -1,0 +1,5 @@
+image_sources:
+  - name: casa-test
+    tags:
+      - windows-7-32
+    visibility: public
