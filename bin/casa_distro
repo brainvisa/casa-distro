@@ -173,17 +173,22 @@ def apply_release_plan(build_workflows_repository=default_build_workflow_reposit
         sys.exit(1)
         
 @command
-def create_docker(verbose=None):
+def create_docker(image_names = '*', verbose=None):
     '''create or update all casa-test and casa-dev docker images'''
     from casa_distro.docker import create_docker_images
-    create_docker_images()
+    
+    image_name_filters = image_names.split(',')
+    create_docker_images(
+        image_name_filters = image_name_filters)
 
 
 @command
-def publish_docker(verbose=None):
+def publish_docker(image_names = '*', verbose=None):
     '''publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images'''
     from casa_distro.docker import publish_docker_images
-    publish_docker_images()
+    image_name_filters = image_names.split(',')
+    publish_docker_images(
+        image_name_filters = image_name_filters)
 
 
 @command

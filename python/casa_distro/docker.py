@@ -406,8 +406,20 @@ def apply_template_parameters(template, template_parameters):
         template = result
     return result
 
+def image_name_match(image_name, filters):
+    '''
+    Tests if an image name matches one of the filters.
+    It uses fnmatch syntax.
+    ''' 
+    import fnmatch
+    
+    for f in filters:
+        if fnmatch.fnmatch(image_name, f):
+            return True
+        
+    return False   
 
-def create_docker_images():
+def create_docker_images(image_name_filters = ['*']):
     '''
     Creates all docker images that are declared in 
     find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
@@ -415,7 +427,9 @@ def create_docker_images():
     
     This function is still work in progress. Its paramaters and behaviour may
     change.
-    '''
+    
+    
+    ''' 
     
     error = False
     for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
@@ -427,6 +441,7 @@ def create_docker_images():
                 template_parameters.update(image_source.get('template_files_parameters', {}))
                 
                 image_name = apply_template_parameters(image_source['name'], template_parameters)
+                
                 image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
                 target_directory = osp.join(base_directory, image_name, image_tags[-1])
                 os.makedirs(target_directory)
@@ -440,6 +455,10 @@ def create_docker_images():
                         content = open(osp.join(source_directory, f)).read()
                         open(osp.join(target_directory, f), 'w').write(content)
                 image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
+                
+                if not image_name_match(image_full_name, image_name_filters):
+                    continue
+                
                 cmd = ['docker', 'build', '--force-rm', '--tag', image_full_name, target_directory]
                 print('-'*40)
                 print('Creating image %s' % image_full_name)
@@ -461,7 +480,7 @@ def create_docker_images():
         finally:
             shutil.rmtree(base_directory)
 
-def publish_docker_images():
+def publish_docker_images(image_name_filters = ['*']):
     '''
     Publish, on DockerHub, all docker images that are declared in 
     find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
@@ -480,9 +499,14 @@ def publish_docker_images():
             template_parameters.update(image_source.get('template_files_parameters', {}))
             
             image_name = apply_template_parameters(image_source['name'], template_parameters)
+                
             image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
             for tag in image_tags:
-                check_call(['docker', 'push', 'cati/%s:%s' % (image_name, tag)])
+                image_full_name = 'cati/%s:%s' % (image_name, tag)
+                if not image_name_match(image_full_name, image_name_filters):
+                    continue
+                
+                check_call(['docker', 'push', image_full_name])
 
 
 def create_build_workflow(bwf_repository, distro='opensource',
