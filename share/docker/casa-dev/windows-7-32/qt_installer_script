@@ -1,0 +1,47 @@
+var install_dir = "/usr/local/qt-installer";
+
+function Controller()
+{
+}
+
+Controller.prototype.IntroductionPageCallback = function()
+{
+    var widget = gui.currentPageWidget(); // get the current wizard page
+    gui.clickButton(buttons.NextButton)
+}
+
+Controller.prototype.TargetDirectoryPageCallback = function()
+{
+    var widget = gui.currentPageWidget();
+    widget.TargetDirectoryLineEdit.setText(install_dir);
+    gui.clickButton(buttons.NextButton);
+}
+
+Controller.prototype.ComponentSelectionPageCallback = function()
+{
+    var widget = gui.currentPageWidget();
+    widget.selectAll();
+    gui.clickButton(buttons.NextButton);
+}
+
+Controller.prototype.LicenseAgreementPageCallback = function()
+{
+    var widget = gui.currentPageWidget();
+    widget.AcceptLicenseRadioButton.setChecked(true);
+    gui.clickButton(buttons.NextButton);
+}
+
+Controller.prototype.ReadyForInstallationPageCallback = function()
+{
+    gui.clickButton(buttons.CommitButton);
+}
+
+Controller.prototype.PerformInstallationPageCallback = function()
+{
+    gui.clickButton(buttons.CommitButton);
+}
+
+Controller.prototype.FinishedPageCallback = function()
+{
+    gui.clickButton(buttons.FinishButton);
+}
