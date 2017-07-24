@@ -69,7 +69,7 @@ RUN apt-get update && apt-get install -y \
      MINGW64=1 \
      /tmp/install_ubuntu_14.04_crossbuild.sh \
  && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/* /tmp/tmp.*
 
 # ipython / jupyter
 RUN easy_install pip
@@ -83,7 +83,8 @@ RUN \
     CROSSBUILD_LIBS=1 \
     CROSSBUILD_PYTHON_MODULES=1 \
     PYTHON=1 \
-    /tmp/install_ubuntu_14.04_crossbuild.sh
+    /tmp/install_ubuntu_14.04_crossbuild.sh \
+ && rm -rf /tmp/tmp.*
 
 # Install Qt Installer Framework (prebuilt on Mandriva 2008)
 RUN cd /tmp \

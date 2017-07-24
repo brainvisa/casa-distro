@@ -429,6 +429,8 @@ EOF
 cat << EOF > update_registry_path
 #!/usr/bin/env python
 from __future__                 import print_function
+import os
+
 try:
     from configparser               import RawConfigParser, NoOptionError
 except:
@@ -570,27 +572,73 @@ class RegistryFileParser(RawConfigParser):
         
         d = 'str(2):"' + string.join(data, ';') + '"'
         return self.set(key, value, d)
+
+def split_value_path(value_path, parse_root = True):
+    l = value_path.split('\\\\')
+    
+    offset = 0 if parse_root else 1
+    registry_root = l[0] if parse_root else None
+    section = l[1 - offset:-1] if len(l) > (2 - offset) else ''
+    
+    # Remove leading and trailing \\
+    if len(section) > 0 and section[0] == '':
+      section = section[1:]
+    if section[-1] == '':
+      section = section[:-1]
+    value = l[-1] if len(l) > (1 - offset) else None
+    
+    return (registry_root, '\\\\'.join(section), value)
+
+def get_registry_file(registry_root):
+    if registry_root in ('HKLM', 'HKEY_LOCAL_MACHINE', 
+                         'HKCR', 'HKEY_CLASSES_ROOT'):
+        return 'system.reg'
+    elif registry_root in ('HKCU', 'HKEY_CURRENT_USER',
+                           'HKU', 'HKEY_USERS'):
+        return 'user.reg'
+    elif registry_root in ('HKCC', 'HKEY_CURRENT_CONFIG'):
+        raise RuntimeError('HKEY_CURRENT_CONFIG is only stored in memory' \\
+                           'no file is associated')
+    else:
+        raise RuntimeError('%s registry root is unknown' % registry_root)
+
+def add_to_list(lst, value, prepend = True, unique = True):
+    if prepend:
+        lst = [value] + lst
+    else:
+        lst = lst + [value]
         
+    unique_values = set()
+    result = []
+    
+    for v in lst:
+        v = v.replace('\\\\', r'\\\\')
+        if not unique or v not in unique_values:
+            unique_values.add(v)
+            result.append(v)
+            
+    return result
+
+#---------------------------------------------------------------------------
+# Default values
+#---------------------------------------------------------------------------
+wine_prefix = os.environ.get('WINEPREFIX')
+casa_deps = os.environ.get('CASA_DEPS')
+crossbuild_install_prefix = os.environ.get('CROSSBUILD_INSTALL_PREFIX')
+wine_dir = wine_prefix if wine_prefix \\
+           else os.path.join(os.environ.get('HOME'), '.wine')               
+prefix_default = casa_deps if casa_deps else crossbuild_install_prefix
+registry_file_default = None
+registry_action_default = 'set'
+value_path_default = None
+value_default = ''
+
+#---------------------------------------------------------------------------
+# Main
+#---------------------------------------------------------------------------
 if __name__ == '__main__':
-    import os, string
-    from argparse                   import ArgumentParser
-    
-    #---------------------------------------------------------------------------
-    # Default values
-    #---------------------------------------------------------------------------
-    casa_wine = os.environ.get('CASA_WINE')
-    casa_deps = os.environ.get('CASA_DEPS')
-    crossbuild_install_prefix = os.environ.get('CROSSBUILD_INSTALL_PREFIX')
-    
-    CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
-    
-    wine_dir = casa_wine if casa_wine \\
-               else os.path.join(os.environ.get('HOME'), '.wine')
-               
-    prefix_default = casa_deps if casa_deps else crossbuild_install_prefix
-                     
-    registry_file_default = os.path.join(wine_dir, 'system.reg')
-                                
+    import string
+    from argparse                   import ArgumentParser                             
     
     #---------------------------------------------------------------------------
     # Argument parser initialization
@@ -602,7 +650,7 @@ if __name__ == '__main__':
     parser = ArgumentParser( description = description )
 
     parser.add_argument(
-        '-r', '--registry-file',
+        '-f', '--registry-file',
         dest = 'registry_file',
         help = 'Wine registry file to update\\n'
             '[default: %s].' % registry_file_default,
@@ -618,48 +666,86 @@ if __name__ == '__main__':
         metavar = 'PREFIX',
         default = prefix_default
     )
-
+    
+    parser.add_argument(
+        '-r', '--registry-action',
+        dest = 'registry_action',
+        help = 'action to do in registry\\n'
+            '[default: %s].' % registry_action_default,
+        metavar = 'REGISTRY_ACTION',
+        default = registry_action_default
+    )
+    
+    parser.add_argument(
+        '--value-path',
+        dest = 'value_path',
+        help = 'path of the value to set in registry\\n'
+            '[default: %s].' % value_path_default,
+        metavar = 'VALUE_PATH',
+        default = value_path_default
+    )
+        
+    parser.add_argument(
+        '--value',
+        dest = 'value',
+        help = 'the value to set in registry\\n'
+            '[default: %s].' % value_default,
+        metavar = 'VALUE',
+        default = value_default
+    )
+    
     args = parser.parse_args()
     
+    if args.registry_action not in ('set', 'append', 'prepend'):
+        raise RuntimeError('Registry action %s is not supported. Only set, ' \\
+                           'append and prepend are currently available ' \\
+                           'actions' % args.registry_action)
+    
+    if not args.value_path or not len(args.value_path.strip()) > 0:
+        raise RuntimeError('Value path to edit must be given')        
+    
+    registry_root, section, value = split_value_path(args.value_path.strip())
+    print('==== info from ', args.value_path.strip(), 
+          'root', registry_root, 'section', section, 'value', value)
+    section = section.replace('\\\\', r'\\\\')
+    if not args.registry_file:
+        registry_file = get_registry_file(registry_root)
+        registry_file = os.path.join(wine_dir, registry_file)
+    else:
+        registry_file = args.registry_file
+    
+    
     parser = RegistryFileParser()
-    parser.read(args.registry_file)
-    path = parser.get_value_list(
-        r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
-        '"PATH"')
+    parser.read(registry_file)
     
-    bin_prefix = string.join([args.prefix, 'bin'], '\\\\').replace('\\\\', r'\\\\')
-    values = {bin_prefix}
-    new_path = [bin_prefix]
-    for p in path:
-        p = p.replace('\\\\', r'\\\\')
-        if p not in values:
-            values.add(p)
-            new_path.append(p)
-    
-    try:
-        pythonhome = parser.get(
-            r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
-            '"PYTHONHOME"')
+    if args.registry_action == 'set':
+        try:
+            registry_value = parser.get(section, '"%s"' % value)
+        except NoOptionError:
+            registry_value = '**not defined**'
+            
+        #print('==== read value', registry_value, 'from', args.value_path, 'in', 
+        #      registry_file)
+        parser.set(section, 
+                   '"' + value + '"',
+                   '"' + args.value.replace('\\\\', r'\\\\') + '"')
         
-    except NoOptionError:
-        pythonhome = '**not defined**'
-        
-    #print('==== registry read PATH', path)
-    #print('==== registry read PYTHONHOME', pythonhome)
-    #print('==== args.prefix', args.prefix)
-    
-    parser.set(
-        r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
-        '"PYTHONHOME"',
-        '"' + string.join([args.prefix, 'python'], '\\\\').replace('\\\\', r'\\\\') 
-        + '"')
-    
-    parser.set_value_list(
-        r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
-        '"PATH"',
-        new_path)
-    
-    parser.write(open(args.registry_file, 'wb'))
+    elif args.registry_action in ('prepend', 'append'):
+        try:
+            registry_list = parser.get_value_list(section, '"%s"' % value)
+        except NoOptionError:
+            registry_list = '**not defined**'
+            
+        new_registry_list = add_to_list(registry_list, 
+                                        args.value,
+                                        prepend = (args.registry_action 
+                                                   == 'prepend'))
+        #print('==== setting value', new_registry_list, 'to',
+        #      args.value_path, 'in', registry_file)
+        parser.set(section, 
+                   '"' + value + '"',
+                   '"' + ';'.join(new_registry_list) + '"')
+    parser.write(open(registry_file, 'wb'))
     
 EOF
 chmod +x update_registry_path
@@ -743,10 +829,11 @@ if [ "${__update_registry_path}" = "1" ]; then
     # registry at any time.
     wineserver -k -w
     
+    # Add binary prefix to the registry
     ${__build_dir}/update_registry_path \
-        -r "${__wine_prefix}/system.reg" \
-        -p "${CROSSBUILD_INSTALL_PREFIX_WINE}"
-    
+        --registry-action 'prepend' \
+        --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\PATH" \
+        --value "${CROSSBUILD_INSTALL_PREFIX_WINE}\\bin"
 fi
 
 # Define variables
@@ -929,8 +1016,16 @@ if [ "${PYTHON}"  == "1" ]; then
     fi
 
     if [ "${__install}" == "1" ]; then
-        ${__wine_cmd} msiexec /i ${__download_dir}/python-${PYTHON_VERSION}${PYTHON_ARCH_SUFFIX}.msi /L*v python-${PYTHON_VERSION}-install.log /qn TARGETDIR=${PYTHON_INSTALL_PREFIX_WINE} ALLUSERS=1
-
+        # echo "wine cmd: ${__wine_cmd}"
+        # echo "download file: ${__download_dir}/python-${PYTHON_VERSION}${PYTHON_ARCH_SUFFIX}.msi"
+        # echo "log file: python-${PYTHON_VERSION}-install.log"
+        # echo "target dir: ${PYTHON_INSTALL_PREFIX_WINE}"
+        ${__wine_cmd} msiexec \
+        /i ${__download_dir}/python-${PYTHON_VERSION}${PYTHON_ARCH_SUFFIX}.msi \
+        /L*v python-${PYTHON_VERSION}-install.log \
+        /qn TARGETDIR=${PYTHON_INSTALL_PREFIX_WINE} ALLUSERS=1 \
+        || exit 1
+        
         if [ -d "${WINDOWS_INSTALL_PREFIX}" ]; then
             # I do not understand why, but under ubuntu 14.04 64-bits, python installer 64-bits installs 
             # python dll in ${WINDOWS_INSTALL_PREFIX}/system32 whereas python installer 32-bits installs 
@@ -958,12 +1053,27 @@ if [ "${PYTHON}"  == "1" ]; then
         # Add links to python scripts
         popd
     fi
-
+    
+    if [ "${__update_registry_path}" = "1" ]; then
+        # Update registry path to append install prefix, this will be necessary for
+        # Windows programs to run (for example PyQt configuration is read using an 
+        # executable linked with the Qt dlls. It is necessary to kill wineserver
+        # before doing changes in registry file because wineserver can save the
+        # registry at any time.
+        wineserver -k -w
+        
+        # Add binary prefix to the registry
+        ${__build_dir}/update_registry_path \
+            --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\PYTHONHOME" \
+            --value "${PYTHON_INSTALL_PREFIX_WINE}"
+    fi
+    
     if [ "${__fix_python_scripts}" == "1" ]; then
         for __script in easy_install.exe easy_install-2.7.exe; do
             fix_python_script ${PYTHON_INSTALL_PREFIX}/Scripts/${__script}
         done
     fi
+
 fi
 
 # ------------------------------------------------------------------------------
