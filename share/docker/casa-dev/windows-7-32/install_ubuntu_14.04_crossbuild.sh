@@ -320,10 +320,10 @@ pushd "${__build_dir}" 2>&1>/dev/null
 # Package variables
 # ------------------------------------------------------------------------------
 __sys_packages=(autoconf automake autopoint bash bison bzip2 cmake flex gettext
-                git g++ gperf intltool libffi-dev libtool libltdl-dev libssl-dev
-                libxml-parser-perl make openssl patch perl pkg-config python 
-                python-virtualenv ruby scons sed unzip wget xvfb xz-utils 
-                dos2unix texinfo)
+                git g++ gperf intltool libffi-dev libglib2.0-dev libtool
+                libltdl-dev libssl-dev libxml-parser-perl make openssl patch
+                perl pkg-config python python-virtualenv ruby scons sed unzip
+                wget xvfb xz-utils dos2unix texinfo)
 
 __build_packages=(wine mingw64 python)
 
@@ -424,6 +424,247 @@ STRIP=${__toolchain}-strip
 EOF
 
 # ------------------------------------------------------------------------------
+# Update registry script
+# ------------------------------------------------------------------------------
+cat << EOF > update_registry_path
+#!/usr/bin/env python
+from __future__                 import print_function
+try:
+    from configparser               import RawConfigParser, NoOptionError
+except:
+    from ConfigParser               import RawConfigParser, NoOptionError
+    
+def get_section(line):
+   e = line.index(']')
+   
+   return (line[line.index('[')+1:e], line[e+1:])
+
+class RegistryFileReader(object):
+    def __init__(self, fp):
+        self.fp = fp
+        self.head = None
+        self.comments = dict()
+        self.tags = dict()
+        self.__initialized_section = False
+        self.__cur_section = 'global'
+    
+    def __start_section(self, line):
+        k, t = get_section(line)
+        #print('__start_section, k', k, 't', t)
+        self.__cur_section = k
+        self.tags[k] = t
+    
+    def __add_comment(self, line):
+        #print('__add_comment', line, 'for section', self.__cur_section)
+        self.comments.setdefault(self.__cur_section, []).append(line)
+        
+    def readline(self):
+        
+        if not self.__initialized_section:
+            self.__initialized_section = True
+            return '[%s]\\n' % self.__cur_section
+        
+        line = self.fp.readline()
+        if not self.head:
+            self.head = line
+            return ';;'
+            
+        l = line.strip()
+        
+        if l.startswith('['):
+            self.__start_section(line)
+        
+        elif l.startswith('#') or l.startswith(';;'):
+            self.__add_comment(line)
+            
+        else:
+            line.replace(':', ':')
+        
+        return line
+
+class RegistryFileWriter(object):
+    def __init__(self, fp, head, tags = dict(), comments = dict()):
+        self.fp = fp
+        self.head = head
+        self.tags = tags
+        self.comments = comments
+        
+    def write(self, line):
+        l = line.strip()
+        
+        if l.startswith('['):
+            k, t = get_section(line)
+            
+            if len(t.strip()) == 0:
+                t = self.tags.get(k)
+                
+            if k == 'global':
+                line = self.head + '\\n'
+            else:
+                if len(t.strip()) > 0:
+                    line = line[:-1] + t + line[-1]
+            self.fp.write(line[:-1])
+                
+            # Write comment lines for section
+            for c in self.comments.get(k, []):
+                self.fp.write(c)
+        else:
+            line = line.replace(" = ", "=", 1)
+            if line.strip().endswith("="):
+                line = line[:-1] + "\\"\\"" + line[-1]
+                
+            self.fp.write(line)
+
+class RegistryFileParser(RawConfigParser):
+    import re
+    
+    OPTCRE = re.compile(
+    r'(?P<option>[^=\\s][^=]*)'              # very permissive!
+    r'\\s*(?P<vi>[:=])\\s*'                   # any number of space/tab,
+                                            # followed by separator
+                                            # (either : or =), followed
+                                            # by any # space/tab
+    r'(?P<value>.*)$'                       # everything up to eol
+    )
+    OPTCRE_NV = re.compile(
+        r'(?P<option>[^=\\s][^=]*)'            # very permissive!
+        r'\\s*(?:'                             # any number of space/tab,
+        r'(?P<vi>[:=])\\s*'                    # optionally followed by
+                                              # separator (either : or
+                                              # =), followed by any #
+                                              # space/tab
+        r'(?P<value>.*))?$'                   # everything up to eol
+        )
+    
+    def __init__(self):
+        RawConfigParser.__init__(self)
+        self.optionxform = str
+        self.__head = None
+        self.__comments = dict()
+        self.__tags = dict()
+    
+    def read(self, f):
+        registry_reader = RegistryFileReader(open(f))
+        self.readfp(registry_reader)
+        self.__head = registry_reader.head
+        self.__comments = registry_reader.comments
+        self.__tags = registry_reader.tags
+  
+    def write(self, f):
+        RawConfigParser.write(self, RegistryFileWriter(f,
+                                                       self.__head,
+                                                       self.__tags, 
+                                                       self.__comments))
+        
+    def get_value_list(self, key, value):
+        t, v = self.get(key, value).split(':', 1)
+        
+        if t == 'str(2)':
+            return eval(v).split(';')
+        
+        else:
+            raise RuntimeError('Registry with type %s [key: %s, value: %s] is '
+                               'not supported yet')
+        
+    def set_value_list(self, key, value, data):
+        
+        d = 'str(2):"' + string.join(data, ';') + '"'
+        return self.set(key, value, d)
+        
+if __name__ == '__main__':
+    import os, string
+    from argparse                   import ArgumentParser
+    
+    #---------------------------------------------------------------------------
+    # Default values
+    #---------------------------------------------------------------------------
+    casa_wine = os.environ.get('CASA_WINE')
+    casa_deps = os.environ.get('CASA_DEPS')
+    crossbuild_install_prefix = os.environ.get('CROSSBUILD_INSTALL_PREFIX')
+    
+    CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
+    
+    wine_dir = casa_wine if casa_wine \\
+               else os.path.join(os.environ.get('HOME'), '.wine')
+               
+    prefix_default = casa_deps if casa_deps else crossbuild_install_prefix
+                     
+    registry_file_default = os.path.join(wine_dir, 'system.reg')
+                                
+    
+    #---------------------------------------------------------------------------
+    # Argument parser initialization
+    #---------------------------------------------------------------------------
+    description = '''
+    Update registry with missing pathes.
+    '''
+    
+    parser = ArgumentParser( description = description )
+
+    parser.add_argument(
+        '-r', '--registry-file',
+        dest = 'registry_file',
+        help = 'Wine registry file to update\\n'
+            '[default: %s].' % registry_file_default,
+        metavar = 'REGISTRY_FILE',
+        default = registry_file_default
+    )
+    
+    parser.add_argument(
+        '-p', '--prefix',
+        dest = 'prefix',
+        help = 'Install prefix to use\\n'
+            '[default: %s].' % prefix_default,
+        metavar = 'PREFIX',
+        default = prefix_default
+    )
+
+    args = parser.parse_args()
+    
+    parser = RegistryFileParser()
+    parser.read(args.registry_file)
+    path = parser.get_value_list(
+        r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
+        '"PATH"')
+    
+    bin_prefix = string.join([args.prefix, 'bin'], '\\\\').replace('\\\\', r'\\\\')
+    values = {bin_prefix}
+    new_path = [bin_prefix]
+    for p in path:
+        p = p.replace('\\\\', r'\\\\')
+        if p not in values:
+            values.add(p)
+            new_path.append(p)
+    
+    try:
+        pythonhome = parser.get(
+            r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
+            '"PYTHONHOME"')
+        
+    except NoOptionError:
+        pythonhome = '**not defined**'
+        
+    #print('==== registry read PATH', path)
+    #print('==== registry read PYTHONHOME', pythonhome)
+    #print('==== args.prefix', args.prefix)
+    
+    parser.set(
+        r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
+        '"PYTHONHOME"',
+        '"' + string.join([args.prefix, 'python'], '\\\\').replace('\\\\', r'\\\\') 
+        + '"')
+    
+    parser.set_value_list(
+        r'System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment', 
+        '"PATH"',
+        new_path)
+    
+    parser.write(open(args.registry_file, 'wb'))
+    
+EOF
+chmod +x update_registry_path
+
+# ------------------------------------------------------------------------------
 # Install system packages
 # ------------------------------------------------------------------------------
 if [ "${__install}" == "1" ] && [ "${SYSTEM}" == "1" ]; then
@@ -445,10 +686,20 @@ ${PYTHON_HOST_COMMAND} -m pip install --upgrade distutilscross
 # ------------------------------------------------------------------------------
 # Wine 1.8
 # ------------------------------------------------------------------------------
-if [ "${__arch}" == "x86_64" ]; then
-    WINE_CMD=wine64
+if [ -n "${WINECMD}" ]; then
+    __wine_cmd="${WINECMD}"
 else
-    WINE_CMD=wine
+    if [ "${__arch}" == "x86_64" ]; then
+        __wine_cmd=wine64
+    else
+        __wine_cmd=wine
+    fi
+fi
+
+if [ -n "${WINEPREFIX}" ]; then
+    __wine_prefix=${WINEPREFIX}
+else
+    __wine_prefix=${HOME}/.wine
 fi
 
 if [ "${__install}" == "1" ] && [ "${WINE}" == "1" ]; then
@@ -491,15 +742,11 @@ if [ "${__update_registry_path}" = "1" ]; then
     # before doing changes in registry file because wineserver can save the
     # registry at any time.
     wineserver -k -w
-    __registry_file=${HOME}/.wine/system.reg
-    #__registry_file=/tmp/system.reg.bck
-    __registry_line="$(cat ${__registry_file} | grep '"PATH"=str(2):' | sed 's%"PATH"=str(2):%%g' | tr -d '"' | tr -d '\r\n')"
-    __registry_new_line=$(${PYTHON_HOST_COMMAND} -c "import sys, string; p=sys.argv[1].split(';'); print string.join([v for (i, v) in enumerate(p) if not v in p[0:i]], ';')" \
-                                    "${CROSSBUILD_INSTALL_PREFIX_WINE//\\/\\\\}\\\\bin;$(echo -n "${__registry_line}")")
-    sed -i 's%"PATH"=str(2):"'${__registry_line//\\/\\\\}'"%"PATH"=str(2):"'${__registry_new_line//\\/\\\\}'"%g' ${__registry_file}
-    unset __registry_file
-    unset __registry_line
-    unset __registry_new_line
+    
+    ${__build_dir}/update_registry_path \
+        -r "${__wine_prefix}/system.reg" \
+        -p "${CROSSBUILD_INSTALL_PREFIX_WINE}"
+    
 fi
 
 # Define variables
@@ -682,7 +929,7 @@ if [ "${PYTHON}"  == "1" ]; then
     fi
 
     if [ "${__install}" == "1" ]; then
-        ${WINE_CMD} msiexec /i ${__download_dir}/python-${PYTHON_VERSION}${PYTHON_ARCH_SUFFIX}.msi /L*v python-${PYTHON_VERSION}-install.log /qn TARGETDIR=${PYTHON_INSTALL_PREFIX_WINE} ALLUSERS=1
+        ${__wine_cmd} msiexec /i ${__download_dir}/python-${PYTHON_VERSION}${PYTHON_ARCH_SUFFIX}.msi /L*v python-${PYTHON_VERSION}-install.log /qn TARGETDIR=${PYTHON_INSTALL_PREFIX_WINE} ALLUSERS=1
 
         if [ -d "${WINDOWS_INSTALL_PREFIX}" ]; then
             # I do not understand why, but under ubuntu 14.04 64-bits, python installer 64-bits installs 
@@ -1095,7 +1342,7 @@ EOF
               -DCMAKE_INSTALL_PREFIX=${HDF5_INSTALL_PREFIX} \
               -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
               -DCMAKE_CROSSCOMPILING=ON \
-              -DCMAKE_CROSSCOMPILING_RUN_COMMAND=${WINE_CMD} \
+              -DCMAKE_CROSSCOMPILING_RUN_COMMAND=${__wine_cmd} \
               -DBUILD_SHARED_LIBS=ON \
               -DHDF5_BUILD_TOOLS=ON \
               -DHDF5_BUILD_HL_LIB=ON \
@@ -1902,6 +2149,7 @@ if [ "${FONTCONFIG}" == "1" ]; then
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${FONTCONFIG_INSTALL_PREFIX} \
+                --with-freetype-config=${FREETYPE_INSTALL_PREFIX}/bin/freetype-config \
         || exit 1
         # Fontconfig fails to install using multi processors
         make -j${__build_proc_num} || exit 1
@@ -2008,6 +2256,7 @@ EOF
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${GLIB_INSTALL_PREFIX} \
+                --with-python=${PYTHON_HOST_COMMAND} \
                 --enable-shared \
         || exit 1
         make -j${__build_proc_num} install || exit 1
@@ -2614,6 +2863,22 @@ if [ "${OPENSLIDE}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/openslide-${OPENSLIDE_VERSION}.tar.gz
         pushd ${__build_dir}/openslide-master
+        
+        cat << EOF > openslide-${OPENSLIDE_VERSION}.patch
+diff -NurB --strip-trailing-cr --suppress-common-lines Makefile.am Makefile.am
+--- Makefile.am	2017-07-23 23:00:28.915949037 +0200
++++ Makefile.am	2017-07-23 23:09:36.958805364 +0200
+@@ -59,7 +59,7 @@
+ # openslide-tables.c.  As the lesser of evils, recursively invoke make.
+ src/openslide-tables.c: src/make-tables.c
+ 	@\$(MAKE) \$(AM_MAKEFLAGS) src/make-tables\$(EXEEXT)
+-	\$(AM_V_GEN)src/make-tables\$(EXEEXT) "\$@"
++	\$(AM_V_GEN)\$(COMMAND_PREFIX) src/make-tables\$(EXEEXT) "\$@"
+ 
+ if WINDOWS_RESOURCES
+ src_libopenslide_la_SOURCES += src/openslide-dll.rc
+EOF
+        patch -f -N -i openslide-${OPENSLIDE_VERSION}.patch -p0
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -2625,6 +2890,8 @@ if [ "${OPENSLIDE}" == "1" ]; then
                 --prefix=${OPENSLIDE_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
+        
+        COMMAND_PREFIX=${__wine_cmd} \
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3833,7 +4100,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qt_installer_script qt_in
 EOF
         patch -f -N -i qtifw-${QTIFW_VERSION}.patch -p0
 
-        xvfb-run ${__download_dir}/QtInstallerFramework-win-x86-${QTIFW_VERSION}.exe \
+        xvfb-run ${__wine_cmd} ${__download_dir}/QtInstallerFramework-win-x86-${QTIFW_VERSION}.exe \
             --script ${__build_dir}/qtifw-${QTIFW_VERSION}/qt_installer_script
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3990,10 +4257,10 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 -QMAKE_IDL		= midl
 -QMAKE_LIB		= ar -ru
 -QMAKE_RC		= windres
-+QMAKE_MOC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}moc\$\${EXE_SUFFIX}
-+QMAKE_UIC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}uic\$\${EXE_SUFFIX}
-+QMAKE_IDC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}idc\$\${EXE_SUFFIX}
-+QMAKE_RCC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}rcc\$\${EXE_SUFFIX}
++QMAKE_MOC		= ${__wine_cmd} \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}moc\$\${EXE_SUFFIX}
++QMAKE_UIC		= ${__wine_cmd} \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}uic\$\${EXE_SUFFIX}
++QMAKE_IDC		= ${__wine_cmd} \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}idc\$\${EXE_SUFFIX}
++QMAKE_RCC		= ${__wine_cmd} \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}rcc\$\${EXE_SUFFIX}
  
 +QMAKE_IDL		= midl
 +QMAKE_LIB		= \$\${CROSS_COMPILE}ar -ru
@@ -4366,9 +4633,20 @@ if [ "${PYTHON_PYQT}" == "1" ]; then
 
         cat << EOF > pyqt-${PYTHON_PYQT_VERSION}.patch
 diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.py
---- configure.py	2016-09-17 00:23:44.424084902 +0200
-+++ configure.py	2016-09-17 00:37:46.647424544 +0200
-@@ -662,7 +662,7 @@
+--- configure.py	2017-07-24 08:57:30.000000000 +0000
++++ configure.py	2017-07-24 08:56:48.000000000 +0000
+@@ -70,6 +70,10 @@
+ dbuslibdirs = []
+ dbuslibs = []
+ 
++# Command prefix can be used to run target os (wine for instance)
++# in cross compilation cases
++cmd_prefix = os.environ.get('COMMAND_PREFIX')
++
+ 
+ # Under Windows qmake and the Qt DLLs must be on the system PATH otherwise the
+ # dynamic linker won't be able to resolve the symbols.  On other systems we
+@@ -662,7 +666,7 @@
          """
          qpy_dir = os.path.join("qpy", mname)
  
@@ -4377,7 +4655,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
              if opts.debug:
                  qpy_lib_dir = os.path.join(qpy_dir, "debug")
              else:
-@@ -957,7 +957,7 @@
+@@ -957,7 +961,7 @@
  
              abi = getattr(sys, 'abiflags', '')
  
@@ -4386,7 +4664,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
                  # Use abiflags in case it is supported in a future version.
                  lib_dir_flag = quote("-L%s" % sipcfg.py_lib_dir)
                  link = "%s -lpython%d%d%s" % (lib_dir_flag, py_major, py_minor, abi)
-@@ -1511,7 +1511,7 @@
+@@ -1511,7 +1515,7 @@
          sip_flags.append("PyQt_Deprecated_5_0")
  
      # Handle the platform tag.
@@ -4395,7 +4673,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          plattag = "WS_WIN"
      elif sys.platform == "darwin":
          if "__USE_WS_X11__" in sipcfg.build_macros()["DEFINES"]:
-@@ -1530,7 +1530,7 @@
+@@ -1530,7 +1534,7 @@
      # Handle any feature flags.
      for xf in qt_xfeatures:
          sip_flags.append("-x")
@@ -4404,7 +4682,16 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
  
      if verstag:
          sip_flags.append("-t")
-@@ -2024,7 +2024,7 @@
+@@ -1656,6 +1660,8 @@
+ 
+     # Build the SIP command line.
+     argv = ['"' + sipcfg.sip_bin + '"', '-w']
++    if cmd_prefix:
++        argv = [cmd_prefix] + argv
+ 
+     if opts.no_timestamp:
+         argv.append("-T")
+@@ -2024,7 +2030,7 @@
      out_file = app + ".out"
      qmake_args = fix_qmake_args("-o " + make_file)
  
@@ -4413,7 +4700,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          if opts.debug:
              exe_file = os.path.join("debug", app + ".exe")
              make_target = " debug"
-@@ -2187,7 +2187,7 @@
+@@ -2187,7 +2193,7 @@
          make = "nmake"
      elif sipcfg.platform == "win32-borland":
          make = "bmake"
@@ -4422,7 +4709,19 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          make = "mingw32-make"
      else:
          make = "make"
-@@ -2215,24 +2215,24 @@
+@@ -2201,7 +2207,10 @@
+ 
+     # Create the output file, first making sure it doesn't exist.
+     remove_file(out_file)
+-    run_command(exe_file)
++    cmd = [exe_file]
++    if cmd_prefix:
++        cmd = [cmd_prefix] + cmd
++    run_command(' '.join(cmd))
+ 
+     if not os.access(out_file, os.F_OK):
+         sipconfig.error("%s failed to create %s. Make sure your Qt installation is correct." % (exe_file, out_file))
+@@ -2215,24 +2224,24 @@
      global qt_pluginsdir
      global qt_version, qt_edition, qt_licensee, qt_shared, qt_xfeatures
  
@@ -4460,7 +4759,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          qt_licensee = None
  
      try:
-@@ -2281,12 +2281,15 @@
+@@ -2281,12 +2290,15 @@
      if sipcfg.sip_version < sip_min_version:
          sipconfig.error("This version of PyQt requires SIP v%s or later" % sipconfig.version_to_string(sip_min_version))
  
@@ -4477,13 +4776,13 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
      # Provide defaults for platform-specific options.
      if sys.platform == 'win32':
          opts.qmake = find_default_qmake()
-
 EOF
         patch -f -N -i pyqt-${PYTHON_PYQT_VERSION}.patch -p0
 
         export PYTHONPATH="${PYTHON_INSTALL_PREFIX}/Lib/site-packages:${PYTHONPATH}"
         export QTDIR=${QT_INSTALL_PREFIX}
         export QMAKESPEC=${QT_INSTALL_PREFIX}/mkspecs/win32-g++
+        COMMAND_PREFIX=${__wine_cmd} \
         ${PYTHON_HOST_COMMAND} configure.py \
                     --confirm-license \
                     -b ${PYTHON_INSTALL_PREFIX} \
@@ -4534,18 +4833,18 @@ if [ "${PYTHON_PIP}" == "1" ] || [  "${PYTHON_WHEEL}" == "1" ] ; then
     fi
 
     if [ "${__remove_before_install}" == "1"  ]; then
-        if [ "$(${PYTHON_INSTALL_PREFIX}/python.exe \
+        if [ "$(${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                 -c "import pip" 2>/dev/null;echo $?)" == "0" ]; then
             # Uninstall using target python
             PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-            ${PYTHON_INSTALL_PREFIX}/python.exe \
+            ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                         -m pip uninstall -y pip wheel
         fi
     fi
 
     if [ "${__install}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     ${__download_dir}/get-pip.py \
                     ${__download_dir}/pip-${PYTHON_PIP_VERSION}-py2.py3-none-any.whl \
                     ${__download_dir}/wheel-${PYTHON_WHEEL_VERSION}-py2.py3-none-any.whl \
@@ -4579,13 +4878,13 @@ if [ "${PYTHON_SIX}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y six
     fi
 
     if [ "${__install}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install ${__download_dir}/six-${PYTHON_SIX_VERSION}-py2.py3-none-any.whl \
         || exit 1
     fi
@@ -4602,13 +4901,13 @@ if [ "${PYTHON_NUMPY}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y numpy
     fi
 
     if [ "${__install}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install ${__download_dir}/numpy-${PYTHON_NUMPY_VERSION}+mkl-cp27-cp27m-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl \
         || exit 1
 
@@ -4637,13 +4936,13 @@ if [ "${PYTHON_SCIPY}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y scipy
     fi
 
     if [ "${__install}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install ${__download_dir}/scipy-${PYTHON_SCIPY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl \
         || exit 1
     fi
@@ -4672,7 +4971,7 @@ if [ "${PYTHON_TRAITS}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y traits
     fi
 
@@ -4726,7 +5025,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/traits-${PYTHON_TRAITS_VERSION}/dist/traits-${PYTHON_TRAITS_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
         || exit 1
     fi
@@ -4747,7 +5046,7 @@ if [ "${PYTHON_DATEUTIL}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y python_dateutil
     fi
 
@@ -4767,7 +5066,7 @@ if [ "${PYTHON_DATEUTIL}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/python-dateutil-${PYTHON_DATEUTIL_VERSION}/dist/python_dateutil-${PYTHON_DATEUTIL_VERSION}-py2-none-any.whl)" \
         || exit 1
     fi
@@ -4788,7 +5087,7 @@ if [ "${PYTHON_PYTZ}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pytz
     fi
 
@@ -4808,7 +5107,7 @@ if [ "${PYTHON_PYTZ}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/pytz-${PYTHON_PYTZ_VERSION}/dist/pytz-2012rc0-py2-none-any.whl)" \
         || exit 1
 
@@ -4830,7 +5129,7 @@ if [ "${PYTHON_PYPARSING}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pyparsing
     fi
 
@@ -4878,7 +5177,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/pyparsing-${PYTHON_PYPARSING_VERSION}/dist/pyparsing-${PYTHON_PYPARSING_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -4900,7 +5199,7 @@ if [ "${PYTHON_CYCLER}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y cycler
     fi
 
@@ -4908,7 +5207,7 @@ if [ "${PYTHON_CYCLER}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__download_dir}/cycler-${PYTHON_CYCLER_VERSION}-py2.py3-none-any.whl)" \
         || exit 1
     fi
@@ -4929,7 +5228,7 @@ if [ "${PYTHON_SINGLEDISPATCH}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y singledispatch
     fi
 
@@ -4949,7 +5248,7 @@ if [ "${PYTHON_SINGLEDISPATCH}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/singledispatch-${PYTHON_SINGLEDISPATCH_VERSION}/dist/singledispatch-${PYTHON_SINGLEDISPATCH_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -4971,7 +5270,7 @@ if [ "${PYTHON_TORNADO}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y tornado
     fi
 
@@ -4991,7 +5290,7 @@ if [ "${PYTHON_TORNADO}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/tornado-${PYTHON_TORNADO_VERSION}/dist/tornado-${PYTHON_TORNADO_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -5013,14 +5312,14 @@ if [ "${PYTHON_CERTIFI}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y certifi
     fi
 
     if [ "${__install}" == "1" ]; then
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__download_dir}/certifi-${PYTHON_CERTIFI_VERSION}-py2.py3-none-any.whl)" \
         || exit 1
 
@@ -5042,14 +5341,14 @@ if [ "${PYTHON_BACKPORTS_ABC}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y backports_abc
     fi
 
     if [ "${__install}" == "1" ]; then
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__download_dir}/backports_abc-${PYTHON_BACKPORTS_ABC_VERSION}-py2.py3-none-any.whl)" \
         || exit 1
 
@@ -5071,7 +5370,7 @@ if [ "${PYTHON_NOSE}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y nose
     fi
 
@@ -5091,7 +5390,7 @@ if [ "${PYTHON_NOSE}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/nose-${PYTHON_NOSE_VERSION}/dist/nose-${PYTHON_NOSE_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -5125,7 +5424,7 @@ if [ "${PYTHON_CAIRO}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pycairo
     fi
 
@@ -5303,7 +5602,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/pycairo-${PYTHON_CAIRO_VERSION}/dist/pycairo-${PYTHON_CAIRO_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
         || exit 1
 
@@ -5325,7 +5624,7 @@ if [ "${PYTHON_CONFIGOBJ}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y configobj
     fi
 
@@ -5373,7 +5672,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/configobj-${PYTHON_CONFIGOBJ_VERSION}/dist/configobj-${PYTHON_CONFIGOBJ_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -5397,7 +5696,7 @@ if [ "${PYTHON_MATPLOTLIB}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y matplotlib
     fi
 
@@ -5979,7 +6278,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/matplotlib-${PYTHON_MATPLOTLIB_VERSION}/dist/matplotlib-${PYTHON_MATPLOTLIB_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
         || exit 1
     fi
@@ -6000,7 +6299,7 @@ if [ "${PYTHON_CRYPTO}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pycrypto
     fi
 
@@ -6010,9 +6309,9 @@ if [ "${PYTHON_CRYPTO}" == "1" ]; then
         # Generate patch to build shared library
         cat << EOF > pycrypto-${PYTHON_CRYPTO_VERSION}.patch
 diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
---- setup.py    2016-12-06 23:30:40.445633819 +0100
-+++ setup.py    2016-12-06 23:35:02.849526400 +0100
-@@ -36,13 +36,37 @@
+--- setup.py	2017-07-24 09:37:13.000000000 +0000
++++ setup.py	2017-07-24 09:39:06.000000000 +0000
+@@ -36,7 +36,18 @@
  
  __revision__ = "\$Id\$"
  
@@ -6032,6 +6331,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
  from distutils.ccompiler import new_compiler
  from distutils.core import Extension, Command
  from distutils.command.build import build
+@@ -43,6 +54,19 @@
  from distutils.command.build_ext import build_ext
  import os, sys, re
  import struct
@@ -6051,7 +6351,72 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
  
  if sys.version[0:1] == '1':
      raise RuntimeError ("The Python Cryptography Toolkit requires "
+@@ -271,7 +295,12 @@
+         if not os.path.exists("config.status"):
+             if os.system("chmod 0755 configure") != 0:
+                 raise RuntimeError("chmod error")
++
+             cmd = "sh configure"    # we use "sh" here so that it'll work on mingw32 with standard python.org binaries
++            cross_compile = os.environ.get('CROSS_COMPILE')
++            if cross_compile.endswith('-'):
++                cmd += " --host %s" % cross_compile[:-1]
++
+             if self.verbose < 1:
+                 cmd += " -q"
+             if os.system(cmd) != 0:
 
+diff -NurB --strip-trailing-cr --suppress-common-lines src/block_template.c src/block_template.c
+--- src/block_template.c	2017-07-24 10:05:25.000000000 +0000
++++ src/block_template.c	2017-07-24 10:07:02.000000000 +0000
+@@ -28,6 +28,21 @@
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+ #endif
++#undef malloc
++     
++#include <sys/types.h>
++
++void *malloc ();
++
++/* Allocate an N-byte block of memory from the heap.
++   If N is zero, allocate a 1-byte block.  */
++    
++void* rpl_malloc (size_t n)
++{
++  if (n == 0)
++    n = 1;
++  return malloc (n);
++}
+ 
+ #ifdef _HAVE_STDC_HEADERS
+ #include <string.h>
+
+diff -NurB --strip-trailing-cr --suppress-common-lines src/stream_template.c src/stream_template.c
+--- src/stream_template.c	2017-07-24 10:05:05.000000000 +0000
++++ src/stream_template.c	2017-07-24 10:06:46.000000000 +0000
+@@ -28,6 +28,21 @@
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+ #endif
++#undef malloc
++     
++#include <sys/types.h>
++
++void *malloc ();
++
++/* Allocate an N-byte block of memory from the heap.
++   If N is zero, allocate a 1-byte block.  */
++    
++void* rpl_malloc (size_t n)
++{
++  if (n == 0)
++    n = 1;
++  return malloc (n);
++}
+ 
+ #ifdef _HAVE_STDC_HEADERS
+ #include <string.h>
+ 
 EOF
         patch -f -N -i pycrypto-${PYTHON_CRYPTO_VERSION}.patch -p0 
 
@@ -6067,7 +6432,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/pycrypto-${PYTHON_CRYPTO_VERSION}/dist/pycrypto-${PYTHON_CRYPTO_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
         || exit 1
 
@@ -6089,7 +6454,7 @@ if [ "${PYTHON_PARAMIKO}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y paramiko
     fi
 
@@ -6109,7 +6474,7 @@ if [ "${PYTHON_PARAMIKO}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/paramiko-${PYTHON_PARAMIKO_VERSION}/dist/paramiko-${PYTHON_PARAMIKO_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -6131,7 +6496,7 @@ if [ "${PYTHON_PYRO}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pyro
     fi
 
@@ -6180,7 +6545,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/Pyro-${PYTHON_PYRO_VERSION}/dist/pyro-${PYTHON_PYRO_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -6207,7 +6572,7 @@ if [ "${PYTHON_PIL}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y Pillow
     fi
 
@@ -6215,7 +6580,7 @@ if [ "${PYTHON_PIL}" == "1" ]; then
  
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__download_dir}/Pillow-${PYTHON_PIL_VERSION}-cp27-none-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl)" \
         || exit 1
 
@@ -6252,7 +6617,7 @@ if [ "${PYTHON_DICOM}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pydicom
     fi
 
@@ -6272,7 +6637,7 @@ if [ "${PYTHON_DICOM}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/pydicom-${PYTHON_DICOM_VERSION}/dist/pydicom-${PYTHON_DICOM_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -6294,7 +6659,7 @@ if [ "${PYTHON_YAML}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pyyaml
     fi
 
@@ -6377,7 +6742,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/pyyaml-${PYTHON_YAML_VERSION}/dist/pyyaml-${PYTHON_YAML_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
         || exit 1
 
@@ -6399,7 +6764,7 @@ if [ "${PYTHON_XMLTODICT}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y xmltodict
     fi
 
@@ -6419,7 +6784,7 @@ if [ "${PYTHON_XMLTODICT}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/xmltodict-${PYTHON_XMLTODICT_VERSION}/dist/xmltodict-${PYTHON_XMLTODICT_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -6441,7 +6806,7 @@ if [ "${PYTHON_MARKUPSAFE}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y markupsafe
     fi
 
@@ -6500,7 +6865,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/markupsafe-${PYTHON_MARKUPSAFE_VERSION}/dist/markupsafe-${PYTHON_MARKUPSAFE_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
         || exit 1
 
@@ -6522,7 +6887,7 @@ if [ "${PYTHON_JINJA2}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y jinja2
     fi
 
@@ -6542,7 +6907,7 @@ if [ "${PYTHON_JINJA2}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/jinja2-${PYTHON_JINJA2_VERSION}/dist/jinja2-${PYTHON_JINJA2_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -6564,7 +6929,7 @@ if [ "${PYTHON_PYGMENTS}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y pygments
     fi
 
@@ -6584,7 +6949,7 @@ if [ "${PYTHON_PYGMENTS}" == "1" ]; then
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/pygments-${PYTHON_PYGMENTS_VERSION}/dist/pygments-${PYTHON_PYGMENTS_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -6617,7 +6982,7 @@ if [ "${PYTHON_DOCUTILS}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y docutils
     fi
 
@@ -6682,7 +7047,7 @@ EOF
 
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__build_dir}/docutils-${PYTHON_DOCUTILS_VERSION}/dist/docutils-${PYTHON_DOCUTILS_VERSION}-py2-none-any.whl)" \
         || exit 1
 
@@ -6709,14 +7074,14 @@ if [ "${PYTHON_SPHINX}" == "1" ]; then
     if [ "${__remove_before_install}" == "1"  ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                                     -m pip uninstall -y sphinx
     fi
 
     if [ "${__install}" == "1" ]; then
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
-        ${PYTHON_INSTALL_PREFIX}/python.exe \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__download_dir}/sphinx-${PYTHON_SPHINX_VERSION}-py27-none-any.whl)" \
         || exit 1
 
