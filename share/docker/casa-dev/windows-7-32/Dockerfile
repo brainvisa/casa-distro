@@ -63,7 +63,7 @@ RUN apt-get update && apt-get install -y \
     kdesdk-scripts \
     net-tools \
     locate \
-  && CROSSBUILD_INSTALL_PREFIX="${CASA_DEPS}" \
+  && CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
      CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
      SYSTEM=1 \
      MINGW64=1 \
@@ -78,7 +78,7 @@ RUN easy_install pip
 
 # build thirdparty dependencies
 RUN \
-    CROSSBUILD_INSTALL_PREFIX="${CASA_DEPS}" \
+    CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
     CROSSBUILD_UPDATE_REGISTRY_PATH=1 \
     CROSSBUILD_LIBS=1 \
     CROSSBUILD_PYTHON_MODULES=1 \
