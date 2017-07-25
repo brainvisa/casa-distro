@@ -21,6 +21,10 @@ COPY libGL.so.1 /usr/local/lib/libGL.so.1
 COPY libglapi.so.0 /usr/local/lib/libglapi.so.0
 RUN ldconfig
 
+# allow sudo apt without password
+RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/bin/apt, /usr/bin/apt-get, /usr/bin/aptitude" > /etc/sudoers.d/90_sudoers-apt
+RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
+
 COPY entrypoint /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
