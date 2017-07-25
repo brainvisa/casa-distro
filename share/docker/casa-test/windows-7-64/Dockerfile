@@ -1,4 +1,4 @@
-# Dockerfile for image cati/brainvisa-test:windows-7-32
+# Dockerfile for image cati/brainvisa-test:windows-7-64
 
 FROM ubuntu:14.04
 
