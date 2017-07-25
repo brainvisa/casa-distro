@@ -341,8 +341,13 @@ def create_build_workflow_directory(build_workflow_directory,
              | stat.S_IEXEC | stat.S_IWGRP)
     # create a default options file
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options')):
-        print('DOCKER_OPTIONS="$DOCKER_OPTIONS"\n',
-              file=open(osp.join(bwf_dir, 'conf', 'docker_options'), 'w'))
+        if 'windows' in system: # cross-compilation system
+            # needs privileged to setup .exe binary execution using wine
+            print('DOCKER_OPTIONS="$DOCKER_OPTIONS --privileged"\n',
+                  file=open(osp.join(bwf_dir, 'conf', 'docker_options'), 'w'))
+        else:
+            print('DOCKER_OPTIONS="$DOCKER_OPTIONS"\n',
+                  file=open(osp.join(bwf_dir, 'conf', 'docker_options'), 'w'))
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11')):
         print(docker_x11_options,
               file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11'), 'w'))
