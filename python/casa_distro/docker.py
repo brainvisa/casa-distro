@@ -448,12 +448,19 @@ def create_docker_images(image_name_filters = ['*']):
                 for f in os.listdir(source_directory):
                     if f == filename:
                         continue
-                    if f.endswith('.template'):
-                        content = apply_template_parameters(open(osp.join(source_directory, f)).read(), template_parameters)
-                        open(osp.join(target_directory, f[:-9]), 'w').write(content)
+                    source = osp.join(source_directory, f)
+                    target = osp.join(target_directory, f)
+                    
+                    if osp.isdir(source):
+                        if os.path.exists(target):
+                            shutil.rmtree(target)
+                        shutil.copytree(source, target)
+                    elif f.endswith('.template'):
+                        content = apply_template_parameters(open(source).read(), template_parameters)
+                        open(target[:-9], 'w').write(content)
                     else:
-                        content = open(osp.join(source_directory, f)).read()
-                        open(osp.join(target_directory, f), 'w').write(content)
+                        shutil.copyfile(source, target)
+                        
                 image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
                 
                 if not image_name_match(image_full_name, image_name_filters):
