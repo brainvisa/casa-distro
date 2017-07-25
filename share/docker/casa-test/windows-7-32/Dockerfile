@@ -61,6 +61,14 @@ COPY mesa32/libGL.so.1 /usr/local/lib/i386-linux-gnu/libGL.so.1
 COPY mesa32/libglapi.so.0 /usr/local/lib/i386-linux-gnu/libglapi.so.0
 RUN ldconfig
 
+# allow sudo apt without password
+RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/bin/apt, /usr/bin/apt-get, /usr/bin/aptitude" > /etc/sudoers.d/90_sudoers-apt
+RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
+# allow wine to run .exe files
+RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/sbin/update-binfmts" > /etc/sudoers.d/90_sudoers-wine
+RUN chmod 440 /etc/sudoers.d/90_sudoers-wine
+
+
 COPY entrypoint /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
