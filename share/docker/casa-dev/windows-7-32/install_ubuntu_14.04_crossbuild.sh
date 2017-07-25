@@ -558,19 +558,32 @@ class RegistryFileParser(RawConfigParser):
                                                        self.__tags, 
                                                        self.__comments))
         
-    def get_value_list(self, key, value):
-        t, v = self.get(key, value).split(':', 1)
+    def get_value_list(self, section, value):
+        v = self.get(section, value)
+        # Find starting and ending double quotes
+        s = v.find('"')
+        e = v.find('"', s + 1)
         
-        if t == 'str(2)':
+        if s == -1:
+            s = v.find(':')
+            t, v = (v[:s - 1], v[s + 1:])
+        
+        elif s == 0:
+            t = None
+            
+        else:
+            t, v = (v[:s - 1], v[s:])
+            
+        if t == 'str(2)' or t is None:
             return eval(v).split(';')
         
         else:
-            raise RuntimeError('Registry with type %s [key: %s, value: %s] is '
-                               'not supported yet')
+            raise RuntimeError('Registry value with type %s [section: %s, value: %s] is '
+                               'not supported yet' % (t, section, value))
         
     def set_value_list(self, key, value, data):
         
-        d = 'str(2):"' + string.join(data, ';') + '"'
+        d = '"' + string.join(data, ';') + '"'
         return self.set(key, value, d)
 
 def split_value_path(value_path, parse_root = True):
@@ -612,13 +625,15 @@ def add_to_list(lst, value, prepend = True, unique = True):
     result = []
     
     for v in lst:
-        v = v.replace('\\\\', r'\\\\')
         if not unique or v not in unique_values:
             unique_values.add(v)
             result.append(v)
             
     return result
 
+def registry_normalize(value):
+    return value.replace('\\\\', r'\\\\')
+    
 #---------------------------------------------------------------------------
 # Default values
 #---------------------------------------------------------------------------
@@ -705,9 +720,9 @@ if __name__ == '__main__':
         raise RuntimeError('Value path to edit must be given')        
     
     registry_root, section, value = split_value_path(args.value_path.strip())
-    print('==== info from ', args.value_path.strip(), 
-          'root', registry_root, 'section', section, 'value', value)
-    section = section.replace('\\\\', r'\\\\')
+    #print('==== info from ', args.value_path.strip(), 
+    #      'root', registry_root, 'section', section, 'value', value)
+    section = registry_normalize(section)
     if not args.registry_file:
         registry_file = get_registry_file(registry_root)
         registry_file = os.path.join(wine_dir, registry_file)
@@ -728,8 +743,9 @@ if __name__ == '__main__':
         #      registry_file)
         parser.set(section, 
                    '"' + value + '"',
-                   '"' + args.value.replace('\\\\', r'\\\\') + '"')
-        
+                   '"' + registry_normalize(args.value) + '"')
+        print('Wine registry updated,', value, 'set to', args.value)
+              
     elif args.registry_action in ('prepend', 'append'):
         try:
             registry_list = parser.get_value_list(section, '"%s"' % value)
@@ -744,7 +760,9 @@ if __name__ == '__main__':
         #      args.value_path, 'in', registry_file)
         parser.set(section, 
                    '"' + value + '"',
-                   '"' + ';'.join(new_registry_list) + '"')
+                   '"' + registry_normalize(';'.join(new_registry_list)) + '"')
+        print('Wine registry updated,', value, 'set to', 
+              ';'.join(new_registry_list))
     parser.write(open(registry_file, 'wb'))
     
 EOF
@@ -994,6 +1012,8 @@ if [ "${__arch}" == "x86_64" ]; then
     PYTHON_ARCH_SUFFIX=.amd64
     PYTHON_WIN_ARCH_SUFFIX=win64
     PYTHON_WIN_ARCH_STD_SUFFIX=win_amd64
+    PYTHON_CFLAGS="-D MS_WIN64"
+    PYTHON_CPPFLAGS="-D MS_WIN64"
 else
     PYTHON_WIN_ARCH_SUFFIX=win32
     PYTHON_WIN_ARCH_STD_SUFFIX=win32
@@ -4698,9 +4718,9 @@ EOF
                     --pylibdir ${PYTHON_INSTALL_PREFIX}/DLLs \
                     CROSS_COMPILE=${__toolchain}- \
                     CC=$CC \
-                    CFLAGS="$CFLAGS -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CFLAGS="$CFLAGS $PYTHON_CFLAGS -I${PYTHON_INSTALL_PREFIX}/include" \
                     CXX=$CXX \
-                    CXXFLAGS="$CPPFLAGS -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CXXFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS -I${PYTHON_INSTALL_PREFIX}/include" \
                     AR=$AR \
                     LINK=$CXX \
                     LFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}" \
@@ -4901,9 +4921,9 @@ EOF
                     -q ${QT_INSTALL_PREFIX}/bin/qmake \
                     --verbose \
                     CC=$CC \
-                    CFLAGS="$CFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CFLAGS="$CFLAGS $PYTHON_CFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE -I${PYTHON_INSTALL_PREFIX}/include" \
                     CXX=$CXX \
-                    CXXFLAGS="$CPPFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CXXFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE -I${PYTHON_INSTALL_PREFIX}/include" \
                     AR=$AR \
                     LINK=$CXX \
                     LFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}" \
