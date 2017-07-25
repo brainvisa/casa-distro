@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # use software mesa
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:/usr/local/lib/i386-linux-gnu
 
 # This script runs the command passed as arguments in a different process.
 # This is needed to allow it to receive signals.

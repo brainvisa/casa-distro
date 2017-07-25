@@ -63,6 +63,11 @@ RUN apt-get update && apt-get install -y \
     kdesdk-scripts \
     net-tools \
     locate \
+    gcc-multilib \
+    g++-multilib \
+    python-mako \
+    libx11-dev:i386 \
+    libxext-dev:i386 \
   && CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
      CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
      SYSTEM=1 \

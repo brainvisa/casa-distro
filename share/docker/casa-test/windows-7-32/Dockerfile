@@ -26,6 +26,7 @@ RUN dpkg --add-architecture i386 \
     libglu1-mesa:i386 \
     libglu1:i386 \
     libgl1-mesa-glx:i386 \
+    libgl1-mesa-dri:i386 \
     libudev1:i386 \
     libcgmanager0:i386 \
     wine1.8-i386 \
@@ -55,6 +56,9 @@ RUN wineboot -u \
 # copy a software-only mesa libGL in /usr/local/lib
 COPY libGL.so.1 /usr/local/lib/libGL.so.1
 COPY libglapi.so.0 /usr/local/lib/libglapi.so.0
+RUN mkdir /usr/local/lib/i386-linux-gnu
+COPY mesa32/libGL.so.1 /usr/local/lib/i386-linux-gnu/libGL.so.1
+COPY mesa32/libglapi.so.0 /usr/local/lib/i386-linux-gnu/libglapi.so.0
 RUN ldconfig
 
 COPY entrypoint /usr/local/bin/entrypoint

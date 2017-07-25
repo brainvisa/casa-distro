@@ -11,9 +11,21 @@ cd /tmp
 wget ftp://ftp.freedesktop.org/pub/mesa/mesa-17.0.0.tar.gz
 tar xvf mesa-17.0.0.tar.gz
 cd mesa-17.0.0
-./configure --enable-glx=xlib --disable-dri --disable-egl --with-gallium-drivers=swrast --disable-gbm --prefix=/tmp/mesa
+./configure --enable-glx=xlib --disable-dri --disable-egl --with-gallium-drivers=swrast --disable-gbm --disable-gles1 --disable-gles2 --prefix=/tmp/mesa
 make
 make install
 cd ..
-rm -Rf mesa-17.0.0
 cp /tmp/mesa/lib/libGL.so.1 /tmp/mesa/lib/libglapi.so.0 /tmp/mesa_libs/
+
+# 32 bit variant
+cd /tmp/mesa-17.0.0
+make clean
+CXXFLAGS=-m32 CFLAGS=-m32 LDFLAGS=-m32 ./configure --host=i386-linux-gnu --build=i386-linux-gnu --enable-glx=xlib --disable-dri --disable-egl --with-gallium-drivers=swrast --disable-gbm --disable-gles1 --disable-gles2 --prefix=/tmp/mesa32
+make
+make install
+cd ..
+mkdir /tmp/mesa_libs/i386
+cp /tmp/mesa32/lib/libGL.so.1 /tmp/mesa32/lib/libglapi.so.0 /tmp/mesa_libs/i386
+
+cd ..
+rm -Rf mesa-17.0.0
