@@ -1008,23 +1008,28 @@ fi
 # ------------------------------------------------------------------------------
 # Python 2
 # ------------------------------------------------------------------------------
-if [ "${__arch}" == "x86_64" ]; then
-    PYTHON_ARCH_SUFFIX=.amd64
-    PYTHON_WIN_ARCH_SUFFIX=win64
-    PYTHON_WIN_ARCH_STD_SUFFIX=win_amd64
-    PYTHON_CFLAGS="-D MS_WIN64"
-    PYTHON_CPPFLAGS="-D MS_WIN64"
-else
-    PYTHON_WIN_ARCH_SUFFIX=win32
-    PYTHON_WIN_ARCH_STD_SUFFIX=win32
-fi
-
 PYTHON_VERSION=2.7.11
 PYTHON_VERSION_MINOR=${PYTHON_VERSION%.*}
 PYTHON_VERSION_HEX=$(${PYTHON_HOST_COMMAND} -c "version='${PYTHON_VERSION}';version_arr=version.split('.');version_arr=[(int(version_arr[i]) << ((abs(i) - 1)  * 8)) for i in xrange(-1, -len(version_arr) - 1, -1)];print hex(sum(version_arr))")
 PYTHON_INSTALL_PREFIX=${CROSSBUILD_INSTALL_PREFIX}/python-${PYTHON_VERSION}
 PYTHON_INSTALL_PREFIX_WINE=${CROSSBUILD_INSTALL_PREFIX_WINE}\\python-${PYTHON_VERSION}
+
+if [ "${__arch}" == "x86_64" ]; then
+    PYTHON_ARCH_SUFFIX=.amd64
+    PYTHON_WIN_ARCH_SUFFIX=win64
+    PYTHON_WIN_ARCH_STD_SUFFIX=win_amd64
+    PYTHON_CFLAGS="-D MS_WIN64 -I${PYTHON_INSTALL_PREFIX}/include"
+    PYTHON_CPPFLAGS="-D MS_WIN64 -I${PYTHON_INSTALL_PREFIX}/include"
+    PYTHON_LDFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}"
+else
+    PYTHON_WIN_ARCH_SUFFIX=win32
+    PYTHON_WIN_ARCH_STD_SUFFIX=win32
+    PYTHON_CFLAGS="-I${PYTHON_INSTALL_PREFIX}/include"
+    PYTHON_LDFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}"
+fi
+
 PYTHON_SOURCE_URL=https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}${PYTHON_ARCH_SUFFIX}.msi
+
 if [ "${PYTHON}"  == "1" ]; then
     echo "=============================== PYTHON ==============================="
     if [ "${__download}" == "1" ]; then
@@ -4720,12 +4725,12 @@ EOF
                     --pylibdir ${PYTHON_INSTALL_PREFIX}/DLLs \
                     CROSS_COMPILE=${__toolchain}- \
                     CC=$CC \
-                    CFLAGS="$CFLAGS $PYTHON_CFLAGS -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CFLAGS="$CFLAGS $PYTHON_CFLAGS" \
                     CXX=$CXX \
-                    CXXFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CXXFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS" \
                     AR=$AR \
                     LINK=$CXX \
-                    LFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}" \
+                    LFLAGS="${PYTHON_LDFLAGS}" \
                     LIB=$AR \
                     EXTENSION_SHLIB="pyd" \
                     EXE_SUFFIX=".exe" \
@@ -4923,12 +4928,12 @@ EOF
                     -q ${QT_INSTALL_PREFIX}/bin/qmake \
                     --verbose \
                     CC=$CC \
-                    CFLAGS="$CFLAGS $PYTHON_CFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CFLAGS="$CFLAGS $PYTHON_CFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE" \
                     CXX=$CXX \
-                    CXXFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE -I${PYTHON_INSTALL_PREFIX}/include" \
+                    CXXFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE" \
                     AR=$AR \
                     LINK=$CXX \
-                    LFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}" \
+                    LFLAGS="${PYTHON_LDFLAGS}" \
                     LIB=$AR \
                     EXTENSION_SHLIB="pyd" \
                     CROSS_COMPILE="${__toolchain}-" \
@@ -5147,9 +5152,9 @@ EOF
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
 
@@ -5188,9 +5193,9 @@ if [ "${PYTHON_DATEUTIL}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -5229,9 +5234,9 @@ if [ "${PYTHON_PYTZ}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -5299,9 +5304,9 @@ EOF
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -5370,9 +5375,9 @@ if [ "${PYTHON_SINGLEDISPATCH}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -5412,9 +5417,9 @@ if [ "${PYTHON_TORNADO}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -5512,9 +5517,9 @@ if [ "${PYTHON_NOSE}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -5724,9 +5729,9 @@ EOF
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
 
@@ -5794,9 +5799,9 @@ EOF
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -6401,8 +6406,8 @@ EOF
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
         NUMPY_INCLUDE_DIR="${PYTHON_INSTALL_PREFIX}/Lib/site-packages/numpy/core/include" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include $(get_c_flags ${PYTHON_MATPLOTLIB_DEPENDENCIES})" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll $(get_link_flags ${PYTHON_MATPLOTLIB_DEPENDENCIES})" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS} $(get_c_flags ${PYTHON_MATPLOTLIB_DEPENDENCIES})" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS} $(get_link_flags ${PYTHON_MATPLOTLIB_DEPENDENCIES})" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
 
@@ -6554,9 +6559,9 @@ EOF
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
 
@@ -6596,9 +6601,9 @@ if [ "${PYTHON_PARAMIKO}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -6667,9 +6672,9 @@ EOF
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -6759,9 +6764,9 @@ if [ "${PYTHON_DICOM}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
 
@@ -6864,9 +6869,9 @@ EOF
         
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include $(get_c_flags ${PYTHON_YAML_DEPENDENCIES})" \
-        CFLAGS="${CFLAGS} -I${PYTHON_INSTALL_PREFIX}/include $(get_c_flags ${PYTHON_YAML_DEPENDENCIES})" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll $(get_link_flags ${PYTHON_YAML_DEPENDENCIES})" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS} $(get_c_flags ${PYTHON_YAML_DEPENDENCIES})" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS} $(get_c_flags ${PYTHON_YAML_DEPENDENCIES})" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS} $(get_link_flags ${PYTHON_YAML_DEPENDENCIES})" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
 
@@ -6906,9 +6911,9 @@ if [ "${PYTHON_XMLTODICT}" == "1" ]; then
         
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
         
@@ -6987,9 +6992,9 @@ EOF
         
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
         
@@ -7029,9 +7034,9 @@ if [ "${PYTHON_JINJA2}" == "1" ]; then
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
         
@@ -7071,9 +7076,9 @@ if [ "${PYTHON_PYGMENTS}" == "1" ]; then
         
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
         
@@ -7169,9 +7174,9 @@ EOF
         
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
-        CPPFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        CFLAGS="${CPPFLAGS} -I${PYTHON_INSTALL_PREFIX}/include" \
-        LDFLAGS="${LDFLAGS} ${PYTHON_INSTALL_PREFIX}/DLLs/python27.dll" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
         
