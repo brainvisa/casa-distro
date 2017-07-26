@@ -7,7 +7,7 @@
 # ------------------------------------------------------------------------------
 # Functions
 # ------------------------------------------------------------------------------
-function set_toolchain() { 
+function set_toolchain() {
     export CFLAGS="-I${CROSSBUILD_INSTALL_PREFIX}/include"
     export CPPFLAGS="-I${CROSSBUILD_INSTALL_PREFIX}/include"
     export CXXFLAGS=$CPPFLAGS
@@ -1016,16 +1016,14 @@ PYTHON_INSTALL_PREFIX_WINE=${CROSSBUILD_INSTALL_PREFIX_WINE}\\python-${PYTHON_VE
 
 if [ "${__arch}" == "x86_64" ]; then
     PYTHON_ARCH_SUFFIX=.amd64
-    PYTHON_WIN_ARCH_SUFFIX=win64
-    PYTHON_WIN_ARCH_STD_SUFFIX=win_amd64
-    PYTHON_CFLAGS="-D MS_WIN64 -I${PYTHON_INSTALL_PREFIX}/include"
-    PYTHON_CPPFLAGS="-D MS_WIN64 -I${PYTHON_INSTALL_PREFIX}/include"
-    PYTHON_LDFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}"
+    PYTHON_WIN_ARCH_SUFFIX=win_amd64
+    PYTHON_CFLAGS="-DMS_WIN64 -I${PYTHON_INSTALL_PREFIX}/include"
+    PYTHON_CPPFLAGS="-DMS_WIN64 -I${PYTHON_INSTALL_PREFIX}/include"
+    PYTHON_LDFLAGS="${PYTHON_INSTALL_PREFIX}/DLLs/python${PYTHON_VERSION_MINOR//./}.dll"
 else
     PYTHON_WIN_ARCH_SUFFIX=win32
-    PYTHON_WIN_ARCH_STD_SUFFIX=win32
     PYTHON_CFLAGS="-I${PYTHON_INSTALL_PREFIX}/include"
-    PYTHON_LDFLAGS="-L${PYTHON_INSTALL_PREFIX}/DLLs -lpython${PYTHON_VERSION_MINOR//./}"
+    PYTHON_LDFLAGS="${PYTHON_INSTALL_PREFIX}/DLLs/python${PYTHON_VERSION_MINOR//./}.dll"
 fi
 
 PYTHON_SOURCE_URL=https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}${PYTHON_ARCH_SUFFIX}.msi
@@ -5028,7 +5026,7 @@ if [ "${PYTHON_SIX}" == "1" ]; then
 fi
 
 PYTHON_NUMPY_VERSION=1.11.3
-PYTHON_NUMPY_SOURCE_URL=http://www.lfd.uci.edu/~gohlke/pythonlibs/${PYTHON_LFD_UCI_REPO_ID}/numpy-${PYTHON_NUMPY_VERSION}+mkl-cp27-cp27m-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl
+PYTHON_NUMPY_SOURCE_URL=http://www.lfd.uci.edu/~gohlke/pythonlibs/${PYTHON_LFD_UCI_REPO_ID}/numpy-${PYTHON_NUMPY_VERSION}+mkl-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
 if [ "${PYTHON_NUMPY}" == "1" ]; then
     echo "================================ PYTHON_NUMPY ================================"
     if [ "${__download}" == "1" ]; then
@@ -5045,7 +5043,7 @@ if [ "${PYTHON_NUMPY}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
-                    -m pip install ${__download_dir}/numpy-${PYTHON_NUMPY_VERSION}+mkl-cp27-cp27m-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl \
+                    -m pip install ${__download_dir}/numpy-${PYTHON_NUMPY_VERSION}+mkl-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl \
         || exit 1
 
         # Add links to python scripts
@@ -5063,7 +5061,7 @@ if [ "${PYTHON_NUMPY}" == "1" ]; then
 fi
 
 PYTHON_SCIPY_VERSION=0.19.1
-PYTHON_SCIPY_SOURCE_URL=http://www.lfd.uci.edu/~gohlke/pythonlibs/${PYTHON_LFD_UCI_REPO_ID}/scipy-${PYTHON_SCIPY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl
+PYTHON_SCIPY_SOURCE_URL=http://www.lfd.uci.edu/~gohlke/pythonlibs/${PYTHON_LFD_UCI_REPO_ID}/scipy-${PYTHON_SCIPY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
 if [ "${PYTHON_SCIPY}" == "1" ]; then
     echo "================================ PYTHON_SCIPY ================================"
     if [ "${__download}" == "1" ]; then
@@ -5080,7 +5078,7 @@ if [ "${PYTHON_SCIPY}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
-                    -m pip install ${__download_dir}/scipy-${PYTHON_SCIPY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl \
+                    -m pip install ${__download_dir}/scipy-${PYTHON_SCIPY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl \
         || exit 1
     fi
 fi
@@ -6698,7 +6696,7 @@ fi
 # pil (pil dependency)
 # ------------------------------------------------------------------------------
 PYTHON_PIL_VERSION=2.3.0
-PYTHON_PIL_SOURCE_URL=https://pypi.python.org/packages/e2/20/f847c81607349a0e4451dc9f854c3b7f09cb4dce70edd366985bedc13208/Pillow-${PYTHON_PIL_VERSION}-cp27-none-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl
+PYTHON_PIL_SOURCE_URL=https://pypi.python.org/packages/e2/20/f847c81607349a0e4451dc9f854c3b7f09cb4dce70edd366985bedc13208/Pillow-${PYTHON_PIL_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl
 
 if [ "${PYTHON_PIL}" == "1" ]; then
     echo "============================== PYTHON_PIL =============================="
@@ -6718,7 +6716,7 @@ if [ "${PYTHON_PIL}" == "1" ]; then
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
-                    -m pip install "$(winepath -w ${__download_dir}/Pillow-${PYTHON_PIL_VERSION}-cp27-none-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl)" \
+                    -m pip install "$(winepath -w ${__download_dir}/Pillow-${PYTHON_PIL_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
         || exit 1
 
         # Add links to python scripts
