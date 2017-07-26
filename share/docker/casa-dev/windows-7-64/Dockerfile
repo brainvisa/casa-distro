@@ -79,20 +79,35 @@ RUN apt-get update && apt-get install -y \
 
 # ipython / jupyter
 RUN easy_install pip
-#RUN pip install -U 'ipython>=5.0,<6.0'
-#RUN pip install jupyter
 
 # build thirdparty dependencies
 RUN \
     CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
     CROSSBUILD_UPDATE_REGISTRY_PATH=1 \
     CROSSBUILD_ARCH=x86_64 \
-    CROSSBUILD_LIBS=1 \
-    CROSSBUILD_PYTHON_MODULES=1 \
     PYTHON=1 \
     /tmp/install_ubuntu_14.04_crossbuild.sh \
+ && wineserver -k -w \
+ && rm -rf /tmp/tmp.*
+ 
+RUN \
+    CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
+    CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
+    CROSSBUILD_ARCH=x86_64 \
+    CROSSBUILD_LIBS=1 \
+    /tmp/install_ubuntu_14.04_crossbuild.sh \
+ && wineserver -k -w \
  && rm -rf /tmp/tmp.*
 
+RUN \
+    CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
+    CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
+    CROSSBUILD_ARCH=x86_64 \
+    CROSSBUILD_PYTHON_MODULES=1 \
+    /tmp/install_ubuntu_14.04_crossbuild.sh \
+ && wineserver -k -w \
+ && rm -rf /tmp/tmp.*
+ 
 # Install Qt Installer Framework (prebuilt on Mandriva 2008)
 RUN cd /tmp \
   && wget http://brainvisa.info/static/qt_installer-1.6.tar.gz \

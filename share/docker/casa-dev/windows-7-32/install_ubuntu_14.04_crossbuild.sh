@@ -1446,25 +1446,27 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines config/cmake/HDFMacros.c
 diff -NurB --strip-trailing-cr --suppress-common-lines src/CMakeLists.txt src/CMakeLists.txt
 --- src/CMakeLists.txt  2017-07-18 17:29:58.631026771 +0200
 +++ src/CMakeLists.txt  2017-07-18 17:35:48.654774168 +0200
-@@ -621,7 +621,7 @@
+@@ -621,8 +621,7 @@
  SET (CMD \$<TARGET_FILE:H5detect>)
  ADD_CUSTOM_COMMAND (
      OUTPUT \${HDF5_BINARY_DIR}/H5Tinit.c
 -    COMMAND \${CMD}
-+    COMMAND \${CMAKE_CROSSCOMPILING_RUN_COMMAND} \${CMD}
-     ARGS > \${HDF5_BINARY_DIR}/H5Tinit.c
+-    ARGS > \${HDF5_BINARY_DIR}/H5Tinit.c
++    COMMAND \${CMAKE_CROSSCOMPILING_RUN_COMMAND} \${CMD} > \${HDF5_BINARY_DIR}/H5Tinit.c
      DEPENDS H5detect
  )
-@@ -634,7 +634,7 @@
+ 
+@@ -634,8 +633,7 @@
  SET (CMD \$<TARGET_FILE:H5make_libsettings>)
  ADD_CUSTOM_COMMAND (
      OUTPUT \${HDF5_BINARY_DIR}/H5lib_settings.c
 -    COMMAND \${CMD}
-+    COMMAND \${CMAKE_CROSSCOMPILING_RUN_COMMAND} \${CMD}
-     ARGS > \${HDF5_BINARY_DIR}/H5lib_settings.c
+-    ARGS > \${HDF5_BINARY_DIR}/H5lib_settings.c
++    COMMAND \${CMAKE_CROSSCOMPILING_RUN_COMMAND} \${CMD} > \${HDF5_BINARY_DIR}/H5lib_settings.c
      DEPENDS H5make_libsettings
      WORKING_DIRECTORY \${HDF5_BINARY_DIR}
-
+ )
+ 
 EOF
         patch -f -N -i hdf5-${HDF5_VERSION}.patch -p0
 
@@ -5073,7 +5075,7 @@ if [ "${PYTHON_SCIPY}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
-                    -m pip install ${__download_dir}/scipy-${PYTHON_SCIPY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl \
+                    -m pip install ${__download_dir}/scipy-${PYTHON_SCIPY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_STD_SUFFIX}.whl \
         || exit 1
     fi
 fi

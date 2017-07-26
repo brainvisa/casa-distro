@@ -70,6 +70,7 @@ RUN apt-get update && apt-get install -y \
     libxext-dev:i386 \
   && CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
      CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
+     CROSSBUILD_ARCH=i686 \
      SYSTEM=1 \
      MINGW64=1 \
      /tmp/install_ubuntu_14.04_crossbuild.sh \
@@ -78,18 +79,35 @@ RUN apt-get update && apt-get install -y \
 
 # ipython / jupyter
 RUN easy_install pip
-#RUN pip install -U 'ipython>=5.0,<6.0'
-#RUN pip install jupyter
 
 # build thirdparty dependencies
 RUN \
     CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
     CROSSBUILD_UPDATE_REGISTRY_PATH=1 \
-    CROSSBUILD_LIBS=1 \
-    CROSSBUILD_PYTHON_MODULES=1 \
+    CROSSBUILD_ARCH=i686 \
     PYTHON=1 \
     /tmp/install_ubuntu_14.04_crossbuild.sh \
+ && wineserver -k -w \
  && rm -rf /tmp/tmp.*
+ 
+RUN \
+    CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
+    CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
+    CROSSBUILD_ARCH=i686 \
+    CROSSBUILD_LIBS=1 \
+    /tmp/install_ubuntu_14.04_crossbuild.sh \
+ && wineserver -k -w \
+ && rm -rf /tmp/tmp.*
+
+RUN \
+    CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
+    CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
+    CROSSBUILD_ARCH=i686 \
+    CROSSBUILD_PYTHON_MODULES=1 \
+    /tmp/install_ubuntu_14.04_crossbuild.sh \
+ && wineserver -k -w \
+ && rm -rf /tmp/tmp.*
+ 
 
 # Install Qt Installer Framework (prebuilt on Mandriva 2008)
 RUN cd /tmp \
