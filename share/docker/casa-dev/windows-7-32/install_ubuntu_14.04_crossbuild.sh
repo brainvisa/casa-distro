@@ -1023,6 +1023,7 @@ if [ "${__arch}" == "x86_64" ]; then
 else
     PYTHON_WIN_ARCH_SUFFIX=win32
     PYTHON_CFLAGS="-I${PYTHON_INSTALL_PREFIX}/include"
+    PYTHON_CPPFLAGS="-I${PYTHON_INSTALL_PREFIX}/include"
     PYTHON_LDFLAGS="${PYTHON_INSTALL_PREFIX}/DLLs/python${PYTHON_VERSION_MINOR//./}.dll"
 fi
 
