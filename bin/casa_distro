@@ -21,9 +21,9 @@ def command(f):
 default_build_workflow_repository = os.environ.get('CASA_DEFAULT_REPOSITORY')
 if not default_build_workflow_repository:
     default_build_workflow_repository = osp.expanduser('~/casa_distro')
-default_repository_server = 'catidev.cea.fr'
-default_repository_server_directory = 'casa_distro'
-default_repository_login = 'casa'
+default_repository_server = 'brainvisa.info'
+default_repository_server_directory = 'prod/www/casa_distro'
+default_repository_login = 'brainvisa'
 
 
 @command
