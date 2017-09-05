@@ -53,7 +53,7 @@ def convert_github_url_to_svn(url):
             branch_spec = [url, 'branches', branch]
 
         vcs = 'git'
-        svn_url = 'svn %s' % '/'.join(branch_spec)
+        svn_url = '%s' % '/'.join(branch_spec)
         vcs_url = (url[:-4] if url.endswith('.git') else url) + '/tree/' + branch
     else:
         vcs = 'svn'
