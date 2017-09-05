@@ -52,11 +52,14 @@ def convert_github_url_to_svn(url):
         else:
             branch_spec = [url, 'branches', branch]
 
-        url = 'svn %s' % '/'.join(branch_spec)
         vcs = 'git'
+        svn_url = 'svn %s' % '/'.join(branch_spec)
+        vcs_url = (url[:-4] if url.endswith('.git') else url) + '/tree/' + branch
     else:
         vcs = 'svn'
-    return url, vcs
+        svn_url = url.split(None, 1)[1]
+        vcs_url = svn_url
+    return svn_url, vcs, vcs_url
 
 def inspect_components_and_create_release_plan(components, verbose=None):
     """
@@ -70,6 +73,7 @@ def inspect_components_and_create_release_plan(components, verbose=None):
            vcs_type: <vcs> # Can be 'svn' if component uses Subversion or
                            # 'git' for Git.
            vcs_url: <url> # URL of component source branch
+           svn_url: <url> # Subversion URL of component source branch
            revision: <revision> # The Subversion revision or Git changeset
                                 # of the latest_release branch.
            version: <version>   # The version of the component declared 
@@ -78,6 +82,7 @@ def inspect_components_and_create_release_plan(components, verbose=None):
            vcs_type: <vcs> # Can be 'svn' if component uses Subversion or
                            # 'git' for Git.
            vcs_url: <url> # URL of component source branch
+           svn_url: <url> # Subversion URL of component source branch
            revision: <revision> # The Subversion revision or Git changeset
                                 # of the bug_fix branch.
            version: <version>   # The version of the component declared 
@@ -108,10 +113,10 @@ def inspect_components_and_create_release_plan(components, verbose=None):
         warning_messages = []
         error_messages = []
         if bug_fix_url:
-            url, vcs = convert_github_url_to_svn(bug_fix_url[0])
+            url, vcs, vcs_url = convert_github_url_to_svn(bug_fix_url[0])
             bug_fix_url = (url,) + bug_fix_url[1:]
             latest_release_url = url_per_component[component].get('latest_release')
-            bug_fix_svn = url.split(None,1)[1]
+            bug_fix_svn = url
             bug_fix_revision = svn_get_latest_revision(bug_fix_svn)
             
             bug_fix_version = read_remote_project_info(svn_client, bug_fix_svn)
@@ -119,7 +124,8 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                 bug_fix_version = bug_fix_version[2]
             component_dict['bug_fix'] = {
                 'vcs_type': vcs,
-                'vcs_url': bug_fix_svn,
+                'svn_url': bug_fix_svn,
+                'vcs_url': vcs_url,
                 'version': str(bug_fix_version),
                 'revision': bug_fix_revision,
             }
@@ -129,9 +135,9 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                        bug_fix_revision), file=verbose)
                 verbose.flush()
             if latest_release_url:
-                url, vcs = convert_github_url_to_svn(latest_release_url[0])
+                url, vcs, vcs_url = convert_github_url_to_svn(latest_release_url[0])
                 latest_release_url = (url,) + latest_release_url[1:]
-                latest_release_svn = url.split(None,1)[1]
+                latest_release_svn = url
                 
                 if svn_client.svn_exists(latest_release_svn):
                     latest_release_exist = True
@@ -147,7 +153,8 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                         latest_release_version = latest_release_version[2]
                     component_dict['latest_release'] = {
                         'vcs_type': vcs,
-                        'vcs_url': latest_release_svn,
+                        'svn_url': latest_release_svn,
+                        'vcs_url': vcs_url,
                         'version': str(latest_release_version),
                         'revision': latest_release_revision,
                     }
@@ -156,7 +163,8 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                    latest_release_version = bug_fix_version
                    component_dict['latest_release'] = {
                         'vcs_type': vcs,
-                        'vcs_url': latest_release_svn,
+                        'svn_url': latest_release_svn,
+                        'vcs_url': vcs_url,
                         'version': str(latest_release_version),
                         'revision': bug_fix_revision,
                     } 
@@ -230,7 +238,10 @@ def publish_release_plan_on_wiki(login, password, release_plan_file):
     wiki_url = 'https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan.json'
 
     release_plan = yaml.load(open(release_plan_file))
-    next_casa_version = release_plan['casa']['casa-distro']['bug_fix']['version']
+    if 'casa' in release_plan:
+        next_casa_version = release_plan['casa']['casa-distro']['bug_fix']['version']
+    else:
+        next_casa_version = 'unknown'
     content = ['''h1. Release plan for casa-distro %s
 
 This is a test page whose content is automatically generated by @casa_distro@ script.
@@ -314,7 +325,7 @@ def apply_release_plan(release_plan_file, dry=False,
                 info = release_plan[project][component].get(b)
                 if info is not None:
                     version = info.get('version')
-                    url = info.get('vcs_url')
+                    url = info.get('svn_url')
                     
                     if len(todo) > 0: 
                         if version is None:
