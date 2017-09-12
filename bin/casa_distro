@@ -22,7 +22,7 @@ default_build_workflow_repository = os.environ.get('CASA_DEFAULT_REPOSITORY')
 if not default_build_workflow_repository:
     default_build_workflow_repository = osp.expanduser('~/casa_distro')
 default_repository_server = 'brainvisa.info'
-default_repository_server_directory = 'prod/www/casa_distro'
+default_repository_server_directory = 'prod/www/casa-distro'
 default_repository_login = 'brainvisa'
 
 
@@ -282,11 +282,24 @@ def publish_build_workflows(distro='*', branch='*', system='*',
     check_call(cmd)
 
 @command
-def shell(distro='opensource', branch='latest_release', system=None,
+def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
           X=False, args_list=[]):
     '''Start a bash shell in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_shell
+    from casa_distro import iter_build_workflow
+    
+    build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                               distro=distro, 
+                                               branch=branch, 
+                                               system=system))
+    if not build_workflows:
+        print('Cannot find any build workflow', file=sys.stderr)
+        return 1
+    if len(build_workflows) > 1:
+        print('Several build workflows found, you can select only one by giving values for distro, system and branch', file=sys.stderr)
+        return 1
+    distro, branch, system, bwf_dir = build_workflows[0]
     run_docker_shell(build_workflows_repository, distro=distro, branch=branch,
                      system=system, X=X, args_list=args_list)
 
@@ -364,6 +377,7 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
     tmp_share = None
+    result = None
     try:
         # Manage share directory in Zip file distribution
         if not osp.exists(__file__) and osp.dirname(__file__).endswith('.zip'):
@@ -390,7 +404,8 @@ if __name__ == '__main__':
                 args.append(i)
         if len(args_list) != 0:
             kwargs['args_list'] = args_list
-        command(*args, **kwargs)
+        result = command(*args, **kwargs)
     finally:
         if tmp_share:
             shutil.rmtree(tmp_share)
+    sys.exit(result)
