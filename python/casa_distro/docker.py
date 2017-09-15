@@ -10,11 +10,12 @@ import os
 import os.path as osp
 import pwd
 import shutil
-from subprocess import check_call
+from subprocess import check_call, check_output
 import sys
 import tempfile
 import yaml
 import stat
+import re
 
 import casa_distro
 from casa_distro import share_directory, linux_os_ids
@@ -250,6 +251,13 @@ if [ -n "$USE_NVIDIA" ] ; then
 fi
 '''
 
+
+def get_docker_version():
+    dverout = check_output(['docker', '-v'])
+    r = re.match('Docker version ([0-9.]+).*$', dverout)
+    return [int(x) for x in r.group(1).split('.')]
+
+
 def create_build_workflow_directory(build_workflow_directory, 
                                     distro='opensource',
                                     casa_branch='latest_release',
@@ -324,8 +332,21 @@ def create_build_workflow_directory(build_workflow_directory,
           file=open(osp.join(bwf_dir, 'docker', 'Dockerfile'), 'w'))
 
     print('Creating personal docker image...')
-    cmd = ['docker', 'build', '-t', local_image_name,
-           osp.join(bwf_dir, 'docker')]
+    docker_ver = get_docker_version()
+    # Docker 1.13 adds the --network option to build commands.
+    # This is useful to avoid a DNS (/etc/resolv.conf) problem happening on
+    # many Ubuntu computers where the host /etc/resolv.conf uses 127.0.0.1
+    # Unfortunately it is not available in older releases of docker, including
+    # those shipped in Ubuntu 16.04 (which is 1.12).
+    # A possible fix if this doesn't work could be to use the host system
+    # if svn is installed here, to retreive brainvisa-cmake, then use COPY
+    # to install it in the docker image. But it would still not work in all
+    # cases (when svn is not present on the host).
+    if docker_ver >= [1, 13]:
+        cmd = ['docker', 'build', '--network=host']
+    else:
+        cmd = ['docker', 'build']
+    cmd += ['-t', local_image_name, osp.join(bwf_dir, 'docker')]
     print(*cmd)
     check_call(cmd)
 
@@ -455,7 +476,7 @@ def create_docker_images(image_name_filters = ['*']):
                         continue
                     source = osp.join(source_directory, f)
                     target = osp.join(target_directory, f)
-                    
+
                     if osp.isdir(source):
                         if os.path.exists(target):
                             shutil.rmtree(target)
@@ -465,13 +486,14 @@ def create_docker_images(image_name_filters = ['*']):
                         open(target[:-9], 'w').write(content)
                     else:
                         shutil.copyfile(source, target)
-                        
+
                 image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
-                
+
                 if not image_name_match(image_full_name, image_name_filters):
                     continue
-                
-                cmd = ['docker', 'build', '--force-rm', '--tag', image_full_name, target_directory]
+
+                cmd = ['docker', 'build', '--force-rm',
+                       '--tag', image_full_name, target_directory]
                 print('-'*40)
                 print('Creating image %s' % image_full_name)
                 print(*cmd)
