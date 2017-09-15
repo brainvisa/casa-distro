@@ -194,7 +194,7 @@ Then, provided that Python is installed on your system, you can use casa_distro.
 Install from sources
 --------------------
 
-This advanced method can be used by people that are familiar with the use of :bv-cmake:`BrainVisa-Cmake <index.html>`. Casa-distro belong to the standard projects of brainvisa-cmake so in most case, there is no specific modification to do on ``bv_maker.cfg``. casa_distro can be downloaded, configured and build like any other brainvisa-cmake components. Once build, it can be used as other commands compiled by ``bv_maker``. For instance :
+This advanced method can be used by people that are familiar with the use of :bv-cmake:`BrainVisa-Cmake <index.html>`. Casa-distro belong to the standard projects of brainvisa-cmake so in most case, there is no specific modification to do on ``bv_maker.cfg``. casa_distro can be downloaded, configured and built like any other brainvisa-cmake components. Once built, it can be used as other commands compiled by ``bv_maker``. For instance :
 
 .. code-block:: bash
 
@@ -224,7 +224,7 @@ Note that graphical software need to run Docker containers with a graphical "bri
 
     But soma-workflow distributed execution will not spawn Docker (or casa_distro run) in remote processing. Modifications could be done to handle it.
 
-Remember that software run that way live in a Docker container, which is more or less isolated from the host system. To access data, it casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the DOCKER_OPTIONS variable of the script ``docker_options`` found in ``<casa_distro_build_workflow>/conf/docker_options``.
+Remember that software run that way live in a Docker container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the DOCKER_OPTIONS variable of the script ``docker_options`` found in ``<casa_distro_build_workflow>/conf/docker_options``.
 
 
 :doc:`casa_distro_command`
