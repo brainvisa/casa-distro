@@ -2,6 +2,14 @@
 Casa-Distro
 ===========
 
+Download Casa-Distro
+====================
+
+Just click here:
+
+  `casa_distro.zip <casa_distro.zip>`_
+
+
 I - Overview
 ============
 
@@ -183,7 +191,7 @@ On these systems, after ``docker.io`` installation, it is necessary for a user t
 Install latest release
 ----------------------
 
-This is the simplest and the only recommended way to use casa_distro. Simply download the latest release with the following link : `http://brainvisa.info/casa-distro/casa_distro.zip <http://brainvisa.info/casa-distro/casa_distro.zip>`_.
+This is the simplest and the only recommended way to use casa_distro. Simply download the latest release with the following link : `casa_distro.zip <casa_distro.zip>`_.
 
 Then, provided that Python is installed on your system, you can use casa_distro.zip directly. For instance, to get the help of the command, do:
 

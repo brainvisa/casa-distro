@@ -11,6 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from __future__ import print_function
+
 import sys, os
 
 from distutils.version import LooseVersion
@@ -27,7 +29,6 @@ sys.path.insert(0,os.path.abspath('sphinxext'))
 
 # We load the release info into a dict by explicit execution
 release_info = {}
-print os.getcwd()
 f = os.path.join('..', '..', 'python', 'casa_distro', 'info.py')
 exec(compile(open(f).read(), f, 'exec'), release_info)
 
@@ -248,3 +249,18 @@ extlinks = {
     'bv-cmake': ('../brainvisa-cmake-' + bv_cmake_version + '/%s',
                  'brainvisa cmake ' ),
 }
+
+# Hack to build casa_distro.zip
+out_dir = sys.argv[-1]
+print('building casa_distro.zip...')
+import subprocess
+subprocess.call(['casa_distro', '-r', out_dir, 'package_casa_distro'])
+zipfile = os.path.join(out_dir,
+                       'casa_distro-%d.%d.%d.zip'
+                       % (release_info['version_major'],
+                          release_info['version_minor'],
+                          release_info['version_micro']))
+ziplink = os.path.join(out_dir, 'casa_distro.zip')
+if os.path.exists(ziplink):
+    os.unlink(ziplink)
+os.symlink(os.path.basename(zipfile), ziplink)
