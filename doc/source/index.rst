@@ -73,6 +73,7 @@ own software content, targeted audience and license agreement. At the
 time of this writing, the following distros are planned to be technically 
 managed by CASA :
 
+-  **opensource**: the open-source subset of projects managed by BrainVISA.
 -  **brainvisa**: the historical BrainVISA distribution. It combines
    open source and close source software. It can be downloaded by anyone
    and used freely for non profit research.
@@ -85,6 +86,8 @@ managed by CASA :
 
 Distribution frequency
 ----------------------
+
+(in the future)
 
 A distribution is created every first monday of each month. Normally,
 any modification done after a distribution must wait for the next
@@ -131,8 +134,8 @@ A build workflow represent all what is necessary to work on a distro at
 a given version for a given operating system. In ``casa_distro``, a
 build workflow is identified by three variables:
 
-| - **distro:** the identifier of the distro (*e.g.* ``brainvisa``,
-  ``cati`` or ``cea``)
+| - **distro:** the identifier of the distro (*e.g.* ``opensource``,
+  ``brainvisa``, ``cati`` or ``cea``)
 | - **branch:** the name of the virtual branch used to select sofware
   component sources (``latest_release``, ``bug_fix`` or ``trunk``).
 | - **system:** the operating system the distro is build for (*e.g.*
@@ -212,8 +215,45 @@ This advanced method can be used by people that are familiar with the use of :bv
 Working with docker
 ===================
 
-Next release
-============
+Building CASA projects
+======================
+
+First time
+----------
+
+Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this situation, once casa_distro has been downloaded or installed (it can be the .zip file), a user (or developer) has to:
+
+* create a build workflow, which will contain the sources repository for BrainVisa projects, a build directory, etc.
+
+.. code-block:: bash
+
+    python casa_distro.zip -r /home/me/casa create_build_workflow distro=opensource branch=bug_fix system=ubuntu-12.04
+
+This command specifies to setup a build workflow for the open-source projects set (``distro=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a Docker system based on Ubuntu 12.04.
+Directories and files will be created accordingly in the repository directory, here ``/home/me/casa``, and a specific Docker image will be created.
+
+* build everything
+
+.. code-block:: bash
+
+    python casa_distro.zip -r /home/me/casa bv_maker distro=opensource branch=bug_fix system=ubuntu-12.04
+
+If distro, branch, or system are not provided, all matching build workflows will be processed.
+
+Additional options can be passed to the underlying :bv-cmake:`bv_maker <index.html>` command, which will run inside Docker to build everything. Typically, the documentation can be built, testing and packaging can be performed.
+
+Updating projects
+-----------------
+
+To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running ``python casa_distro.zip bv_maker`` (with corresponding options, if needed).
+
+Customizing projects
+--------------------
+
+It is possible to customize the projects list to be retreived and built. It is done by editing the :bv-cmake:`bv_maker.cfg file <configuration.html>` in the build workflow, which can be found in the directory ``<repository>/<distro>/<branch>_<system>/conf/``
+
+where ``<repository>`` is the base casa-distro repository directory (passed as the ``-r`` option of casa_distro, ``<distro>`` is the projects set name (``opensource``, ``brainvisa``, ``cati``), ``<branch>`` is the version branch identifier (``latest_release``, ``bug_fix``, ``trunk``), and ``<system>`` is the system the build is based on.
+
 
 Using Casa-Distro as a runtime environment to run BrainVisa-related software
 ============================================================================
@@ -233,6 +273,11 @@ Note that graphical software need to run Docker containers with a graphical "bri
     But soma-workflow distributed execution will not spawn Docker (or casa_distro run) in remote processing. Modifications could be done to handle it.
 
 Remember that software run that way live in a Docker container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the DOCKER_OPTIONS variable of the script ``docker_options`` found in ``<casa_distro_build_workflow>/conf/docker_options``.
+
+
+Next release
+============
+
 
 
 :doc:`casa_distro_command`
