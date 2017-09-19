@@ -13,7 +13,7 @@
 
 from __future__ import print_function
 
-import sys, os
+import sys, os, shutil, platform
 
 from distutils.version import LooseVersion
 import sphinx
@@ -246,21 +246,45 @@ except ImportError:
 #intersphinx_mapping = {'http://docs.python.org/': None}
 
 extlinks = {
-    'bv-cmake': ('../brainvisa-cmake-' + bv_cmake_version + '/%s',
-                 'brainvisa cmake ' ),
+    'bv-cmake': ('../brainvisa-cmake-' + bv_cmake_version + '%s', 
+                 'brainvisa cmake '),
 }
 
 # Hack to build casa_distro.zip
 out_dir = sys.argv[-1]
-print('building casa_distro.zip...')
 import subprocess
-subprocess.call(['casa_distro', '-r', out_dir, 'package_casa_distro'])
+
+def find_executable(name, path=None):
+    # Ugly hack to allow find_executable to search other files than .exe files 
+    # on windows platform
+    import distutils.spawn
+    
+    pf = sys.platform
+    sys.platform = ''
+    found_cmd = distutils.spawn.find_executable(name, path=path)
+    sys.platform = pf
+    
+    return found_cmd
+
+#out_dir = os.path.normpath(os.path.abspath(out_dir))
+casa_distro_cmd = find_executable('casa_distro')
+#print('casa distro command', casa_distro_cmd)
+#print('command', ' '.join(['python', casa_distro_cmd, '-r', out_dir, 'package_casa_distro']))
+subprocess.call(['python', casa_distro_cmd, 
+                 '-r', out_dir, 
+                 'package_casa_distro'])
 zipfile = os.path.join(out_dir,
                        'casa_distro-%d.%d.%d.zip'
                        % (release_info['version_major'],
                           release_info['version_minor'],
                           release_info['version_micro']))
 ziplink = os.path.join(out_dir, 'casa_distro.zip')
+#print('zip file', zipfile)
+#print('zip link', ziplink)
+
 if os.path.exists(ziplink):
     os.unlink(ziplink)
-os.symlink(os.path.basename(zipfile), ziplink)
+if not platform.system().lower().startswith('win'):
+    os.symlink(os.path.basename(zipfile), ziplink)
+else:
+    shutil.copy(zipfile, ziplink)
