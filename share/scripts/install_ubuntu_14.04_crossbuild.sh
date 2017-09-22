@@ -1000,7 +1000,7 @@ if [ "${__install}" == "1" ] && [ "${MINGW64}" == "1" ]; then
           ./
     popd
     pushd lib
-    cp -f ${MINGW64_LIB_PREFIX}/libgcc*.dll.a \
+    cp -f ${MINGW64_LIB_PREFIX}/libgcc*.a \
           ${MINGW64_LIB_PREFIX}/libgfortran*.dll.a \
           ${MINGW64_LIB_PREFIX}/libquadmath*.dll.a \
           ${MINGW64_LIB_PREFIX}/libstdc++*.dll.a \
