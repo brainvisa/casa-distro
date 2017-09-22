@@ -1,10 +1,10 @@
-# Dockerfile for image cati/brainvisa-test:windows-7-64
+# Dockerfile for image cati/brainvisa-test:windows-7-32
 
 FROM ubuntu:14.04
 
-ENV WINECMD=wine64
-ENV WINEARCH=win64
-ENV WINEPREFIX=/casa/wine64
+ENV WINECMD=wine
+ENV WINEARCH=win32
+ENV WINEPREFIX=/casa/wine32
 ENV WINEDEBUG=-all
 
 RUN mkdir -p /casa
@@ -42,7 +42,7 @@ RUN dpkg --add-architecture i386 \
 # delete all the apt list files since they're big and get stale quickly
 
 # Install base wine packages
-RUN wine msiexec /i /usr/share/wine/gecko/wine_gecko-2.34-x86_64.msi /L*v gecko-2.34-install.log ALLUSERS=1 \
+RUN wine msiexec /i /usr/share/wine/gecko/wine_gecko-2.34-x86.msi /L*v gecko-2.34-install.log ALLUSERS=1 \
     && wine msiexec /i /usr/share/wine/mono/wine-mono-4.5.4.msi /L*v mono-4.5.4-install.log ALLUSERS=1
 
 # Update wine configuration to match windows 7 version
@@ -57,9 +57,6 @@ RUN wineboot -u \
 # copy a software-only mesa libGL in /usr/local/lib
 COPY libGL.so.1 /usr/local/lib/libGL.so.1
 COPY libglapi.so.0 /usr/local/lib/libglapi.so.0
-RUN mkdir /usr/local/lib/i386-linux-gnu
-COPY mesa32/libGL.so.1 /usr/local/lib/i386-linux-gnu/libGL.so.1
-COPY mesa32/libglapi.so.0 /usr/local/lib/i386-linux-gnu/libglapi.so.0
 RUN ldconfig
 
 # allow sudo apt without password

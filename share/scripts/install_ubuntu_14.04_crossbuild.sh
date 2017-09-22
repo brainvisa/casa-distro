@@ -823,6 +823,7 @@ apt-get -q -y autoremove
 
 # Explicit calls are used to ensure i386 installation,
 # otherwise it may fails
+apt-get -q -y install p11-kit:i386
 apt-get -q -y install libp11-kit-gnome-keyring:i386
 apt-get -q -y install libglu1-mesa:i386
 apt-get -q -y install libglu1:i386
@@ -843,6 +844,7 @@ fi
 
 CROSSBUILD_INSTALL_PREFIX_WINE="$(winepath -w "$(readlink -f ${CROSSBUILD_INSTALL_PREFIX})")"
 WINDOWS_INSTALL_PREFIX="$(readlink -f "$(winepath -u c:\\windows)")"
+WINDOWS_OS_ARCH="$(${__wine_cmd} cmd /c 'wmic os get osarchitecture' | grep '\-bit')"
 
 if [ "${__update_registry_path}" = "1" ]; then
     # Update registry path to append install prefix, this will be necessary for
@@ -876,6 +878,7 @@ set_toolchain
 # Summary
 # ------------------------------------------------------------------------------
 echo "============================== SUMMARY ==============================="
+echo "* Wine running a ${WINDOWS_OS_ARCH} windows architecture"
 if [ "${__download}" == "1" ]; then
     echo "* Download in directory ${__download_dir}"
 fi
@@ -1059,10 +1062,10 @@ if [ "${PYTHON}"  == "1" ]; then
             # I do not understand why, but under ubuntu 14.04 64-bits, python installer 64-bits installs 
             # python dll in ${WINDOWS_INSTALL_PREFIX}/system32 whereas python installer 32-bits installs 
             # python dll in ${WINDOWS_INSTALL_PREFIX}/syswow64
-            if [ "${__arch}" == "x86_64" ]; then
-                PYTHON_WIN_SYS_DIR=${WINDOWS_INSTALL_PREFIX}/system32
-            else
+            if [ "${WINDOWS_OS_ARCH}" == "32-bit" ] && [ "${__arch}" == "x86_64" ]; then
                 PYTHON_WIN_SYS_DIR=${WINDOWS_INSTALL_PREFIX}/syswow64
+            else
+                PYTHON_WIN_SYS_DIR=${WINDOWS_INSTALL_PREFIX}/system32
             fi
             cp -f "${PYTHON_WIN_SYS_DIR}/python${PYTHON_VERSION_MINOR//./}.dll" ${PYTHON_INSTALL_PREFIX}/DLLs
         fi
@@ -4930,6 +4933,81 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
      if sys.platform == 'win32':
          opts.qmake = find_default_qmake()
 EOF
+
+        if [ "${__arch}" == "x86_64" ]; then 
+            # Add missing flags to build qpy library
+            cat << EOF >> pyqt-${PYTHON_PYQT_VERSION}.patch
+diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDesigner/qpydesigner.pro qpy/QtDesigner/qpydesigner.pro
+--- qpy/QtDesigner/qpydesigner.pro  2017-09-22 13:42:26.513100698 +0200
++++ qpy/QtDesigner/qpydesigner.pro  2017-09-22 14:52:35.545003919 +0200
+@@ -36,6 +36,7 @@
+ 
+ TARGET      = qpydesigner
+ TEMPLATE    = lib
++DEFINES     += MS_WIN64
+ 
+ HEADERS   = \\
+             qpydesignercontainerextension.h \\
+diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtCore/qpycore.pro qpy/QtCore/qpycore.pro
+--- qpy/QtCore/qpycore.pro  2017-09-22 13:42:19.169109652 +0200
++++ qpy/QtCore/qpycore.pro  2017-09-22 14:51:27.885086616 +0200
+@@ -27,7 +27,7 @@
+ CONFIG      += static warn_on
+ TARGET      = qpycore
+ TEMPLATE    = lib
+-DEFINES     += QT_DISABLE_DEPRECATED_BEFORE=0x040900
++DEFINES     += QT_DISABLE_DEPRECATED_BEFORE=0x040900 MS_WIN64
+ 
+ # Python's type system relies on type punning.
+ !win32: QMAKE_CXXFLAGS += -fno-strict-aliasing
+diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDeclarative/qpydeclarative.pro qpy/QtDeclarative/qpydeclarative.pro
+--- qpy/QtDeclarative/qpydeclarative.pro    2017-09-22 13:42:33.369092346 +0200
++++ qpy/QtDeclarative/qpydeclarative.pro    2017-09-22 14:50:14.681176366 +0200
+@@ -28,6 +28,7 @@
+ CONFIG      += static warn_on
+ TARGET      = qpydeclarative
+ TEMPLATE    = lib
++DEFINES     += MS_WIN64
+ 
+ SOURCES   = \\
+             qpydeclarative_chimera_helpers.cpp \\
+diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtGui/qpygui.pro qpy/QtGui/qpygui.pro
+--- qpy/QtGui/qpygui.pro    2017-09-22 13:42:40.289083910 +0200
++++ qpy/QtGui/qpygui.pro    2017-09-22 14:52:08.117037413 +0200
+@@ -26,6 +26,7 @@
+ CONFIG      += static warn_on
+ TARGET      = qpygui
+ TEMPLATE    = lib
++DEFINES     += MS_WIN64
+ 
+ HEADERS   = \\
+             qpytextobject.h
+diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtOpenGL/qpyopengl.pro qpy/QtOpenGL/qpyopengl.pro
+--- qpy/QtOpenGL/qpyopengl.pro  2017-09-22 13:42:46.765076024 +0200
++++ qpy/QtOpenGL/qpyopengl.pro  2017-09-22 14:52:14.917029107 +0200
+@@ -28,6 +28,7 @@
+ CONFIG      += static warn_on
+ TARGET      = qpyopengl
+ TEMPLATE    = lib
++DEFINES     += MS_WIN64
+ 
+ SOURCES   = \\
+             qpyopengl_attribute_array.cpp \\
+diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDBus/qpydbus.pro qpy/QtDBus/qpydbus.pro
+--- qpy/QtDBus/qpydbus.pro  2017-09-22 13:42:52.793068682 +0200
++++ qpy/QtDBus/qpydbus.pro  2017-09-22 14:50:05.661187444 +0200
+@@ -28,6 +28,7 @@
+ CONFIG      += static warn_on
+ TARGET      = qpydbus
+ TEMPLATE    = lib
++DEFINES     += MS_WIN64
+ 
+ SOURCES   = \\
+             qpydbus_chimera_helpers.cpp \\
+
+EOF
+        fi
+        
         patch -f -N -i pyqt-${PYTHON_PYQT_VERSION}.patch -p0
 
         export PYTHONPATH="${PYTHON_INSTALL_PREFIX}/Lib/site-packages:${PYTHONPATH}"

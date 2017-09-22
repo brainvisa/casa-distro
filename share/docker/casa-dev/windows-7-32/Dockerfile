@@ -1,6 +1,6 @@
 # Dockerfile for image cati/brainvisa-dev:windows-7-32
 
-FROM cati/casa-test:windows-7-64
+FROM cati/casa-test:windows-7-32
 
 # Directory containing thirdparty dependencies
 ENV CASA_DEPS=/casa/deps
