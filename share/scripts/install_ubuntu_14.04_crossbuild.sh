@@ -878,7 +878,7 @@ set_toolchain
 # Summary
 # ------------------------------------------------------------------------------
 echo "============================== SUMMARY ==============================="
-echo "* Wine running a ${WINDOWS_OS_ARCH} windows architecture"
+echo "* ${__wine_cmd} running a ${WINDOWS_OS_ARCH} windows architecture"
 if [ "${__download}" == "1" ]; then
     echo "* Download in directory ${__download_dir}"
 fi
@@ -1000,7 +1000,7 @@ if [ "${__install}" == "1" ] && [ "${MINGW64}" == "1" ]; then
           ./
     popd
     pushd lib
-    cp -f ${MINGW64_LIB_PREFIX}/libgcc*.a \
+    cp -f ${MINGW64_LIB_PREFIX}/libgcc*.dll.a \
           ${MINGW64_LIB_PREFIX}/libgfortran*.dll.a \
           ${MINGW64_LIB_PREFIX}/libquadmath*.dll.a \
           ${MINGW64_LIB_PREFIX}/libstdc++*.dll.a \
