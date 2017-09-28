@@ -346,7 +346,7 @@ __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six
                      python_paramiko python_pyro python_pil python_dicom
                      python_yaml python_xmltodict python_markupsafe 
                      python_jinja2 python_pygments python_docutils 
-                     python_sphinx)
+                     python_sphinx python_pandas)
 
 if [ -z "${CROSSBUILD_INSTALL_PREFIX}" ]; then
     CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
@@ -7330,6 +7330,29 @@ if [ "${PYTHON_SPHINX}" == "1" ]; then
         for __script in sphinx-apidoc.exe sphinx-autogen.exe sphinx-build.exe sphinx-quickstart.exe; do
             fix_python_script ${PYTHON_INSTALL_PREFIX}/Scripts/${__script}
         done
+    fi
+fi
+
+PYTHON_PANDAS_VERSION=0.18.1
+PYTHON_PANDAS_SOURCE_URL=https://pypi.python.org/pypi/pandas/0.18.1/pandas-${PYTHON_PANDAS_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
+if [ "${PYTHON_PANDAS}" == "1" ]; then
+    echo "================================ PYTHON_PANDAS ================================"
+    if [ "${__download}" == "1" ]; then
+        download "${__arch}" ${PYTHON_PANDAS_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y pandas
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install ${__download_dir}/pandas-${PYTHON_PANDAS_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl \
+        || exit 1
     fi
 fi
 
