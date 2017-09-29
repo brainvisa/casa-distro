@@ -7334,7 +7334,7 @@ if [ "${PYTHON_SPHINX}" == "1" ]; then
 fi
 
 PYTHON_PANDAS_VERSION=0.18.1
-PYTHON_PANDAS_SOURCE_URL=https://pypi.python.org/pypi/pandas/0.18.1/pandas-${PYTHON_PANDAS_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
+PYTHON_PANDAS_SOURCE_URL=https://pypi.python.org/packages/b9/f5/ff7a22e253c0587bba641f38bae3d6669b6b5ab8ed7519ca9155db773901/pandas-${PYTHON_PANDAS_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
 if [ "${PYTHON_PANDAS}" == "1" ]; then
     echo "================================ PYTHON_PANDAS ================================"
     if [ "${__download}" == "1" ]; then
