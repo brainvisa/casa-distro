@@ -59,7 +59,6 @@ RUN mkdir %(home)s/.ssh
 # In that case only, the folowing commands are not included in the Dockerfile.
 dockerfile_nonroot_commands = '''RUN addgroup --gid %(gid)s %(group)s
 RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
-RUN chown -R %(user)s:%(group)s /casa
 USER %(user)s
 '''
 
