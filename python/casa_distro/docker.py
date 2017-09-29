@@ -60,6 +60,7 @@ RUN mkdir %(home)s/.ssh
 dockerfile_nonroot_commands = '''RUN addgroup --gid %(gid)s %(group)s
 RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
 RUN chown %(user)s:%(group)s /casa
+RUN if [ -d "${WINEPREFIX}" ]; then chown -R %(user)s:%(group)s "${WINEPREFIX}"; fi
 USER %(user)s
 '''
 

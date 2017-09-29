@@ -66,6 +66,7 @@ RUN apt-get update && apt-get install -y \
     gcc-multilib \
     g++-multilib \
     python-mako \
+    python-dateutil \
     libx11-dev:i386 \
     libxext-dev:i386 \
   && CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
