@@ -59,6 +59,7 @@ RUN mkdir %(home)s/.ssh
 # In that case only, the folowing commands are not included in the Dockerfile.
 dockerfile_nonroot_commands = '''RUN addgroup --gid %(gid)s %(group)s
 RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
+RUN chown %(user)s:%(group)s /casa
 USER %(user)s
 '''
 
@@ -138,8 +139,6 @@ cmd="docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
                     -v %(build_workflow_dir)s/tests:/casa/tests \
                     -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
                     -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
-                    -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
-                    -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                     -e CASA_BRANCH=%(casa_branch)s \
                     -e CASA_HOST_DIR=%(build_workflow_dir)s \
                     --net=host ${DOCKER_OPTIONS} \
