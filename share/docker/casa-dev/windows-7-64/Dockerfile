@@ -30,11 +30,7 @@ RUN chmod +x /tmp/install_ubuntu_14.04_crossbuild.sh
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
     cmake-curses-gui \
-    subversion \
-    git \
-    python-dev \
     qt4-dev-tools \
     qt4-designer \
     qt4-qmake \
@@ -42,31 +38,19 @@ RUN apt-get update && apt-get install -y \
     qt4-qtconfig \
     qt4-linguist-tools \
     sqlite3 \
-    graphviz \
-    graphviz-dev \
-    doxygen \
-    libxml2-utils \
     python-qt4-dev \
     python-pexpect \
-    python-sphinx \
     openjdk-7-jdk \
     vim \
     nano \
-    wget \
-    automake \
     texlive-fonts-recommended \
     lftp \
-    apt-utils \
-    libxslt-dev \
     gdb \
-    python-setuptools \
     kdesdk-scripts \
     net-tools \
     locate \
     gcc-multilib \
     g++-multilib \
-    python-mako \
-    python-dateutil \
     libx11-dev:i386 \
     libxext-dev:i386 \
   && CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
