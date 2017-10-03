@@ -104,6 +104,15 @@ RUN cd /tmp \
   && ln -s ../qt_installer/bin/* . \
   && rm /tmp/qt_installer-1.6.tar.gz
 
+# Install doxygen (prebuilt)
+RUN cd /tmp \
+  && wget http://brainvisa.info/static/doxygen-1.8.7-linux.tar.gz \
+  && cd /usr/local \
+  && tar xfz /tmp/doxygen-1.8.7-linux.tar.gz \
+  && ln -sf doxygen-1.8.7 doxygen \
+  && cd /usr/local/bin \
+  && ln -sf ../doxygen/bin/* . \
+  && rm /tmp/doxygen-1.8.7-linux.tar.gz
 
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
