@@ -114,6 +114,9 @@ RUN cd /tmp \
   && ln -sf ../doxygen/bin/* . \
   && rm /tmp/doxygen-1.8.7-linux.tar.gz
 
+# Add jenkins package
+RUN pip install python_jenkins==0.4.15
+
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn
