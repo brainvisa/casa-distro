@@ -566,7 +566,7 @@ def run_docker(bwf_repository, distro='opensource',
     if bool(X):
         cmd.append('-X11')
     if len(docker_options) > 0:
-        cmd += docker_options + [ '--' ]
+        cmd += ['-d'] + docker_options + ['--']
         
     cmd += list(args)
     check_call(cmd)
