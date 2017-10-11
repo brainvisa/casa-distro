@@ -553,7 +553,8 @@ def create_build_workflow(bwf_repository, distro='opensource',
 
 
 def run_docker(bwf_repository, distro='opensource',
-               branch='latest_release', system=None, X=False, *args):
+               branch='latest_release', system=None, X=False, docker_options=[], 
+               *args):
     '''Run any command in docker with the config of the given repository
     '''
     if system is None:
@@ -564,28 +565,29 @@ def run_docker(bwf_repository, distro='opensource',
     cmd = ['/bin/bash', run_docker]
     if bool(X):
         cmd.append('-X11')
+    if len(docker_options) > 0:
+        cmd += docker_options + [ '--' ]
+        
     cmd += list(args)
     check_call(cmd)
 
 
 def run_docker_shell(bwf_repository, distro='opensource',
-                     branch='latest_release', system=None, X=False,
+                     branch='latest_release', system=None, X=False, 
                      args_list=[]):
     '''Run a bash shell in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, X, '/bin/bash',
-               *(['-it'] + args_list))
+    run_docker(bwf_repository, distro, branch, system, X, '/bin/bash', 
+               docker_options = ['-it'], *args_list)
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
-                        branch='latest_release', system=None, X=False,
+                        branch='latest_release', system=None, X=False, 
                         args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
     run_docker(bwf_repository, distro, branch, system, X, 'bv_maker',
-               *args_list)
-
-
+               docker_options = [], *args_list)
 
 if __name__ == '__main__':
     import sys
