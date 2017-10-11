@@ -132,7 +132,7 @@ do
     shift # past argument or value
 done
 
-cmd="docker run --rm -it -v %(build_workflow_dir)s/conf:/casa/conf \
+cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
                     -v %(build_workflow_dir)s/src:/casa/src \
                     -v %(build_workflow_dir)s/build:/casa/build \
                     -v %(build_workflow_dir)s/install:/casa/install \
@@ -236,7 +236,7 @@ exec $cmd
 '''
 
 docker_x11_options = '''# options to setup X11 in docker
-# the script tries to setect and setup nvidia drivers and libGL,
+# the script tries to select and setup nvidia drivers and libGL,
 # unless the following USE_NVIDIA variable is unset or set empty.
 USE_NVIDIA=1
 
@@ -574,7 +574,7 @@ def run_docker_shell(bwf_repository, distro='opensource',
     '''Run a bash shell in docker with the config of the given repository
     '''
     run_docker(bwf_repository, distro, branch, system, X, '/bin/bash',
-               *args_list)
+               *(['-it'] + args_list))
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
