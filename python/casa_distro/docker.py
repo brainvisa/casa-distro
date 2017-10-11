@@ -577,8 +577,8 @@ def run_docker_shell(bwf_repository, distro='opensource',
                      args_list=[]):
     '''Run a bash shell in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, X, '/bin/bash', 
-               docker_options = ['-it'], *args_list)
+    run_docker(bwf_repository, distro, branch, system, X, '/bin/bash', ['-it'], 
+               *args_list)
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
@@ -586,8 +586,8 @@ def run_docker_bv_maker(bwf_repository, distro='opensource',
                         args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, X, 'bv_maker',
-               docker_options = [], *args_list)
+    run_docker(bwf_repository, distro, branch, system, X, 'bv_maker', [], 
+               *args_list)
 
 if __name__ == '__main__':
     import sys
