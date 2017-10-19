@@ -192,14 +192,22 @@ def publish_docker(image_names = '*', verbose=None):
 
 
 @command
-def create_build_workflow(distro='opensource', branch='latest_release', system=None, download=False, build_workflows_repository=default_build_workflow_repository, verbose=None):
+def create_build_workflow(distro='opensource', branch='latest_release', 
+                          system=None, download=False, 
+                          not_override='bv_maker.cfg,svn.secret', 
+                          build_workflows_repository=default_build_workflow_repository,
+                          verbose=None):
     '''create a new build workflow directory in a repository of build workflows'''
     from casa_distro.docker import create_build_workflow
     if download:
         print('ERROR: download option of create_build_workflow is not implemented', file=sys.stderr)
         sys.exit(1)
     else:
-        create_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system)
+        not_override_lst = not_override.split(',')
+        create_build_workflow(build_workflows_repository, distro=distro, 
+                              branch=branch, system=system, 
+                              not_override=not_override_lst,
+                              verbose=verbose)
 
 
 @command
@@ -319,14 +327,13 @@ def bv_maker(distro='*', branch='*', system='*',
 @command
 def run(distro='opensource', branch='latest_release', system=None,
         build_workflows_repository=default_build_workflow_repository,
-        args_list=[], X=False, *args):
+        X=False, args_list=[]):
     '''Start any command in Docker with the given repository configuration.
     Command and args should be specified after --:
     casa_distro -r /home/casa run branch=bug_fix -- ls -als /casa'''
     from casa_distro.docker import run_docker
     run_docker(build_workflows_repository, distro=distro, branch=branch, 
-               system=system, X=X, docker_options=[],
-               *args_list)
+               system=system, X=X, docker_options=[], args_list=args_list)
 
 
 @command
@@ -405,7 +412,9 @@ if __name__ == '__main__':
                 args.append(i)
         if len(args_list) != 0:
             kwargs['args_list'] = args_list
+            
         result = command(*args, **kwargs)
+        
     finally:
         if tmp_share:
             shutil.rmtree(tmp_share)

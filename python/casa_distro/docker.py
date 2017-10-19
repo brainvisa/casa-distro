@@ -20,18 +20,109 @@ import re
 import casa_distro
 from casa_distro import share_directory, linux_os_ids
 
+# We need to duplicate this function to allow copying over
+# an existing directory
+def copytree(src, dst, symlinks=False, ignore=None):
+    """Recursively copy a directory tree using copy2().
 
-def cp(src, dst):
+    If exception(s) occur, an Error is raised with a list of reasons.
+
+    If the optional symlinks flag is true, symbolic links in the
+    source tree result in symbolic links in the destination tree; if
+    it is false, the contents of the files pointed to by symbolic
+    links are copied.
+
+    The optional ignore argument is a callable. If given, it
+    is called with the `src` parameter, which is the directory
+    being visited by copytree(), and `names` which is the list of
+    `src` contents, as returned by os.listdir():
+
+        callable(src, names) -> ignored_names
+
+    Since copytree() is called recursively, the callable will be
+    called once for each directory that is copied. It returns a
+    list of names relative to the `src` directory that should
+    not be copied.
+
+    XXX Consider this example code rather than the ultimate tool.
+
+    """
+    if os.path.isdir(src):
+        names = os.listdir(src)
+        dstnames = names
+    else:
+        names = [os.path.basename(src)]
+        src = os.path.dirname(src)
+        
+        if os.path.isdir(dst):
+            dstnames = names
+        else:
+            dstnames = [os.path.basename(dst)]
+            dst = os.path.dirname(dst)
+        
+    if ignore is not None:
+        ignored_names = ignore(src, names, 
+                               dst, dstnames)
+    else:
+        ignored_names = set()
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+        
+    errors = []
+    for name, new_name in zip(names, dstnames):
+        if name in ignored_names:
+            continue
+        srcname = os.path.join(src, name)
+        dstname = os.path.join(dst, new_name)
+        try:
+            if symlinks and os.path.islink(srcname):
+                linkto = os.readlink(srcname)
+                os.symlink(linkto, dstname)
+            elif os.path.isdir(srcname):
+                copytree(srcname, dstname, symlinks, ignore)
+            else:
+                # Will raise a SpecialFileError for unsupported file types
+                shutil.copy2(srcname, dstname)
+        # catch the Error from the recursive copytree so that we can
+        # continue with other files
+        except shutil.Error, err:
+            errors.extend(err.args[0])
+        except EnvironmentError, why:
+            errors.append((srcname, dstname, str(why)))
     try:
-        shutil.copytree(src, dst)
-    except OSError as e:
-        if e.errno != errno.ENOTDIR:
-            raise
-        shutil.copy2(src, dst)
+        shutil.copystat(src, dst)
+    except OSError, why:
+        if shutil.WindowsError is not None and isinstance(why, shutil.WindowsError):
+            # Copying file access times may fail on Windows
+            pass
+        else:
+            errors.append((src, dst, str(why)))
+    if errors:
+        raise shutil.Error, errors
+    
+def cp(src, dst, not_override=[], verbose=None):
+    
+    def override_exclusion(cur_src, names, 
+                           cur_dst, dst_names):
+        excluded = []
+        for n in not_override:
+            if n in names:
+              i = names.index(n)
+              d = os.path.join(cur_dst, dst_names[i])
+              if os.path.exists(d):
+                excluded.append(n)
+                if verbose:
+                    print('file', d, 'exists,', 'skipping override.', 
+                          file=verbose)
+        
+        return excluded
+    
+    copytree(src, dst, ignore=override_exclusion)
 
 dockerfile_template = '''FROM cati/casa-dev:%(system)s
 # set rsa key of guest (localhost) in user ssh config at login time
-RUN sed -i 's/#!\/bin\/sh/#!\/bin\/sh\\nssh-keyscan localhost >> $HOME\/.ssh\/known_hosts/' /usr/local/bin/entrypoint
+RUN sed -i 's|#!/bin/sh|#!/bin/sh\\nssh-keyscan localhost >> $HOME/.ssh/known_hosts|' /usr/local/bin/entrypoint
 
 %(non_root_commands)s
 
@@ -133,18 +224,20 @@ do
 done
 
 cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
-                    -v %(build_workflow_dir)s/src:/casa/src \
-                    -v %(build_workflow_dir)s/build:/casa/build \
-                    -v %(build_workflow_dir)s/install:/casa/install \
-                    -v %(build_workflow_dir)s/pack:/casa/pack \
-                    -v %(build_workflow_dir)s/tests:/casa/tests \
-                    -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
-                    -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
-                    -e CASA_BRANCH=%(casa_branch)s \
-                    -e CASA_HOST_DIR=%(build_workflow_dir)s \
-                    --net=host ${DOCKER_OPTIONS} \
-                    %(image_name)s \
-                    $docker_cmd"
+                     -v %(build_workflow_dir)s/src:/casa/src \
+                     -v %(build_workflow_dir)s/build:/casa/build \
+                     -v %(build_workflow_dir)s/install:/casa/install \
+                     -v %(build_workflow_dir)s/pack:/casa/pack \
+                     -v %(build_workflow_dir)s/tests:/casa/tests \
+                     -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
+                     -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
+                     -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
+                     -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
+                     -e CASA_BRANCH=%(casa_branch)s \
+                     -e CASA_HOST_DIR=%(build_workflow_dir)s \
+                     --net=host ${DOCKER_OPTIONS} \
+                     %(image_name)s \
+                     $docker_cmd"
 echo "$cmd"
 exec $cmd
 '''
@@ -156,6 +249,14 @@ fi
 
 docker_cmd=
 docker_arg=0
+script_arg=1
+image_arg=0
+if [ -n "${IMAGE_NAME}" ]; 
+then
+    image_name="${IMAGE_NAME}"
+else
+    image_name="cati/casa-test:%(system)s"
+fi
 
 while [[ $# -gt 0 ]]
 do
@@ -166,55 +267,69 @@ do
         if [ "$1" == "--" ]; then
             # end of docker options
             docker_arg=0
+            script_arg=0
         else
             DOCKER_OPTIONS="$DOCKER_OPTIONS $1"
         fi
 
     else
-
-        if [ "$script_arg" == 0 ]; then
-
-            docker_cmd="$docker_cmd $1"
-
+        if [ "$image_arg" == 1 ]; then
+            image_name="$1"
+            image_arg=0
         else
 
-            case $key in
-                -h|--help)
-                echo "$0 [options] command [args]"
-                echo "run command (with args) in docker using cati/casa-test:%(system)s image, casa-distro mount points, and host user. The script %(build_workflow_dir)s/conf/docker_options will be sourced to get additional docker options in the variable DOCKER_OPTIONS."
-                echo "options:"
-                echo "-X11         source an additional options script %(build_workflow_dir)s/conf/docker_options_x11"
-                echo "             which will complete DOCKER_OPTIONS with X config."
-                echo "-d|--docker  pass additional options to Docker. Following options will"
-                echo "             be appended to DOCKER_OPTIONS. To end up docker options and"
-                echo "             specify the command and its ards, the option delimier \"--\""
-                echo "             should be used. Ex:"
-                echo "             $0 -d -v /data_dir:/docker_data_dir -- ls /docker_data_dir"
-                exit 1
-                ;;
+            if [ "$script_arg" == 0 ] && [ "$image_arg" == 0 ]; then
 
-                -X11)
-                if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
-                    . %(build_workflow_dir)s/conf/docker_options_x11
-                fi
-                ;;
-                -d|--docker)
-                docker_arg=1
-                ;;
-                --)
-                docker_arg=0
-                script_arg=0
-                ;;
-                *)
                 docker_cmd="$docker_cmd $1"
-                ;;
-            esac
+
+            else
+
+                case $key in
+                    -h|--help)
+                    echo "$0 [options] command [args]"
+                    echo "run command (with args) in docker using ${image_name} image, casa-distro mount points, and host user. The script %(build_workflow_dir)s/conf/docker_options will be sourced to get additional docker options in the variable DOCKER_OPTIONS."
+                    echo "options:"
+                    echo "-X11         source an additional options script %(build_workflow_dir)s/conf/docker_options_x11"
+                    echo "             which will complete DOCKER_OPTIONS with X config."
+                    echo "-d|--docker  pass additional options to Docker. Following options will"
+                    echo "             be appended to DOCKER_OPTIONS. To end up docker options and"
+                    echo "             specify the command and its ards, the option delimier \"--\""
+                    echo "             should be used. Ex:"
+                    echo "             $0 -d -v /data_dir:/docker_data_dir -- ls /docker_data_dir"
+                    exit 1
+                    ;;
+
+                    -X11)
+                    if [ -f %(build_workflow_dir)s/conf/docker_options_x11 ]; then
+                        . %(build_workflow_dir)s/conf/docker_options_x11
+                    fi
+                    ;;
+                    -d|--docker)
+                    docker_arg=1
+                    ;;
+                    --)
+                    docker_arg=0
+                    script_arg=0
+                    ;;
+                    -i|--image)
+                    docker_arg=0
+                    script_arg=0
+                    image_arg=1
+                    ;;
+                    *)
+                    docker_cmd="$docker_cmd $1"
+                    ;;
+                esac
+            fi
         fi
+
     fi
     shift # past argument or value
 done
 
-cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
+
+cmd="docker run --rm \
+                -v %(build_workflow_dir)s/conf:/casa/conf \
                 -v %(build_workflow_dir)s/src:/casa/src \
                 -v %(build_workflow_dir)s/build:/casa/build \
                 -v %(build_workflow_dir)s/install:/casa/install \
@@ -222,14 +337,14 @@ cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
                 -v %(build_workflow_dir)s/tests:/casa/tests \
                 -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
                 -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
+                -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
+                -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                 -u  %(uid)s:%(gid)s \
                 -e USER=%(user)s \
                 -e HOME=/casa/tests \
-                -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
-                -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                 -e CASA_BRANCH=%(casa_branch)s \
                 --net=bridge ${DOCKER_OPTIONS} \
-                cati/casa-test:ubuntu-16.04 \
+                $image_name \
                 $docker_cmd"
 echo "$cmd"
 exec $cmd
@@ -260,7 +375,9 @@ def get_docker_version():
 def create_build_workflow_directory(build_workflow_directory, 
                                     distro='opensource',
                                     casa_branch='latest_release',
-                                    system=linux_os_ids[0]):
+                                    system=linux_os_ids[0],
+                                    not_override=[],
+                                    verbose=None):
     '''
     Initialize a new build workflow directory. This creates a conf subdirectory with
     bv_maker.cfg and svn.secret files that can be edited before compilation.
@@ -278,6 +395,9 @@ def create_build_workflow_directory(build_workflow_directory,
     casa_branch: bv_maker branch to use (latest_release, bug_fix or trunk)
 
     system: Name of the target system.
+    
+    not_override: a list of file name that must not be overrided if they already
+                  exist
     
     * Typically created by bv_maker but may be extended in the future.
 
@@ -297,11 +417,13 @@ def create_build_workflow_directory(build_workflow_directory,
         sub_distro_dir = osp.join(distro_dir, subdir)
         if osp.exists(sub_distro_dir):
             for i in os.listdir(sub_distro_dir):
-                cp(osp.join(sub_distro_dir, i), osp.join(sub_bwf_dir, i))
+                cp(osp.join(sub_distro_dir, i), osp.join(sub_bwf_dir, i), 
+                   not_override=not_override, verbose=verbose)
         sub_os_dir = osp.join(os_dir, subdir)
         if osp.exists(sub_os_dir):
             for i in os.listdir(sub_os_dir):
-                cp(osp.join(sub_os_dir, i), osp.join(sub_bwf_dir, i))
+                cp(osp.join(sub_os_dir, i), osp.join(sub_bwf_dir, i),
+                   not_override=not_override, verbose=verbose)
     
     # Replacement of os.getlogin that fail sometimes
     user = pwd.getpwuid(os.getuid()).pw_name
@@ -543,18 +665,21 @@ def publish_docker_images(image_name_filters = ['*']):
 
 
 def create_build_workflow(bwf_repository, distro='opensource',
-                          branch='latest_release', system=None):
+                          branch='latest_release', system=None, 
+                          not_override=[],
+                          verbose=None):
     if system is None:
         system = casa_distro.linux_os_ids[0]
     bwf_directory = osp.join(bwf_repository, '%s' % distro, '%s_%s' % (branch, system))
     if not osp.exists(bwf_directory):
         os.makedirs(bwf_directory)
-    create_build_workflow_directory(bwf_directory, distro, branch, system)
+    create_build_workflow_directory(bwf_directory, distro, branch, system, 
+                                    not_override, verbose=verbose)
 
 
-def run_docker(bwf_repository, distro='opensource',
-               branch='latest_release', system=None, X=False, docker_options=[], 
-               *args):
+def run_docker(bwf_repository, distro='opensource', branch='latest_release', 
+               system=None, X=False, docker_options=[], 
+               args_list=[]):
     '''Run any command in docker with the config of the given repository
     '''
     if system is None:
@@ -568,7 +693,7 @@ def run_docker(bwf_repository, distro='opensource',
     if len(docker_options) > 0:
         cmd += ['-d'] + docker_options + ['--']
         
-    cmd += list(args)
+    cmd += args_list
     check_call(cmd)
 
 
@@ -577,8 +702,8 @@ def run_docker_shell(bwf_repository, distro='opensource',
                      args_list=[]):
     '''Run a bash shell in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, X, ['-it'], '/bin/bash', 
-               *args_list)
+    run_docker(bwf_repository, distro, branch, system, X, ['-it'], 
+               ['/bin/bash'] + args_list)
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
@@ -586,8 +711,8 @@ def run_docker_bv_maker(bwf_repository, distro='opensource',
                         args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, X, [], 'bv_maker', 
-               *args_list)
+    run_docker(bwf_repository, distro, branch, system, X, [], 
+               ['bv_maker'] + args_list)
 
 if __name__ == '__main__':
     import sys
