@@ -135,8 +135,7 @@ RUN cd /tmp \
 #    rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
 
 RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
-# TODO: OpenSlide does not compile due to incompatibility in GLIB version
-#RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
+RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
 # install a version of netcdf with fewer dependencies
 COPY build_netcdf.sh /tmp/build_netcdf.sh
