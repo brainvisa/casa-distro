@@ -1077,7 +1077,7 @@ if [ "${PYTHON}"  == "1" ]; then
 
         ln -fs python-${PYTHON_VERSION} python
         pushd bin;ln -fs ../python/*.exe ./;
-                  ln -fs ../python/DLLs/*.dll ./;
+                  ln -fs ../python/DLLs/python${PYTHON_VERSION_MINOR//./}.dll ./;
                   ln -fs ../python/Scripts/easy_install.exe \
                          ../python/Scripts/easy_install-2.7.exe \
                          ./;
