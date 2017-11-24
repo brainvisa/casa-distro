@@ -4,6 +4,8 @@
 # wine64 msiexec /x /tmp/python-2.7.11.amd64.msi /qn TARGETDIR=d:\\usr\\local\\python-2.7.11 ALLUSERS=1
 #
 
+__start_date="$(date)"
+
 # ------------------------------------------------------------------------------
 # Functions
 # ------------------------------------------------------------------------------
@@ -331,14 +333,14 @@ __sys_packages=(apt-utils autoconf automake autopoint bash bison bzip2 cmake
                 openssl patch perl pkg-config python python-dev python-mako 
                 python-dateutil python-setuptools python-sphinx 
                 python-virtualenv ruby scons sed subversion unzip wget xvfb xdot
-                xz-utils dos2unix texinfo)
+                xz-utils yasm dos2unix texinfo)
 
 __build_packages=(wine mingw64 python)
 
 __build_libs=(libiconv zlib libxml2 expat hdf5 gettext sqlite libsigcpp freetype
-              libregex boost blitz libffi libjpeg libtiff libpng fontconfig glib 
-              openjpeg jpegxr gdkpixbuf pixman cairo openslide dcmtk netcdf minc
-              libsvm qt qwt5 yaml qtifw)
+              libregex boost blitz libffi libjpegturbo libtiff libpng libmng 
+              fontconfig glib openjpeg jpegxr gdkpixbuf pixman cairo openslide 
+              dcmtk netcdf minc libsvm qt qwt5 yaml qtifw)
 
 __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six 
                      python_numpy python_scipy python_traits python_dateutil 
@@ -883,6 +885,7 @@ set_toolchain
 # ------------------------------------------------------------------------------
 echo "============================== SUMMARY ==============================="
 echo "* ${__wine_cmd} running a ${WINDOWS_OS_ARCH} windows architecture"
+echo "* started ${__start_date}"
 if [ "${__download}" == "1" ]; then
     echo "* Download in directory ${__download_dir}"
 fi
@@ -2079,6 +2082,63 @@ EOF
     fi
 fi
 
+
+# ------------------------------------------------------------------------------
+# libjpegturbo
+# ------------------------------------------------------------------------------
+LIBJPEGTURBO_VERSION=1.3.0
+LIBJPEGTURBO_INSTALL_PREFIX=${CROSSBUILD_INSTALL_PREFIX}/libjpegturbo-${LIBJPEGTURBO_VERSION}
+LIBJPEGTURBO_SOURCE_URL=http://downloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz
+if [ "${LIBJPEGTURBO}" == "1" ]; then
+    echo "============================== LIBJPEGTURBO ==============================="
+    if [ "${__download}" == "1" ]; then
+        download ${LIBJPEGTURBO_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        remove ${LIBJPEGTURBO_INSTALL_PREFIX}
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        tar xvf ${__download_dir}/libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz
+        pushd ${__build_dir}/libjpeg-turbo-${LIBJPEGTURBO_VERSION}
+
+        # Generate patch to build shared library
+        cat << EOF > libjpeg-turbo-${LIBJPEGTURBO_VERSION}.patch
+diff -NurB --strip-trailing-cr --suppress-common-lines jmorecfg.h jmorecfg.h
+--- jmorecfg.h  2017-11-23 15:42:21.030030290 +0100
++++ jmorecfg.h  2017-11-23 15:42:43.621993416 +0100
+@@ -229,7 +229,7 @@
+  */
+ 
+ #ifndef HAVE_BOOLEAN
+-typedef int boolean;
++typedef unsigned char boolean;
+ #endif
+ #ifndef FALSE          /* in case these macros already exist */
+ #define FALSE  0       /* values of boolean */
+
+EOF
+        patch -f -N -i libjpeg-turbo-${LIBJPEGTURBO_VERSION}.patch -p0
+
+        ./configure \
+                --build=${__buildtype} \
+                --host=${__toolchain} \
+                --prefix=${LIBJPEGTURBO_INSTALL_PREFIX} \
+        || exit 1
+        make -j${__build_proc_num} install || exit 1
+
+        pushd ${CROSSBUILD_INSTALL_PREFIX}
+        rm -f libjpegturbo && ln -fs libjpegturbo-${LIBJPEGTURBO_VERSION} libjpegturbo
+        pushd bin;ln -fs ../libjpegturbo/bin/*.* ./;popd
+        pushd lib;ln -fs ../libjpegturbo/lib/*.* ./;popd
+        pushd include;ln -fs ../libjpegturbo/include/* ./;popd
+
+        popd
+        popd
+    fi
+fi
+
 # ------------------------------------------------------------------------------
 # libtiff
 # ------------------------------------------------------------------------------
@@ -2239,7 +2299,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines libmng_types.h libmng_ty
 +++ libmng_types.h  2016-09-27 14:36:09.684245001 +0200
 @@ -204,6 +204,7 @@
  #define HAVE_BOOLEAN
- typedef int boolean;
+-typedef int boolean;
++typedef unsigned char boolean;
  #endif
 +#include <stdio.h>
  #include <jpeglib.h>
@@ -3796,7 +3857,7 @@ QT_VERSION=4.8.6
 QT_INSTALL_PREFIX=${CROSSBUILD_INSTALL_PREFIX}/qt-${QT_VERSION}
 QT_INSTALL_PREFIX_WINE=${CROSSBUILD_INSTALL_PREFIX_WINE}\\qt-${QT_VERSION}
 QT_SOURCE_URL=http://www.mirrorservice.org/sites/download.qt-project.org/archive/qt/${QT_VERSION%.*}/${QT_VERSION}/qt-everywhere-opensource-src-${QT_VERSION}.tar.gz
-QT_DEPENDENCIES="zlib libiconv libpng libtiff libjpeg"
+QT_DEPENDENCIES="zlib libiconv sqlite3 libpng libmng libtiff libjpegturbo"
 if [ "${QT}" == "1" ]; then
     echo "================================= QT ================================="
     if [ "${__download}" == "1" ]; then
@@ -3811,26 +3872,25 @@ if [ "${QT}" == "1" ]; then
         tar xvf ${__download_dir}/qt-everywhere-opensource-src-${QT_VERSION}.tar.gz
         pushd ${__build_dir}/qt-everywhere-opensource-src-${QT_VERSION}
         cat << EOF > qt-${QT_VERSION}.patch
-diff -NurwB --strip-trailing-cr --suppress-common-lines mkspecs/win32-g++/qmake.conf mkspecs/win32-g++/qmake.conf
---- mkspecs/win32-g++/qmake.conf	2016-09-19 12:00:31.525586417 +0200
-+++ mkspecs/win32-g++/qmake.conf	2016-09-19 12:08:59.169464672 +0200
-@@ -82,26 +82,16 @@
- QMAKE_LIBS_COMPAT       = -ladvapi32 -lshell32 -lcomdlg32 -luser32 -lgdi32 -lws2_32
- QMAKE_LIBS_QT_ENTRY     = -lmingw32 -lqtmain
- 
--!isEmpty(QMAKE_SH) {
+diff -NurB --strip-trailing-cr --suppress-common-lines mkspecs/win32-g++/qmake.conf mkspecs/win32-g++/qmake.conf
+--- mkspecs/win32-g++/qmake.conf	2017-11-22 16:55:00.274885400 +0100
++++ mkspecs/win32-g++/qmake.conf	2017-11-22 17:00:40.741801903 +0100
+@@ -86,21 +86,13 @@
      MINGW_IN_SHELL      = 1
  	QMAKE_DIR_SEP		= /
  	QMAKE_QMAKE		~= s,\\\\\\\\,/,
 -	QMAKE_COPY		= cp
 -	QMAKE_COPY_DIR		= cp -r
-+	QMAKE_COPY		= cp -f
-+	QMAKE_COPY_DIR		= cp -rf
- 	QMAKE_MOVE		= mv
+-	QMAKE_MOVE		= mv
 -	QMAKE_DEL_FILE		= rm
-+	QMAKE_DEL_FILE		= rm -f
- 	QMAKE_MKDIR		= mkdir -p
- 	QMAKE_DEL_DIR		= rmdir
+-	QMAKE_MKDIR		= mkdir -p
+-	QMAKE_DEL_DIR		= rmdir
++	QMAKE_COPY		= /bin/cp -f
++	QMAKE_COPY_DIR		= /bin/cp -rf
++	QMAKE_MOVE		= /bin/mv
++	QMAKE_DEL_FILE		= /bin/rm
++	QMAKE_MKDIR		= /bin/mkdir -p
++	QMAKE_DEL_DIR		= /bin/rmdir
      QMAKE_CHK_DIR_EXISTS = test -d
 -} else {
 -	QMAKE_COPY		= copy /y
@@ -3840,10 +3900,9 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines mkspecs/win32-g++/qmake.
 -	QMAKE_MKDIR		= mkdir
 -	QMAKE_DEL_DIR		= rmdir
 -    QMAKE_CHK_DIR_EXISTS	= if not exist
--}
+ }
  
  QMAKE_MOC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}moc\$\${EXE_SUFFIX}
- QMAKE_UIC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}uic\$\${EXE_SUFFIX}
 
 diff -NurwB --strip-trailing-cr --suppress-common-lines src/3rdparty/webkit/Source/WebKit/qt/tests/hybridPixmap/hybridPixmap.pro src/3rdparty/webkit/Source/WebKit/qt/tests/hybridPixmap/hybridPixmap.pro
 --- src/3rdparty/webkit/Source/WebKit/qt/tests/hybridPixmap/hybridPixmap.pro    2016-09-06 11:06:13.059378011 +0200
@@ -3985,14 +4044,25 @@ EOF
         #echo "LDFLAGS: ${LDFLAGS}"
 
         #-arch x86_64
+        #-qt-libjpeg
+        #-debug-and-release
+        #-dbus
+        
         ./configure \
                 -opensource \
                 -confirm-license \
-                -debug-and-release \
+                -release \
+                -system-zlib \
+                -system-sqlite \
+                -system-libmng \
+                -system-libpng \
+                -system-libtiff \
+                -system-libjpeg \
                 -verbose \
                 -xplatform win32-g++ \
                 -platform linux-g++-64 \
                 -no-pch \
+                -multimedia \
                 -make libs \
                 -make tools \
                 -make examples \
@@ -4806,6 +4876,15 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
  
  # Under Windows qmake and the Qt DLLs must be on the system PATH otherwise the
  # dynamic linker won't be able to resolve the symbols.  On other systems we
+@@ -383,7 +387,7 @@
+             check_module("QtDesigner", "QExtensionFactory",
+                     "new QExtensionFactory()")
+ 
+-        check_module("QAxContainer", "qaxobject.h", "new QAxObject()")
++        check_module("QAxContainer", "qaxobject.h", "new QAxObject()", extra_libs = ["uuid", "ole32", "oleaut32"])
+ 
+         if os.path.isdir(os.path.join(src_dir, "dbus")):
+             check_dbus()
 @@ -662,7 +666,7 @@
          """
          qpy_dir = os.path.join("qpy", mname)
@@ -4824,7 +4903,20 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
                  # Use abiflags in case it is supported in a future version.
                  lib_dir_flag = quote("-L%s" % sipcfg.py_lib_dir)
                  link = "%s -lpython%d%d%s" % (lib_dir_flag, py_major, py_minor, abi)
-@@ -1511,7 +1515,7 @@
+@@ -1387,7 +1391,11 @@
+     """
+     sipconfig.inform("Checking to see if the dbus support module should be built...")
+ 
+-    sout = get_command_stdout("pkg-config --cflags-only-I --libs dbus-1")
++    pkg_config = sipcfg.build_macros().get('PKG_CONFIG', 'pkg-config')
++    pkg_config_path = sipcfg.build_macros().get('PKG_CONFIG_PATH', 
++                                                os.environ.get('PKG_CONFIG_PATH'))
++    sout = get_command_stdout(pkg_config + "--cflags-only-I --libs dbus-1",
++                              envvars = {'PKG_CONFIG_PATH':pkg_config_path})
+     iflags = sout.read().strip()
+ 
+     if not iflags:
+@@ -1511,7 +1519,7 @@
          sip_flags.append("PyQt_Deprecated_5_0")
  
      # Handle the platform tag.
@@ -4833,7 +4925,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          plattag = "WS_WIN"
      elif sys.platform == "darwin":
          if "__USE_WS_X11__" in sipcfg.build_macros()["DEFINES"]:
-@@ -1530,7 +1534,7 @@
+@@ -1530,7 +1538,7 @@
      # Handle any feature flags.
      for xf in qt_xfeatures:
          sip_flags.append("-x")
@@ -4842,7 +4934,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
  
      if verstag:
          sip_flags.append("-t")
-@@ -1656,6 +1660,8 @@
+@@ -1656,6 +1664,8 @@
  
      # Build the SIP command line.
      argv = ['"' + sipcfg.sip_bin + '"', '-w']
@@ -4851,7 +4943,31 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
  
      if opts.no_timestamp:
          argv.append("-T")
-@@ -2024,7 +2030,7 @@
+@@ -1927,6 +1937,10 @@
+     names.append("INCDIR_QT")
+     names.append("LIBDIR_QT")
+     names.append("MOC")
++    
++    # Add pkg-config macros to the default
++    names.append("PKG_CONFIG")
++    names.append("PKG_CONFIG_PATH")
+ 
+     properties = {
+         "QT_INSTALL_BINS":      qt_bindir,
+@@ -1954,6 +1968,12 @@
+ 
+         macros["MOC"] = default_moc
+ 
++    # pkg-config
++    if macros.get("PKG_CONFIG", "") == "":
++        macros["PKG_CONFIG"] = os.environ.get("PKG_CONFIG")
++    if macros.get("PKG_CONFIG_PATH", "") == "":
++        macros["PKG_CONFIG_PATH"] = os.environ.get("PKG_CONFIG_PATH")
++        
+     return macros
+ 
+ 
+@@ -2024,7 +2044,7 @@
      out_file = app + ".out"
      qmake_args = fix_qmake_args("-o " + make_file)
  
@@ -4860,7 +4976,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          if opts.debug:
              exe_file = os.path.join("debug", app + ".exe")
              make_target = " debug"
-@@ -2187,7 +2193,7 @@
+@@ -2187,7 +2207,7 @@
          make = "nmake"
      elif sipcfg.platform == "win32-borland":
          make = "bmake"
@@ -4869,7 +4985,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          make = "mingw32-make"
      else:
          make = "make"
-@@ -2201,7 +2207,10 @@
+@@ -2201,7 +2221,10 @@
  
      # Create the output file, first making sure it doesn't exist.
      remove_file(out_file)
@@ -4881,7 +4997,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
  
      if not os.access(out_file, os.F_OK):
          sipconfig.error("%s failed to create %s. Make sure your Qt installation is correct." % (exe_file, out_file))
-@@ -2215,24 +2224,24 @@
+@@ -2215,24 +2238,24 @@
      global qt_pluginsdir
      global qt_version, qt_edition, qt_licensee, qt_shared, qt_xfeatures
  
@@ -4919,7 +5035,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          qt_licensee = None
  
      try:
-@@ -2281,12 +2290,15 @@
+@@ -2281,12 +2304,15 @@
      if sipcfg.sip_version < sip_min_version:
          sipconfig.error("This version of PyQt requires SIP v%s or later" % sipconfig.version_to_string(sip_min_version))
  
@@ -4936,6 +5052,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
      # Provide defaults for platform-specific options.
      if sys.platform == 'win32':
          opts.qmake = find_default_qmake()
+
 EOF
 
         if [ "${__arch}" == "x86_64" ]; then 
@@ -5025,6 +5142,8 @@ EOF
                     -v ${PYTHON_INSTALL_PREFIX}/sip \
                     -q ${QT_INSTALL_PREFIX}/bin/qmake \
                     --verbose \
+                    PKG_CONFIG=${PKG_CONFIG} \
+                    PKG_CONFIG_PATH=${PKG_CONFIG_PATH} \
                     CC=$CC \
                     CFLAGS="$CFLAGS $PYTHON_CFLAGS -DQT_SHAREDMEMORY -DQT_SYSTEMSEMAPHORE" \
                     CXX=$CXX \
@@ -7378,3 +7497,9 @@ unset __cea_mirror_version
 unset __tmp_dir
 unset __build_dir
 unset __download_dir
+
+# ------------------------------------------------------------------------------
+# End
+# ------------------------------------------------------------------------------
+echo "================================== END =================================="
+echo "* ended $(date)"
