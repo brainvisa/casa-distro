@@ -2275,6 +2275,16 @@ if [ "${LIBMNG}" == "1" ]; then
 diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeLists.txt
 --- CMakeLists.txt  2016-10-27 19:36:41.352663554 +0200
 +++ CMakeLists.txt  2016-10-27 19:37:24.308664844 +0200
+@@ -384,7 +384,7 @@
+ #---------------- SHARED -------------
+ IF(BUILD_SHARED_LIBS)
+ 
+- IF(WIN32)
++ IF(WIN32 AND NOT CMAKE_CROSSCOMPILING)
+ #-DMNG_BUILD_DLL or -DMNG_DLL or  -DMNG_USE_DLL : cnf. libmng_types.h
+   ADD_DEFINITIONS(-DMNG_BUILD_DLL)
+  ENDIF(WIN32)
+  
 @@ -434,7 +434,7 @@
  #
  ENDIF(BUILD_SHARED_LIBS)
