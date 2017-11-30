@@ -318,11 +318,95 @@ def bv_maker(distro='*', branch='*', system='*',
     '''Start bv_maker in Docker for all the selected build workflows (by default, all created build workflows).'''
     from casa_distro.docker import run_docker_bv_maker
     from casa_distro import iter_build_workflow
+    from subprocess import CalledProcessError
+    from traceback import format_exc
+    import time
+    import six
 
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
-        run_docker_bv_maker(build_workflows_repository, distro=d,
-                            branch=b, system=s, X=X, args_list=args_list)
+    class ExecutionStatus:
+        status_map = {'not run': '',
+                      'succeeded': 'OK         ',
+                      'failed': 'FAILED     ',
+                      'interrupted': 'INTERRUPTED'}
+        
+        def __init__(self,
+                     error_code = None, 
+                     exception = None, 
+                     status = 'not run',
+                     start_time = None,
+                     stop_time = None):
+            self.error_code = error_code
+            self.exception = exception
+            self.status = status
+            self.start_time = start_time
+            self.stop_time = stop_time
+            
+        def get_status_mapped(self):
+            return self.status_map.get(self.status)
+            
+    status = {}
+    global_failed = False
 
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, 
+                                                distro=distro, branch=branch, 
+                                                system=system):
+        es = ExecutionStatus(start_time = time.localtime())
+        status[(d, b, s)] = (es, bwf_dir)
+        try:
+            run_docker_bv_maker(build_workflows_repository, distro=d,
+                                branch=b, system=s, X=X, args_list=args_list)
+            es.stop_time = time.localtime()
+            es.error_code = 0
+            es.status = 'succeeded'
+        
+        except CalledProcessError:
+            es.stop_time = time.localtime()
+            es.exception = format_exc()
+            es.error_code = 1
+            es.status = 'failed'
+            
+        except KeyboardInterrupt:
+            es.stop_time = time.localtime()
+            es.error_code = 1
+            es.status = 'interrupted'
+            break
+            
+    # Display summary
+    sys.stdout.flush()
+    sys.stderr.flush()
+    messages = ['\ncasa_distro summary:']
+    print(messages[0])
+
+    first_start = None
+    last_stop = None
+    for (d, b, s), (es, bwf_dir) in six.iteritems(status):
+        status = es.get_status_mapped()
+        if status != '':
+            message = '%s workflow %s %s %s: %s' % (status, d, b, s, bwf_dir)
+            start = es.start_time
+            if start:
+                if first_start is None:
+                    first_start = start
+                message += ', started: %04d/%02d/%02d %02d:%02d' \
+                    % start[:5]
+            stop = es.stop_time
+            if stop:
+                last_stop = stop
+                message += ', stopped: %04d/%02d/%02d %02d:%02d' \
+                    % stop[:5]
+            messages.append(message)
+            print(message)
+            if es.error_code:
+                global_failed = True
+    
+    if global_failed:
+        status = 'There were errors.'
+        print(status)
+    else:
+        status = 'All went good.'
+        print(status)
+        
+    return global_failed
 
 @command
 def run(distro='opensource', branch='latest_release', system=None,
