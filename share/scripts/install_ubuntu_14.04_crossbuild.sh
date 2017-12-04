@@ -1025,6 +1025,7 @@ fi
 # ------------------------------------------------------------------------------
 PYTHON_VERSION=2.7.11
 PYTHON_VERSION_MINOR=${PYTHON_VERSION%.*}
+PYTHON_VERSION_MAJOR=${PYTHON_VERSION_MINOR%.*}
 PYTHON_VERSION_HEX=$(${PYTHON_HOST_COMMAND} -c "version='${PYTHON_VERSION}';version_arr=version.split('.');version_arr=[(int(version_arr[i]) << ((abs(i) - 1)  * 8)) for i in xrange(-1, -len(version_arr) - 1, -1)];print hex(sum(version_arr))")
 PYTHON_INSTALL_PREFIX=${CROSSBUILD_INSTALL_PREFIX}/python-${PYTHON_VERSION}
 PYTHON_INSTALL_PREFIX_WINE=${CROSSBUILD_INSTALL_PREFIX_WINE}\\python-${PYTHON_VERSION}
@@ -1077,12 +1078,15 @@ if [ "${PYTHON}"  == "1" ]; then
             cp -f "${PYTHON_WIN_SYS_DIR}/python${PYTHON_VERSION_MINOR//./}.dll" ${PYTHON_INSTALL_PREFIX}/DLLs
         fi
         pushd ${CROSSBUILD_INSTALL_PREFIX}
-
+        
         ln -fs python-${PYTHON_VERSION} python
+        pushd python-${PYTHON_VERSION};
+            ln -fs python.exe python${PYTHON_VERSION_MAJOR}.exe;
+        popd
         pushd bin;ln -fs ../python/*.exe ./;
                   ln -fs ../python/DLLs/python${PYTHON_VERSION_MINOR//./}.dll ./;
                   ln -fs ../python/Scripts/easy_install.exe \
-                         ../python/Scripts/easy_install-2.7.exe \
+                         ../python/Scripts/easy_install-${PYTHON_VERSION_MINOR}.exe \
                          ./;
         popd
         pushd lib;ln -fs ../python/libs/*.* ./;popd
@@ -1108,7 +1112,7 @@ if [ "${PYTHON}"  == "1" ]; then
     fi
     
     if [ "${__fix_python_scripts}" == "1" ]; then
-        for __script in easy_install.exe easy_install-2.7.exe; do
+        for __script in easy_install.exe easy_install-${PYTHON_VERSION_MINOR}.exe; do
             fix_python_script ${PYTHON_INSTALL_PREFIX}/Scripts/${__script}
         done
     fi
