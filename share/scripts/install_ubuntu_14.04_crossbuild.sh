@@ -1108,7 +1108,7 @@ if [ "${PYTHON}"  == "1" ]; then
         # Add binary prefix to the registry
         ${__build_dir}/update_registry_path \
             --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\PYTHONHOME" \
-            --value "${PYTHON_INSTALL_PREFIX_WINE}"
+            --value "${CROSSBUILD_INSTALL_PREFIX_WINE}\\python"
     fi
     
     if [ "${__fix_python_scripts}" == "1" ]; then
@@ -4106,6 +4106,7 @@ EOF
 Prefix = ..
 Plugins = plugins
 EOF
+       
         rm -f qt && ln -fs qt-${QT_VERSION} qt
         pushd bin;ln -fs ../qt/bin/*.* ./;popd
         pushd lib;ln -fs ../qt/lib/*.* ./;popd
@@ -4113,6 +4114,16 @@ EOF
         pushd lib/pkgconfig;ln -fs ../../qt/lib/pkgconfig/* ./;popd
         popd
         popd
+    fi
+   
+    if [ "${__update_registry_path}" = "1" ]; then
+        # Update registry path to append qt plugin path..
+        wineserver -k -w
+        
+        # Add binary prefix to the registry
+        ${__build_dir}/update_registry_path \
+            --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\QT_PLUGIN_PATH" \
+            --value "${CROSSBUILD_INSTALL_PREFIX_WINE}\\qt\\plugins"
     fi
 fi
 
