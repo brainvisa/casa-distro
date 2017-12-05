@@ -4,11 +4,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import errno
-import grp
 import json
 import os
 import os.path as osp
-import pwd
 import shutil
 from subprocess import check_call, check_output
 import sys
@@ -339,8 +337,7 @@ cmd="docker run --rm \
                 -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
                 -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
                 -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
-                -u  %(uid)s:%(gid)s \
-                -e USER=%(user)s \
+                %(non_root_options)s \
                 -e HOME=/casa/tests \
                 -e CASA_BRANCH=%(casa_branch)s \
                 --net=bridge ${DOCKER_OPTIONS} \
@@ -402,6 +399,15 @@ def create_build_workflow_directory(build_workflow_directory,
     * Typically created by bv_maker but may be extended in the future.
 
     '''
+    # On Windows OS, we do not manage user and group for docker images
+    is_win = sys.platform.startswith('win')
+    
+    if is_win:
+        import getpass
+    else:
+        import grp
+        import pwd
+    
     bwf_dir = osp.normpath(osp.abspath(build_workflow_directory))
     print('build_workflow_directory:', build_workflow_directory)
     distro_dir = osp.join(share_directory, 'docker', distro)
@@ -426,26 +432,37 @@ def create_build_workflow_directory(build_workflow_directory,
                    not_override=not_override, verbose=verbose)
     
     # Replacement of os.getlogin that fail sometimes
-    user = pwd.getpwuid(os.getuid()).pw_name
+    if is_win:
+        user = getpass.getuser()
+    else:
+        user = pwd.getpwuid(os.getuid()).pw_name
+
     local_image_name = 'casa-dev-%s:%s' % (system, user)
     template_params = {
         'user': user,
-        'uid': os.getuid(),
-        'group': grp.getgrgid(os.getgid()).gr_name,
-        'gid': os.getgid(),
         #'container_name': 'casa_bwf_%s_%s_%s' % (distro, casa_branch, system),
         'system': system,
         'build_workflow_dir': bwf_dir,
         'image_name': local_image_name,
         'casa_branch': casa_branch,
-        'home': ('/home/user' if os.getuid() else '/root'), 
+        'home': ('/home/user' if not is_win and os.getuid() else '/root'), 
+        'non_root_options': ''
     }
+    
+    if not is_win:
+        template_params.update(
+            {'group': grp.getgrgid(os.getgid()).gr_name,
+             'uid': os.getuid(),
+             'gid': os.getgid(),
+             'non_root_options': '-u %s:%s -e USER=%s' \
+                                 % (os.getuid(), os.getgid(), user)})
 
     if not os.path.isdir(osp.join(bwf_dir, 'docker')):
         os.mkdir(osp.join(bwf_dir, 'docker'))
     
-    if os.getuid():
-        template_params['non_root_commands'] = dockerfile_nonroot_commands % template_params
+    if not is_win and os.getuid():
+        template_params['non_root_commands'] = dockerfile_nonroot_commands \
+                                               % template_params
     else:
         template_params['non_root_commands'] = ''
     
