@@ -623,7 +623,7 @@ def create_docker_images(image_name_filters = ['*']):
                         content = apply_template_parameters(open(source).read(), template_parameters)
                         open(target[:-9], 'w').write(content)
                     else:
-                        shutil.copyfile(source, target)
+                        shutil.copy2(source, target)
 
                 image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
 
