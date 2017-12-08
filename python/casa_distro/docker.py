@@ -11,7 +11,6 @@ import shutil
 from subprocess import check_call, check_output
 import sys
 import tempfile
-import yaml
 import stat
 import re
 
@@ -136,6 +135,14 @@ RUN cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/bra
 RUN make install && cd .. && rm -r /tmp/brainvisa-cmake
 WORKDIR /casa
 
+# Update wine registry to add built executables in path
+RUN if [ -d "${WINEPREFIX}" ]; then \
+wineserver -k -w; \
+/casa/brainvisa-cmake/bin/bv_wine_regedit \
+        --registry-action 'prepend' \
+        --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\PATH" \
+        --value "${CASA_BUILD}\\bin"; fi
+        
 RUN echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.sh" "$CASA_BUILD"; fi' >> %(home)s/.bashrc
 
 ENV PATH=$PATH:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
@@ -522,6 +529,8 @@ def find_docker_image_files(base_directory):
     all the "casa_distro_docker.yaml" files located in given directory.
     The result is sorted according to the depencies declared in the files.
     '''
+    import yaml
+    
     result = []
     dependencies = {}
     base_directory = osp.abspath(osp.normpath(base_directory))
