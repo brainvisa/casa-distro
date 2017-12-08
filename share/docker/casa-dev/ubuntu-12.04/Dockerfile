@@ -133,18 +133,10 @@ RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide
 # install a version of netcdf with fewer dependencies
 COPY build_netcdf.sh /tmp/build_netcdf.sh
 RUN bash /tmp/build_netcdf.sh && rm /tmp/build_netcdf.sh
-# RUN cd /tmp \
-#   && wget http://brainvisa.info/static/netcdf-4.1.1-ubuntu-12.04.tar.gz \
-#   && cd /usr/local \
-#   && tar xfz /tmp/netcdf-4.1.1-ubuntu-12.04.tar.gz \
-#   && ln -s netcdf-4.1.1 netcdf \
-#   && cd lib \
-#   && ln -s ../netcdf/lib/lib* . \
-#   && cd pkgconfig \
-#   && ln -s ../../netcdf/lib/pkgconfig/*.pc . \
-#   && cd ../../bin \
-#   && ln -s ../netcdf/bin/* . \
-#   && rm /tmp/netcdf-4.1.1-ubuntu-12.04.tar.gz
+
+# install a newer version of boost
+COPY build_boost.sh /tmp/build_boost.sh
+RUN bash /tmp/build_boost.sh && rm /tmp/build_boost.sh
 
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
 ENV CASA_CONF=/casa/conf
