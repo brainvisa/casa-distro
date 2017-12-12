@@ -176,7 +176,7 @@ To use Casa-Distro, a user (or rather a developer) must have a system with the f
 
 * A system which supports Docker: `Docker <https://www.docker.com>`_ only runs on reasonably recent Linux systems, recent Mac systems, and Windows.
 * Administrator permissions on the machine: Docker can only be used by users with advanced permissions, as it allows to change user and write files on the host system with any user identity.
-* `Docker <https://www.docker.com>`_ muste be installed and setup for the user on the host system.
+* `Docker <https://www.docker.com>`_ must be installed and setup for the user on the host system.
 * Python >= 2.7 to run the ``casa_distro`` command on the host system.
 
 The rest takes place inside Docker containers, so are normally not restricted by the host system, (as long as it has enough memory and disk space).
@@ -190,6 +190,8 @@ On Debian based Linux systems (such as Ubuntu), the following packages must be i
   sudo apt-get install python docker.io
 
 On these systems, after ``docker.io`` installation, it is necessary for a user to be in the ``docker`` system group to be able to use Docker. For administrators who need to use release plan files, the package ``python-yaml`` must also be installed.
+
+For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
 
 Install latest release
 ----------------------
@@ -287,4 +289,11 @@ Next release
 
     casa_distro_command
 
+
+:doc:`install_setup`
+====================
+
+.. toctree::
+
+    install_setup
 

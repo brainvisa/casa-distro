@@ -45,7 +45,8 @@ extensions = [ 'sphinx.ext.autodoc',
                'sphinx.ext.viewcode',
                'numpy_ext.numpydoc',
                'sphinx.ext.extlinks',
-             ]
+               'sphinx.ext.autosectionlabel',
+    ]
 
 # Remove some numpy-linked warnings
 numpydoc_show_class_members = False
