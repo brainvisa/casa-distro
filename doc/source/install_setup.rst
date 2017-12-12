@@ -5,8 +5,8 @@ Installation and setup
 
 .. highlight:: bash
 
-Settuing up Docker
-==================
+Setting up Docker
+=================
 
 Install and use docker on an Ubuntu host
 ----------------------------------------
