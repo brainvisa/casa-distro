@@ -60,6 +60,8 @@ Install and use docker on an Ubuntu host
       sudo su <login>
 
 
+.. _change_docker_base_dir:
+
 Change Docker's storage base directory
 --------------------------------------
 
@@ -255,6 +257,8 @@ How to use a docker image
     docker run -it --rm cati/casa-dev:ubuntu-16.04-bug_fix /bin/bash
 
 
+.. _cleaning_up_docker:
+
 Cleaning up docker
 ==================
 
@@ -387,8 +391,8 @@ System disk full
 
 Docker images are big, and may grow bigger...
 
-* :ref:`Change the filesystem / disk for docker images <Change Docker's storage base directory>`
-* :ref:`cleanup leftover docker images or containers <Cleaning up docker>`
+* :ref:`Change the filesystem / disk for docker images <change_docker_base_dir>`
+* :ref:`cleanup leftover docker images or containers <cleaning_up_docker>`
 
 
 Cannot build docker image, network access denied
