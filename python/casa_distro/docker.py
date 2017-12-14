@@ -135,15 +135,35 @@ RUN cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/bra
 RUN make install && cd .. && rm -r /tmp/brainvisa-cmake
 WORKDIR /casa
 
-# Update wine registry to add built executables in path
-RUN if [ -d "${WINEPREFIX}" ]; then \
+# Create bashrc and/or update wine registry to add built 
+# executables in path
+RUN if [ -z "${WINEPREFIX}" ]; then \
+echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.sh" "$CASA_BUILD"; fi' >> %(home)s/.bashrc; \
+else \
+__wine_casa_build="$(winepath -w ${CASA_BUILD})"; \
 wineserver -k -w; \
 /casa/brainvisa-cmake/bin/bv_wine_regedit \
         --registry-action 'prepend' \
         --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\PATH" \
-        --value "${CASA_BUILD}\\bin"; fi
-        
-RUN echo 'if [ -f "$CASA_BUILD/bin/bv_env.sh" ]; then . "$CASA_BUILD/bin/bv_env.sh" "$CASA_BUILD"; fi' >> %(home)s/.bashrc
+        --value "${__wine_casa_build}\\bin"; \
+/casa/brainvisa-cmake/bin/bv_wine_regedit \
+        --registry-action 'prepend' \
+        --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\PYTHONPATH" \
+        --value "${__wine_casa_build}\\python"; \
+/casa/brainvisa-cmake/bin/bv_wine_regedit \
+        --registry-action 'set' \
+        --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\QT_API" \
+        --value "pyqt"; \
+/casa/brainvisa-cmake/bin/bv_wine_regedit \
+        --registry-action 'set' \
+        --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\BRAINVISA_HOME" \
+        --value "${__wine_casa_build}"; \
+/casa/brainvisa-cmake/bin/bv_wine_regedit \
+        --registry-action 'set' \
+        --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\BRAINVISA_SHARE" \
+        --value "${__wine_casa_build}\\share"; \
+echo 'export PATH="$PATH:$CASA_BUILD/bin"' >> %(home)s/.bashrc; \
+fi
 
 ENV PATH=$PATH:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
 ENV LD_LIBRARY_PATH=$CASA_BUILD/lib:/casa/brainvisa-cmake/lib
@@ -168,6 +188,7 @@ fi
 
 docker_cmd=
 docker_arg=0
+docker_rm=1
 script_arg=1
 
 while [[ $# -gt 0 ]]
@@ -204,6 +225,7 @@ do
                 echo "             specify the command and its ards, the option delimier \"--\""
                 echo "             should be used. Ex:"
                 echo "             $0 -d -v /data_dir:/docker_data_dir -- ls /docker_data_dir"
+                echo "-n|--no-rm   disable docker rm of container run"
                 exit 1
                 ;;
 
@@ -215,11 +237,19 @@ do
                 -d|--docker)
                 docker_arg=1
                 ;;
+                -n|--no-rm)
+                docker_rm=0
+                ;;
                 --)
                 docker_arg=0
                 script_arg=0
                 ;;
                 *)
+                # Once started to parse the command to run, it is necessary
+                # to disable parsing of docker options and script options
+                # otherwise it is not possible to use defined script options (-d, -h, -n, -X11, ...)
+                docker_arg=0
+                script_arg=0
                 docker_cmd="$docker_cmd $1"
                 ;;
             esac
@@ -228,21 +258,27 @@ do
     shift # past argument or value
 done
 
-cmd="docker run --rm -v %(build_workflow_dir)s/conf:/casa/conf \
-                     -v %(build_workflow_dir)s/src:/casa/src \
-                     -v %(build_workflow_dir)s/build:/casa/build \
-                     -v %(build_workflow_dir)s/install:/casa/install \
-                     -v %(build_workflow_dir)s/pack:/casa/pack \
-                     -v %(build_workflow_dir)s/tests:/casa/tests \
-                     -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
-                     -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
-                     -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
-                     -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
-                     -e CASA_BRANCH=%(casa_branch)s \
-                     -e CASA_HOST_DIR=%(build_workflow_dir)s \
-                     --net=host ${DOCKER_OPTIONS} \
-                     %(image_name)s \
-                     $docker_cmd"
+cmd="docker run"
+
+if [ "${docker_rm}" == "1" ]; then
+    cmd="${cmd} --rm"
+fi
+
+cmd="${cmd} -v %(build_workflow_dir)s/conf:/casa/conf \
+            -v %(build_workflow_dir)s/src:/casa/src \
+            -v %(build_workflow_dir)s/build:/casa/build \
+            -v %(build_workflow_dir)s/install:/casa/install \
+            -v %(build_workflow_dir)s/pack:/casa/pack \
+            -v %(build_workflow_dir)s/tests:/casa/tests \
+            -v %(build_workflow_dir)s/custom/src:/casa/custom/src \
+            -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
+            -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
+            -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
+            -e CASA_BRANCH=%(casa_branch)s \
+            -e CASA_HOST_DIR=%(build_workflow_dir)s \
+            --net=host ${DOCKER_OPTIONS} \
+            %(image_name)s \
+            $docker_cmd"
 echo "$cmd"
 exec $cmd
 '''
@@ -322,6 +358,11 @@ do
                     image_arg=1
                     ;;
                     *)
+                    # Once started to parse the command to run, it is necessary
+                    # to disable parsing of docker options and script options
+                    # otherwise it is not possible to use defined script options (-d, -h, -n, -X11, ...)
+                    docker_arg=0
+                    script_arg=0
                     docker_cmd="$docker_cmd $1"
                     ;;
                 esac
@@ -704,7 +745,7 @@ def create_build_workflow(bwf_repository, distro='opensource',
 
 
 def run_docker(bwf_repository, distro='opensource', branch='latest_release', 
-               system=None, X=False, docker_options=[], 
+               system=None, X=False, docker_rm=True, docker_options=[], 
                args_list=[]):
     '''Run any command in docker with the config of the given repository
     '''
@@ -714,31 +755,36 @@ def run_docker(bwf_repository, distro='opensource', branch='latest_release',
                              '%s_%s' % (branch, system))
     run_docker = osp.join(bwf_directory, 'run_docker.sh')
     cmd = ['/bin/bash', run_docker]
+    if not bool(docker_rm):
+        cmd.append('-no-rm')
+        
     if bool(X):
         cmd.append('-X11')
     if len(docker_options) > 0:
         cmd += ['-d'] + docker_options + ['--']
-        
+
     cmd += args_list
     check_call(cmd)
 
 
 def run_docker_shell(bwf_repository, distro='opensource',
                      branch='latest_release', system=None, X=False, 
-                     args_list=[]):
+                     docker_rm=True, args_list=[]):
     '''Run a bash shell in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, X, ['-it'], 
-               ['/bin/bash'] + args_list)
+    run_docker(bwf_repository, distro=distro, branch=branch, 
+               system=system, X=X, docker_rm=docker_rm, docker_options=['-it'], 
+               args_list=['/bin/bash'] + args_list)
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
                         branch='latest_release', system=None, X=False, 
-                        args_list=[]):
+                        docker_rm=True, args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro, branch, system, X, [], 
-               ['bv_maker'] + args_list)
+    run_docker(bwf_repository, distro=distro, branch=branch, 
+               system=system, X=X, docker_rm=docker_rm, docker_options=[], 
+               args_list=['bv_maker'] + args_list)
 
 if __name__ == '__main__':
     import sys

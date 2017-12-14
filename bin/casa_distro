@@ -24,7 +24,9 @@ if not default_build_workflow_repository:
 default_repository_server = 'brainvisa.info'
 default_repository_server_directory = 'prod/www/casa-distro'
 default_repository_login = 'brainvisa'
-
+default_distro = 'opensource'
+default_branch = 'latest_release'
+default_system = 'ubuntu-12.04'
 
 @command
 def package_casa_distro(build_workflows_repository=default_build_workflow_repository):
@@ -119,7 +121,7 @@ def create_release_plan(components=None, build_workflows_repository=default_buil
 
 
 @command
-def publish_release_plan(login, password=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+def publish_release_plan(login=None, password=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''send information to the CASA forum about things that would be done with the release plan file'''
     from casa_distro.bv_maker import publish_release_plan_on_wiki
     if password is None:
@@ -192,7 +194,7 @@ def publish_docker(image_names = '*', verbose=None):
 
 
 @command
-def create_build_workflow(distro='opensource', branch='latest_release', 
+def create_build_workflow(distro=default_distro, branch=default_branch, 
                           system=None, download=False, 
                           not_override='bv_maker.cfg,svn.secret', 
                           build_workflows_repository=default_build_workflow_repository,
@@ -292,7 +294,7 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 @command
 def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
-          X=False, args_list=[]):
+          X=False, docker_rm=True, args_list=[]):
     '''Start a bash shell in Docker with the given repository configuration.'''
     from casa_distro.docker import run_docker_shell
     from casa_distro import iter_build_workflow
@@ -309,12 +311,13 @@ def shell(distro='*', branch='*', system='*',
         return 1
     distro, branch, system, bwf_dir = build_workflows[0]
     run_docker_shell(build_workflows_repository, distro=distro, branch=branch,
-                     system=system, X=X, args_list=args_list)
+                     system=system, X=X, docker_rm=docker_rm, 
+                     args_list=args_list)
 
 @command
 def bv_maker(distro='*', branch='*', system='*',
              build_workflows_repository=default_build_workflow_repository,
-             X=False, args_list=[]):
+             X=False, docker_rm=True, args_list=[]):
     '''Start bv_maker in Docker for all the selected build workflows (by default, all created build workflows).'''
     from casa_distro.docker import run_docker_bv_maker
     from casa_distro import iter_build_workflow
@@ -354,7 +357,8 @@ def bv_maker(distro='*', branch='*', system='*',
         status[(d, b, s)] = (es, bwf_dir)
         try:
             run_docker_bv_maker(build_workflows_repository, distro=d,
-                                branch=b, system=s, X=X, args_list=args_list)
+                                branch=b, system=s, X=X, docker_rm=docker_rm,
+                                args_list=args_list)
             es.stop_time = time.localtime()
             es.error_code = 0
             es.status = 'succeeded'
@@ -409,35 +413,67 @@ def bv_maker(distro='*', branch='*', system='*',
     return global_failed
 
 @command
-def run(distro='opensource', branch='latest_release', system=None,
+def run(distro='*', branch='*', system='*',
         build_workflows_repository=default_build_workflow_repository,
-        X=False, args_list=[]):
+        X=False, docker_rm=True, args_list=[]):
     '''Start any command in Docker with the given repository configuration.
-    Command and args should be specified after --:
-    casa_distro -r /home/casa run branch=bug_fix -- ls -als /casa'''
+Command and args should be specified after --:
+    casa_distro -r /home/casa run branch=bug_fix ls -als /casa'''
     from casa_distro.docker import run_docker
+    from casa_distro import iter_build_workflow
+    
+    build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                               distro=distro, 
+                                               branch=branch, 
+                                               system=system))
+    if not build_workflows:
+        print('Cannot find any build workflow', file=sys.stderr)
+        return 1
+    if len(build_workflows) > 1:
+        print('Several build workflows found, you can select only one by giving values for distro, system and branch', file=sys.stderr)
+        return 1
+    distro, branch, system, bwf_dir = build_workflows[0]
+    
     run_docker(build_workflows_repository, distro=distro, branch=branch, 
-               system=system, X=X, docker_options=[], args_list=args_list)
+               system=system, X=X, docker_rm=docker_rm, docker_options=[], 
+               args_list=args_list)
 
 
 @command
-def help(command):
+def help(args_list=['help'], **kwargs):
     '''print help about a command'''
-    command_help = globals()[command].__doc__
-    print(command_help)
-    cargs = inspect.getargspec(globals()[command])
-    if cargs.args:
+    
+    command_set = set(args_list)
+    if 'command' in kwargs:
+        command_set.add(kwargs['command'])
+    
+    if len(command_set) == 0:
+        parser.print_help()
+        return
+    
+    for command in command_set:
+        command_help = globals()[command].__doc__
+
+        #print('{s:{c}^{n}}'.format(s=' %s ' % command, n=80, c='-'))
         print()
-        print('options (= default values):')
-        print('---------------------------')
-        for i, arg in enumerate(cargs.args):
-            if cargs.defaults is not None and len(cargs.defaults) > i:
-                print(arg, '=', cargs.defaults[i])
-            else:
-                print(arg)
-
-
-if __name__ == '__main__':    
+        print(command)
+        print('-' * len(command))
+        print(command_help)
+        cargs = inspect.getargspec(globals()[command])
+        if cargs.args:
+            print()
+            print('options:')
+            print()
+#            print('---------------------------')
+            for i, arg in enumerate(cargs.args):
+                if cargs.defaults is not None and len(cargs.defaults) > i:
+                    print(' ' * 3, arg, '(default', '=', cargs.defaults[i], ')')
+                else:
+                    print(' ' * 3, arg)
+        print()
+       
+if __name__ == '__main__':
+    
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
         def _split_lines(self, text, width):
             result = []
@@ -456,7 +492,8 @@ if __name__ == '__main__':
         sys.argv = sys.argv[:ind]
 
     parser = argparse.ArgumentParser(description='Casa distribution creation tool',
-                                     formatter_class=ArgumentLineBreakFormatter)
+                                     formatter_class=ArgumentLineBreakFormatter,
+                                     add_help = False)
 
     parser.add_argument('-r', '--repository', default=None,
                         help='Path of the directory containing build workflow (default=/neurospin/cati/casa_distro)')
@@ -464,7 +501,7 @@ if __name__ == '__main__':
                         help='Display information during processing')
     parser.add_argument('command', nargs=1, choices=commands,
                         help='\n\n'.join('"%s": %s;\n\n' % (i, globals()[i].__doc__) for i in commands))
-    parser.add_argument('command_options', nargs='*',
+    parser.add_argument('command_options', nargs=argparse.REMAINDER,
                         help='command specific options (use help <command> to list these options).')
     options = parser.parse_args()
 
@@ -481,23 +518,31 @@ if __name__ == '__main__':
             import casa_distro
             casa_distro.share_directory = osp.join(tmp_share, 'share')
 
-        command = globals()[options.command[0]]
         args = []
         kwargs = {}
-        if options.verbose:
-            kwargs['verbose'] = sys.stdout
+        
+        command = globals()[options.command[0]]
+        
+        # Get command argument specification
+        cargs = inspect.getargspec(command)
+
         if options.repository:
             kwargs['build_workflows_repository'] = options.repository
+            
+        if options.verbose and 'verbose' in cargs.args:
+            kwargs['verbose'] = sys.stdout
+            
         for i in options.command_options:
             l = i.split('=', 1)
             if len(l) == 2:
                 kwargs[l[0]] = l[1]
             else:
                 args.append(i)
-        if len(args_list) != 0:
-            kwargs['args_list'] = args_list
-            
-        result = command(*args, **kwargs)
+        
+        if 'args_list' in cargs.args:
+            kwargs['args_list'] = args + args_list
+
+        result = command(**kwargs)
         
     finally:
         if tmp_share:

@@ -760,7 +760,8 @@ if __name__ == '__main__':
         try:
             registry_list = parser.get_value_list(section, '"%s"' % value)
         except NoOptionError:
-            registry_list = '**not defined**'
+            # Option was not defined, create it
+            registry_list = []
             
         new_registry_list = add_to_list(registry_list, 
                                         args.value,
