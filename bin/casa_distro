@@ -417,7 +417,7 @@ def run(distro='*', branch='*', system='*',
         build_workflows_repository=default_build_workflow_repository,
         X=False, docker_rm=True, args_list=[]):
     '''Start any command in Docker with the given repository configuration.
-Command and args should be specified after --:
+example:
     casa_distro -r /home/casa run branch=bug_fix ls -als /casa'''
     from casa_distro.docker import run_docker
     from casa_distro import iter_build_workflow
