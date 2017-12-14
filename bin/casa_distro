@@ -492,8 +492,7 @@ if __name__ == '__main__':
         sys.argv = sys.argv[:ind]
 
     parser = argparse.ArgumentParser(description='Casa distribution creation tool',
-                                     formatter_class=ArgumentLineBreakFormatter,
-                                     add_help = False)
+                                     formatter_class=ArgumentLineBreakFormatter)
 
     parser.add_argument('-r', '--repository', default=None,
                         help='Path of the directory containing build workflow (default=/neurospin/cati/casa_distro)')
