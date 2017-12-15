@@ -304,7 +304,11 @@ def shell(distro='*', branch='*', system='*',
                                                branch=branch, 
                                                system=system))
     if not build_workflows:
-        print('Cannot find any build workflow', file=sys.stderr)
+        print('Cannot find any build workflow.', 
+              'Please create one using:\n'
+              'casa_distro -r %s create_build_workflow'
+              % build_workflows_repository, 
+              file=sys.stderr)
         return 1
     if len(build_workflows) > 1:
         print('Several build workflows found, you can select only one by giving values for distro, system and branch', file=sys.stderr)
@@ -325,6 +329,17 @@ def bv_maker(distro='*', branch='*', system='*',
     from traceback import format_exc
     import time
     import six
+    
+    build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                               distro=distro, branch=branch, 
+                                               system=system))
+    if not build_workflows:
+        print('Cannot find any build workflow.', 
+              'Please create one using:\n'
+              'casa_distro -r %s create_build_workflow'
+              % build_workflows_repository, 
+              file=sys.stderr)
+        return 1
 
     class ExecutionStatus:
         status_map = {'not run': '',
@@ -350,9 +365,7 @@ def bv_maker(distro='*', branch='*', system='*',
     status = {}
     global_failed = False
 
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, 
-                                                distro=distro, branch=branch, 
-                                                system=system):
+    for d, b, s, bwf_dir in build_workflows:
         es = ExecutionStatus(start_time = time.localtime())
         status[(d, b, s)] = (es, bwf_dir)
         try:
@@ -427,7 +440,11 @@ example:
                                                branch=branch, 
                                                system=system))
     if not build_workflows:
-        print('Cannot find any build workflow', file=sys.stderr)
+        print('Cannot find any build workflow.', 
+              'Please create one using:\n'
+              'casa_distro -r %s create_build_workflow'
+              % build_workflows_repository, 
+              file=sys.stderr)
         return 1
     if len(build_workflows) > 1:
         print('Several build workflows found, you can select only one by giving values for distro, system and branch', file=sys.stderr)
