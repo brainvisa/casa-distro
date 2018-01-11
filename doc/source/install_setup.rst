@@ -205,7 +205,7 @@ or using this url: https://hub.docker.com
   #. windows-7-32: Ubuntu 14.04 + Wine for windows-7-32
   #. windows-7-64: Ubuntu 14.04 + Wine for windows-7-64
 
-* **cati/brainvisa-dev** image
+* **cati/casa-dev** image
 
   Based on ``cati/casa-test`` image.
 
@@ -220,8 +220,8 @@ or using this url: https://hub.docker.com
   #. windows-7-32: Ubuntu 14.04 + Wine for windows-7-32
   #. windows-7-64: Ubuntu 14.04 + Wine for windows-7-64
 
-.. * **cati/brainvisa-dev-opensource** image
-    Use cati/brainvisa-devbase image.
+.. * **cati/casa-dev-opensource** image
+    Use cati/casa-dev image.
     Include the compilation of all open source projects in brainvisa.
     bv_maker.cfg, svn and svn_secret files are needed to get sources and run the build.
     It is necessary to store the bioproj account password in clear (svn_secret).
@@ -293,7 +293,7 @@ Images
 
     $ docker images
     REPOSITORY                  TAG                    IMAGE ID            CREATED             VIRTUAL SIZE
-    cati/brainvisa-devbase      ubuntu-12.04           7c1691e1e9d1        2 days ago          2.264 GB
+    cati/casa-dev       ubuntu-12.04           7c1691e1e9d1        2 days ago          2.264 GB
 
   To know the id of the image to remove...
 
@@ -301,7 +301,7 @@ Images
 
     docker rmi 7c1691e1e9d1
 
-  To remove ``cati/brainvisa-devbase``.
+  To remove ``cati/casa-dev``.
 
   If one or more containers are using the image, use the option ``-f`` to force the command ``rmi``:
 
@@ -325,11 +325,11 @@ Images
 How to change the development environment ?
 ===========================================
 
-To add an external library, modify the Dockerfile of ``brainvisa-dev`` for ubuntu-12.04 or ubuntu-16.04:
+To add an external library, modify the Dockerfile of ``casa-dev`` for ubuntu-12.04 or ubuntu-16.04:
 
 .. code-block:: dockerfile
 
-  # Dockerfile for image cati/brainvisa-devbase:ubuntu-16.04
+  # Dockerfile for image cati/casa-dev:ubuntu-16.04
 
   FROM cati/casa-test:ubuntu-16.04
 
