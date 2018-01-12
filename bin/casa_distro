@@ -198,8 +198,23 @@ def create_build_workflow(distro=default_distro, branch=default_branch,
                           system=None, download=False, 
                           not_override='bv_maker.cfg,svn.secret', 
                           build_workflows_repository=default_build_workflow_repository,
-                          verbose=None):
-    '''create a new build workflow directory in a repository of build workflows'''
+                          verbose=None, base_distro=None):
+    '''Create a new build workflow directory in a repository of build
+    workflows. The new build workflow includes several characteristics:
+    * system: OS of the base docker image which the build workflow will be
+      built for. The following values are supported: ubuntu-12.04,
+      ubuntu-16.04, windows-7-32, windows-7-64. Note that the windows variants
+      are actually Linux systems, configured for Windows cross-compilation.
+    * distro is an identifier which represents the set of projects which will
+      be handled and compiled in the build workflow. It can be a predefined
+      value ("opensource", "brainvisa", "cati"), or a free name. In the latter
+      case, the build workflow should be based on another template
+      configuration, which should be passed as the "base_distro" parameter.
+    * branch: Version branch name: latest_release, bug_fix, or trunk.
+    * base_distro: in the specific case when distro is not one of the builtin
+      template values (opensource, brainvisa, cati), the new distro should be
+      based on an existing template, which has to be specified in base_distro.
+    '''
     from casa_distro.docker import create_build_workflow
     if download:
         print('ERROR: download option of create_build_workflow is not implemented', file=sys.stderr)
@@ -209,7 +224,7 @@ def create_build_workflow(distro=default_distro, branch=default_branch,
         create_build_workflow(build_workflows_repository, distro=distro, 
                               branch=branch, system=system, 
                               not_override=not_override_lst,
-                              verbose=verbose)
+                              verbose=verbose, base_distro=base_distro)
 
 
 @command

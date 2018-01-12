@@ -422,28 +422,36 @@ def create_build_workflow_directory(build_workflow_directory,
                                     casa_branch='latest_release',
                                     system=linux_os_ids[0],
                                     not_override=[],
-                                    verbose=None):
+                                    verbose=None, base_distro=None):
     '''
-    Initialize a new build workflow directory. This creates a conf subdirectory with
-    bv_maker.cfg and svn.secret files that can be edited before compilation.
-    
-    build_workflow_directory: Directory containing all files of a build workflow. The following
-        subdirectories are expected :
+    Initialize a new build workflow directory. This creates a conf subdirectory
+    with bv_maker.cfg and svn.secret files that can be edited before
+    compilation.
+
+    Parameters
+    ----------
+    build_workflow_directory:
+        Directory containing all files of a build workflow. The following
+        subdirectories are expected:
             conf: configuration of the build workflow (BioProj passwords, bv_maker.cfg, etc.)
             src*: source of selected components for the workflow.
             build*: build directory used for compilation. 
             install*: directory where workflow components are installed.
             pack*: directory containing distribution packages
-    
-    distro: Name of a predefined set of configuration files.
+    distro:
+        Name of a set of configuration files. Either a predefined value
+        (opensource, brainvisa, cati), or a free value if base_distro is
+        specified.
+    casa_branch:
+        bv_maker branch to use (latest_release, bug_fix or trunk)
+    system:
+        Name of the target system.
+    not_override:
+        a list of file name that must not be overrided if they already exist
+    base_distro:
+        Name of a predefined set of configuration files, in the case distro is
+        not one of the predefined known ones.
 
-    casa_branch: bv_maker branch to use (latest_release, bug_fix or trunk)
-
-    system: Name of the target system.
-    
-    not_override: a list of file name that must not be overrided if they already
-                  exist
-    
     * Typically created by bv_maker but may be extended in the future.
 
     '''
@@ -459,6 +467,16 @@ def create_build_workflow_directory(build_workflow_directory,
     bwf_dir = osp.normpath(osp.abspath(build_workflow_directory))
     print('build_workflow_directory:', build_workflow_directory)
     distro_dir = osp.join(share_directory, 'docker', distro)
+    if not osp.exists(distro_dir):
+        if base_distro is not None:
+            distro_dir = osp.join(share_directory, 'docker', base_distro)
+        else:
+            raise ValueError('distro value %s is not a predefined value: '
+                             'base_distro should be provided' % distro)
+    if not osp.exists(distro_dir):
+        if base_distro is None:
+            base_distro = distro
+        raise ValueError('distro %s is not found' % base_distro)
     os_dir = osp.join(distro_dir, system)
     all_subdirs = ('conf', 'src', 'build', 'install', 'tests', 'pack',
                    'custom', 'custom/src', 'custom/build')
@@ -734,14 +752,15 @@ def publish_docker_images(image_name_filters = ['*']):
 def create_build_workflow(bwf_repository, distro='opensource',
                           branch='latest_release', system=None, 
                           not_override=[],
-                          verbose=None):
+                          verbose=None, base_distro=None):
     if system is None:
         system = casa_distro.linux_os_ids[0]
     bwf_directory = osp.join(bwf_repository, '%s' % distro, '%s_%s' % (branch, system))
     if not osp.exists(bwf_directory):
         os.makedirs(bwf_directory)
     create_build_workflow_directory(bwf_directory, distro, branch, system, 
-                                    not_override, verbose=verbose)
+                                    not_override, verbose=verbose,
+                                    base_distro=base_distro)
 
 
 def run_docker(bwf_repository, distro='opensource', branch='latest_release', 
