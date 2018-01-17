@@ -499,7 +499,7 @@ def help(args_list=['help'], **kwargs):
 #            print('---------------------------')
             for i, arg in enumerate(cargs.args):
                 if cargs.defaults is not None and len(cargs.defaults) > i:
-                    print(' ' * 3, arg, '(default', '=', cargs.defaults[i], ')')
+                    print(' ' * 3, arg, '(default=%s)' % cargs.defaults[i])
                 else:
                     print(' ' * 3, arg)
         print()
