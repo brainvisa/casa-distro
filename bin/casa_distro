@@ -169,7 +169,7 @@ def apply_release_plan(build_workflows_repository=default_build_workflow_reposit
         
         apply_release_plan(release_plan_file, dry, fail_on, verbose)
         
-    except RuntimeError, e:
+    except RuntimeError as e:
         print('Impossible to apply release plan.', e.message,
               file = sys.stderr)
         sys.exit(1)
