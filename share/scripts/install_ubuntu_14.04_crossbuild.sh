@@ -1004,6 +1004,7 @@ if [ "${__install}" == "1" ] && [ "${MINGW64}" == "1" ]; then
           ${MINGW64_LIB_PREFIX}/libgfortran*.dll \
           ${MINGW64_LIB_PREFIX}/libquadmath*.dll \
           ${MINGW64_LIB_PREFIX}/libstdc++*.dll \
+          ${MINGW64_LIB_PREFIX}/libgomp*.dll \
           ${MINGW64_GCC_LIB_PREFIX}/libwinpthread*.dll \
           ./
     popd
@@ -1012,6 +1013,7 @@ if [ "${__install}" == "1" ] && [ "${MINGW64}" == "1" ]; then
           ${MINGW64_LIB_PREFIX}/libgfortran*.dll.a \
           ${MINGW64_LIB_PREFIX}/libquadmath*.dll.a \
           ${MINGW64_LIB_PREFIX}/libstdc++*.dll.a \
+          ${MINGW64_LIB_PREFIX}/libgomp*.dll.a \
           ${MINGW64_GCC_LIB_PREFIX}/libwinpthread*.dll.a \
           ./
     popd
