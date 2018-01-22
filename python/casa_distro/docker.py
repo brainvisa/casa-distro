@@ -795,21 +795,23 @@ def run_docker(bwf_repository, distro='opensource', branch='latest_release',
 
 def run_docker_shell(bwf_repository, distro='opensource',
                      branch='latest_release', system=None, X=False, 
-                     docker_rm=True, args_list=[]):
+                     docker_rm=True, docker_options=[], args_list=[]):
     '''Run a bash shell in docker with the config of the given repository
     '''
     run_docker(bwf_repository, distro=distro, branch=branch, 
-               system=system, X=X, docker_rm=docker_rm, docker_options=['-it'], 
+               system=system, X=X, docker_rm=docker_rm, 
+               docker_options=['-it'] + docker_options, 
                args_list=['/bin/bash'] + args_list)
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',
                         branch='latest_release', system=None, X=False, 
-                        docker_rm=True, args_list=[]):
+                        docker_rm=True, docker_options=[], args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
     run_docker(bwf_repository, distro=distro, branch=branch, 
-               system=system, X=X, docker_rm=docker_rm, docker_options=[], 
+               system=system, X=X, docker_rm=docker_rm, 
+               docker_options=docker_options, 
                args_list=['bv_maker'] + args_list)
 
 if __name__ == '__main__':
