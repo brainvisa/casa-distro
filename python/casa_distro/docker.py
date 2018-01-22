@@ -274,7 +274,9 @@ cmd="${cmd} -v %(build_workflow_dir)s/conf:/casa/conf \
             -v %(build_workflow_dir)s/custom/build:/casa/custom/build \
             -v $HOME/.ssh/id_rsa:%(home)s/.ssh/id_rsa \
             -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
+            -e CASA_DISTRO=%(distro)s \
             -e CASA_BRANCH=%(casa_branch)s \
+            -e CASA_SYSTEM=%(system)s \
             -e CASA_HOST_DIR=%(build_workflow_dir)s \
             --net=host ${DOCKER_OPTIONS} \
             %(image_name)s \
@@ -387,7 +389,9 @@ cmd="docker run --rm \
                 -v $HOME/.ssh/id_rsa.pub:%(home)s/.ssh/id_rsa.pub \
                 %(non_root_options)s \
                 -e HOME=/casa/tests \
+                -e CASA_DISTRO=%(distro)s \
                 -e CASA_BRANCH=%(casa_branch)s \
+                -e CASA_SYSTEM=%(system)s \
                 --net=bridge ${DOCKER_OPTIONS} \
                 $image_name \
                 $docker_cmd"
@@ -509,6 +513,7 @@ def create_build_workflow_directory(build_workflow_directory,
     template_params = {
         'user': user,
         #'container_name': 'casa_bwf_%s_%s_%s' % (distro, casa_branch, system),
+        'distro': distro,
         'system': system,
         'build_workflow_dir': bwf_dir,
         'image_name': local_image_name,
