@@ -423,6 +423,44 @@ def get_docker_version():
     return [int(x) for x in r.group(1).split('.')]
 
 
+def check_svn_secret(bwf_dir, warn_type='NOTE'):
+    ''' Checks the svn.secret file does not exist. Print a message if it does
+    not.
+
+    Parameters:
+    -----------
+    bwf_dir: str
+        build workflow directory
+    warn_type: str
+        warning message type ('NOTE', 'ERROR', ...)
+
+    Returns:
+    --------
+        True if the file is here, False if it is missing
+    '''
+    if not os.path.exists(osp.join(bwf_dir, 'conf', 'svn.secret')):
+        print('\n------------------------------------------------------------')
+        print('**%s:**' % warn_type)
+        print('Before using "casa_distro bv_maker" you will have to '
+              'create the svn.secret file with your Bioproj login / password '
+              'in order to access the BrainVisa repository.')
+        print('Place it at the following location:\n')
+        print(osp.join(bwf_dir, 'conf', 'svn.secret'))
+        print('\nThis file should contain the two following lines (replacing '
+              '"your_login" and "your_password" by appropriate values:\n')
+        print('SVN_USERNAME=your_login')
+        print('SVN_PASSWORD=your_password\n')
+        print('If you are only using open-source projects, you can use the '
+              '"public" login/password: brainvisa / Soma2009\n')
+        print('Remember also that you can edit and customize the projects to '
+              'be built, by editing the following file:\n')
+        print(osp.join(bwf_dir, 'conf', 'bv_maker.cfg'))
+        print('------------------------------------------------------------')
+        print()
+        return False
+    return True
+
+
 def create_build_workflow_directory(build_workflow_directory, 
                                     distro='opensource',
                                     casa_branch='latest_release',
@@ -453,7 +491,7 @@ def create_build_workflow_directory(build_workflow_directory,
     system:
         Name of the target system.
     not_override:
-        a list of file name that must not be overrided if they already exist
+        a list of file name that must not be overriden if they already exist
     base_distro:
         Name of a predefined set of configuration files, in the case distro is
         not one of the predefined known ones.
@@ -583,6 +621,8 @@ def create_build_workflow_directory(build_workflow_directory,
     if not os.path.exists(osp.join(bwf_dir, 'conf', 'docker_options_x11')):
         print(docker_x11_options,
               file=open(osp.join(bwf_dir, 'conf', 'docker_options_x11'), 'w'))
+
+    check_svn_secret(bwf_dir)
 
 
 
@@ -809,10 +849,15 @@ def run_docker_bv_maker(bwf_repository, distro='opensource',
                         docker_rm=True, docker_options=[], args_list=[]):
     '''Run bv_maker in docker with the config of the given repository
     '''
-    run_docker(bwf_repository, distro=distro, branch=branch, 
+    bwf_directory = osp.join(bwf_repository, '%s' % distro,
+                             '%s_%s' % (branch, system))
+    if check_svn_secret(bwf_directory, 'ERROR'):
+        run_docker(bwf_repository, distro=distro, branch=branch,
                system=system, X=X, docker_rm=docker_rm, 
                docker_options=docker_options, 
-               args_list=['bv_maker'] + args_list)
+                  args_list=['bv_maker'] + args_list)
+    else:
+        raise RuntimeError('Missing config file')
 
 if __name__ == '__main__':
     import sys
