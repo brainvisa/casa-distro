@@ -173,8 +173,8 @@ RUN mkdir %(home)s/.ssh
 
 # For testing purpose, it may be necessary to run casa_distro as root in a Docker container.
 # In that case only, the folowing commands are not included in the Dockerfile.
-dockerfile_nonroot_commands = '''RUN addgroup --gid %(gid)s %(group)s
-RUN adduser --disabled-login --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
+dockerfile_nonroot_commands = '''RUN addgroup --force-badname --gid %(gid)s %(group)s
+RUN adduser --force-badname --disabled-password --home /home/user --uid %(uid)s --gid %(gid)s %(user)s
 RUN chown %(user)s:%(group)s /casa
 RUN if [ -d "${WINEPREFIX}" ]; then chown -R %(user)s:%(group)s "${WINEPREFIX}"; fi
 USER %(user)s
