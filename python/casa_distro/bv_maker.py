@@ -169,7 +169,7 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                         'revision': bug_fix_revision,
                     } 
                 
-                if latest_release_revision < bug_fix_revision \
+                if latest_release_revision != bug_fix_revision \
                     or not latest_release_exist:
                     if verbose:
                         print('  latest_release version %s in %s (%s) with revision %s' % 
