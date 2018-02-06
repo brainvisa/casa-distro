@@ -7,17 +7,25 @@ import re
 import yaml
 import requests
 import json
+import subprocess
 
 import brainvisa.maker.svn as svn_client
 from brainvisa.maker.svn import svn_rename, svn_copy, svn_update_version_info, \
-                                svn_get_latest_revision
+                                svn_get_latest_revision, svn_delete
 from brainvisa.maker.brainvisa_clients import find_remote_project_info, \
                                               read_remote_project_info
 from brainvisa.maker.brainvisa_projects import url_per_component, project_per_component
 from brainvisa.maker.brainvisa_client_components import \
                                                 get_version_control_component, \
                                                 BranchType
-                                            
+       
+       
+def git_get_changeset(url, branch):
+    cmd = ['git', 'ls-remote', url, branch]
+    result = subprocess.check_output(cmd)
+    if result:
+        return result.split()[0]
+
 cmake_set_regexp = re.compile(r'set\(\s*([^\s]+)\s+(.*)\s*\)')
 def parse_cmake_variables(filename):
     result = {}
@@ -55,11 +63,13 @@ def convert_github_url_to_svn(url):
         vcs = 'git'
         svn_url = '%s' % '/'.join(branch_spec)
         vcs_url = (url[:-4] if url.endswith('.git') else url) + '/tree/' + branch
+        git_base_url = url
     else:
         vcs = 'svn'
         svn_url = url.split(None, 1)[1]
         vcs_url = svn_url
-    return svn_url, vcs, vcs_url
+        git_base_url = None
+    return svn_url, vcs, vcs_url, git_base_url
 
 def inspect_components_and_create_release_plan(components, verbose=None):
     """
@@ -113,11 +123,15 @@ def inspect_components_and_create_release_plan(components, verbose=None):
         warning_messages = []
         error_messages = []
         if bug_fix_url:
-            url, vcs, vcs_url = convert_github_url_to_svn(bug_fix_url[0])
+            url, vcs, vcs_url, git_base_url = convert_github_url_to_svn(bug_fix_url[0])
             bug_fix_url = (url,) + bug_fix_url[1:]
             latest_release_url = url_per_component[component].get('latest_release')
             bug_fix_svn = url
-            bug_fix_revision = svn_get_latest_revision(bug_fix_svn)
+            
+            if vcs == 'git':
+                bug_fix_revision = git_get_changeset(git_base_url, 'master')
+            else:
+                bug_fix_revision = svn_get_latest_revision(bug_fix_svn)
             
             bug_fix_version = read_remote_project_info(svn_client, bug_fix_svn)
             if bug_fix_version:
@@ -134,8 +148,9 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                       (str(bug_fix_version), bug_fix_svn, vcs,
                        bug_fix_revision), file=verbose)
                 verbose.flush()
+            
             if latest_release_url:
-                url, vcs, vcs_url = convert_github_url_to_svn(latest_release_url[0])
+                url, vcs, vcs_url, git_base_url = convert_github_url_to_svn(latest_release_url[0])
                 latest_release_url = (url,) + latest_release_url[1:]
                 latest_release_svn = url
                 
@@ -144,8 +159,10 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                 else:
                     warning_messages.append('latest_release tag is undefined.')
                     latest_release_exist = False
-                
-                latest_release_revision = svn_get_latest_revision(latest_release_svn)
+                if vcs == 'git':
+                    latest_release_revision = git_get_changeset(git_base_url, 'latest_release')
+                else:
+                    latest_release_revision = svn_get_latest_revision(latest_release_svn)
                 if latest_release_revision != bug_fix_revision:
                     latest_release_version = read_remote_project_info(
                         svn_client, latest_release_svn)
@@ -180,10 +197,23 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                     versioned_latest_release_svn = '%s/%s/%s' % (base_url, 'tags', str(latest_release_version))
                     
                     if svn_client.svn_exists(versioned_latest_release_svn):
-                        warning_messages.append('Version of latest_release ' \
-                            'tag already exists as a version tag %s.' \
-                        % str(latest_release_version))
-                    
+                        if vcs == 'git':
+                            versioned_latest_release_revision = git_get_changeset(git_base_url, str(latest_release_version))
+                        else:
+                            versioned_latest_release_revision = svn_get_latest_revision(versioned_latest_release_svn)
+                    else:
+                        versioned_latest_release_revision = None
+                    if versioned_latest_release_revision:
+                        component_dict['versioned_latest_release'] = {
+                            'vcs_type': vcs,
+                            'svn_url': versioned_latest_release_svn,
+                            'revision': versioned_latest_release_revision,
+                        }
+                        if versioned_latest_release_revision != latest_release_revision and vcs != 'git':
+                           error_messages.append('Version of latest_release ' \
+                                                    'tag already exists as a version tag %s and they have different revisions.' \
+                                                    % str(latest_release_version))
+                             
                     if latest_release_version == bug_fix_version:
                         warning_messages.append('Version of latest_release and bug_fix are the same.')
                         new_bug_fix_version = VersionNumber(latest_release_version).increment()
@@ -197,25 +227,29 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                     component_dict['todo'] = []
                     
                     if latest_release_exist:
-                        component_dict['todo'].append(
-                            ['rename', latest_release_svn, versioned_latest_release_svn]
-                        )
+                        if versioned_latest_release_revision:
+                            component_dict['todo'].append(
+                                ['delete', latest_release_svn]
+                            )
+                        else:
+                            component_dict['todo'].append(
+                                ['rename', latest_release_svn, versioned_latest_release_svn]
+                            )
                     
                     component_dict['todo'] += [
                         ['set_version', bug_fix_svn, str(new_bug_fix_version)],
                         ['copy', bug_fix_svn, latest_release_svn],
-                        #['merge', latest_release_svn, bug_fix_svn, 
-                                  #str(bug_fix_revision) + ':HEAD']
                     ]
                     latest_release_version = None
                     
                 else:
+                    msg = 'latest_release identical to bug_fix with revision %s' % latest_release_revision
+                    info_messages.append(msg)
                     if verbose:
-                        print('  latest_release identical to bug_fix in %s (%s) with revision %s' % 
-                              (latest_release_svn, vcs, latest_release_revision), file=verbose)
+                        print('  %s' % msg, file=verbose)
                         verbose.flush()
             else:
-                warning_messages.append('No latest_release branch.')                
+                warning_messages.append('No latest_release branch. The branch must be created manualy and it must be added to brainvisa-cmake in components_definition.py')
                 if verbose:
                     print(component, '  no latest_release branch', file=verbose)
                     verbose.flush()
@@ -381,4 +415,8 @@ def apply_release_plan(release_plan_file, dry=False,
                                          if len(c) > 2 else None
                         svn_client.svn_merge(c[1], c[2],
                                              revision_range=revision_range)
+                    elif c[0] == 'delete':
+                        svn_client.svn_delete(c[1], message = infos[0])
+                    else:
+                        raise ValueError('Unknown command in todo for component %s: %s' % (component, c[0]))
                         
