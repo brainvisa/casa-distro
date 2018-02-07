@@ -190,6 +190,7 @@ docker_cmd=
 docker_arg=0
 docker_rm=1
 script_arg=1
+i=0
 
 while [[ $# -gt 0 ]]
 do
@@ -208,9 +209,8 @@ do
     else
 
         if [ "$script_arg" == 0 ]; then
-
-            docker_cmd="$docker_cmd $1"
-
+            docker_cmd[$i]="${1}"
+            i=$(($i+1))
         else
 
             case $key in
@@ -250,7 +250,8 @@ do
                 # otherwise it is not possible to use defined script options (-d, -h, -n, -X11, ...)
                 docker_arg=0
                 script_arg=0
-                docker_cmd="$docker_cmd $1"
+                docker_cmd[$i]="${1}"
+                i=$(($i+1))
                 ;;
             esac
         fi
@@ -280,9 +281,9 @@ cmd="${cmd} -v %(build_workflow_dir)s/conf:/casa/conf \
             -e CASA_HOST_DIR=%(build_workflow_dir)s \
             --net=host ${DOCKER_OPTIONS} \
             %(image_name)s \
-            $docker_cmd"
-echo "$cmd"
-exec $cmd
+            "
+echo $cmd "${docker_cmd[@]}"
+exec $cmd "${docker_cmd[@]}"
 '''
 
 docker_test_run_template = '''#!/bin/bash
@@ -294,6 +295,8 @@ docker_cmd=
 docker_arg=0
 script_arg=1
 image_arg=0
+i=0
+
 if [ -n "${IMAGE_NAME}" ]; 
 then
     image_name="${IMAGE_NAME}"
@@ -322,9 +325,8 @@ do
         else
 
             if [ "$script_arg" == 0 ] && [ "$image_arg" == 0 ]; then
-
-                docker_cmd="$docker_cmd $1"
-
+                docker_cmd[$i]="${1}"
+                i=$(($i+1))
             else
 
                 case $key in
@@ -365,7 +367,8 @@ do
                     # otherwise it is not possible to use defined script options (-d, -h, -n, -X11, ...)
                     docker_arg=0
                     script_arg=0
-                    docker_cmd="$docker_cmd $1"
+                    docker_cmd[$i]="${1}"
+                    i=$(($i+1))
                     ;;
                 esac
             fi
@@ -394,9 +397,9 @@ cmd="docker run --rm \
                 -e CASA_SYSTEM=%(system)s \
                 --net=bridge ${DOCKER_OPTIONS} \
                 $image_name \
-                $docker_cmd"
-echo "$cmd"
-exec $cmd
+                "
+echo $cmd "${docker_cmd[@]}"
+exec $cmd "${docker_cmd[@]}"
 '''
 
 docker_x11_options = '''# options to setup X11 in docker
