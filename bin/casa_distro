@@ -12,6 +12,8 @@ import os
 import os.path as osp
 import inspect
 
+import six
+
 commands = []
 def command(f):
     global commands
@@ -51,8 +53,6 @@ class ExecutionStatus:
         return self.status_map.get(self.status)
            
 def display_summary(status):
-    import six
-    
     # Display summary
     sys.stdout.flush()
     sys.stderr.flush()
@@ -397,7 +397,7 @@ def shell(distro='*', branch='*', system='*',
               % build_workflows_repository, 
               file=sys.stderr)
         return 1
-    if type(docker_options) in (str, unicode):
+    if isinstance(docker_options, six.string_types):
         docker_options = docker_options.split(' ')        
     distro, branch, system, bwf_dir = build_workflows[0]
     run_docker_shell(build_workflows_repository, distro=distro, branch=branch,
@@ -410,7 +410,6 @@ def bv_maker(distro=None, branch=None, system=None,
              X=False, docker_rm=True, docker_options=[], args_list=[]):
     '''Start bv_maker in Docker for all the selected build workflows (by default, all created build workflows).'''
     import time
-    import six
     from casa_distro.docker import run_docker_bv_maker
     from casa_distro import iter_build_workflow
     from subprocess import CalledProcessError
@@ -458,8 +457,8 @@ def bv_maker(distro=None, branch=None, system=None,
               file=sys.stderr)
         return 1
 
-    if type(docker_options) in (str, unicode):
-        docker_options = docker_options.split(' ')            
+    if isinstance(docker_options, six.string_types):
+        docker_options = docker_options.split(' ')
 
     status = {}
     global_failed = False
@@ -501,7 +500,6 @@ def run(distro=None, branch=None, system=None,
 example:
     casa_distro -r /home/casa run branch=bug_fix ls -als /casa'''
     import time
-    import six
     from casa_distro.docker import run_docker
     from casa_distro import iter_build_workflow
     from subprocess import CalledProcessError
