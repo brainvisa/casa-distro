@@ -838,7 +838,6 @@ apt-get -q -y install libudev1:i386
 apt-get -q -y install libcgmanager0:i386
 apt-get -q -y install wine1.8-i386
 apt-get -q -y install wine1.8 wine-gecko2.34 wine-mono4.5.4 winetricks
-mingw64
 EOF
     chmod +x "${__build_dir}/apt-wine.sh"
     sudo "${__build_dir}/apt-wine.sh"
