@@ -91,6 +91,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libgstreamer-plugins-base0.10-dev \
     libaudio-dev \
     python-yaml \
+    pandoc \
 #     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -102,6 +103,7 @@ RUN pip install jupyter
 RUN pip install -U zmq
 RUN pip install -U numpy
 RUN pip install -U scipy
+RUN pip install -U nbsphinx
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
