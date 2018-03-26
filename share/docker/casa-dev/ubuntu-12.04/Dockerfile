@@ -84,6 +84,7 @@ RUN apt-get update && apt-get install -y \
     libgstreamer-plugins-base0.10-dev \
     libaudio-dev \
     python-yaml \
+    pandoc \
 #     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -95,6 +96,7 @@ RUN pip install jupyter
 RUN pip install -U zmq
 RUN pip install -U numpy
 RUN pip install -U scipy
+RUN pip install -U docutils
 RUN pip install -U nbsphinx
 RUN pip install -U jupyter_client
 
