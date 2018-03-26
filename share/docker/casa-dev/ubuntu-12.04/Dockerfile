@@ -95,6 +95,8 @@ RUN pip install jupyter
 RUN pip install -U zmq
 RUN pip install -U numpy
 RUN pip install -U scipy
+RUN pip install -U nbsphinx
+RUN pip install -U jupyter_client
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
