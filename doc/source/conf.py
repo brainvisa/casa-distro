@@ -51,8 +51,8 @@ extensions = [ 'sphinx.ext.autodoc',
                'sphinx.ext.ifconfig',
                'sphinx.ext.autosummary',
                'sphinx.ext.viewcode',
-               'numpy_ext.numpydoc',
                napoleon,
+               'sphinx.ext.extlinks',
     ]
 
 # Remove some numpy-linked warnings
