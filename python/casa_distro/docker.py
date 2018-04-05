@@ -8,7 +8,7 @@ import json
 import os
 import os.path as osp
 import shutil
-from subprocess import check_call, check_output
+from subprocess import check_call, check_output, call
 import sys
 import tempfile
 import stat
@@ -117,7 +117,7 @@ def cp(src, dst, not_override=[], verbose=None):
     
     copytree(src, dst, ignore=override_exclusion)
 
-dockerfile_template = '''FROM cati/casa-dev:%(system)s
+dockerfile_template = '''FROM %{image}s:%(system)s
 # set rsa key of guest (localhost) in user ssh config at login time
 RUN sed -i 's|#!/bin/sh|#!/bin/sh\\nssh-keyscan localhost >> $HOME/.ssh/known_hosts|' /usr/local/bin/entrypoint
 
@@ -556,6 +556,7 @@ def create_build_workflow_directory(build_workflow_directory,
         #'container_name': 'casa_bwf_%s_%s_%s' % (distro, casa_branch, system),
         'distro': distro,
         'system': system,
+        'image': 'cati/casa-dev',
         'build_workflow_dir': bwf_dir,
         'image_name': local_image_name,
         'casa_branch': casa_branch,
@@ -701,6 +702,25 @@ def image_name_match(image_name, filters):
         
     return False   
 
+def update_docker_images(image_name_filters = ['*']):
+    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
+        for image_source in images_dict['image_sources']:
+            template_parameters = { 'casa_version': casa_distro.info.__version__ }
+            template_parameters.update(image_source.get('template_files_parameters', {}))
+            
+            image_name = apply_template_parameters(image_source['name'], template_parameters)
+            
+            image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
+            tag = image_tags[-1]
+            image_full_name = 'cati/%s:%s' % (image_name, tag)
+            if not image_name_match(image_full_name, image_name_filters):
+                continue
+            cmd = ['docker', 'pull', image_full_name]
+            print('-'*70)
+            print(*cmd)
+            print('-'*70)
+            call(cmd)
+
 def create_docker_images(image_name_filters = ['*']):
     '''
     Creates all docker images that are declared in 
@@ -712,7 +732,6 @@ def create_docker_images(image_name_filters = ['*']):
     
     
     ''' 
-    
     error = False
     for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
         base_directory = tempfile.mkdtemp()

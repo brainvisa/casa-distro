@@ -14,6 +14,8 @@ import inspect
 
 import six
 
+from casa_distro.info import __version__
+
 commands = []
 def command(f):
     global commands
@@ -241,6 +243,15 @@ def create_docker(image_names = '*', verbose=None):
     
     image_name_filters = image_names.split(',')
     create_docker_images(
+        image_name_filters = image_name_filters)
+
+@command
+def update_docker(image_names = '*', verbose=None):
+    '''pull all casa-test and casa-dev docker images from DockerHub'''
+    from casa_distro.docker import update_docker_images
+    
+    image_name_filters = image_names.split(',')
+    update_docker_images(
         image_name_filters = image_name_filters)
 
 
@@ -634,7 +645,7 @@ if __name__ == '__main__':
         args_list = sys.argv[ind + 1:]
         sys.argv = sys.argv[:ind]
 
-    parser = argparse.ArgumentParser(description='Casa distribution creation tool',
+    parser = argparse.ArgumentParser(description='Casa distribution creation tool. Version %s' % __version__,
                                      formatter_class=ArgumentLineBreakFormatter)
 
     parser.add_argument('-r', '--repository', default=None,
