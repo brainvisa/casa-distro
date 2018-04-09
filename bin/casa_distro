@@ -242,8 +242,11 @@ def create_docker(image_names = '*', verbose=None):
     from casa_distro.docker import create_docker_images
     
     image_name_filters = image_names.split(',')
-    create_docker_images(
+    count = create_docker_images(
         image_name_filters = image_name_filters)
+    if count == 0:
+        print('No image match filter "%s"' % image_names, file=sys.stderr)
+        sys.exit(1)
 
 @command
 def update_docker(image_names = '*', verbose=None):
@@ -251,8 +254,11 @@ def update_docker(image_names = '*', verbose=None):
     from casa_distro.docker import update_docker_images
     
     image_name_filters = image_names.split(',')
-    update_docker_images(
+    count = update_docker_images(
         image_name_filters = image_name_filters)
+    if count == 0:
+        print('No image match filter "%s"' % image_names, file=sys.stderr)
+        sys.exit(1)
 
 
 @command
@@ -260,8 +266,11 @@ def publish_docker(image_names = '*', verbose=None):
     '''publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images'''
     from casa_distro.docker import publish_docker_images
     image_name_filters = image_names.split(',')
-    publish_docker_images(
+    count = publish_docker_images(
         image_name_filters = image_name_filters)
+    if count == 0:
+        print('No image match filter "%s"' % image_names, file=sys.stderr)
+        sys.exit(1)
 
 
 @command
@@ -694,8 +703,9 @@ if __name__ == '__main__':
         
         if 'args_list' in cargs.args:
             kwargs['args_list'] = args + args_list
+            args= []
 
-        result = command(**kwargs)
+        result = command(*args, **kwargs)
         
     finally:
         if tmp_share:

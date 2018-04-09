@@ -703,6 +703,7 @@ def image_name_match(image_name, filters):
     return False   
 
 def update_docker_images(image_name_filters = ['*']):
+    image_file_count = 0
     for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
         for image_source in images_dict['image_sources']:
             template_parameters = { 'casa_version': casa_distro.info.__version__ }
@@ -715,23 +716,27 @@ def update_docker_images(image_name_filters = ['*']):
             image_full_name = 'cati/%s:%s' % (image_name, tag)
             if not image_name_match(image_full_name, image_name_filters):
                 continue
+            image_file_count += 1
             cmd = ['docker', 'pull', image_full_name]
             print('-'*70)
             print(*cmd)
             print('-'*70)
             call(cmd)
+    return image_file_count
 
 def create_docker_images(image_name_filters = ['*']):
     '''
     Creates all docker images that are declared in 
     find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
     "docker" directory located in the directory casa_distro.share_directory.
+    Return the number of images processed.
     
     This function is still work in progress. Its paramaters and behaviour may
     change.
     
     
     ''' 
+    image_file_count = 0
     error = False
     for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
         base_directory = tempfile.mkdtemp()
@@ -766,6 +771,7 @@ def create_docker_images(image_name_filters = ['*']):
 
                 if not image_name_match(image_full_name, image_name_filters):
                     continue
+                image_file_count += 1
 
                 cmd = ['docker', 'build', '--force-rm',
                        '--tag', image_full_name, target_directory]
@@ -788,18 +794,22 @@ def create_docker_images(image_name_filters = ['*']):
                 break
         finally:
             shutil.rmtree(base_directory)
+    return image_file_count
+
 
 def publish_docker_images(image_name_filters = ['*']):
     '''
     Publish, on DockerHub, all docker images that are declared in 
     find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
     "docker" directory located in the directory casa_distro.share_directory.
+    Return the number of images processed.
     
     This function is still work in progress. Its paramaters and behaviour may
     change.
     '''
     import casa_distro
     
+    image_file_count = 0
     for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
         base_directory = tempfile.mkdtemp()
         source_directory, filename = osp.split(images_dict['filename'])
@@ -814,8 +824,9 @@ def publish_docker_images(image_name_filters = ['*']):
                 image_full_name = 'cati/%s:%s' % (image_name, tag)
                 if not image_name_match(image_full_name, image_name_filters):
                     continue
-                
+                image_file_count += 1                
                 check_call(['docker', 'push', image_full_name])
+    return image_file_count
 
 
 def create_build_workflow(bwf_repository, distro='opensource',
