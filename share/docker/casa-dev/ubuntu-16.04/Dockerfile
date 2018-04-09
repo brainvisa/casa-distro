@@ -104,6 +104,8 @@ RUN pip install -U zmq
 RUN pip install -U numpy
 RUN pip install -U scipy
 RUN pip install -U nbsphinx
+# sphinx 1.7 has bugs
+RUN pip install -U "sphinx>=1.5,<1.7"
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
@@ -136,7 +138,8 @@ RUN cd /tmp \
 #    ln -s /usr/local/qt-installer/bin/* /usr/local/bin/ && \
 #    rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
 
-RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
+# RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
+RUN cd /tmp && wget https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip && mkdir jxrlib && cd jxrlib && unzip ../jxrlib.zip; cd sourceCode/jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib jxrlib.zip
 RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
 # install a version of netcdf with fewer dependencies
