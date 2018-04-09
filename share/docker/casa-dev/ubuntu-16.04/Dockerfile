@@ -156,6 +156,8 @@ RUN pip install -U "sphinx>=1.5,<1.7"
 # install xmltodict and other python packages
 RUN pip install xmltodict
 RUN pip install python_jenkins
+RUN pip install nipype
+RUN pip3 install nipype
 
 # install Pycluster
 RUN cd /tmp \
