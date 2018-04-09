@@ -93,6 +93,52 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python-yaml \
     pandoc \
 #     libvtk5-dev \ # later ?
+    ipython3 \
+    ipython3-notebook \
+    ipython3-qtconsole \
+    python3-matplotlib \
+    python3-pyqt5 \
+    python3-pyqt5.qtmultimedia \
+    python3-pyqt5.qtopengl \
+    python3-pyqt5.qtsvg \
+    python3-pyqt5.qtwebkit \
+    python3-pyqt5.qtsql \
+    python3-pyqt5.qtwebsockets \
+    python3-pyqt5.qtxmlpatterns \
+    python3-traits \
+    python3-pip \
+    python3-pydot \
+    python3-configobj \
+    python3-sip-dev \
+    python3-pyqt4.qtsql \
+    python3-pyqt4.phonon \
+    python3-pyqt4.qtopengl \
+    python3-sphinx \
+    python3-sphinx-paramlinks \
+    python3-pandas \
+    python-xmltodict \
+    python3-xmltodict \
+    python3-fastcluster \
+    python3-mysqldb \
+    pyqt5-dev \
+    pyqt5-dev-tools \
+    libqt5opengl5-dev \
+    libqt5svg5-dev \
+    libqt5webkit5-dev \
+    libqt5websockets5-dev \
+    libqt5x11extras5-dev \
+    libqt5xmlpatterns5-dev \
+    libqt5waylandclient5-dev \
+    libphonon4qt5-dev \
+    libqwt-qt5-6 \
+    qttools5-dev-tools \
+    qtmultimedia5-dev \
+    python3-pyqt5.qtx11extras \
+    python3-ipython-genutils \
+    cython3 \
+    python3-yaml \
+    python3-jenkins \
+    python3-opengl \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
