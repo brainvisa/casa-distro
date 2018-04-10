@@ -412,6 +412,7 @@ DOCKER_OPTIONS="$DOCKER_OPTIONS -v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MI
 if [ -n "$USE_NVIDIA" ] ; then
     if [ -c "/dev/nvidiactl" ]; then
         NV_DIR=$(\ls -d /usr/lib/nvidia-???)
+        NV_DIR=${NV_DIR[$(( ${#NV_DIR[*]} - 1 ))]}
         DOCKER_OPTIONS="$DOCKER_OPTIONS --device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl -v $NV_DIR:/usr/lib/nvidia-drv:ro -e LD_LIBRARY_PATH=/usr/lib/nvidia-drv"
     fi
 fi
