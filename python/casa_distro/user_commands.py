@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
@@ -5,6 +6,7 @@ import tempfile
 import os.path as osp
 import six
 
+from casa_distro import linux_os_ids
 from casa_distro.command import command
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
@@ -73,45 +75,59 @@ class ExecutionStatus:
 
 
 @command
-def create_build_workflow(distro=default_distro, branch=default_branch, 
-                          system=None, download=False, 
-                          not_override='bv_maker.cfg,svn.secret', 
-                          build_workflows_repository=default_build_workflow_repository,
-                          verbose=None, base_distro=None):
-    '''Create a new build workflow directory in a repository of build
-    workflows. The new build workflow includes several characteristics:
-    
-    
-    * system: OS of the base docker image which the build workflow will be
-      built for. The following values are supported: ubuntu-12.04,
-      ubuntu-16.04, windows-7-32, windows-7-64. Note that the windows variants
-      are actually Linux systems, configured for Windows cross-compilation.
-      
-      
-    * distro is an identifier which represents the set of projects which will
-      be handled and compiled in the build workflow. It can be a predefined
-      value ("opensource", "brainvisa", "cati"), or a free name. In the latter
-      case, the build workflow should be based on another template
-      configuration, which should be passed as the "base_distro" parameter.
-      
-      
-    * branch: Version branch name: latest_release, bug_fix, or trunk.
-    
-    
-    * base_distro: in the specific case when distro is not one of the builtin
-      template values (opensource, brainvisa, cati), the new distro should be
-      based on an existing template, which has to be specified in base_distro.
+def create(distro_source=default_distro,
+           distro_name=None,
+           container_type = None,
+           container_image = None,
+           casa_branch=default_branch,
+           system=linux_os_ids[0],
+           not_override='bv_maker.cfg,svn.secret',
+           build_workflows_repository=default_build_workflow_repository,
+           verbose=None):
     '''
-    from casa_distro.docker import create_build_workflow
-    if download:
-        print('ERROR: download option of create_build_workflow is not implemented', file=sys.stderr)
-        sys.exit(1)
-    else:
-        not_override_lst = not_override.split(',')
-        create_build_workflow(build_workflows_repository, distro=distro, 
-                              branch=branch, system=system, 
-                              not_override=not_override_lst,
-                              verbose=verbose, base_distro=base_distro)
+    Initialize a new build workflow directory. This creates a conf
+    subdirectory with build_workflow.json, bv_maker.cfg and svn.secret
+    files that can be edited before compilation.
+
+    distro_source:
+        Either the name of a predefined distro (on of the directory
+        located in share/distro) or a directory containing the distro
+        source.
+    
+    distro_name:
+        Name of the distro that will be created. If omited, the name
+        of the distro source (or distro source directory) is used.
+    
+    container_type: type of container thechnology to use. It can be either 
+        'singularity', 'docker' or None (the default). If it is None,
+        it first try to see if Singularity is installed or try to see if
+        Docker is installed.
+    
+    container_image: image to use for the compilation container. If no
+        value is given, uses the one defined in the distro.
+    
+    casa_branch:
+        bv_maker branch to use (latest_release, bug_fix or trunk)
+    
+    system:
+        Name of the target system.
+    
+    not_override:
+        a coma separated list of file name that must not be overriden 
+        if they already exist.
+    '''
+    from casa_distro.build_workflow import create_build_workflow_directory
+    not_override_lst = not_override.split(',')
+    bwf_directory = osp.join(build_workflows_repository, '%(distro_name)s', '%(casa_branch)s_%(system)s')
+    create_build_workflow_directory(build_workflow_directory=bwf_directory,
+                                    distro_source=distro_source,
+                                    distro_name=distro_name,
+                                    container_type=container_type,
+                                    container_image=container_image,
+                                    casa_branch=casa_branch,
+                                    system=system,
+                                    not_override=not_override_lst,
+                                    verbose=verbose)
 
 
 @command

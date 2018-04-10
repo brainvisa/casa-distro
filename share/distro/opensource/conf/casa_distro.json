@@ -1,0 +1,3 @@
+{
+    "container_image": "cati/casa-dev:%(system)s"
+}
