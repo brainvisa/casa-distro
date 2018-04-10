@@ -8,6 +8,7 @@ import shutil
 import os.path as osp
 import inspect
 from collections import OrderedDict
+import textwrap
 
 from casa_distro.info import __version__
 from casa_distro.defaults import default_build_workflow_repository
@@ -18,6 +19,21 @@ def command(f):
     commands[f.__name__] = f
     return f
 
+def get_doc(command, wrap_width=None):
+    paragraphs = []
+    current = []
+    for line in command.__doc__.strip().split('\n'):
+        line = line.strip()
+        if line:
+            current.append(line)
+        else:
+            paragraphs.append(' '.join(current))
+            current = []
+    if current:
+        paragraphs.append(' '.join(current))
+    if wrap_width:
+        paragraphs = [(textwrap.fill(i, wrap_width) if i else i) for i in paragraphs]
+    return '\n'.join(paragraphs)
 
 @command
 def help(args_list=['help'], **kwargs):
@@ -32,7 +48,7 @@ def help(args_list=['help'], **kwargs):
         return
     
     for command in command_set:
-        command_help = commands[command].__doc__
+        command_help = get_doc(commands[command], wrap_width=80)
 
         #print('{s:{c}^{n}}'.format(s=' %s ' % command, n=80, c='-'))
         print()
@@ -78,7 +94,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
     parser.add_argument('command', nargs=1, choices=list(commands.keys()),
-                        help='\n\n'.join('"%s": %s;\n\n' % (i, commands[i].__doc__) for i in commands))
+                        help='\n\n'.join('"%s": %s;\n\n' % (i, get_doc(commands[i])) for i in commands))
     parser.add_argument('command_options', nargs=argparse.REMAINDER,
                         help='command specific options (use help <command> to list these options).')
     options = parser.parse_args()
