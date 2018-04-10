@@ -14,6 +14,8 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_login,
                                   default_distro,
                                   default_branch)
+from casa_distro.build_workflow import iter_build_workflow, run_container
+
 
 def display_summary(status):
     # Display summary
@@ -130,12 +132,11 @@ def create(distro_source=default_distro,
                                     verbose=verbose)
 
 
-@command
-def list(distro='*', branch='*', system='*', 
+@command('list')
+def list_command(distro='*', branch='*', system='*', 
          build_workflows_repository=default_build_workflow_repository,
          verbose=None):
     '''List (eventually selected) build workflows created by "create" command.'''
-    from casa_distro import iter_build_workflow
     
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
         print('directory:', bwf_dir)
@@ -154,12 +155,9 @@ def pull(distro='*', branch='*', system='*',
 @command
 def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
-          X=False, docker_rm=True, docker_options=[], 
-          args_list=[]):
+          gui=False, interactive=True, tmp_container=True, container_options=[],
+          args_list=[], verbose=None):
     '''Start a bash shell in Docker with the given repository configuration.'''
-    from casa_distro.docker import run_docker_shell
-    from casa_distro import iter_build_workflow
-    
     build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                distro=distro, 
                                                branch=branch, 
@@ -178,16 +176,18 @@ def shell(distro='*', branch='*', system='*',
         print('Several build workflows found, you must explicitely select one',
               'giving values for distro, system and branch. You can list',
               'existing workflows using:\n'
-              'casa_distro -r %s list_build_workflows' 
+              'casa_distro -r %s list' 
               % build_workflows_repository, 
               file=sys.stderr)
         return 1
-    if isinstance(docker_options, six.string_types):
-        docker_options = docker_options.split(' ')        
+    if isinstance(container_options, six.string_types):
+        container_options = container_options.split(' ')        
     distro, branch, system, bwf_dir = build_workflows[0]
-    run_docker_shell(build_workflows_repository, distro=distro, branch=branch,
-                     system=system, X=X, docker_rm=docker_rm, 
-                     docker_options=docker_options, args_list=args_list)
+    bwf_directory = osp.join(build_workflows_repository, '%s' % distro,
+                             '%s_%s' % (branch, system))
+    command = ['/bin/bash' ] + args_list
+    run_container(bwf_directory, command=command, gui=gui, interactive=interactive, tmp_container=tmp_container, container_options=container_options, verbose=verbose)
+
 
 @command
 def bv_maker(distro=None, branch=None, system=None,
@@ -196,10 +196,8 @@ def bv_maker(distro=None, branch=None, system=None,
     '''Start bv_maker in Docker for all the selected build workflows (by default, all created build workflows).'''
     import time
     from casa_distro.docker import run_docker_bv_maker
-    from casa_distro import iter_build_workflow
     from subprocess import CalledProcessError
     from traceback import format_exc
-    from casa_distro import iter_build_workflow
     
     default_distro, default_branch, default_system = (False, False, False)
     
@@ -286,10 +284,8 @@ example:
     casa_distro -r /home/casa run branch=bug_fix ls -als /casa'''
     import time
     from casa_distro.docker import run_docker
-    from casa_distro import iter_build_workflow
     from subprocess import CalledProcessError
     from traceback import format_exc
-    from casa_distro import iter_build_workflow
     
     default_distro, default_branch, default_system = (False, False, False)
     

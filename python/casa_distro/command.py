@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import six
 import argparse
 import sys
 import zipfile
@@ -10,14 +11,20 @@ import inspect
 from collections import OrderedDict
 import textwrap
 import re
+from functools import partial
 
 from casa_distro.info import __version__
 from casa_distro.defaults import default_build_workflow_repository
 
 commands = OrderedDict()
-def command(f):
+def command(f, name=None):
+    if isinstance(f, six.string_types):
+        return partial(command, name=f)
+    
     global commands
-    commands[f.__name__] = f
+    if name is None:
+        name = f.__name__
+    commands[name] = f
     return f
 
 def get_doc(command, wrap_width=None):

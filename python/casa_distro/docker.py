@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import six
 import errno
 import json
 import os
@@ -223,38 +224,31 @@ def publish_docker_images(image_name_filters = ['*']):
 
 
 
-def run_docker(bwf_repository, distro='opensource', branch='latest_release', 
-               system=None, X=False, docker_rm=True, docker_options=[], 
-               args_list=[]):
-    '''Run any command in docker with the config of the given repository
-    '''
-    if system is None:
-        system = casa_distro.linux_os_ids[0]
-    bwf_directory = osp.join(bwf_repository, '%s' % distro,
-                             '%s_%s' % (branch, system))
-    run_docker = osp.join(bwf_directory, 'run_docker.sh')
-    cmd = ['/bin/bash', run_docker]
-    if not bool(docker_rm):
-        cmd.append('-no-rm')
-        
-    if bool(X):
-        cmd.append('-X11')
-    if len(docker_options) > 0:
-        cmd += ['-d'] + docker_options + ['--']
+def run_docker(casa_distro, command, gui, interactive, tmp_container, container_options, verbose):
+    docker = ['docker', 'run']
+    if interactive:
+        docker += ['-it']
+    if tmp_container:
+        docker += ['--rm']
+    if gui:
+        raise NotImplementedError('gui option command is not yet implemented for casa_distro 2.0')
+    for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
+        source = source % casa_distro
+        source = osp.expandvars(source)
+        dest = dest % casa_distro
+        dest = osp.expandvars(dest)
+        docker += ['-v', '%s:%s' % (source, dest)]
+    for name, value in six.iteritems(casa_distro.get('container_env',{})):
+        value = value % casa_distro
+        value = osp.expandvars(value)
+        docker += ['-e', '%s=%s' % (name, value)]
+    docker += container_options
+    docker += [casa_distro['container_image']]
+    docker += command
+    if verbose:
+        print('Running docker with the following command:', *("'%s'" % i for i in docker), file=verbose)
+    check_call(docker)
 
-    cmd += args_list
-    check_call(cmd)
-
-
-def run_docker_shell(bwf_repository, distro='opensource',
-                     branch='latest_release', system=None, X=False, 
-                     docker_rm=True, docker_options=[], args_list=[]):
-    '''Run a bash shell in docker with the config of the given repository
-    '''
-    run_docker(bwf_repository, distro=distro, branch=branch, 
-               system=system, X=X, docker_rm=docker_rm, 
-               docker_options=['-it'] + docker_options, 
-               args_list=['/bin/bash'] + args_list)
 
 
 def run_docker_bv_maker(bwf_repository, distro='opensource',

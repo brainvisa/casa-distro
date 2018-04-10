@@ -8,6 +8,18 @@ import shutil
 import json
 
 from casa_distro import share_directory, linux_os_ids
+from casa_distro.docker import run_docker
+from casa_distro.singularity import run_singularity
+
+
+def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
+                        system='*'):
+    for i in glob.glob(osp.join(build_workflows_repository, distro, '%s_%s' % (branch, system), 'conf')):
+        d, branch_system = osp.split(osp.dirname(i))
+        the_branch, the_system = branch_system.rsplit('_', 1)
+        d, the_distro  = osp.split(d)
+        yield (the_distro, the_branch, the_system, osp.dirname(i))
+
 
 def find_in_path(file):
     '''
@@ -251,7 +263,28 @@ def create_build_workflow_directory(build_workflow_directory,
         distro_name = distro_name,
         container_type = container_type,
         casa_branch = casa_branch,
-        system = system))
+        system = system,
+        container_volumes = {'%(build_workflow_dir)s/conf': '/casa/conf',
+                             '%(build_workflow_dir)s/src': '/casa/src',
+                             '%(build_workflow_dir)s/build': '/casa/build',
+                             '%(build_workflow_dir)s/install': '/casa/install',
+                             '%(build_workflow_dir)s/pack': '/casa/pack',
+                             '%(build_workflow_dir)s/tests': '/casa/tests',
+                             '%(build_workflow_dir)s/custom/src': '/casa/custom/src',
+                             '%(build_workflow_dir)s/custom/build': '/casa/custom/build',
+                             '$HOME/.ssh/id_rsa': '/root/.ssh/id_rsa',
+                             '$HOME/.ssh/id_rsa.pub': '/root/.ssh/id_rsa.pub'},
+        container_env = {'CASA_DISTRO': '%(distro_name)s',
+                         'CASA_BRANCH': '%(casa_branch)s',
+                         'CASA_SYSTEM': '%(system)s',
+                         'CASA_HOST_DIR': '%(build_workflow_dir)s'}))
+    if container_type == 'docker':
+        container_options = ['--net=host']
+    else:
+        container_options = None
+    if container_options:
+        casa_distro['container_options'] = container_options
+    
     if not container_image:
         container_image = casa_distro.get('container_image')
         if container_image is None:
@@ -288,4 +321,22 @@ def create_build_workflow_directory(build_workflow_directory,
     
     check_svn_secret(bwf_dir)
 
+
+
+def run_container(bwf_directory, command, gui=False, interactive=False, tmp_container=True, container_options=[], verbose=False):
+    '''Run any command in the container defined in the build workflow directory
+    '''
+    casa_distro_json = osp.join(bwf_directory, 'conf', 'casa_distro.json')
+    casa_distro = json.load(open(casa_distro_json))
+    casa_distro['build_workflow_dir'] = bwf_directory
+    container_type = casa_distro.get('container_type')
+    if container_type:
+        if container_type == 'singularity':
+            run_singularity(casa_distro, command, gui=gui, interactive=interactive, tmp_container=tmp_container, container_options=container_options, verbose=verbose)
+        elif container_type == 'docker':
+            run_docker(casa_distro, command, gui=gui, interactive=interactive, tmp_container=tmp_container, container_options=container_options, verbose=verbose)            
+        else:
+            raise ValueError('%s is no a valid container system (in "%s")' % (container_type, casa_distro_json))
+    else:
+        raise ValueError('No container_type in "%s"' % casa_distro_json)
 
