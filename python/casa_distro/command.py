@@ -9,6 +9,7 @@ import os.path as osp
 import inspect
 from collections import OrderedDict
 import textwrap
+import re
 
 from casa_distro.info import __version__
 from casa_distro.defaults import default_build_workflow_repository
@@ -21,19 +22,36 @@ def command(f):
 
 def get_doc(command, wrap_width=None):
     paragraphs = []
-    current = []
-    for line in command.__doc__.strip().split('\n'):
-        line = line.strip()
-        if line:
-            current.append(line)
+    lines = command.__doc__.split('\n')
+    while lines and not lines[0].strip():
+        lines = lines[1:]
+    if lines:
+        space_re = re.compile(r'^[ ]*')
+        base_indent = len(space_re.match(lines[0]).group())
+        last_indent = base_indent
+        current = []
+        for line in lines:
+            sline = line.strip()
+            if sline:
+                new_indent = len(space_re.match(line).group())
+                if new_indent == last_indent:
+                    current.append(line.strip())
+                else:
+                    paragraphs.append((last_indent-base_indent, ' '.join(current)))
+                    current = [line.strip()]
+                    last_indent = new_indent
+            else:
+                paragraphs.append((last_indent-base_indent, ' '.join(current)))
+                paragraphs.append((0, ''))
+                current = []
+                last_indent = base_indent
+        if current:
+            paragraphs.append((last_indent-base_indent, ' '.join(current)))
+        if wrap_width:
+            lines = [(textwrap.fill(t, wrap_width, initial_indent=' '*i, subsequent_indent=' '*i) if t else t) for i, t in paragraphs]
         else:
-            paragraphs.append(' '.join(current))
-            current = []
-    if current:
-        paragraphs.append(' '.join(current))
-    if wrap_width:
-        paragraphs = [(textwrap.fill(i, wrap_width) if i else i) for i in paragraphs]
-    return '\n'.join(paragraphs)
+            lines = [t for i, t in paragraphs]
+    return '\n'.join(lines)
 
 @command
 def help(args_list=['help'], **kwargs):
@@ -94,7 +112,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
     parser.add_argument('command', nargs=1, choices=list(commands.keys()),
-                        help='\n\n'.join('"%s": %s;\n\n' % (i, get_doc(commands[i])) for i in commands))
+                        help='\n\n'.join('%s\n%s' % ('%s\n%s\n%s' % ('='*len(i), i, '=' * len(i)), get_doc(commands[i])) for i in commands))
     parser.add_argument('command_options', nargs=argparse.REMAINDER,
                         help='command specific options (use help <command> to list these options).')
     options = parser.parse_args()

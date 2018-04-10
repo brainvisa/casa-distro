@@ -142,37 +142,13 @@ def list(distro='*', branch='*', system='*',
         print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
 
 @command
-def pull_build_workflows(distro='*', branch='*', system='*', 
-                         build_workflows_repository=default_build_workflow_repository, 
-                         repository_server=default_repository_server, 
-                         repository_server_directory=default_repository_server_directory,
-                         login=default_repository_login, verbose=None):
+def pull(distro='*', branch='*', system='*', 
+         build_workflows_repository=default_build_workflow_repository, 
+         repository_server=default_repository_server, 
+         repository_server_directory=default_repository_server_directory,
+         login=default_repository_login, verbose=None):
     '''Download a build workflow (except conf directory) from sftp server (require lftp command to be installed).'''
-    from subprocess import check_call
-    from casa_distro import iter_build_workflow
-    
-    lftp_script = tempfile.NamedTemporaryFile()
-    if login:
-        remote = 'sftp://%s@%s' % (login, repository_server)
-    else:
-        remote = 'sftp://%s' % repository_server
-    print('connect', remote, file=lftp_script)
-    print('cd', repository_server_directory, file=lftp_script)
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
-        relative_bwf_dir = bwf_dir[len(build_workflows_repository)+1:]
-        for d in ('src', 'build', 'install', 'pack'):
-            cmd = ['mirror', osp.join(relative_bwf_dir,d), osp.join(bwf_dir,d)]
-            if verbose:
-                cmd.insert(2, '-v')
-            print(*cmd, file=lftp_script)
-    lftp_script.flush()
-    cmd = ['lftp', '-f', lftp_script.name]
-    if verbose:
-        print('Running', *cmd, file=verbose)
-        print('-' * 10, lftp_script.name, '-'*10, file=verbose)
-        print(open(lftp_script.name).read(), file=verbose)
-        print('-'*40, file=verbose)
-    check_call(cmd)
+    raise NotImplementedError('This command has not been implemented yet for casa_distro 2.0')
 
 
 @command
