@@ -93,6 +93,16 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python-yaml \
     pandoc \
 #     libvtk5-dev \ # later ?
+    gadfly \
+    python-pyqt5 \
+    python-pyqt5.qtmultimedia \
+    python-pyqt5.qtopengl \
+    python-pyqt5.qtsvg \
+    python-pyqt5.qtwebkit \
+    python-pyqt5.qtsql \
+    python-pyqt5.qtwebsockets \
+    python-pyqt5.qtxmlpatterns \
+    python-mysqldb \
     ipython3 \
     ipython3-notebook \
     ipython3-qtconsole \
