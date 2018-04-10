@@ -117,7 +117,7 @@ def cp(src, dst, not_override=[], verbose=None):
     
     copytree(src, dst, ignore=override_exclusion)
 
-dockerfile_template = '''FROM %{image}s:%(system)s
+dockerfile_template = '''FROM %(image)s:%(system)s
 # set rsa key of guest (localhost) in user ssh config at login time
 RUN sed -i 's|#!/bin/sh|#!/bin/sh\\nssh-keyscan localhost >> $HOME/.ssh/known_hosts|' /usr/local/bin/entrypoint
 
@@ -513,10 +513,10 @@ def create_build_workflow_directory(build_workflow_directory,
     
     bwf_dir = osp.normpath(osp.abspath(build_workflow_directory))
     print('build_workflow_directory:', build_workflow_directory)
-    distro_dir = osp.join(share_directory, 'docker', distro)
+    distro_dir = osp.join(share_directory, 'distro', distro)
     if not osp.exists(distro_dir):
         if base_distro is not None:
-            distro_dir = osp.join(share_directory, 'docker', base_distro)
+            distro_dir = osp.join(share_directory, 'distro', base_distro)
         else:
             raise ValueError('distro value %s is not a predefined value: '
                              'base_distro should be provided' % distro)
@@ -629,11 +629,7 @@ def create_build_workflow_directory(build_workflow_directory,
     check_svn_secret(bwf_dir)
 
 
-
-
-
-        
-def find_docker_image_files(base_directory):
+def find_docker_image_files():
     '''
     Return a sorted list of dictionary corresponding to the content of
     all the "casa_distro_docker.yaml" files located in given directory.
@@ -641,6 +637,7 @@ def find_docker_image_files(base_directory):
     '''
     import yaml
     
+    base_directory = osp.join(casa_distro.share_directory, 'docker')
     result = []
     dependencies = {}
     base_directory = osp.abspath(osp.normpath(base_directory))
@@ -704,7 +701,7 @@ def image_name_match(image_name, filters):
 
 def update_docker_images(image_name_filters = ['*']):
     image_file_count = 0
-    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
+    for images_dict in find_docker_image_files():
         for image_source in images_dict['image_sources']:
             template_parameters = { 'casa_version': casa_distro.info.__version__ }
             template_parameters.update(image_source.get('template_files_parameters', {}))
@@ -727,8 +724,7 @@ def update_docker_images(image_name_filters = ['*']):
 def create_docker_images(image_name_filters = ['*']):
     '''
     Creates all docker images that are declared in 
-    find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
-    "docker" directory located in the directory casa_distro.share_directory.
+    find_docker_image_files().
     Return the number of images processed.
     
     This function is still work in progress. Its paramaters and behaviour may
@@ -738,7 +734,7 @@ def create_docker_images(image_name_filters = ['*']):
     ''' 
     image_file_count = 0
     error = False
-    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
+    for images_dict in find_docker_image_files():
         base_directory = tempfile.mkdtemp()
         try:
             source_directory, filename = osp.split(images_dict['filename'])
@@ -800,8 +796,7 @@ def create_docker_images(image_name_filters = ['*']):
 def publish_docker_images(image_name_filters = ['*']):
     '''
     Publish, on DockerHub, all docker images that are declared in 
-    find_docker_image_files(casa_distro_dir) where casa_distro_dir is the
-    "docker" directory located in the directory casa_distro.share_directory.
+    find_docker_image_files().
     Return the number of images processed.
     
     This function is still work in progress. Its paramaters and behaviour may
@@ -810,7 +805,7 @@ def publish_docker_images(image_name_filters = ['*']):
     import casa_distro
     
     image_file_count = 0
-    for images_dict in find_docker_image_files(osp.join(casa_distro.share_directory, 'docker')):
+    for images_dict in find_docker_image_files():
         base_directory = tempfile.mkdtemp()
         source_directory, filename = osp.split(images_dict['filename'])
         for image_source in images_dict['image_sources']:
