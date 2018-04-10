@@ -242,6 +242,7 @@ def run_docker(casa_distro, command, gui, interactive, tmp_container, container_
         value = value % casa_distro
         value = osp.expandvars(value)
         docker += ['-e', '%s=%s' % (name, value)]
+    docker += casa_distro.get('container_options', [])
     docker += container_options
     docker += [casa_distro['container_image']]
     docker += command

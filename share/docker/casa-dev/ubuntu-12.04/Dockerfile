@@ -177,5 +177,14 @@ RUN chmod +x /usr/local/bin/svn
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
+# Install a version of brainvisa-cmake
+RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    mkdir /tmp/brainvisa-cmake  && \
+    cd /tmp/brainvisa-cmake && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install && cd .. && rm -r /tmp/brainvisa-cmake
+
+ENV PATH=${PATH}:/casa/build/bin:/casa/brainvisa-cmake/bin
+
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev
