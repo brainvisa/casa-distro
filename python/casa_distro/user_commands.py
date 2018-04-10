@@ -131,15 +131,15 @@ def create(distro_source=default_distro,
 
 
 @command
-def list_build_workflows(distro='*', branch='*', system='*', 
-                         build_workflows_repository=default_build_workflow_repository,
-                         verbose=None):
-    '''List (eventually selected) build workflows created by create_build_workflow.'''
+def list(distro='*', branch='*', system='*', 
+         build_workflows_repository=default_build_workflow_repository,
+         verbose=None):
+    '''List (eventually selected) build workflows created by "create" command.'''
     from casa_distro import iter_build_workflow
     
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
-        print('distro=%s' % d,'branch=%s' % b, 'system=%s' % s)
-        print('  directory:', bwf_dir)
+        print('directory:', bwf_dir)
+        print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
 
 @command
 def pull_build_workflows(distro='*', branch='*', system='*', 
