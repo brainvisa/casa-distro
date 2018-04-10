@@ -93,6 +93,62 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python-yaml \
     pandoc \
 #     libvtk5-dev \ # later ?
+    gadfly \
+    python-pyqt5 \
+    python-pyqt5.qtmultimedia \
+    python-pyqt5.qtopengl \
+    python-pyqt5.qtsvg \
+    python-pyqt5.qtwebkit \
+    python-pyqt5.qtsql \
+    python-pyqt5.qtwebsockets \
+    python-pyqt5.qtxmlpatterns \
+    python-mysqldb \
+    ipython3 \
+    ipython3-notebook \
+    ipython3-qtconsole \
+    python3-matplotlib \
+    python3-pyqt5 \
+    python3-pyqt5.qtmultimedia \
+    python3-pyqt5.qtopengl \
+    python3-pyqt5.qtsvg \
+    python3-pyqt5.qtwebkit \
+    python3-pyqt5.qtsql \
+    python3-pyqt5.qtwebsockets \
+    python3-pyqt5.qtxmlpatterns \
+    python3-traits \
+    python3-pip \
+    python3-pydot \
+    python3-configobj \
+    python3-sip-dev \
+    python3-pyqt4.qtsql \
+    python3-pyqt4.phonon \
+    python3-pyqt4.qtopengl \
+    python3-sphinx \
+    python3-sphinx-paramlinks \
+    python3-pandas \
+    python-xmltodict \
+    python3-xmltodict \
+    python3-fastcluster \
+    python3-mysqldb \
+    pyqt5-dev \
+    pyqt5-dev-tools \
+    libqt5opengl5-dev \
+    libqt5svg5-dev \
+    libqt5webkit5-dev \
+    libqt5websockets5-dev \
+    libqt5x11extras5-dev \
+    libqt5xmlpatterns5-dev \
+    libqt5waylandclient5-dev \
+    libphonon4qt5-dev \
+    libqwt-qt5-6 \
+    qttools5-dev-tools \
+    qtmultimedia5-dev \
+    python3-pyqt5.qtx11extras \
+    python3-ipython-genutils \
+    cython3 \
+    python3-yaml \
+    python3-jenkins \
+    python3-opengl \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -104,10 +160,14 @@ RUN pip install -U zmq
 RUN pip install -U numpy
 RUN pip install -U scipy
 RUN pip install -U nbsphinx
+# sphinx 1.7 has bugs
+RUN pip install -U "sphinx>=1.5,<1.7"
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
 RUN pip install python_jenkins
+RUN pip install nipype
+RUN pip3 install nipype
 
 # install Pycluster
 RUN cd /tmp \
@@ -136,7 +196,8 @@ RUN cd /tmp \
 #    ln -s /usr/local/qt-installer/bin/* /usr/local/bin/ && \
 #    rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
 
-RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
+# RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
+RUN cd /tmp && wget https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip && mkdir jxrlib && cd jxrlib && unzip ../jxrlib.zip; cd sourceCode/jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib jxrlib.zip
 RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
 # install a version of netcdf with fewer dependencies

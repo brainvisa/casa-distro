@@ -85,24 +85,33 @@ RUN apt-get update && apt-get install -y \
     libaudio-dev \
     python-yaml \
     pandoc \
+    zip \
+    unzip \
 #     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# RUN easy_install pip
+# pip cannot be installed any longer using easy_install, the system pip 
+# does not work any  longer...
+RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && pip install -U pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
 # ipython / jupyter
-RUN easy_install pip
 RUN pip install -U 'ipython>=5.0,<6.0'
+RUN pip install -U "tornado>=4,<5"
 RUN pip install jupyter
 RUN pip install -U zmq
 RUN pip install -U numpy
 RUN pip install -U scipy
 RUN pip install -U docutils
 RUN pip install -U nbsphinx
-RUN pip install -U jupyter_client
+# sphinx 1.7 has bugs
+RUN pip install -U "sphinx>=1.5,<1.7"
+RUN pip install jupyter_client
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
 RUN pip install python_jenkins
+RUN pip install nipype
 
 # install Pycluster
 RUN cd /tmp \
@@ -131,7 +140,8 @@ RUN cd /tmp \
 #    ln -s /usr/local/qt-installer/bin/* /usr/local/bin/ && \
 #    rm /tmp/QtInstallerFramework-linux-x64.run /tmp/qt_installer_script
 
-RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
+# RUN cd /tmp && git clone https://git01.codeplex.com/jxrlib && cd jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib
+RUN cd /tmp && wget https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip && mkdir jxrlib && cd jxrlib && unzip ../jxrlib.zip; cd sourceCode/jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib jxrlib.zip
 RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
 # install a version of netcdf with fewer dependencies
