@@ -81,10 +81,12 @@ def create_build_workflow(distro=default_distro, branch=default_branch,
     '''Create a new build workflow directory in a repository of build
     workflows. The new build workflow includes several characteristics:
     
+    
     * system: OS of the base docker image which the build workflow will be
       built for. The following values are supported: ubuntu-12.04,
       ubuntu-16.04, windows-7-32, windows-7-64. Note that the windows variants
       are actually Linux systems, configured for Windows cross-compilation.
+      
       
     * distro is an identifier which represents the set of projects which will
       be handled and compiled in the build workflow. It can be a predefined
@@ -92,7 +94,9 @@ def create_build_workflow(distro=default_distro, branch=default_branch,
       case, the build workflow should be based on another template
       configuration, which should be passed as the "base_distro" parameter.
       
+      
     * branch: Version branch name: latest_release, bug_fix, or trunk.
+    
     
     * base_distro: in the specific case when distro is not one of the builtin
       template values (opensource, brainvisa, cati), the new distro should be
