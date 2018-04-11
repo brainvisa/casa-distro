@@ -87,6 +87,7 @@ RUN apt-get update && apt-get install -y \
     pandoc \
     zip \
     unzip \
+    libssl-dev \
 #     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
