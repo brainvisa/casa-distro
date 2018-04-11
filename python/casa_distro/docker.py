@@ -338,9 +338,11 @@ do
                     echo "             which will complete DOCKER_OPTIONS with X config."
                     echo "-d|--docker  pass additional options to Docker. Following options will"
                     echo "             be appended to DOCKER_OPTIONS. To end up docker options and"
-                    echo "             specify the command and its ards, the option delimier \"--\""
+                    echo "             specify the command and its args, the option delimier \"--\""
                     echo "             should be used. Ex:"
                     echo "             $0 -d -v /data_dir:/docker_data_dir -- ls /docker_data_dir"
+                    echo "-i|--image <image_name>"
+                    echo "             use docker image <image_name> instead of the default ${image_name}"
                     exit 1
                     ;;
 
