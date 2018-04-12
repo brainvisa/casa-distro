@@ -34,7 +34,6 @@ RUN apt-get update && apt-get install -y \
     libminc-dev \
     libdcmtk2-dev \
     libqwt5-qt4-dev \
-    doxygen \
     pyro \
     python-paramiko \
     libxml2-dev \
@@ -88,6 +87,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libssl-dev \
+    flex \
+    bison \
 #     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -152,6 +153,9 @@ RUN bash /tmp/build_netcdf.sh && rm /tmp/build_netcdf.sh
 # install a newer version of boost
 COPY build_boost.sh /tmp/build_boost.sh
 RUN bash /tmp/build_boost.sh && rm /tmp/build_boost.sh
+
+# install a version of doxygen which doesn't crash half way
+RUN cd /tmp && wget https://github.com/doxygen/doxygen/archive/Release_1_8_7.zip && unzip Release_1_8_7.zip && cd doxygen-Release_1_8_7 && ./configure && make -j4 && make -j4 install && cd /tmp && rm -R Release_1_8_7.zip doxygen-Release_1_8_7
 
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
 ENV CASA_CONF=/casa/conf
