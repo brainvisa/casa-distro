@@ -167,8 +167,8 @@ def pull(distro='*', branch='*', system='*',
 @command
 def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
-          gui=False, interactive=True, tmp_container=True, container_options=[],
-          args_list=[], verbose=None):
+          gui=False, interactive=True, tmp_container=True, container_image=None,
+          container_options=[], args_list=[], verbose=None):
     '''Start a bash shell in Docker with the given repository configuration.'''
     build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                distro=distro, 
@@ -200,14 +200,16 @@ def shell(distro='*', branch='*', system='*',
     command = ['/bin/bash' ] + args_list
     run_container(bwf_directory, command=command, gui=gui, 
                   interactive=interactive, tmp_container=tmp_container,
+                  container_image=container_image,
                   container_options=container_options, verbose=verbose)
 
 
 @command
 def run(distro=None, branch=None, system=None,
         build_workflows_repository=default_build_workflow_repository,
-        gui=False, interactive=False, tmp_container=True, container_options=[],
-        args_list=[], verbose=None):
+        gui=False, interactive=False, tmp_container=True,
+        container_image=None,container_options=[], args_list=[],
+        verbose=None):
     '''
     Start any command in Docker with the given repository configuration.
     example:
@@ -266,6 +268,7 @@ def run(distro=None, branch=None, system=None,
                                     '%s_%s' % (b, s))
             run_container(bwf_directory, command=command, gui=gui, 
                         interactive=interactive, tmp_container=tmp_container,
+                        container_image=container_image,
                         container_options=container_options, verbose=verbose)
             es.stop_time = time.localtime()
             es.error_code = 0
@@ -293,7 +296,8 @@ def run(distro=None, branch=None, system=None,
 def bv_maker(distro=None, branch=None, system=None,
              build_workflows_repository=default_build_workflow_repository,
              gui=False, interactive=False, tmp_container=True, 
-             container_options=[], args_list=[], verbose=None):
+             container_image=None, container_options=[], args_list=[],
+             verbose=None):
     '''
     Start bv_maker in Docker for all the selected build workflows (by default,
     all created build workflows).'''    
@@ -301,5 +305,6 @@ def bv_maker(distro=None, branch=None, system=None,
     run(distro=distro, branch=branch, system=system,
          build_workflows_repository=build_workflows_repository, gui=gui,
          interactive=interactive, tmp_container=tmp_container,
+         container_image=container_image,
          container_options=container_options, args_list=args_list,
          verbose=verbose)

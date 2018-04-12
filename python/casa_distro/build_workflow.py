@@ -326,7 +326,8 @@ def create_build_workflow_directory(build_workflow_directory,
 
 
 
-def run_container(bwf_directory, command, gui=False, interactive=False, tmp_container=True, container_options=[], verbose=False):
+def run_container(bwf_directory, command, gui=False, interactive=False, tmp_container=True, container_image=None,
+                  container_options=[], verbose=False):
     '''Run any command in the container defined in the build workflow directory
     '''
     casa_distro_json = osp.join(bwf_directory, 'conf', 'casa_distro.json')
@@ -335,9 +336,19 @@ def run_container(bwf_directory, command, gui=False, interactive=False, tmp_cont
     container_type = casa_distro.get('container_type')
     if container_type:
         if container_type == 'singularity':
-            run_singularity(casa_distro, command, gui=gui, interactive=interactive, tmp_container=tmp_container, container_options=container_options, verbose=verbose)
+            run_singularity(casa_distro, command, gui=gui,
+                            interactive=interactive,
+                            tmp_container=tmp_container,
+                            container_image=container_image,
+                            container_options=container_options,
+                            verbose=verbose)
         elif container_type == 'docker':
-            run_docker(casa_distro, command, gui=gui, interactive=interactive, tmp_container=tmp_container, container_options=container_options, verbose=verbose)            
+            run_docker(casa_distro, command, gui=gui,
+                       interactive=interactive,
+                       tmp_container=tmp_container,
+                       container_image=container_image,
+                       container_options=container_options,
+                       verbose=verbose)            
         else:
             raise ValueError('%s is no a valid container system (in "%s")' % (container_type, casa_distro_json))
     else:

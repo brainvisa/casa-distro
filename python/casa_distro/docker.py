@@ -224,13 +224,18 @@ def publish_docker_images(image_name_filters = ['*']):
 
 
 
-def run_docker(casa_distro, command, gui, interactive, tmp_container, container_options, verbose):
+def run_docker(casa_distro, command, gui=False, interactive=False,
+               tmp_container=True, container_image=None, container_options=[],
+               verbose=None):
     docker = ['docker', 'run']
     if interactive:
         docker += ['-it']
     if tmp_container:
         docker += ['--rm']
     if gui:
+        gui_options = casa_distro.get('container_gui_options')
+        if gui_options:
+            docker += gui_options
         raise NotImplementedError('gui option command is not yet implemented for casa_distro 2.0')
     for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
         source = source % casa_distro
@@ -244,28 +249,17 @@ def run_docker(casa_distro, command, gui, interactive, tmp_container, container_
         docker += ['-e', '%s=%s' % (name, value)]
     docker += casa_distro.get('container_options', [])
     docker += container_options
-    docker += [casa_distro['container_image']]
+    if container_image is None:
+        container_image = casa_distro.get('container_image')
+        if container_image is None:
+            raise ValueError('container_image is missing from casa_distro.json')
+    docker += [container_image]
     docker += command
     if verbose:
         print('Running docker with the following command:', *("'%s'" % i for i in docker), file=verbose)
     check_call(docker)
 
 
-
-def run_docker_bv_maker(bwf_repository, distro='opensource',
-                        branch='latest_release', system=None, X=False, 
-                        docker_rm=True, docker_options=[], args_list=[]):
-    '''Run bv_maker in docker with the config of the given repository
-    '''
-    bwf_directory = osp.join(bwf_repository, '%s' % distro,
-                             '%s_%s' % (branch, system))
-    if check_svn_secret(bwf_directory, 'ERROR'):
-        run_docker(bwf_repository, distro=distro, branch=branch,
-               system=system, X=X, docker_rm=docker_rm, 
-               docker_options=docker_options, 
-                  args_list=['bv_maker'] + args_list)
-    else:
-        raise RuntimeError('Missing config file')
 
 if __name__ == '__main__':
     import sys
