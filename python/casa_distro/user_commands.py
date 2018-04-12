@@ -5,6 +5,9 @@ import sys
 import tempfile
 import os.path as osp
 import six
+import time
+import subprocess
+import traceback
 
 from casa_distro import linux_os_ids
 from casa_distro.command import command
@@ -30,7 +33,8 @@ def display_summary(status):
     for (d, b, s), (es, bwf_dir) in six.iteritems(status):
         status = es.get_status_mapped()
         if status != '':
-            message = '%s distro=%s branch=%s system=%s: %s' % (status, d, b, s, bwf_dir)
+            message = '%s distro=%s branch=%s system=%s: %s' % (status, d, 
+                                                                b, s, bwf_dir)
             start = es.start_time
             if start:
                 if first_start is None:
@@ -120,7 +124,8 @@ def create(distro_source=default_distro,
     '''
     from casa_distro.build_workflow import create_build_workflow_directory
     not_override_lst = not_override.split(',')
-    bwf_directory = osp.join(build_workflows_repository, '%(distro_name)s', '%(casa_branch)s_%(system)s')
+    bwf_directory = osp.join(build_workflows_repository, '%(distro_name)s',
+                             '%(casa_branch)s_%(system)s')
     create_build_workflow_directory(build_workflow_directory=bwf_directory,
                                     distro_source=distro_source,
                                     distro_name=distro_name,
@@ -136,9 +141,13 @@ def create(distro_source=default_distro,
 def list_command(distro='*', branch='*', system='*', 
          build_workflows_repository=default_build_workflow_repository,
          verbose=None):
-    '''List (eventually selected) build workflows created by "create" command.'''
+    '''
+    List (eventually selected) build workflows created by "create" command.
+    '''
     
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+                                                distro=distro, branch=branch,
+                                                system=system):
         print('directory:', bwf_dir)
         print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
 
@@ -148,7 +157,10 @@ def pull(distro='*', branch='*', system='*',
          repository_server=default_repository_server, 
          repository_server_directory=default_repository_server_directory,
          login=default_repository_login, verbose=None):
-    '''Download a build workflow (except conf directory) from sftp server (require lftp command to be installed).'''
+    '''
+    Download a build workflow (except conf directory) from sftp server
+    (require lftp command to be installed).
+    '''
     raise NotImplementedError('This command has not been implemented yet for casa_distro 2.0')
 
 
@@ -186,29 +198,28 @@ def shell(distro='*', branch='*', system='*',
     bwf_directory = osp.join(build_workflows_repository, '%s' % distro,
                              '%s_%s' % (branch, system))
     command = ['/bin/bash' ] + args_list
-    run_container(bwf_directory, command=command, gui=gui, interactive=interactive, tmp_container=tmp_container, container_options=container_options, verbose=verbose)
+    run_container(bwf_directory, command=command, gui=gui, 
+                  interactive=interactive, tmp_container=tmp_container,
+                  container_options=container_options, verbose=verbose)
 
 
 @command
-def bv_maker(distro=None, branch=None, system=None,
-             build_workflows_repository=default_build_workflow_repository,
-             X=False, docker_rm=True, docker_options=[], args_list=[]):
-    '''Start bv_maker in Docker for all the selected build workflows (by default, all created build workflows).'''
-    import time
-    from casa_distro.docker import run_docker_bv_maker
-    from subprocess import CalledProcessError
-    from traceback import format_exc
-    
-    default_distro, default_branch, default_system = (False, False, False)
-    
+def run(distro=None, branch=None, system=None,
+        build_workflows_repository=default_build_workflow_repository,
+        gui=False, interactive=False, tmp_container=True, container_options=[],
+        args_list=[], verbose=None):
+    '''
+    Start any command in Docker with the given repository configuration.
+    example:
+        casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+    '''
+    default_distro = default_branch = default_system = False
     if distro is None:
         default_distro = True
         distro = '*'
-        
     if branch is None:
         default_branch = True
         branch = '*'
-        
     if system is None:
         default_system = True
         system = '*'
@@ -240,9 +251,9 @@ def bv_maker(distro=None, branch=None, system=None,
               file=sys.stderr)
         return 1
 
-    if isinstance(docker_options, six.string_types):
-        docker_options = docker_options.split(' ')
-
+    if isinstance(container_options, six.string_types):
+        container_options = container_options.split(' ')
+        
     status = {}
     global_failed = False
 
@@ -250,18 +261,20 @@ def bv_maker(distro=None, branch=None, system=None,
         es = ExecutionStatus(start_time = time.localtime())
         status[(d, b, s)] = (es, bwf_dir)
         try:
-            run_docker_bv_maker(build_workflows_repository, distro=d,
-                                branch=b, system=s, X=X, docker_rm=docker_rm,
-                                docker_options=docker_options, 
-                                args_list=args_list)
+            command = args_list
+            bwf_directory = osp.join(build_workflows_repository, '%s' % d,
+                                    '%s_%s' % (b, s))
+            run_container(bwf_directory, command=command, gui=gui, 
+                        interactive=interactive, tmp_container=tmp_container,
+                        container_options=container_options, verbose=verbose)
             es.stop_time = time.localtime()
             es.error_code = 0
             es.status = 'succeeded'
         
-        except CalledProcessError:
+        except subprocess.CalledProcessError:
             global_failed = True
             es.stop_time = time.localtime()
-            es.exception = format_exc()
+            es.exception = traceback.format_exc()
             es.error_code = 1
             es.status = 'failed'
             
@@ -274,91 +287,107 @@ def bv_maker(distro=None, branch=None, system=None,
 
     display_summary(status)
     return global_failed
+
 
 @command
-def run(distro=None, branch=None, system=None,
-        build_workflows_repository=default_build_workflow_repository,
-        X=False, docker_rm=True, docker_options=[], args_list=[]):
-    '''Start any command in Docker with the given repository configuration.
-example:
-    casa_distro -r /home/casa run branch=bug_fix ls -als /casa'''
-    import time
-    from casa_distro.docker import run_docker
-    from subprocess import CalledProcessError
-    from traceback import format_exc
-    
-    default_distro, default_branch, default_system = (False, False, False)
-    
-    if distro is None:
-        default_distro = True
-        distro = '*'
-        
-    if branch is None:
-        default_branch = True
-        branch = '*'
-        
-    if system is None:
-        default_system = True
-        system = '*'
-    
-    build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                               distro=distro, 
-                                               branch=branch, 
-                                               system=system))
-    if not build_workflows:
-        print('Cannot find requested build workflow.',
-              'You can list existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s list_build_workflows\n'
-              'Or create new one using:\n'
-              'casa_distro -r %(bwf_dir)s create_build_workflow'
-              % {'bwf_dir':build_workflows_repository}, 
-              file=sys.stderr)
-        return 1
-    
-    if (default_distro or default_branch or default_system) \
-        and len(build_workflows) > 1:
-        print('Several build workflows found, you must explicitely select many',
-              'giving values for distro, system and branch. You can list '
-              'existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s list_build_workflows\n'
-              'You can run a command on all existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s run \'distro=*\' \'branch=*\' '
-              '\'system=*\' command'
-              % {'bwf_dir':build_workflows_repository}, 
-              file=sys.stderr)
-        return 1
+def bv_maker(distro=None, branch=None, system=None,
+             build_workflows_repository=default_build_workflow_repository,
+             gui=False, interactive=False, tmp_container=True, 
+             container_options=[], args_list=[], verbose=None):
+    '''
+    Start bv_maker in Docker for all the selected build workflows (by default,
+    all created build workflows).'''    
+    args_list = ['bv_env_host', 'bv_maker' ] + args_list
+    run(distro=distro, branch=branch, system=system,
+         build_workflows_repository=build_workflows_repository, gui=gui,
+         interactive=interactive, tmp_container=tmp_container,
+         container_options=container_options, args_list=args_list,
+         verbose=verbose)
 
-    if type(docker_options) in (str, unicode):
-        docker_options = docker_options.split(' ')        
-
-    status = {}
-    global_failed = False
-
-    for d, b, s, bwf_dir in build_workflows:
-        es = ExecutionStatus(start_time = time.localtime())
-        status[(d, b, s)] = (es, bwf_dir)
-        try:
-            run_docker(build_workflows_repository, distro=d, branch=b, 
-                       system=s, X=X, docker_rm=docker_rm, 
-                       docker_options=docker_options, 
-                       args_list=args_list)
-            es.stop_time = time.localtime()
-            es.error_code = 0
-            es.status = 'succeeded'
+#@command
+#def run(distro=None, branch=None, system=None,
+        #build_workflows_repository=default_build_workflow_repository,
+        #X=False, docker_rm=True, docker_options=[], args_list=[]):
+    #'''Start any command in Docker with the given repository configuration.
+#example:
+    #casa_distro -r /home/casa run branch=bug_fix ls -als /casa'''
+    #import time
+    #from casa_distro.docker import run_docker
+    #from subprocess import CalledProcessError
+    #from traceback import format_exc
+    
+    #default_distro, default_branch, default_system = (False, False, False)
+    
+    #if distro is None:
+        #default_distro = True
+        #distro = '*'
         
-        except CalledProcessError:
-            global_failed = True
-            es.stop_time = time.localtime()
-            es.exception = format_exc()
-            es.error_code = 1
-            es.status = 'failed'
+    #if branch is None:
+        #default_branch = True
+        #branch = '*'
+        
+    #if system is None:
+        #default_system = True
+        #system = '*'
+    
+    #build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                               #distro=distro, 
+                                               #branch=branch, 
+                                               #system=system))
+    #if not build_workflows:
+        #print('Cannot find requested build workflow.',
+              #'You can list existing workflows using:\n'
+              #'casa_distro -r %(bwf_dir)s list_build_workflows\n'
+              #'Or create new one using:\n'
+              #'casa_distro -r %(bwf_dir)s create_build_workflow'
+              #% {'bwf_dir':build_workflows_repository}, 
+              #file=sys.stderr)
+        #return 1
+    
+    #if (default_distro or default_branch or default_system) \
+        #and len(build_workflows) > 1:
+        #print('Several build workflows found, you must explicitely select many',
+              #'giving values for distro, system and branch. You can list '
+              #'existing workflows using:\n'
+              #'casa_distro -r %(bwf_dir)s list_build_workflows\n'
+              #'You can run a command on all existing workflows using:\n'
+              #'casa_distro -r %(bwf_dir)s run \'distro=*\' \'branch=*\' '
+              #'\'system=*\' command'
+              #% {'bwf_dir':build_workflows_repository}, 
+              #file=sys.stderr)
+        #return 1
+
+    #if type(docker_options) in (str, unicode):
+        #docker_options = docker_options.split(' ')        
+
+    #status = {}
+    #global_failed = False
+
+    #for d, b, s, bwf_dir in build_workflows:
+        #es = ExecutionStatus(start_time = time.localtime())
+        #status[(d, b, s)] = (es, bwf_dir)
+        #try:
+            #run_docker(build_workflows_repository, distro=d, branch=b, 
+                       #system=s, X=X, docker_rm=docker_rm, 
+                       #docker_options=docker_options, 
+                       #args_list=args_list)
+            #es.stop_time = time.localtime()
+            #es.error_code = 0
+            #es.status = 'succeeded'
+        
+        #except CalledProcessError:
+            #global_failed = True
+            #es.stop_time = time.localtime()
+            #es.exception = format_exc()
+            #es.error_code = 1
+            #es.status = 'failed'
             
-        except KeyboardInterrupt:
-            global_failed = True
-            es.stop_time = time.localtime()
-            es.error_code = 1
-            es.status = 'interrupted'
-            break
+        #except KeyboardInterrupt:
+            #global_failed = True
+            #es.stop_time = time.localtime()
+            #es.error_code = 1
+            #es.status = 'interrupted'
+            #break
 
-    display_summary(status)
-    return global_failed
+    #display_summary(status)
+    #return global_failed

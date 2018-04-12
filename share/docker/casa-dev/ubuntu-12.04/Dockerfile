@@ -184,7 +184,12 @@ RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brain
     cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
     make install && cd .. && rm -r /tmp/brainvisa-cmake
 
+# Set PATH to have bv_env_host being either the one of the build directory (/casa/build)
+# or the one in the image (/casa/brainvisa-cmake)
 ENV PATH=${PATH}:/casa/build/bin:/casa/brainvisa-cmake/bin
+
+# Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
+ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
 
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev

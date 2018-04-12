@@ -124,5 +124,18 @@ RUN chmod +x /usr/local/bin/svn
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
+# Install a version of brainvisa-cmake
+RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix /c/tmp/brainvisa-cmake && \
+    cd /c/tmp/brainvisa-cmake && \
+    cmake -G 'MSYS Makefiles' -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install && cd .. && rm -r /c/tmp/brainvisa-cmake
+
+# Set PATH to have bv_env_host being either the one of the build directory (/casa/build)
+# or the one in the image (/casa/brainvisa-cmake)
+ENV PATH=${PATH}:/casa/build/bin:/casa/brainvisa-cmake/bin
+
+# Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
+ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
+
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev

@@ -278,8 +278,7 @@ def create_build_workflow_directory(build_workflow_directory,
         container_env = {'CASA_DISTRO': '%(distro_name)s',
                          'CASA_BRANCH': '%(casa_branch)s',
                          'CASA_SYSTEM': '%(system)s',
-                         'CASA_HOST_DIR': '%(build_workflow_dir)s',
-                         'BRAINVISA_BVMAKER_CFG': '/casa/conf/bv_maker.cfg'}))
+                         'CASA_HOST_DIR': '%(build_workflow_dir)s'}))
     if container_type == 'docker':
         container_options = ['--net=host']
         if not sys.platform.startswith('win'):
