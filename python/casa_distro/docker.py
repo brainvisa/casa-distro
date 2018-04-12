@@ -235,8 +235,7 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
     if gui:
         gui_options = casa_distro.get('container_gui_options')
         if gui_options:
-            docker += gui_options
-        raise NotImplementedError('gui option command is not yet implemented for casa_distro 2.0')
+            docker += [osp.expandvars(i) for i in gui_options]
     for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
         source = source % casa_distro
         source = osp.expandvars(source)
@@ -256,7 +255,10 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
     docker += [container_image]
     docker += command
     if verbose:
-        print('Running docker with the following command:', *("'%s'" % i for i in docker), file=verbose)
+        print('-' * 40, file=verbose)
+        print('Running docker with the following command:', file=verbose)
+        print(*("'%s'" % i for i in docker), file=verbose)
+        print('-' * 40, file=verbose)
     check_call(docker)
 
 

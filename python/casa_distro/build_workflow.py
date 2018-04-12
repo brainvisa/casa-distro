@@ -283,6 +283,20 @@ def create_build_workflow_directory(build_workflow_directory,
         container_options = ['--net=host']
         if not sys.platform.startswith('win'):
             container_options += ['--user={0}:{1}'.format(os.getuid(),os.getgid())]
+        gui_options = ['-v', '/tmp/.X11-unix:/tmp/.X11-unix',
+                       '-e', 'QT_X11_NO_MITSHM=1', 
+                       '--privileged', 
+                       '-e', 'DISPLAY=$DISPLAY', 
+                       '-v', '/usr/share/X11/locale:/usr/share/X11/locale:ro']
+        if osp.exists('/dev/nvidiactl'):
+            nv_dirs = glob.glob('/usr/lib/nvidia-???')
+            if nv_dirs:
+                nv_dir = nv_dirs[0]
+                gui_options += [ '--device=/dev/nvidia0:/dev/nvidia0',
+                                 '--device=/dev/nvidiactl',
+                                 '-v', '%s:/usr/lib/nvidia-drv:ro' % nv_dir, 
+                                 '-e', 'LD_LIBRARY_PATH=/usr/lib/nvidia-drv' ]
+        casa_distro['container_gui_options'] = gui_options
     else:
         container_options = None
     if container_options:
