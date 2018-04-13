@@ -168,7 +168,7 @@ def create_docker(image_names = '*', verbose=None):
         image_name_filters = image_name_filters)
     if count == 0:
         print('No image match filter "%s"' % image_names, file=sys.stderr)
-        sys.exit(1)
+        return 1
 
 @command
 def update_docker(image_names = '*', verbose=None):
@@ -180,7 +180,7 @@ def update_docker(image_names = '*', verbose=None):
         image_name_filters = image_name_filters)
     if count == 0:
         print('No image match filter "%s"' % image_names, file=sys.stderr)
-        sys.exit(1)
+        return 1
 
 
 @command
@@ -192,7 +192,23 @@ def publish_docker(image_names = '*', verbose=None):
         image_name_filters = image_name_filters)
     if count == 0:
         print('No image match filter "%s"' % image_names, file=sys.stderr)
-        sys.exit(1)
+        return 1
+
+@command
+def create_singularity(image_names = 'cati/*',
+                       build_workflows_repository=default_build_workflow_repository,
+                       verbose=None):
+    '''create or update all casa-test and casa-dev docker images'''
+    from casa_distro.singularity import create_singularity_images
+    
+    image_name_filters = image_names.split(',')
+    count = create_singularity_images(
+        bwf_dir=build_workflows_repository,
+        image_name_filters = image_name_filters,
+        verbose=verbose)
+    if count == 0:
+        print('No image match filter "%s"' % image_names, file=sys.stderr)
+        return 1
 
 @command
 def publish_build_workflows(distro='*', branch='*', system='*', 

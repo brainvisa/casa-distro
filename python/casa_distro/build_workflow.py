@@ -273,13 +273,15 @@ def create_build_workflow_directory(build_workflow_directory,
                              '%(build_workflow_dir)s/tests': '/casa/tests',
                              '%(build_workflow_dir)s/custom/src': '/casa/custom/src',
                              '%(build_workflow_dir)s/custom/build': '/casa/custom/build',
-                             '$HOME/.ssh/id_rsa': '/root/.ssh/id_rsa',
-                             '$HOME/.ssh/id_rsa.pub': '/root/.ssh/id_rsa.pub'},
+                            },
         container_env = {'CASA_DISTRO': '%(distro_name)s',
                          'CASA_BRANCH': '%(casa_branch)s',
                          'CASA_SYSTEM': '%(system)s',
                          'CASA_HOST_DIR': '%(build_workflow_dir)s'}))
     if container_type == 'docker':
+        casa_distro['container_volumes'].update({
+            '$HOME/.ssh/id_rsa': '/root/.ssh/id_rsa',
+            '$HOME/.ssh/id_rsa.pub': '/root/.ssh/id_rsa.pub'})
         container_options = ['--net=host']
         if not sys.platform.startswith('win'):
             container_options += ['--user={0}:{1}'.format(os.getuid(),os.getgid())]
