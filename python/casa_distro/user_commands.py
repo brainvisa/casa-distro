@@ -4,11 +4,11 @@ from __future__ import print_function
 import sys
 import tempfile
 import os.path as osp
-import six
 import time
 import subprocess
 import traceback
 
+from casa_distro import six
 from casa_distro import linux_os_ids
 from casa_distro.command import command
 from casa_distro.defaults import (default_build_workflow_repository,
@@ -85,7 +85,7 @@ def create(distro_source=default_distro,
            distro_name=None,
            container_type = None,
            container_image = None,
-           casa_branch=default_branch,
+           branch=default_branch,
            system=linux_os_ids[0],
            not_override='bv_maker.cfg,svn.secret',
            build_workflows_repository=default_build_workflow_repository,
@@ -112,7 +112,7 @@ def create(distro_source=default_distro,
     container_image: image to use for the compilation container. If no
         value is given, uses the one defined in the distro.
     
-    casa_branch:
+    branch:
         bv_maker branch to use (latest_release, bug_fix or trunk)
     
     system:
@@ -131,7 +131,7 @@ def create(distro_source=default_distro,
                                     distro_name=distro_name,
                                     container_type=container_type,
                                     container_image=container_image,
-                                    casa_branch=casa_branch,
+                                    casa_branch=branch,
                                     system=system,
                                     not_override=not_override_lst,
                                     verbose=verbose)

@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import six
 import errno
 import json
 import os
@@ -15,7 +14,8 @@ import tempfile
 import stat
 import re
 
-import casa_distro
+from casa_distro import six
+import casa_distro.info
 from casa_distro import share_directory, linux_os_ids
 
 
@@ -36,7 +36,7 @@ def find_docker_image_files():
     '''
     import yaml
     
-    base_directory = osp.join(casa_distro.share_directory, 'docker')
+    base_directory = osp.join(share_directory, 'docker')
     result = []
     dependencies = {}
     base_directory = osp.abspath(osp.normpath(base_directory))

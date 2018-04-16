@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import six
 import argparse
 import sys
 import zipfile
@@ -13,6 +12,7 @@ import textwrap
 import re
 from functools import partial
 
+from casa_distro import six
 from casa_distro.info import __version__
 from casa_distro.defaults import default_build_workflow_repository
 
@@ -124,47 +124,32 @@ def main():
                         help='command specific options (use help <command> to list these options).')
     options = parser.parse_args()
 
-    tmp_share = None
     result = None
-    try:
-        # Manage share directory in Zip file distribution
-        if not osp.exists(__file__) and osp.dirname(__file__).endswith('.zip'):
-            tmp_share = tempfile.mkdtemp()
-            with zipfile.ZipFile(osp.dirname(__file__)) as zip:
-                for i in zip.namelist():
-                    if i.startswith('share'):
-                        zip.extract(i, tmp_share)
-            import casa_distro
-            casa_distro.share_directory = osp.join(tmp_share, 'share')
+    args = []
+    kwargs = {}
+    
+    command = commands[options.command[0]]
+    
+    # Get command argument specification
+    cargs = inspect.getargspec(command)
 
-        args = []
-        kwargs = {}
+    if options.repository:
+        kwargs['build_workflows_repository'] = options.repository
         
-        command = commands[options.command[0]]
+    if options.verbose and 'verbose' in cargs.args:
+        kwargs['verbose'] = sys.stdout
         
-        # Get command argument specification
-        cargs = inspect.getargspec(command)
+    for i in options.command_options:
+        l = i.split('=', 1)
+        if len(l) == 2:
+            kwargs[l[0]] = l[1]
+        else:
+            args.append(i)
+    
+    if 'args_list' in cargs.args:
+        kwargs['args_list'] = args + args_list
+        args= []
 
-        if options.repository:
-            kwargs['build_workflows_repository'] = options.repository
-            
-        if options.verbose and 'verbose' in cargs.args:
-            kwargs['verbose'] = sys.stdout
-            
-        for i in options.command_options:
-            l = i.split('=', 1)
-            if len(l) == 2:
-                kwargs[l[0]] = l[1]
-            else:
-                args.append(i)
-        
-        if 'args_list' in cargs.args:
-            kwargs['args_list'] = args + args_list
-            args= []
-
-        result = command(*args, **kwargs)
-        
-    finally:
-        if tmp_share:
-            shutil.rmtree(tmp_share)
+    print('!!!', args, kwargs)
+    result = command(*args, **kwargs)
     sys.exit(result)

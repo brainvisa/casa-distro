@@ -96,7 +96,7 @@ RUN apt-get update && apt-get install -y \
 # RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 
 # does not work any  longer...
-RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && pip install -U pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
+RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
 # ipython / jupyter
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install -U "tornado>=4,<5"
@@ -167,8 +167,6 @@ ENV CASA_BUILD=/casa/build
 ENV CASA_INSTALL=/casa/install
 # Installation directory
 ENV CASA_PACK=/casa/pack
-# Default bv_maker branch
-ENV CASA_BRANCH=latest_release
 # Tests data directory
 ENV CASA_TESTS=/casa/tests
 # Custom projects

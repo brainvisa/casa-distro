@@ -226,8 +226,6 @@ ENV CASA_BUILD=/casa/build
 ENV CASA_INSTALL=/casa/install
 # Installation directory
 ENV CASA_PACK=/casa/pack
-# Default bv_maker branch
-ENV CASA_BRANCH=latest_release
 # Tests data directory
 ENV CASA_TESTS=/casa/tests
 # Custom projects

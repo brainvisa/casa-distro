@@ -8,10 +8,27 @@ import glob
 import shutil
 import json
 
+from casa_distro.defaults import default_download_url
 from casa_distro import share_directory, linux_os_ids
 from casa_distro.docker import run_docker
 from casa_distro.singularity import run_singularity
 
+try:
+    # Try Ptyhon 3 only import
+    from urllib.request import urlretrieve
+except ImportError:
+    # Provide a Python 2 implementation of urlretrieve
+    import urllib2
+    def urlretrieve(url, filename):
+        buffer_size = 1024 * 4
+        input = urllib2.urlopen(url)
+        with open(filename,'wb') as output:
+            while True:
+                buffer = input.read(buffer_size)
+                if buffer:
+                    output.write(buffer)
+                if len(buffer) < buffer_size:
+                    break
 
 def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
                         system='*'):
@@ -229,8 +246,14 @@ def create_build_workflow_directory(build_workflow_directory,
     * Typically created by bv_maker but may be extended in the future.
 
     '''
+    # It is important to get the actual value of share_directory from
+    # casa_distro module at the time of the function call because, in 
+    # the context of a distribution in Zip format, the share_directory
+    # is modified after import.
+    import casa_distro as casa_distro_module
     if not osp.isdir(distro_source):
-        distro_source_dir = osp.join(share_directory, 'distro', distro_source)
+        distro_source_dir = osp.join(casa_distro_module.share_directory,
+                                     'distro', distro_source)
     else:
         raise ValueError('distro value %s is not a predefined value: '
                             'base_distro should be provided' % distro)
@@ -278,6 +301,14 @@ def create_build_workflow_directory(build_workflow_directory,
                          'CASA_BRANCH': '%(casa_branch)s',
                          'CASA_SYSTEM': '%(system)s',
                          'CASA_HOST_DIR': '%(build_workflow_dir)s'}))
+
+    if not container_image:
+        container_image = casa_distro.get('container_image')
+        if container_image is None:
+            raise ValueError('No container_image found in %s' % casa_distro_source_json)
+    container_image = container_image % casa_distro
+    casa_distro['container_image'] = container_image
+
     if container_type == 'docker':
         casa_distro['container_volumes'].update({
             '$HOME/.ssh/id_rsa': '/root/.ssh/id_rsa',
@@ -299,8 +330,10 @@ def create_build_workflow_directory(build_workflow_directory,
                                  '-v', '%s:/usr/lib/nvidia-drv:ro' % nv_dir, 
                                  '-e', 'LD_LIBRARY_PATH=/usr/lib/nvidia-drv' ]
         casa_distro['container_gui_options'] = gui_options
-    else:
+    elif container_type == 'singularity':
         container_options = None
+    else:
+        raise ValueError('Unsupported container type: %s' % container_type)
     if container_options:
         casa_distro['container_options'] = container_options
     
@@ -339,7 +372,14 @@ def create_build_workflow_directory(build_workflow_directory,
     json.dump(casa_distro, open(casa_distro_json, 'w'), indent=4)
     
     check_svn_secret(bwf_dir)
-
+    
+    if container_type == 'singularity':
+        image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
+        image_path = osp.join(osp.dirname(osp.dirname(build_workflow_directory)), image_file)
+        if not osp.exists(image_path):
+            url = '%s/%s' % (default_download_url, image_file)
+            print('Downloading', image_path, 'from', url)
+            urlretrieve(url, image_path)
 
 
 def run_container(bwf_directory, command, gui=False, interactive=False, tmp_container=True, container_image=None,

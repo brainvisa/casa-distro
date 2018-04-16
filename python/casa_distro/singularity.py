@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import six
 import os
 import os.path as osp
 import subprocess
@@ -9,6 +8,8 @@ import tempfile
 import shutil
 import fnmatch
 from subprocess import check_call, check_output
+
+from casa_distro import six
 
 def image_name_match(image_name, filters):
     '''
@@ -29,9 +30,10 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'], verbose=
     images = ['%s:%s' %(i,t) for i, t in images_tags if i != '<none>' and t not in ('<none>', 'latest')]
     images = [i for i in images if image_name_match(i, image_name_filters)]
     for docker_image in images:
-        singularity_image = osp.join(bwf_dir, docker_image.replace('/', '_').replace(':','_'))
-        if verbose:
-            print('Creating image', singularity_image, 'from', docker_image, file=verbose)
+        singularity_image = osp.join(bwf_dir, docker_image.replace('/', '_').replace(':','_') + '.sqsh')
+        print('Creating image', singularity_image, 'from', docker_image, file=verbose)
+        if osp.exists(singularity_image):
+            os.remove(singularity_image)
         stdout = subprocess.check_output(['docker', 'inspect', docker_image])
         image_info = json.loads(stdout)
         docker_img_config = image_info[0]['Config']
@@ -58,18 +60,18 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'], verbose=
                     recipe = osp.join(tmp, 'singularity_recipe')
                     out = open(recipe, 'w')
                     print('''Bootstrap: localimage
-    From: %s
+From: %s
 
-    %%help
-        Image created from Docker image %s
+%%help
+    Singularity image created from Docker image %s
 
-    %%environment
+%%environment
+%s
     %s
-        %s
 
-    %%runscript
-        %s''' % (docker_files,
-        docker_image,
+%%runscript
+    %s''' % (docker_files,
+             docker_image,
         '\n'.join('    %s=%s' % (n, v) for n, v in six.iteritems(env)),
         'export %s' % ' '.join(env),
         ' '.join("'%s'" %i for i in runscript)),        
@@ -88,7 +90,7 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'], verbose=
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None, container_options=[],
                     verbose=None):
-    singularity = ['singularity', 'exec']
+    singularity = ['singularity', 'exec', '--cleanenv', '--cleanenv']
     if gui:
         gui_options = casa_distro.get('container_gui_options')
         if gui_options:
@@ -111,7 +113,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         if container_image is None:
             raise ValueError('container_image is missing from casa_distro.json')
         container_image = container_image.replace('/', '_').replace(':', '_')
-        container_image = osp.join(osp.dirname(osp.dirname(casa_distro['build_workflow_dir'])), '%s.img' % container_image)
+        container_image = osp.join(osp.dirname(osp.dirname(casa_distro['build_workflow_dir'])), '%s.sqsh' % container_image)
         if not osp.exists(container_image):
             raise ValueError("'%s' does not exist" % container_image)
     singularity += [container_image]

@@ -1,6 +1,26 @@
 #! /usr/bin/env python
 
+import os.path as osp
+import tempfile
+import zipfile
+import shutil
+
 from casa_distro.command import main
 from casa_distro import user_commands
 
-main()
+tmp_share = None
+try:
+    # Manage share directory in Zip file distribution
+    if not osp.exists(__file__) and osp.dirname(__file__).endswith('.zip'):
+        tmp_share = tempfile.mkdtemp()
+        with zipfile.ZipFile(osp.dirname(__file__)) as zip:
+            for i in zip.namelist():
+                if i.startswith('share'):
+                    zip.extract(i, tmp_share)
+        import casa_distro
+        casa_distro.share_directory = osp.join(tmp_share, 'share')
+
+    main()
+finally:
+    if tmp_share:
+        shutil.rmtree(tmp_share)

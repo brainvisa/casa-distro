@@ -4,8 +4,12 @@ from getpass import getpass
 import sys
 import tempfile
 import os.path as osp
-import six
+import glob
 
+from casa_distro.info import __version__ as casa_distro_version
+from casa_distro.info import version_major, version_minor
+
+from casa_distro import six
 from casa_distro.command import command
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
@@ -24,22 +28,20 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
     import os.path as osp
     from fnmatch import fnmatch
     
-    from casa_distro.info import __version__ as casa_distro_version
-
     dirs = {
         osp.dirname(casa_distro.__file__): ('casa_distro', '*.py'),
         osp.dirname(brainvisa.maker.__file__): ('brainvisa/maker', '*.py'),
-        casa_distro.share_directory: ('share', None),
+        osp.join(casa_distro.share_directory, 'distro'): ('share/distro', None),
     }
     tmp = tempfile.mkdtemp()
     try:
         # Copy files in temporary directory
         os.mkdir(osp.join(tmp,'brainvisa'))
         open(osp.join(tmp, 'brainvisa', '__init__.py'), 'w')
-        shutil.copy(__file__, osp.join(tmp, '__main__.py'))
+        shutil.copy(osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'bin','casa_distro'), osp.join(tmp, '__main__.py'))
         for srcdir, dstdir_filter in dirs.items():
             dstdir, filter = dstdir_filter
-            os.mkdir(osp.join(tmp, dstdir))
+            os.makedirs(osp.join(tmp, dstdir))
             len_srcdir = len(srcdir) + 1
             for dirpath, dirnames, filenames in os.walk(srcdir):
                 zipdir = osp.join(dstdir, dirpath[len_srcdir:])
@@ -48,9 +50,14 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
                 for i in filenames:
                     if not filter or fnmatch(i, filter):
                         shutil.copy(osp.join(dirpath, i), osp.join(tmp, zipdir, i))
-
+        
+        # Replace import six in brainvisa_projects.py
+        brainvisa_projects = osp.join(tmp, 'brainvisa', 'maker', 'brainvisa_projects.py')
+        content = open(brainvisa_projects).read().replace('import six', 'from casa_distro import six')
+        open(brainvisa_projects, 'w').write(content)
+        
         # Create zip archive of temporary directory
-        with zipfile.ZipFile(osp.join(build_workflows_repository, 'casa_distro-%s.zip' % casa_distro_version), mode='w') as zip:
+        with zipfile.ZipFile(osp.join(build_workflows_repository, 'casa-distro-%s.zip' % casa_distro_version), mode='w') as zip:
             len_tmp = len(tmp)+1
             for dirpath, dirnames, filenames in os.walk(tmp):
                 zipdir = dirpath[len_tmp:]
@@ -67,7 +74,6 @@ def publish_casa_distro(build_workflows_repository=default_build_workflow_reposi
     '''Publish casa_distro.zip file previously created with package_casa_distro to the sftp server'''
     from subprocess import check_call
     
-    from casa_distro.info import __version__ as casa_distro_version
     
     
     lftp_script = tempfile.NamedTemporaryFile()
@@ -78,9 +84,9 @@ def publish_casa_distro(build_workflows_repository=default_build_workflow_reposi
     print('connect', remote, file=lftp_script)
     print('cd', repository_server_directory, file=lftp_script)
             
-    print('put %s/casa_distro-%s.zip' % (build_workflows_repository, casa_distro_version), file=lftp_script)
-    print('rm -f casa_distro.zip', file=lftp_script)
-    print('ln -s casa_distro-%s.zip casa_distro.zip' % casa_distro_version, file=lftp_script)
+    print('put %s/casa-distro-%s.zip' % (build_workflows_repository, casa_distro_version), file=lftp_script)
+    print('rm -f casa-distro.zip', file=lftp_script)
+    print('ln -s casa-distro-%s.zip casa-distro.zip' % casa_distro_version, file=lftp_script)
     lftp_script.flush()
     cmd = ['lftp', '-f', lftp_script.name]
     if verbose:
@@ -209,6 +215,41 @@ def create_singularity(image_names = 'cati/*',
     if count == 0:
         print('No image match filter "%s"' % image_names, file=sys.stderr)
         return 1
+
+@command
+def publish_singularity(image_names = 'cati/*',
+                        build_workflows_repository=default_build_workflow_repository,
+                        repository_server=default_repository_server, 
+                        repository_server_directory=default_repository_server_directory,
+                        login=default_repository_login, verbose=None):
+    '''Publish singularity images to the sftp server'''
+    from subprocess import check_call
+    
+    image_name_filters = [i.replace('/', '_').replace(':', '_') for i in image_names.split(',')]
+    image_files = []
+    for filter in image_name_filters:
+        image_files += glob.glob(osp.join(build_workflows_repository, filter + '.sqsh'))
+    if not image_files:
+        print('No image match filter "%s"' % image_names, file=sys.stderr)
+        return 1
+                  
+    lftp_script = tempfile.NamedTemporaryFile()
+    if login:
+        remote = 'sftp://%s@%s' % (login, repository_server)
+    else:
+        remote = 'sftp://%s' % repository_server
+    print('connect', remote, file=lftp_script)
+    print('cd', repository_server_directory, file=lftp_script)
+    for f in image_files:
+        print('put', f, file=lftp_script)
+    lftp_script.flush()
+    cmd = ['lftp', '-f', lftp_script.name]
+    if verbose:
+        print('Running', *cmd, file=verbose)
+        print('-' * 10, lftp_script.name, '-'*10, file=verbose)
+        print(open(lftp_script.name).read(), file=verbose)
+        print('-'*40, file=verbose)
+    check_call(cmd)
 
 @command
 def publish_build_workflows(distro='*', branch='*', system='*', 
