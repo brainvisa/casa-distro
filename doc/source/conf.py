@@ -275,18 +275,18 @@ def find_executable(name, path=None):
     return found_cmd
 
 #out_dir = os.path.normpath(os.path.abspath(out_dir))
-casa_distro_cmd = find_executable('casa_distro')
+casa_distro_cmd = find_executable('casa_distro_admin')
 #print('casa distro command', casa_distro_cmd)
-#print('command', ' '.join(['python', casa_distro_cmd, '-r', out_dir, 'package_casa_distro']))
+# print('command', ' '.join(['python', casa_distro_cmd, '-r', out_dir, 'package_casa_distro']))
 subprocess.call(['python', casa_distro_cmd, 
                  '-r', out_dir, 
                  'package_casa_distro'])
 zipfile = os.path.join(out_dir,
-                       'casa_distro-%d.%d.%d.zip'
+                       'casa-distro-%d.%d.%d.zip'
                        % (release_info['version_major'],
                           release_info['version_minor'],
                           release_info['version_micro']))
-ziplink = os.path.join(out_dir, 'casa_distro.zip')
+ziplink = os.path.join(out_dir, 'casa-distro.zip')
 #print('zip file', zipfile)
 #print('zip link', ziplink)
 

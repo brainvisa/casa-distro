@@ -7,7 +7,7 @@ Download Casa-Distro
 
 Just click here:
 
-  `casa_distro.zip <casa_distro.zip>`_
+  `casa-distro.zip <casa-distro.zip>`_
 
 
 I - Overview
@@ -21,9 +21,9 @@ CASA = `CATI <http://cati-neuroimaging.com>`_ + `BrainVISA <http://brainvisa.inf
 What is Casa-Distro ?
 ---------------------
 
-It's a development environment which helps to provide developers with a working development environment for BrainVisa and CATI tools.
+It's a development environment which helps to provide developers with a working development environment for BrainVISA and CATI tools.
 
-It provides `Docker images <https://www.docker.com>`_ images compatible with BrainVisa distributions with all needed setup to build custom toolboxes, package them, and distribute them, in the same environment.
+It provides `Singularity <http://singularity.lbl.gov/>`_ and `Docker <https://www.docker.com>`_ images compatible with BrainVISA distributions with all needed setup to build custom toolboxes, package them, and test them, in the same environment.
 
 Casa-distro is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It is a metronome because the distribution procedures, and especially the distribution frequency, is defined in casa-distro documentation (`bioproj wiki <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Casa-distro>`_). It is a swiss knife because it provides a tool for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
 
@@ -77,8 +77,9 @@ managed by CASA :
 -  **brainvisa**: the historical BrainVISA distribution. It combines
    open source and close source software. It can be downloaded by anyone
    and used freely for non profit research.
--  **cati**: this distro contains the sowtware necessary to operate CATI
-   platform. It is managed by CATI and distributed only to CATI members.
+-  **cati_platform**: this distro contains the sowtware necessary to 
+   operate CATI platform. It is managed by CATI and distributed only to 
+   CATI members.
 -  **cea**: this distribution is based on the BrainVISA distribution but
    contains also some toolboxes that are not distributed to the whole
    community. It is installed in several CEA labs : Neurospin, MIRCen
@@ -125,7 +126,9 @@ The creation of a distribution is a three steps process :
    available for users.
 
 All these steps are done by CASA admin team using ``casa_distro`` command. The
-release plan is discussed with distros managers and eventually modified before being applied. The current status of the release plan can be found on a `BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_. 
+release plan is discussed with distros managers and eventually modified before
+being applied. The current status of the release plan can be found on a
+`BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_. 
 
 Build workflow
 --------------
@@ -172,40 +175,48 @@ III - casa_distro installation and setup
 Requirements
 ------------
 
-To use Casa-Distro, a user (or rather a developer) must have a system with the following characteristics:
+To use Casa-Distro, a user (or rather a developer) must have a system with 
+the following characteristics:
 
-* A system which supports Docker: `Docker <https://www.docker.com>`_ only runs on reasonably recent Linux systems, recent Mac systems, and Windows.
-* Administrator permissions on the machine: Docker can only be used by users with advanced permissions, as it allows to change user and write files on the host system with any user identity.
-* `Docker <https://www.docker.com>`_ must be installed and setup for the user on the host system.
-* Python >= 2.7 to run the ``casa_distro`` command on the host system.
+* Either `Singularity <http://singularity.lbl.gov/>`_ or 
+  `Docker <https://www.docker.com>`_ must be installed and setup for the user
+  on the building system. These container technologies only runs 
+  on reasonably recent Linux systems, recent Mac systems, and Windows. 
+* Python >= 2.7 is necessary  run the ``casa_distro`` command.
 
-The rest takes place inside Docker containers, so are normally not restricted by the host system, (as long as it has enough memory and disk space).
+The rest takes place inside containers, so are normally not restricted by the building system, (as long as it has enough memory and disk space).
 
-* To run graphical software, a X server and OpenGL have to be running on the host system (unless a virtual X/VNC solution is used)
-
-On Debian based Linux systems (such as Ubuntu), the following packages must be installed :
+For instance, to use Singularity on Debian based Linux systems (such as Ubuntu), the following packages must be installed :
 
 .. code-block:: bash
 
-  sudo apt-get install python docker.io
-
-On these systems, after ``docker.io`` installation, it is necessary for a user to be in the ``docker`` system group to be able to use Docker. For administrators who need to use release plan files, the package ``python-yaml`` must also be installed.
-
+  # System dependencies
+  sudo apt-get install python build-essential
+  
+  # Singularity install
+  VERSION=2.4.5
+  wget https://github.com/singularityware/singularity/releases/download/$VERSION/singularity-$VERSION.tar.gz
+  tar xvf singularity-$VERSION.tar.gz
+  cd singularity-$VERSION
+  ./configure --prefix=/usr/local
+  make
+  sudo make install
+  
 For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
 
 Install latest release
 ----------------------
 
-This is the simplest and the only recommended way to use casa_distro. Simply download the latest release with the following link : `casa_distro.zip <casa_distro.zip>`_.
+This is the simplest and the only recommended way to use casa_distro. Simply download the latest release with the following link : `casa-distro.zip <casa-distro.zip>`_.
 
-Then, provided that Python is installed on your system, you can use casa_distro.zip directly. For instance, to get the help of the command, do:
+Then, provided that Python is installed on your system, you can use casa-distro.zip directly. For instance, to get the help of the command, do:
 
 .. code-block:: bash
 
-  python casa_distro.zip --help
+  python casa-distro.zip --help
 
-Install from sources
---------------------
+Install with brainvisa-cmake
+----------------------------
 
 This advanced method can be used by people that are familiar with the use of :bv-cmake:`BrainVisa-Cmake <index.html>`. Casa-distro belong to the standard projects of brainvisa-cmake so in most case, there is no specific modification to do on ``bv_maker.cfg``. casa_distro can be downloaded, configured and built like any other brainvisa-cmake components. Once built, it can be used as other commands compiled by ``bv_maker``. For instance :
 
@@ -214,71 +225,64 @@ This advanced method can be used by people that are familiar with the use of :bv
   <path_to_build_dir>/bin/bv_env_host casa_distro --help
 
 
-Working with docker
-===================
-
 Building CASA projects
 ======================
 
 First time
 ----------
 
-Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this situation, once casa_distro has been downloaded or installed (it can be the .zip file), a user (or developer) has to:
+Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this situation, once casa_distro has been downloaded or installed (it can be the .zip file), a user has to:
 
 * create a build workflow, which will contain the sources repository for BrainVisa projects, a build directory, etc.
 
 .. code-block:: bash
 
-    python casa_distro.zip -r /home/me/casa create_build_workflow distro=opensource branch=bug_fix system=ubuntu-12.04
+    python casa-distro.zip -r /home/me/casa create distro_source=opensource branch=bug_fix system=ubuntu-12.04
 
-This command specifies to setup a build workflow for the open-source projects set (``distro=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a Docker system based on Ubuntu 12.04.
-Directories and files will be created accordingly in the repository directory, here ``/home/me/casa``, and a specific Docker image will be created.
+This command specifies to setup a build workflow for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a Docker system based on Ubuntu 12.04.
+Directories and files will be created accordingly in the repository directory, here ``/home/me/casa`` (default without the ``-r`` option is ``$HOME/casa_distro``).
 
 * build everything
 
 .. code-block:: bash
 
-    python casa_distro.zip -r /home/me/casa bv_maker distro=opensource branch=bug_fix system=ubuntu-12.04
+    python casa-distro.zip -r /home/me/casa bv_maker distro=opensource branch=bug_fix system=ubuntu-12.04
 
 If distro, branch, or system are not provided, all matching build workflows will be processed.
 
-Additional options can be passed to the underlying :bv-cmake:`bv_maker <index.html>` command, which will run inside Docker to build everything. Typically, the documentation can be built, testing and packaging can be performed.
+Additional options can be passed to the underlying :bv-cmake:`bv_maker <index.html>` command, which will run inside the container. Typically, the documentation can be built, testing and packaging can be performed.
 
 Updating projects
 -----------------
 
-To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running ``python casa_distro.zip bv_maker`` (with corresponding options, if needed).
+To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running ``python casa-distro.zip bv_maker`` (with corresponding options, if needed).
 
 Customizing projects
 --------------------
 
 It is possible to customize the projects list to be retreived and built. It is done by editing the :bv-cmake:`bv_maker.cfg file <configuration.html>` in the build workflow, which can be found in the directory ``<repository>/<distro>/<branch>_<system>/conf/``
 
-where ``<repository>`` is the base casa-distro repository directory (passed as the ``-r`` option of casa_distro, ``<distro>`` is the projects set name (``opensource``, ``brainvisa``, ``cati``), ``<branch>`` is the version branch identifier (``latest_release``, ``bug_fix``, ``trunk``), and ``<system>`` is the system the build is based on.
+where ``<repository>`` is the base casa-distro repository directory (passed as the ``-r`` option of casa_distro, ``<distro>`` is the projects set name (``opensource``, ``brainvisa``, ``cati_platform``), ``<branch>`` is the version branch identifier (``latest_release``, ``bug_fix``, ``trunk``), and ``<system>`` is the system the build is based on.
 
 
-Using Casa-Distro as a runtime environment to run BrainVisa-related software
+Using Casa-Distro as a runtime environment to run BrainVISA-related software
 ============================================================================
 
 It's possible to do so:
 
 .. code-block:: bash
 
-    casa_distro -r /home/me/casa run branch=bug_fix X=1 brainvisa
+    casa_distro -r /home/me/casa run branch=bug_fix gui=yes brainvisa
 
 ``brainvisa`` could be replaced by any other command (``anatomist``, ``AimsSomething``, ``morphologist``) with parameters.
 
-Note that graphical software need to run Docker containers with a graphical "bridge": a X server has to be running on the host system, and OpenGL may or may not work. The option ``X=1`` of casa_distro tries to handle common cases (at least on Linux hosts), possibly using Nvidia proprietary OpenGL implementation and drivers from the host system.
+Note that graphical software need to run the containers with a graphical "bridge": a X server has to be running on the host system, and OpenGL may or may not work. The option ``gui=yes`` of casa_distro tries to handle common cases (at least on Linux hosts), possibly using Nvidia proprietary OpenGL implementation and drivers from the host system.
 
 .. warning:: BUT...
 
     But soma-workflow distributed execution will not spawn Docker (or casa_distro run) in remote processing. Modifications could be done to handle it.
 
-Remember that software run that way live in a Docker container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the DOCKER_OPTIONS variable of the script ``docker_options`` found in ``<casa_distro_build_workflow>/conf/docker_options``.
-
-
-Next release
-============
+Remember that software run that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the file ``container_options`` item in ``<casa_distro_build_workflow>/conf/casa_distro.json``.
 
 
 

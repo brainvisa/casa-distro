@@ -150,6 +150,5 @@ def main():
         kwargs['args_list'] = args + args_list
         args= []
 
-    print('!!!', args, kwargs)
     result = command(*args, **kwargs)
     sys.exit(result)
