@@ -128,11 +128,14 @@ RUN mkdir %(home)s/.brainvisa && \
 
 RUN mkdir -p $CASA_SRC/development/brainvisa-cmake
 RUN mkdir -p $CASA_CUSTOM_BUILD
-RUN /usr/local/bin/svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix
-RUN mkdir /tmp/brainvisa-cmake
-WORKDIR /tmp/brainvisa-cmake
-RUN cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix
-RUN make install && cd .. && rm -r /tmp/brainvisa-cmake
+RUN if [ ! -d "$CASA_SRC/development/brainvisa-cmake/bug_fix" ]; then \
+    /usr/local/bin/svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix; \
+    mkdir /tmp/brainvisa-cmake; \
+    cd /tmp/brainvisa-cmake; \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install \
+    && cd .. && rm -r /tmp/brainvisa-cmake; \
+fi
 WORKDIR /casa
 
 # Create bashrc and/or update wine registry to add built 
