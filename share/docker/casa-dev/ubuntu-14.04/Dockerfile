@@ -64,6 +64,8 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libmpich-dev \
     libgstreamer0.10-dev \
+    libgstreamer-plugins-base0.10-dev \
+    libgstreamer-plugins-base1.0-dev \
     liborc-dev \
     libxslt-dev \
     libicu-dev \
@@ -80,7 +82,6 @@ RUN apt-get update && apt-get install -y \
     libgsl0-dev \
     libjasper-dev \
     locate \
-    libgstreamer-plugins-base0.10-dev \
     libaudio-dev \
     python-yaml \
     pandoc \
