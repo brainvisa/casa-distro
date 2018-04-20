@@ -251,16 +251,14 @@ def create_build_workflow_directory(build_workflow_directory,
     # the context of a distribution in Zip format, the share_directory
     # is modified after import.
     import casa_distro as casa_distro_module
-    if not osp.isdir(distro_source):
-        distro_source_dir = osp.join(casa_distro_module.share_directory,
-                                     'distro', distro_source)
-    else:
-        raise ValueError('distro value %s is not a predefined value: '
-                            'base_distro should be provided' % distro)
+
+    distro_source_dir = osp.join(casa_distro_module.share_directory,
+                                 'distro', distro_source)
     if not osp.isdir(distro_source_dir):
-        raise ValueError('%s is not a valid value for distro_source because '
-                         '%s is not a directory' % (repr(distro_source),
-                                                    repr(distro_source_dir)))
+        distro_source_dir = distro_source
+        if not osp.isdir(distro_source_dir):
+            raise ValueError('distro_source value %s is not a predefined '
+                             'value nor a valid directory' % distro_source)
     if distro_name is None:
         distro_name = osp.basename(distro_source_dir)
         
