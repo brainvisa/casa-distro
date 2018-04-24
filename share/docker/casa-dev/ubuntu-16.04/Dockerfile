@@ -151,6 +151,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python3-jenkins \
     python3-opengl \
     libnifti-dev \
+    x11proto-print-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -217,6 +218,9 @@ RUN bash /tmp/build_netcdf.sh && rm /tmp/build_netcdf.sh
 #   && cd ../../bin \
 #   && ln -s ../netcdf/bin/* . \
 #   && rm /tmp/netcdf-4.1.1-ubuntu-12.04.tar.gz
+
+# install libXp, used by some external software (SPM...)
+RUN cd /tmp && wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz && tar xf libxp_1.0.2.orig.tar.gz && cd libXp-1.0.2 && ./configure && make -j4 && make -j4 install; cd /tmp; rm -R libxp_1.0.2.orig.tar.gz libXp-1.0.2
 
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
 ENV CASA_CONF=/casa/conf
