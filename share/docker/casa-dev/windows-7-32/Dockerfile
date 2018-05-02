@@ -123,10 +123,11 @@ RUN chmod +x /usr/local/bin/svn
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
 # Install a version of brainvisa-cmake
-RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix /c/tmp/brainvisa-cmake && \
-    cd /c/tmp/brainvisa-cmake && \
-    cmake -G 'MSYS Makefiles' -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
-    make install && cd .. && rm -r /c/tmp/brainvisa-cmake
+RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    mkdir /tmp/brainvisa-cmake  && \
+    cd /tmp/brainvisa-cmake && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install && cd .. && rm -r /tmp/brainvisa-cmake
 
 # Set PATH to have bv_env_host being either the one of the build directory (/casa/build)
 # or the one in the image (/casa/brainvisa-cmake)
