@@ -7,6 +7,7 @@ import os.path as osp
 import time
 import subprocess
 import traceback
+import json
 
 from casa_distro import six
 from casa_distro import linux_os_ids
@@ -17,7 +18,9 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_login,
                                   default_distro,
                                   default_branch)
-from casa_distro.build_workflow import iter_build_workflow, run_container
+from casa_distro.build_workflow import (iter_build_workflow, run_container,
+                                        create_build_workflow_directory,
+                                        update_container_image)
 
 
 def display_summary(status):
@@ -122,7 +125,6 @@ def create(distro_source=default_distro,
         a coma separated list of file name that must not be overriden 
         if they already exist.
     '''
-    from casa_distro.build_workflow import create_build_workflow_directory
     not_override_lst = not_override.split(',')
     bwf_directory = osp.join(build_workflows_repository, '%(distro_name)s',
                              '%(casa_branch)s_%(system)s')
@@ -136,7 +138,9 @@ def create(distro_source=default_distro,
                                     not_override=not_override_lst,
                                     verbose=verbose)
 
-
+# "list" cannot be used as a function name in Python. Therefore, the
+# command name in the command-line is not the same as the corresponding
+# Python function.
 @command('list')
 def list_command(distro='*', branch='*', system='*', 
          build_workflows_repository=default_build_workflow_repository,
@@ -152,16 +156,28 @@ def list_command(distro='*', branch='*', system='*',
         print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
 
 @command
-def pull(distro='*', branch='*', system='*', 
-         build_workflows_repository=default_build_workflow_repository, 
-         repository_server=default_repository_server, 
-         repository_server_directory=default_repository_server_directory,
-         login=default_repository_login, verbose=None):
+def update_image(distro='*', branch='*', system='*', 
+         build_workflows_repository=default_build_workflow_repository,
+         verbose=None):
     '''
-    Download a build workflow (except conf directory) from sftp server
-    (require lftp command to be installed).
+    Update container image of (eventually selected) build workflows
+    created by "create" command.
     '''
-    raise NotImplementedError('This command has not been implemented yet for casa_distro 2.0')
+    images_to_update = {}
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+                                                distro=distro, branch=branch,
+                                                system=system):
+        casa_distro = json.load(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')))
+        images_to_update.setdefault(casa_distro['container_type'], set()).add(
+            casa_distro['container_image'])
+    if not images_to_update:
+        print('No build workflow match selection criteria', file=sys.stderr)
+        return 1
+    for container_type, container_images in six.iteritems(images_to_update):
+        for container_image in container_images:
+            update_container_image(build_workflows_repository,
+                                   container_type, container_image,
+                                   verbose=verbose) 
 
 
 @command

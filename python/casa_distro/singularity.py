@@ -10,6 +10,25 @@ import fnmatch
 from subprocess import check_call, check_output
 
 from casa_distro import six
+from casa_distro.hash import file_hash
+from casa_distro.defaults import default_download_url
+
+try:
+    # Try Python 3 only import
+    from urllib.request import urlretrieve
+except ImportError:
+    # Provide a Python 2 implementation of urlretrieve
+    import urllib2
+    def urlretrieve(url, filename):
+        buffer_size = 1024 * 4
+        input = urllib2.urlopen(url)
+        with open(filename,'wb') as output:
+            while True:
+                buffer = input.read(buffer_size)
+                if buffer:
+                    output.write(buffer)
+                if len(buffer) < buffer_size:
+                    break
 
 def image_name_match(image_name, filters):
     '''
@@ -78,6 +97,8 @@ From: %s
                     file=out)
                     out.close()
                     subprocess.check_call(['sudo', 'singularity', 'build', singularity_image, recipe])
+                    image_hash = file_hash(singularity_image)
+                    open(singularity_image + '.md5', 'w').write(image_hash)
                 finally:
                     subprocess.call(['sudo', 'rm', '-Rf', docker_files]) 
             finally:
@@ -87,6 +108,38 @@ From: %s
         do = tempfile.NamedTemporaryFile(suffix='.tar')
     return len(images)
 
+
+def download_singularity_image(build_workflows_repository, container_image):
+    image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
+    image_path = osp.join(build_workflows_repository, image_file)
+    url = '%s/%s' % (default_download_url, image_file)
+    print('Downloading', image_path, 'from', url)
+    urlretrieve(url, image_path)
+    urlretrieve(url + '.md5', image_path + '.md5')
+
+
+def update_singularity_image(build_workflows_repository, container_image, verbose=False):
+    image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
+    image_path = osp.join(build_workflows_repository, image_file)
+    if osp.exists(image_path):
+        hash_file = image_file + '.md5'
+        hash_path = image_path + '.md5'
+        if osp.exists(hash_path):
+            local_hash = open(hash_path).read()
+            tmp = tempfile.NamedTemporaryFile()
+            url = '%s/%s' % (default_download_url, hash_file)
+            urlretrieve(url, tmp.name)
+            remote_hash = open(tmp.name).read()
+            if remote_hash == local_hash:
+                if verbose:
+                    print('Not updating', image_path, 'which is identical to',
+                          url, file=verbose)
+                    
+                return False
+    download_singularity_image(build_workflows_repository, container_image)
+    return True
+
+    
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None, container_options=[],
                     verbose=None):

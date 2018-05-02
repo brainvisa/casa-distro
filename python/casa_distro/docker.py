@@ -223,6 +223,12 @@ def publish_docker_images(image_name_filters = ['*']):
     return image_file_count
 
 
+def update_docker_image(container_image):
+    '''
+    Update a docker image.
+    '''
+    check_call(['docker', 'pull', container_image])
+
 
 def run_docker(casa_distro, command, gui=False, interactive=False,
                tmp_container=True, container_image=None, container_options=[],

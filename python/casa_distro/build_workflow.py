@@ -8,27 +8,12 @@ import glob
 import shutil
 import json
 
-from casa_distro.defaults import default_download_url
 from casa_distro import share_directory, linux_os_ids
-from casa_distro.docker import run_docker
-from casa_distro.singularity import run_singularity
+from casa_distro.docker import run_docker, update_docker_image
+from casa_distro.singularity import (download_singularity_image,
+                                     run_singularity,
+                                     update_singularity_image)
 
-try:
-    # Try Ptyhon 3 only import
-    from urllib.request import urlretrieve
-except ImportError:
-    # Provide a Python 2 implementation of urlretrieve
-    import urllib2
-    def urlretrieve(url, filename):
-        buffer_size = 1024 * 4
-        input = urllib2.urlopen(url)
-        with open(filename,'wb') as output:
-            while True:
-                buffer = input.read(buffer_size)
-                if buffer:
-                    output.write(buffer)
-                if len(buffer) < buffer_size:
-                    break
 
 def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
                         system='*'):
@@ -372,12 +357,12 @@ def create_build_workflow_directory(build_workflow_directory,
     check_svn_secret(bwf_dir)
     
     if container_type == 'singularity':
-        image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
-        image_path = osp.join(osp.dirname(osp.dirname(build_workflow_directory)), image_file)
-        if not osp.exists(image_path):
-            url = '%s/%s' % (default_download_url, image_file)
-            print('Downloading', image_path, 'from', url)
-            urlretrieve(url, image_path)
+        update_singularity_image(
+            osp.dirname(osp.dirname(build_workflow_directory)),
+            container_image,
+            verbose=verbose)
+            
+            
 
 
 def run_container(bwf_directory, command, gui=False, interactive=False, tmp_container=True, container_image=None,
@@ -408,3 +393,14 @@ def run_container(bwf_directory, command, gui=False, interactive=False, tmp_cont
     else:
         raise ValueError('No container_type in "%s"' % casa_distro_json)
 
+def update_container_image(build_workflows_repository, container_type,
+                           container_image, verbose=False):
+    if container_type == 'singularity':
+        update_singularity_image(build_workflows_repository,
+                                 container_image,
+                                 verbose=verbose)
+    elif container_type == 'docker':
+        update_docker_image(container_image)
+    else:
+        raise ValueError('%s is no a valid container system' % container_type)
+    

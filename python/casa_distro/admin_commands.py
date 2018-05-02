@@ -242,6 +242,7 @@ def publish_singularity(image_names = 'cati/*',
     print('cd', repository_server_directory, file=lftp_script)
     for f in image_files:
         print('put', f, file=lftp_script)
+        print('put', f + '.md5', file=lftp_script)
     lftp_script.flush()
     cmd = ['lftp', '-f', lftp_script.name]
     if verbose:
