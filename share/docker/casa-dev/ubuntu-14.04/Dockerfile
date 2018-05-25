@@ -90,6 +90,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     flex \
     bison \
+    bash-completion \
 #     libvtk5-dev \ # later ?
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
