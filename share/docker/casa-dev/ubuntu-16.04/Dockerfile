@@ -155,6 +155,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     python3-opengl \
     libnifti-dev \
     x11proto-print-dev \
+    bash-completion \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

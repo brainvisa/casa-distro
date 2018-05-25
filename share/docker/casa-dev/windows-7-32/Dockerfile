@@ -51,6 +51,7 @@ RUN apt-get update && apt-get install -y \
     g++-multilib \
     libx11-dev:i386 \
     libxext-dev:i386 \
+    bash-completion \
   && CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
      CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
      CROSSBUILD_ARCH=i686 \

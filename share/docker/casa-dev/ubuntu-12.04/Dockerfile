@@ -72,6 +72,7 @@ RUN apt-get update && apt-get install -y \
     gdb \
     mesa-utils \
     x11proto-gl-dev \
+    python-setuptools \
     kdesdk-scripts \
     net-tools \
     liblapack-dev \
@@ -87,6 +88,7 @@ RUN apt-get update && apt-get install -y \
     pandoc \
     zip \
     unzip \
+    bash-completion \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
