@@ -111,7 +111,7 @@ RUN pip install jupyter_client
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
-RUN pip install python_jenkins
+RUN pip install "python_jenkins==0.4.16"
 RUN pip install nipype
 
 # install Pycluster
