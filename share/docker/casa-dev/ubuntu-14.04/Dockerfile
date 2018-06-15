@@ -175,6 +175,19 @@ ENV CASA_TESTS=/casa/tests
 ENV CASA_CUSTOM_SRC=/casa/custom/src
 ENV CASA_CUSTOM_BUILD=/casa/custom/build
 
+# create casa directories for singularity compatibility  
+RUN mkdir -p $CASA_CONF \
+             $CASA_SRC \
+             $CASA_CUSTOM_SRC \
+             $CASA_BUILD \
+             $CASA_CUSTOM_BUILD
+
+RUN chmod 777 $CASA_CONF \
+              $CASA_SRC \
+              $CASA_CUSTOM_SRC \
+              $CASA_BUILD \
+              $CASA_CUSTOM_BUILD
+              
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn

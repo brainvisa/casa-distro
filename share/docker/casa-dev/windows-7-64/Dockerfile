@@ -19,6 +19,7 @@ ENV CASA_TESTS=/casa/tests
 # Custom projects
 ENV CASA_CUSTOM_SRC=/casa/custom/src
 ENV CASA_CUSTOM_BUILD=/casa/custom/build
+ENV CASA_SYS=/casa/sys
 
 # Copy script to cross compile thirdparty dependencies
 COPY install_ubuntu_14.04_crossbuild.sh /tmp/install_ubuntu_14.04_crossbuild.sh
@@ -114,7 +115,22 @@ RUN cd /tmp \
 
 # Add jenkins package
 RUN pip install python_jenkins==0.4.15
-  
+
+# create casa directories for singularity compatibility  
+RUN mkdir -p $CASA_CONF \
+             $CASA_SRC \
+             $CASA_CUSTOM_SRC \
+             $CASA_BUILD \
+             $CASA_CUSTOM_BUILD \
+             $CASA_SYS
+
+RUN chmod 777 $CASA_CONF \
+              $CASA_SRC \
+              $CASA_CUSTOM_SRC \
+              $CASA_BUILD \
+              $CASA_CUSTOM_BUILD \
+              $CASA_SYS
+             
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn
@@ -131,10 +147,10 @@ RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brain
 
 # Set PATH to have bv_env_host being either the one of the build directory (/casa/build)
 # or the one in the image (/casa/brainvisa-cmake)
-ENV PATH=${PATH}:/casa/build/bin:/casa/brainvisa-cmake/bin
+ENV PATH=${PATH}:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
 
 # Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
-ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
+ENV BRAINVISA_BVMAKER_CFG=$CASA_CONF/bv_maker.cfg
 
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev

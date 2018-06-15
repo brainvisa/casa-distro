@@ -26,6 +26,16 @@ RUN ldconfig
 RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/bin/apt, /usr/bin/apt-get, /usr/bin/aptitude" > /etc/sudoers.d/90_sudoers-apt
 RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
 
+# create casa directories for singularity compatibility            
+RUN mkdir -p /casa/pack \
+             /casa/install \
+             /casa/tests
+
+RUN chmod 777 /casa \
+              /casa/pack \
+              /casa/install \
+              /casa/tests
+              
 COPY entrypoint /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
