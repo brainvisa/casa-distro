@@ -1,0 +1,214 @@
+# Dockerfile for image cati/brainvisa-devbase:centos-7.4
+
+FROM cati/casa-test:centos-7.4 
+
+# Install system dependencies
+RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
+ && rpm -ivh epel-release-latest-7.noarch.rpm \
+ && \rm -f epel-release-latest-7.noarch.rpm \
+ && yum -y groupinstall "Development Tools" \
+ && yum -y install \
+    cmake \
+    cmake-gui \
+    git \
+    qt-devel \
+    qt-config \
+    qt-x11 \
+    qt-assistant \
+    qt-creator \
+    qtwebkit-devel \
+    qwt-devel \
+    sip-devel \
+    PyQt4-devel \
+    PyQt4-webkit-devel \
+    libsigc++20-devel \
+    zlib-devel \
+    sqlite-devel \
+    readline-devel \
+    boost-devel \
+    libtiff-devel \
+    openjpeg-devel \
+    turbojpeg-devel \
+    libpng-devel \
+    libmng-devel \
+    hdf5-devel \
+    netcdf-devel \
+    libsvm-devel \
+    czmq-devel \
+    openssl-devel \
+    graphviz \
+    graphviz-devel \
+    doxygen \
+    python-paramiko \
+    libxml2-devel \
+    python-sphinx \
+    python-matplotlib \
+    python-matplotlib-qt4 \
+    java-1.7.0-openjdk \
+    libtool-ltdl-devel \
+    ncurses-devel \
+    vim-minimal \
+    nano \
+    wget \
+    gtk2 \
+    gtk2-devel \
+    gdk-pixbuf2 \
+    gdk-pixbuf2-devel \
+    automake \
+    texlive-fontspec \
+    texlive-fontware \
+    texlive-fontwrap \
+    texlive-fontmisc \
+    python-setuptools \
+    lftp \
+    libffi-devel \
+    libmpich-3.0-devel \
+    gstreamer-devel \
+    orc-devel \
+    libxslt-devel \
+    libicu-devel \
+    gdb \
+    mesa-libOSMesa-devel \
+    xorg-x11-proto-devel \
+    net-tools \
+    lapack-devel \
+    atlas-devel \
+    libbzip-devel \
+    gsl-devel \
+    jasper-devel \
+    pandoc \
+    mlocate \
+    gstreamer1-plugins-base-devel \
+    audiofile-devel \
+    PyYAML \
+    zip \
+    unzip \
+    kdesdk-scripts \
+    bash-completion \
+ && yum clean all
+
+# install dcmtk
+COPY build_dcmtk.sh /tmp/build_dcmtk.sh
+RUN bash /tmp/build_dcmtk.sh && rm /tmp/build_dcmtk.sh
+
+# install minc
+COPY build_minc.sh /tmp/build_minc.sh
+RUN bash /tmp/build_minc.sh && rm /tmp/build_minc.sh
+
+# install blitz
+COPY build_blitz.sh /tmp/build_blitz.sh
+RUN bash /tmp/build_blitz.sh && rm /tmp/build_blitz.sh
+ 
+#------------------------------ MISSING ------------------------------
+#     libqwt5-qt4-dev => qwt-devel ?
+#     python-qt4-gl
+#     mesa-utils
+#     libzmq-dev => czmq ?
+
+#----------------------------- TO CHECK ------------------------------
+#     pgm-devel
+#     yaml-devel
+#     bz2-devel
+
+# RUN easy_install pip
+# pip cannot be installed any longer using easy_install, the system pip 
+# does not work any  longer...
+RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
+RUN pip --version
+RUN pip install -U 'ipython>=5.0,<6.0'
+RUN pip install -U "tornado>=4,<5"
+RUN pip install jupyter
+RUN pip install -U zmq
+RUN pip install -U numpy
+RUN pip install -U scipy
+RUN pip install -U docutils
+RUN pip install -U nbsphinx
+RUN pip install -U traits
+RUN pip install -U dicom
+RUN pip install -U pydicom
+RUN pip install -U pyro
+# sphinx 1.7 has bugs
+RUN pip install -U "sphinx>=1.5,<1.7"
+RUN pip install jupyter_client
+
+# install xmltodict and other python packages
+RUN pip install xmltodict
+RUN pip install "python_jenkins==0.4.16"
+RUN pip install nipype
+
+# install Pycluster
+RUN cd /tmp \
+  && wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz \
+  && tar xfz Pycluster-1.52.tar.gz \
+  && cd Pycluster-1.52 \
+  && python setup.py build \
+  && python setup.py install \
+  && cd .. \
+  && \rm -r Pycluster-1.52 Pycluster-1.52.tar.gz
+
+# Install Qt Installer Framework (prebuilt on Mandriva 2008)
+RUN cd /tmp \
+  && wget http://brainvisa.info/static/qt_installer-1.6.tar.gz \
+  && cd /usr/local \
+  && tar xfz /tmp/qt_installer-1.6.tar.gz \
+  && ln -s qt_installer-1.6 qt_installer \
+  && cd /usr/local/bin \
+  && ln -s ../qt_installer/bin/* . \
+  && rm /tmp/qt_installer-1.6.tar.gz
+
+# Install jxrlib + openslide
+RUN cd /tmp && wget https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip && mkdir jxrlib && cd jxrlib && unzip ../jxrlib.zip; cd sourceCode/jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib jxrlib.zip
+RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
+
+# Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
+ENV CASA_CONF=/casa/conf
+# Directory containing source code
+ENV CASA_SRC=/casa/src
+# Directory containing all files that are necessary only for building (source tree, build dir, etc.)
+ENV CASA_BUILD=/casa/build
+# Installation directory
+ENV CASA_INSTALL=/casa/install
+# Installation directory
+ENV CASA_PACK=/casa/pack
+# Tests data directory
+ENV CASA_TESTS=/casa/tests
+# Custom projects
+ENV CASA_CUSTOM_SRC=/casa/custom/src
+ENV CASA_CUSTOM_BUILD=/casa/custom/build
+
+# create casa directories for singularity compatibility  
+RUN mkdir -p $CASA_CONF \
+             $CASA_SRC \
+             $CASA_CUSTOM_SRC \
+             $CASA_BUILD \
+             $CASA_CUSTOM_BUILD
+
+RUN chmod 777 $CASA_CONF \
+              $CASA_SRC \
+              $CASA_CUSTOM_SRC \
+              $CASA_BUILD \
+              $CASA_CUSTOM_BUILD
+              
+COPY svn.secret $CASA_CONF/svn.secret
+COPY svn /usr/local/bin/svn
+RUN chmod +x /usr/local/bin/svn
+
+# allow attach gdb to a process
+RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
+
+# Install a version of brainvisa-cmake
+RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    mkdir /tmp/brainvisa-cmake  && \
+    cd /tmp/brainvisa-cmake && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install && cd .. && rm -r /tmp/brainvisa-cmake
+
+# Set PATH to have bv_env_host being either the one of the build directory (/casa/build)
+# or the one in the image (/casa/brainvisa-cmake)
+ENV PATH=${PATH}:/casa/build/bin:/casa/brainvisa-cmake/bin
+
+# Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
+ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
+
+# newer additions, to be placed in the other yum line, later
+# RUN yum -y install something-dev
