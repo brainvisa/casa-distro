@@ -265,25 +265,33 @@ def create_build_workflow_directory(build_workflow_directory,
     else:
         casa_distro = {}
 
-    casa_distro.update(dict(
-        distro_source = distro_source,
-        distro_name = distro_name,
-        container_type = container_type,
-        casa_branch = casa_branch,
-        system = system,
-        container_volumes = {'%(build_workflow_dir)s/conf': '/casa/conf',
-                             '%(build_workflow_dir)s/src': '/casa/src',
-                             '%(build_workflow_dir)s/build': '/casa/build',
-                             '%(build_workflow_dir)s/install': '/casa/install',
-                             '%(build_workflow_dir)s/pack': '/casa/pack',
-                             '%(build_workflow_dir)s/tests': '/casa/tests',
-                             '%(build_workflow_dir)s/custom/src': '/casa/custom/src',
-                             '%(build_workflow_dir)s/custom/build': '/casa/custom/build',
-                            },
-        container_env = {'CASA_DISTRO': '%(distro_name)s',
-                         'CASA_BRANCH': '%(casa_branch)s',
-                         'CASA_SYSTEM': '%(system)s',
-                         'CASA_HOST_DIR': '%(build_workflow_dir)s'}))
+    container_volumes = {'%(build_workflow_dir)s': '/casa',
+                         '%(build_workflow_dir)s/conf': '/casa/conf',
+                         '%(build_workflow_dir)s/src': '/casa/src',
+                         '%(build_workflow_dir)s/build': '/casa/build',
+                         '%(build_workflow_dir)s/install': '/casa/install',
+                         '%(build_workflow_dir)s/pack': '/casa/pack',
+                         '%(build_workflow_dir)s/tests': '/casa/tests',
+                         '%(build_workflow_dir)s/custom/src': '/casa/custom/src',
+                         '%(build_workflow_dir)s/custom/build': '/casa/custom/build'}
+    
+    container_env = {'CASA_DISTRO': '%(distro_name)s',
+                     'CASA_BRANCH': '%(casa_branch)s',
+                     'CASA_SYSTEM': '%(system)s',
+                     'CASA_HOST_DIR': '%(build_workflow_dir)s',
+                     'HOME': '/casa'}
+    
+    if system.startswith('windows'):
+        container_volumes['%(build_workflow_dir)s/sys'] = '/casa/sys'
+        container_env['WINEPREFIX'] = '/casa/sys/wine'
+            
+    casa_distro.update(dict(distro_source = distro_source,
+                            distro_name = distro_name,
+                            container_type = container_type,
+                            casa_branch = casa_branch,
+                            system = system,
+                            container_volumes = container_volumes,
+                            container_env = container_env))
 
     if not container_image:
         container_image = casa_distro.get('container_image')
@@ -335,7 +343,11 @@ def create_build_workflow_directory(build_workflow_directory,
     
     os_dir = osp.join(distro_source_dir, system)
     all_subdirs = ('conf', 'src', 'build', 'install', 'tests', 'pack',
-                   'custom', 'custom/src', 'custom/build')
+                   'custom', 'custom/src', 'custom/build', 'home')
+    
+    if system.startswith('windows'):
+        all_subdirs += ('sys',)
+    
     for subdir in all_subdirs:
         sub_bwf_dir = osp.join(bwf_dir, subdir)
         if not osp.exists(sub_bwf_dir):

@@ -233,6 +233,11 @@ def update_docker_image(container_image):
 def run_docker(casa_distro, command, gui=False, interactive=False,
                tmp_container=True, container_image=None, container_options=[],
                verbose=None):
+    import types
+    
+    if not isinstance(verbose, (types.NoneType, types.FileType)):
+        verbose = sys.stdout
+        
     docker = ['docker', 'run']
     if interactive:
         docker += ['-it']
