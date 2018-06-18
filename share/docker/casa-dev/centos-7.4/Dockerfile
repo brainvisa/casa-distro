@@ -17,6 +17,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     qt-assistant \
     qt-creator \
     qtwebkit-devel \
+    phonon-devel \
     qwt-devel \
     sip-devel \
     PyQt4-devel \
@@ -38,7 +39,6 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     openssl-devel \
     graphviz \
     graphviz-devel \
-    doxygen \
     python-paramiko \
     libxml2-devel \
     python-sphinx \
@@ -73,18 +73,22 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     net-tools \
     lapack-devel \
     atlas-devel \
-    libbzip-devel \
+    bzip2-devel \
     gsl-devel \
     jasper-devel \
     pandoc \
     mlocate \
     gstreamer1-plugins-base-devel \
     audiofile-devel \
+    openpgm-devel \
+    libyaml-devel \
     PyYAML \
     zip \
     unzip \
     kdesdk-scripts \
     bash-completion \
+    perl-devel \
+    perl-CPAN \
  && yum clean all
 
 # install dcmtk
@@ -98,17 +102,14 @@ RUN bash /tmp/build_minc.sh && rm /tmp/build_minc.sh
 # install blitz
 COPY build_blitz.sh /tmp/build_blitz.sh
 RUN bash /tmp/build_blitz.sh && rm /tmp/build_blitz.sh
- 
-#------------------------------ MISSING ------------------------------
-#     libqwt5-qt4-dev => qwt-devel ?
-#     python-qt4-gl
-#     mesa-utils
-#     libzmq-dev => czmq ?
 
-#----------------------------- TO CHECK ------------------------------
-#     pgm-devel
-#     yaml-devel
-#     bz2-devel
+# install doxygen
+COPY build_doxygen.sh /tmp/build_doxygen.sh
+RUN bash /tmp/build_doxygen.sh && rm /tmp/build_doxygen.sh
+ 
+# install git
+COPY build_git.sh /tmp/build_git.sh
+RUN bash /tmp/build_git.sh && rm /tmp/build_git.sh
 
 # RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 

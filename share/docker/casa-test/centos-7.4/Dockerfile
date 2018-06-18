@@ -3,7 +3,7 @@
 FROM centos:7.4.1708
 
 # Install system dependencies
-RUN yum -y update && \
+RUN yum -y update --security && \
     yum -y install \
     xorg-x11-server-Xvfb.x86_64 \
     libX11 \
