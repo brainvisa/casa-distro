@@ -116,6 +116,10 @@ RUN pip install jupyter_client
 RUN pip install xmltodict
 RUN pip install python_jenkins
 RUN pip install nipype
+RUN pip install cython
+RUN pip install dipy
+RUN pip install -U nibabel
+RUN pip install sklearn
 
 # install Pycluster
 RUN cd /tmp \
