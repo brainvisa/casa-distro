@@ -69,7 +69,7 @@ def help(args_list=['help'], **kwargs):
         command_set.add(kwargs['command'])
     
     if len(command_set) == 0:
-        parser.print_help()
+        get_main_parser().print_help()
         return
     
     for command in command_set:
@@ -92,8 +92,8 @@ def help(args_list=['help'], **kwargs):
                 else:
                     print(' ' * 3, arg)
         print()
-       
-def main():
+
+def get_main_parser():
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
         def _split_lines(self, text, width):
             result = []
@@ -105,14 +105,10 @@ def main():
                     result.append('')
             return result
 
-    args_list = []
-    if '--' in sys.argv:
-        ind = sys.argv.index('--')
-        args_list = sys.argv[ind + 1:]
-        sys.argv = sys.argv[:ind]
-
-    parser = argparse.ArgumentParser(description='Casa distribution creation tool. Version %s' % __version__,
-                                     formatter_class=ArgumentLineBreakFormatter)
+    parser = argparse.ArgumentParser(
+        description='Casa distribution creation tool. Version %s'
+        % __version__,
+        formatter_class=ArgumentLineBreakFormatter)
 
     parser.add_argument('-r', '--repository', default=None,
                         help='Path of the directory containing build workflow (default=%s)' % default_build_workflow_repository)
@@ -122,6 +118,16 @@ def main():
                         help='\n\n'.join('%s\n%s' % ('%s\n%s\n%s' % ('='*len(i), i, '=' * len(i)), get_doc(commands[i])) for i in commands))
     parser.add_argument('command_options', nargs=argparse.REMAINDER,
                         help='command specific options (use help <command> to list these options).')
+    return parser
+
+def main():
+    args_list = []
+    if '--' in sys.argv:
+        ind = sys.argv.index('--')
+        args_list = sys.argv[ind + 1:]
+        sys.argv = sys.argv[:ind]
+
+    parser = get_main_parser()
     options = parser.parse_args()
 
     result = None

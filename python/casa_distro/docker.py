@@ -120,6 +120,62 @@ def update_docker_images(image_name_filters = ['*']):
             call(cmd)
     return image_file_count
 
+def get_image_id(image_full_name):
+    try:
+        images = check_output(['docker', 'images', image_full_name])
+    except:
+        return None
+    images = [i for i in images.split('\n')[1:] if i != '']
+    if len(images) != 1:
+        return None
+    image_id = images[0].split()[2]
+    return image_id
+
+def get_base_image(dockerfile):
+    with open(dockerfile) as f:
+        while f:
+            line = f.readline().strip()
+            if line == '':
+                continue
+            el = line.split()
+            if len(el) == 0 or el[0] != 'FROM':
+                continue
+            return el[1]
+
+def pull_image(image_full_name):
+    cmd = ['docker', 'pull', image_full_name]
+    print('-'*70)
+    print(*cmd)
+    print('-'*70)
+    old_image = get_image_id(image_full_name)
+    try:
+        check_call(cmd)
+        if get_image_id(image_full_name) != old_image:
+            return old_image
+    except:
+        return None
+    return None
+
+def rm_images(images):
+    if len(images) == 0:
+        return
+    cmd = ['docker', 'rmi'] + images
+    print('-'*70)
+    print(*cmd)
+    print('-'*70)
+    tmp = tempfile.mkstemp()
+    try:
+        call(cmd, stderr=open(tmp[1], 'w'))
+    finally:
+        try:
+            os.close(tmp[0])
+        except:
+            pass
+        try:
+            os.unlink(tmp[1])
+        except:
+            pass
+
 def create_docker_images(image_name_filters = ['*']):
     '''
     Creates all docker images that are declared in 
@@ -133,62 +189,79 @@ def create_docker_images(image_name_filters = ['*']):
     ''' 
     image_file_count = 0
     error = False
-    for images_dict in find_docker_image_files():
-        base_directory = tempfile.mkdtemp()
-        try:
-            source_directory, filename = osp.split(images_dict['filename'])
-            for image_source in images_dict['image_sources']:
-                template_parameters = { 'casa_version': casa_distro.info.__version__ }
-                template_parameters.update(image_source.get('template_files_parameters', {}))
-                
-                image_name = apply_template_parameters(image_source['name'], template_parameters)
-                
-                image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
-                target_directory = osp.join(base_directory, image_name, image_tags[-1])
-                os.makedirs(target_directory)
-                for f in os.listdir(source_directory):
-                    if f == filename:
+    to_clean = []
+    try:
+        for images_dict in find_docker_image_files():
+            base_directory = tempfile.mkdtemp()
+            try:
+                source_directory, filename = osp.split(images_dict['filename'])
+                for image_source in images_dict['image_sources']:
+                    template_parameters = { 'casa_version': casa_distro.info.__version__ }
+                    template_parameters.update(image_source.get('template_files_parameters', {}))
+
+                    image_name = apply_template_parameters(image_source['name'], template_parameters)
+
+                    image_tags = [apply_template_parameters(i, template_parameters) for i in image_source['tags']]
+                    target_directory = osp.join(base_directory, image_name, image_tags[-1])
+                    os.makedirs(target_directory)
+                    for f in os.listdir(source_directory):
+                        if f == filename:
+                            continue
+                        source = osp.join(source_directory, f)
+                        target = osp.join(target_directory, f)
+
+                        if osp.isdir(source):
+                            if os.path.exists(target):
+                                shutil.rmtree(target)
+                            shutil.copytree(source, target)
+                        elif f.endswith('.template'):
+                            content = apply_template_parameters(open(source).read(), template_parameters)
+                            open(target[:-9], 'w').write(content)
+                        else:
+                            shutil.copy2(source, target)
+
+                    image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
+
+                    if not image_name_match(image_full_name, image_name_filters):
                         continue
-                    source = osp.join(source_directory, f)
-                    target = osp.join(target_directory, f)
+                    image_file_count += 1
 
-                    if osp.isdir(source):
-                        if os.path.exists(target):
-                            shutil.rmtree(target)
-                        shutil.copytree(source, target)
-                    elif f.endswith('.template'):
-                        content = apply_template_parameters(open(source).read(), template_parameters)
-                        open(target[:-9], 'w').write(content)
-                    else:
-                        shutil.copy2(source, target)
+                    old_id = get_image_id(image_full_name)
+                    old_base_id = None
+                    deps = images_dict.get('dependencies', [])
+                    if len(deps) == 0:
+                        base_image = get_base_image(os.path.join(target_directory,
+                                                                'Dockerfile'))
+                        if base_image:
+                            old_base_id = pull_image(base_image)
 
-                image_full_name = 'cati/%s:%s' % (image_name, image_tags[-1])
-
-                if not image_name_match(image_full_name, image_name_filters):
-                    continue
-                image_file_count += 1
-
-                cmd = ['docker', 'build', '--force-rm',
-                       '--tag', image_full_name, target_directory]
-                print('-'*40)
-                print('Creating image %s' % image_full_name)
-                print(*cmd)
-                print('Docker context:', os.listdir(target_directory))
-                print('-'*40)
-                check_call(cmd)
-                print('-'*40)
-                for tag in image_tags[:-1]:
-                    src = 'cati/%s:%s' % (image_name, image_tags[-1])
-                    dst = 'cati/%s:%s' % (image_name, tag)
-                    print('Creating tag', dst, 'from', src)
-                    # I do not know how to create a tag of an existing image with
-                    # docker-py, therefore I use subprocess
-                    check_call(['docker', 'tag', src, dst] )
-                print('-'*40)
-            if error:
-                break
-        finally:
-            shutil.rmtree(base_directory)
+                    cmd = ['docker', 'build', '--force-rm',
+                           '--tag', image_full_name, target_directory]
+                    print('-'*40)
+                    print('Creating image %s' % image_full_name)
+                    print(*cmd)
+                    print('Docker context:', os.listdir(target_directory))
+                    print('-'*40)
+                    check_call(cmd)
+                    if get_image_id(image_full_name) != old_id:
+                        to_clean.append(old_id)
+                    if old_base_id:
+                        to_clean.append(old_base_id)
+                    print('-'*40)
+                    for tag in image_tags[:-1]:
+                        src = 'cati/%s:%s' % (image_name, image_tags[-1])
+                        dst = 'cati/%s:%s' % (image_name, tag)
+                        print('Creating tag', dst, 'from', src)
+                        # I do not know how to create a tag of an existing image with
+                        # docker-py, therefore I use subprocess
+                        check_call(['docker', 'tag', src, dst] )
+                    print('-'*40)
+                if error:
+                    break
+            finally:
+                shutil.rmtree(base_directory)
+    finally:
+        rm_images(to_clean)
     return image_file_count
 
 
