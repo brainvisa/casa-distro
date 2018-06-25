@@ -291,7 +291,9 @@ def publish_docker_images(image_name_filters = ['*']):
                 image_full_name = 'cati/%s:%s' % (image_name, tag)
                 if not image_name_match(image_full_name, image_name_filters):
                     continue
-                image_file_count += 1                
+                image_file_count += 1
+                print('-'*70)
+                print('pushing image:', image_full_name)
                 check_call(['docker', 'push', image_full_name])
     return image_file_count
 
