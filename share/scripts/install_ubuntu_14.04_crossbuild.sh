@@ -272,7 +272,15 @@ fi
 # Build variables
 # ------------------------------------------------------------------------------
 if [ -z "${CROSSBUILD_ARCH}" ]; then
-    __arch="i686"
+    if [ -z "${WINEARCH}" ]; then
+        __arch="i686"
+    else
+        if [ "${WINEARCH}" == "win32" ]; then
+            __arch="i686"
+        else
+            __arch="x86_64"
+        fi
+    fi
 else
     __arch="${CROSSBUILD_ARCH}"
 fi
@@ -351,7 +359,8 @@ __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six
                      python_paramiko python_pyro python_pil python_dicom
                      python_yaml python_xmltodict python_markupsafe 
                      python_jinja2 python_pygments python_docutils 
-                     python_sphinx python_pandas)
+                     python_sphinx python_pandas python_cython python_pyzmq 
+                     python_h5py python_dipy python_sklearn python_nibabel)
 
 if [ -z "${CROSSBUILD_INSTALL_PREFIX}" ]; then
     CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
@@ -2549,8 +2558,6 @@ fi
 # ------------------------------------------------------------------------------
 JPEGXR_VERSION=1.1
 JPEGXR_INSTALL_PREFIX=${CROSSBUILD_INSTALL_PREFIX}/jxrlib-${JPEGXR_VERSION}
-JPEGXR_LATEST_REV=$(basename $(wget --no-check-certificate -O ${__tmp_dir}/jpegxr.rss "http://jxrlib.codeplex.com/project/feeds/rss?ProjectRSSFeed=codeplex%3a%2f%2fsourcecontrol%2fjxrlib" 2>/dev/null && xmllint ${__tmp_dir}/jpegxr.rss --xpath '/rss/channel/item[1]/link/text()'))
-JPEGXR_SOURCE_URL="http://download-codeplex.sec.s-msft.com/Download/SourceControlFileDownload.ashx?ProjectName=jxrlib&changeSetId=${JPEGXR_LATEST_REV}"
 
 if [ "${JPEGXR}" == "1" ]; then
     echo "=============================== JPEGXR ==============================="
@@ -2562,6 +2569,8 @@ if [ "${JPEGXR}" == "1" ]; then
             # is not the same as original file name.
             download "${__mirror_url}/sources/jxrlib-${JPEGXR_VERSION}.zip"
         else
+            JPEGXR_LATEST_REV=$(basename $(wget --no-check-certificate -O ${__tmp_dir}/jpegxr.rss "http://jxrlib.codeplex.com/project/feeds/rss?ProjectRSSFeed=codeplex%3a%2f%2fsourcecontrol%2fjxrlib" 2>/dev/null && xmllint ${__tmp_dir}/jpegxr.rss --xpath '/rss/channel/item[1]/link/text()'))
+            JPEGXR_SOURCE_URL="http://download-codeplex.sec.s-msft.com/Download/SourceControlFileDownload.ashx?ProjectName=jxrlib&changeSetId=${JPEGXR_LATEST_REV}"
             download ${JPEGXR_SOURCE_URL} jxrlib-${JPEGXR_VERSION}.zip
         fi
     fi
@@ -3691,7 +3700,7 @@ EOF
               -DZLIB_LIBRARY=${CROSSBUILD_INSTALL_PREFIX}/lib/libz.dll.a \
               -DHDF5_INCLUDE_DIR=${CROSSBUILD_INSTALL_PREFIX}/include \
               -DHDF5_LIBRARY=${CROSSBUILD_INSTALL_PREFIX}/lib/libhdf5.dll.a \
-5\              -DCMAKE_C_STANDARD_LIBRARIES=-lws2_32 \
+              -DCMAKE_C_STANDARD_LIBRARIES=-lws2_32 \
               .. \
         || exit 1
 
@@ -7347,6 +7356,246 @@ if [ "${PYTHON_PYGMENTS}" == "1" ]; then
         done
     fi
 fi
+
+# ------------------------------------------------------------------------------
+# pyzmq
+# ------------------------------------------------------------------------------
+PYTHON_PYZMQ_VERSION=17.0.0
+PYTHON_PYZMQ_SOURCE_URL=https://files.pythonhosted.org/packages/6d/d8/bae5624e5327877ff6bebbf75008d28536e8250e4798f5175e74d12639ea/pyzmq-${PYTHON_PYZMQ_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
+
+if [ "${PYTHON_PYZMQ}" == "1" ]; then
+    echo "============================== PYTHON_PYZMQ =============================="
+    if [ "${__download}" == "1" ]; then
+        download "${__arch}" ${PYTHON_PYZMQ_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y pyzmq
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/pyzmq-${PYTHON_PYZMQ_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# h5py
+# ------------------------------------------------------------------------------
+PYTHON_H5PY_VERSION=2.8.0
+PYTHON_H5PY_SOURCE_URL=https://files.pythonhosted.org/packages/6d/d8/bae5624e5327877ff6bebbf75008d28536e8250e4798f5175e74d12639ea/h5py-${PYTHON_H5PY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
+
+if [ "${PYTHON_H5PY}" == "1" ]; then
+    echo "============================== PYTHON_H5PY =============================="
+    if [ "${__download}" == "1" ]; then
+        download "${__arch}" ${PYTHON_H5PY_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y h5py
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/h5py-${PYTHON_H5PY_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# h5py
+# ------------------------------------------------------------------------------
+PYTHON_CYTHON_VERSION=0.28.3
+PYTHON_CYTHON_SOURCE_URL=https://files.pythonhosted.org/packages/6d/d8/bae5624e5327877ff6bebbf75008d28536e8250e4798f5175e74d12639ea/Cython-${PYTHON_CYTHON_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
+
+if [ "${PYTHON_CYTHON}" == "1" ]; then
+    echo "============================== PYTHON_CYTHON =============================="
+    if [ "${__download}" == "1" ]; then
+        download "${__arch}" ${PYTHON_CYTHON_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y Cython
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/Cython-${PYTHON_CYTHON_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# dipy
+# ------------------------------------------------------------------------------
+PYTHON_DIPY_VERSION=0.14.0
+PYTHON_DIPY_SOURCE_URL=https://files.pythonhosted.org/packages/6d/d8/bae5624e5327877ff6bebbf75008d28536e8250e4798f5175e74d12639ea/dipy-${PYTHON_DIPY_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl
+
+if [ "${PYTHON_DIPY}" == "1" ]; then
+    echo "============================== PYTHON_DIPY =============================="
+    if [ "${__download}" == "1" ]; then
+        download "${__arch}" ${PYTHON_DIPY_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y dipy
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/dipy-${PYTHON_DIPY_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# scikit-learn
+# ------------------------------------------------------------------------------
+PYTHON_SKLEARN_VERSION=0.19.1
+PYTHON_SKLEARN_SOURCE_URL=https://files.pythonhosted.org/packages/6d/d8/bae5624e5327877ff6bebbf75008d28536e8250e4798f5175e74d12639ea/scikit_learn-${PYTHON_SKLEARN_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl
+
+if [ "${PYTHON_SKLEARN}" == "1" ]; then
+    echo "============================== PYTHON_SKLEARN =============================="
+    if [ "${__download}" == "1" ]; then
+        download "${__arch}" ${PYTHON_SKLEARN_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y scikit-learn
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/scikit_learn-${PYTHON_SKLEARN_VERSION}-cp27-cp27m-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# nibabel
+# ------------------------------------------------------------------------------
+PYTHON_NIBABEL_VERSION=2.3.0
+PYTHON_NIBABEL_SOURCE_URL=https://files.pythonhosted.org/packages/d9/f0/008aa42c3bd42d101cfcd5418643364a4b3dd2322de3e8b3d6c644ae0fb0/nibabel-${PYTHON_NIBABEL_VERSION}.tar.gz
+
+if [ "${PYTHON_NIBABEL}" == "1" ]; then
+    echo "============================== PYTHON_NIBABEL =============================="
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_NIBABEL_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y nibabel
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        tar xvf ${__download_dir}/nibabel-${PYTHON_NIBABEL_VERSION}.tar.gz
+        pushd ${__build_dir}/nibabel-${PYTHON_NIBABEL_VERSION}
+        
+        PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
+        CROSS_COMPILE="${__toolchain}-" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
+        LDSHARED="${CC} -shared" \
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        
+        popd
+
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__build_dir}/nibabel-${PYTHON_NIBABEL_VERSION}/dist/nibabel-${PYTHON_NIBABEL_VERSION}-py2-none-any.whl)" \
+        || exit 1
+
+    fi
+fi
+# 
+# # ------------------------------------------------------------------------------
+# # nipype
+# # ------------------------------------------------------------------------------
+# PYTHON_NIPYPE_VERSION=1.0.4
+# PYTHON_NIPYPE_SOURCE_URL=https://files.pythonhosted.org/packages/d9/f0/008aa42c3bd42d101cfcd5418643364a4b3dd2322de3e8b3d6c644ae0fb0/nipype-${PYTHON_NIPYPE_VERSION}-py2.py3-none-any.whl
+# 
+# if [ "${PYTHON_NIPYPE}" == "1" ]; then
+#     echo "============================== PYTHON_NIPYPE =============================="
+#     if [ "${__download}" == "1" ]; then
+#         download ${PYTHON_NIPYPE_SOURCE_URL}
+#     fi
+# 
+#     if [ "${__remove_before_install}" == "1"  ]; then
+#         # Uninstall using target python
+#         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+#         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+#                                     -m pip uninstall -y nipype
+#     fi
+# 
+#     if [ "${__install}" == "1" ]; then
+#          # Install using target python
+#         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+#         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+#                     -m pip install "$(winepath -w ${__download_dir}/nipype-${PYTHON_NIPYPE_VERSION}-py2.py3-none-any.whl)" \
+#         || exit 1
+# 
+#     fi
+# fi
+# 
+# # ------------------------------------------------------------------------------
+# # jupyter
+# # ------------------------------------------------------------------------------
+# PYTHON_JUPYTER_VERSION=1.0.0
+# PYTHON_JUPYTER_SOURCE_URL=https://files.pythonhosted.org/packages/d9/f0/008aa42c3bd42d101cfcd5418643364a4b3dd2322de3e8b3d6c644ae0fb0/jupyter-${PYTHON_JUPYTER_VERSION}-py2.py3-none-any.whl
+# 
+# if [ "${PYTHON_JUPYTER}" == "1" ]; then
+#     echo "============================== PYTHON_JUPYTER =============================="
+#     if [ "${__download}" == "1" ]; then
+#         download ${PYTHON_JUPYTER_SOURCE_URL}
+#     fi
+# 
+#     if [ "${__remove_before_install}" == "1"  ]; then
+#         # Uninstall using target python
+#         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+#         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+#                                     -m pip uninstall -y jupyter
+#     fi
+# 
+#     if [ "${__install}" == "1" ]; then
+#          # Install using target python
+#         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+#         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+#                     -m pip install "$(winepath -w ${__download_dir}/jupyter-${PYTHON_JUPYTER_VERSION}-py2.py3-none-any.whl)" \
+#         || exit 1
+# 
+#     fi
+# fi
 
 # ------------------------------------------------------------------------------
 # docutils
