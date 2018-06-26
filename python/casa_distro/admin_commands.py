@@ -100,22 +100,23 @@ def publish_casa_distro(build_workflows_repository=default_build_workflow_reposi
 @command
 def create_release_plan(components=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
     '''create a release plan file by reading sources.'''
-    from casa_distro.bv_maker import inspect_components_and_create_release_plan
-    import yaml # TODO move related code into bv_maker.py
+    from casa_distro.bv_maker import update_release_plan_file
     
-    if components:
-        components = components.split(',')
-    decisions_file = osp.join(build_workflows_repository, 'release_plan_decisions.yaml')
-    if osp.exists(decisions_file):
-        decisions = yaml.load(open(decisions_file))
-        if verbose:
-            print('Using decisions file', decisions_file, file=verbose)
-            verbose.flush()
-    else:
-        decisions = None
-    release_plan_file = open(osp.join(build_workflows_repository, 'release_plan.yaml'), 'w')
-    release_plan = inspect_components_and_create_release_plan(components, decisions=decisions, verbose=verbose)
-    print(yaml.dump(release_plan, default_flow_style=False), file=release_plan_file)
+    update_release_plan_file(erase_file=True,
+                             components=components,
+                             build_workflows_repository=build_workflows_repository,
+                             verbose=verbose)
+
+
+@command
+def update_release_plan(components=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+    '''update a release plan file by reading sources.'''
+    from casa_distro.bv_maker import update_release_plan_file
+
+    update_release_plan_file(erase_file=False,
+                             components=components,
+                             build_workflows_repository=build_workflows_repository,
+                             verbose=verbose)
 
 
 @command
