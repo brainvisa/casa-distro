@@ -72,7 +72,7 @@ def convert_github_url_to_svn(url):
         git_base_url = None
     return svn_url, vcs, vcs_url, git_base_url
 
-def inspect_components_and_create_release_plan(components, verbose=None):
+def inspect_components_and_create_release_plan(components, decisions=None, verbose=None):
     """
     Returns a dictionary containing information about component sources state
     and what to do during casa-distro creation. This dictionary has the 
@@ -113,14 +113,28 @@ def inspect_components_and_create_release_plan(components, verbose=None):
     
     if not components:
         components = list(url_per_component)
+    if decisions is None:
+        components_to_ignore = set()
+        projects_to_ignore = set()
+    else:
+        components_to_ignore = set(decisions.get('ignore', {}).get('component', []))
+        projects_to_ignore = set(decisions.get('ignore', {}).get('project', []))
+        
     components_info_and_release_plan = {}
     verbose = log.getLogFile(verbose)
     for component in components:
         if verbose:
             print('Inspecting component', component, file=verbose)
             verbose.flush()
+        project = project_per_component[component]
         bug_fix_url = url_per_component[component].get('bug_fix')
-        component_dict = components_info_and_release_plan.setdefault(project_per_component[component],{}).setdefault(component,{})
+        component_dict = components_info_and_release_plan.setdefault(project,{}).setdefault(component,{})
+        if component in components_to_ignore or project in projects_to_ignore:
+            if verbose:
+                print('  ignored by decision', file=verbose)
+                verbose.flush()
+            component_dict['info_messages'] = ['Ignored by decision']
+            continue
         info_messages = []
         warning_messages = []
         error_messages = []
@@ -217,7 +231,7 @@ def inspect_components_and_create_release_plan(components, verbose=None):
                                                     % str(latest_release_version))
                              
                     if latest_release_version == bug_fix_version:
-                        warning_messages.append('Version of latest_release and bug_fix are the same.')
+                        # warning_messages.append('Version of latest_release and bug_fix are the same.')
                         new_bug_fix_version = VersionNumber(latest_release_version).increment()
                     elif latest_release_version > bug_fix_version:
                         error_messages.append('latest_release version is higher than bug_fix version.')

@@ -105,8 +105,16 @@ def create_release_plan(components=None, build_workflows_repository=default_buil
     
     if components:
         components = components.split(',')
+    decisions_file = osp.join(build_workflows_repository, 'release_plan_decisions.yaml')
+    if osp.exists(decisions_file):
+        decisions = yaml.load(open(decisions_file))
+        if verbose:
+            print('Using decisions file', decisions_file, file=verbose)
+            verbose.flush()
+    else:
+        decisions = None
     release_plan_file = open(osp.join(build_workflows_repository, 'release_plan.yaml'), 'w')
-    release_plan = inspect_components_and_create_release_plan(components, verbose=verbose)
+    release_plan = inspect_components_and_create_release_plan(components, decisions=decisions, verbose=verbose)
     print(yaml.dump(release_plan, default_flow_style=False), file=release_plan_file)
 
 
