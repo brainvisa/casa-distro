@@ -159,6 +159,20 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# pip3 modules should be installed first, then some commands
+# (/usr/local/bin/jupyter* for instance) will be replaced by python2
+# equivalents when installed by pip2. jupyter modules especially handle
+# these conflicts very badly.
+RUN pip3 install -U numpy
+RUN pip3 install -U scipy
+RUN pip3 install nipype
+RUN pip3 install jupyter
+RUN pip3 install nbsphinx
+RUN pip3 install cython
+RUN pip3 install dipy
+RUN pip3 install -U nibabel
+RUN pip3 install sklearn
+
 # ipython / jupyter
 RUN easy_install pip
 RUN pip install -U 'ipython>=5.0,<6.0'
@@ -171,20 +185,12 @@ RUN pip install -U nbsphinx
 RUN pip install -U "sphinx>=1.5,<1.7"
 
 RUN pip install nipype
-RUN pip3 install nipype
 RUN pip install cython
 RUN pip install dipy
 RUN pip install -U nibabel
 RUN pip install sklearn
-
-RUN pip3 install -U numpy
-RUN pip3 install -U scipy
-RUN pip3 install jupyter
-RUN pip3 install nbsphinx
-RUN pip3 install cython
-RUN pip3 install dipy
-RUN pip3 install -U nibabel
-RUN pip3 install sklearn
+RUN pip install -U pyparsing
+RUN pip install -U pydot
 
 # install Pycluster
 RUN cd /tmp \
