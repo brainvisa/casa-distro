@@ -9,6 +9,7 @@ import requests
 import json
 import subprocess
 
+from casa_distro import log
 import brainvisa.maker.svn as svn_client
 from brainvisa.maker.svn import svn_rename, svn_copy, svn_update_version_info, \
                                 svn_get_latest_revision, svn_delete
@@ -113,6 +114,7 @@ def inspect_components_and_create_release_plan(components, verbose=None):
     if not components:
         components = list(url_per_component)
     components_info_and_release_plan = {}
+    verbose = log.getLogFile(verbose)
     for component in components:
         if verbose:
             print('Inspecting component', component, file=verbose)
@@ -338,6 +340,7 @@ def apply_release_plan(release_plan_file, dry=False,
     '''
     import os, string
     
+    verbose = log.getLogFile(verbose)
     if not os.path.exists(release_plan_file):
         raise RuntimeError('Release plan %s file does not exists or is not ' \
                            'accessible' % release_plan_file)

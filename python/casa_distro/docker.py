@@ -14,9 +14,10 @@ import tempfile
 import stat
 import re
 
-from casa_distro import six
+from casa_distro import log, six
 import casa_distro.info
 from casa_distro import share_directory, linux_os_ids
+
 
 
 def get_docker_version():
@@ -308,11 +309,9 @@ def update_docker_image(container_image):
 def run_docker(casa_distro, command, gui=False, interactive=False,
                tmp_container=True, container_image=None, container_options=[],
                verbose=None):
-    import types
     
-    if not isinstance(verbose, (types.NoneType, types.FileType)):
-        verbose = sys.stdout
-        
+    verbose = log.getLogFile(verbose)
+    
     docker = ['docker', 'run']
     if interactive:
         docker += ['-it']

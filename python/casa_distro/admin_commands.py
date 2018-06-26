@@ -9,7 +9,7 @@ import glob
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
 
-from casa_distro import six
+from casa_distro import log, six
 from casa_distro.command import command
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
@@ -74,7 +74,7 @@ def publish_casa_distro(build_workflows_repository=default_build_workflow_reposi
     '''Publish casa_distro.zip file previously created with package_casa_distro to the sftp server'''
     from subprocess import check_call
     
-    
+    verbose = log.getLogFile(verbose)
     
     lftp_script = tempfile.NamedTemporaryFile()
     if login:
@@ -263,6 +263,7 @@ def publish_build_workflows(distro='*', branch='*', system='*',
     from subprocess import check_call
     from casa_distro import iter_build_workflow
     
+    verbose = log.getLogFile(verbose)
     lftp_script = tempfile.NamedTemporaryFile()
     if login:
         remote = 'sftp://%s@%s' % (login, repository_server)
