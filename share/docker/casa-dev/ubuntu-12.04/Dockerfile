@@ -117,6 +117,7 @@ RUN pip install cython
 RUN pip install dipy
 RUN pip install -U nibabel
 RUN pip install sklearn
+RUN pip install -U dicom
 
 # install Pycluster
 RUN cd /tmp \
