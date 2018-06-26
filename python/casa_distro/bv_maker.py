@@ -338,7 +338,15 @@ def publish_release_plan_on_wiki(login, password, release_plan_file):
                 latest_release = '"%s":%s' % (latest_release.get('version', 'none'), latest_release.get('vcs_url', 'unknown'))
             else:
                 latest_release = ''
-            todo = ('yes' if release_plan[project][component].get('todo') else 'no')
+            todo = release_plan[project][component].get('todo')
+            if todo:
+                l = ['{{collapse(yes)']
+                for action in todo:
+                    l.append('%s\n%s\n' % (action[0], '\n'.join('* %s' % i for i in action[1:])))   
+                l.append('}}')
+                todo = '\n'.join(l)
+            else:
+                todo = 'no'
             infos = release_plan[project][component].get('info_messages', [])
             warnings = release_plan[project][component].get('warning_messages', [])
             errors = release_plan[project][component].get('error_messages', [])
@@ -350,7 +358,7 @@ def publish_release_plan_on_wiki(login, password, release_plan_file):
                 color = '#d50000'
             elif warnings:
                 color = '#ff8a65'
-            elif todo == 'yes':
+            elif todo != 'no':
                 color = '#a5d6a7'
             else:
                 color = '#b0bec5'
