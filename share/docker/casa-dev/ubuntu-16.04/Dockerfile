@@ -173,6 +173,8 @@ RUN pip3 install dipy
 RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 
+RUN easy_install pip
+
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
 RUN pip install -U pkgconfig
@@ -182,7 +184,6 @@ RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
 # ipython / jupyter
-RUN easy_install pip
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install jupyter
 RUN pip install -U zmq
