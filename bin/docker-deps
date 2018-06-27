@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ "$1" = "-v" ]; then
+    VERBOSE=1
+    shift
+else
+    VERBOSE=0
+fi
+
+IDS=$(for i in $(docker images -q); do docker history $i | grep -q "$1" && echo $i; done | sort -u)
+
+if [ $VERBOSE = 1 ]; then
+
+    pattern="(REPOSITORY)"
+    for i in $IDS; do
+        pattern=$pattern'|('$i')'
+    done
+    docker images | grep -E $pattern
+
+else
+
+    # non-verbose
+    echo $IDS
+
+fi
