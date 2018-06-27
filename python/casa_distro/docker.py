@@ -327,7 +327,10 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
         dest = dest % casa_distro
         dest = osp.expandvars(dest)
         docker += ['-v', '%s:%s' % (source, dest)]
-    for name, value in six.iteritems(casa_distro.get('container_env',{})):
+    container_env = casa_distro.get('container_env',{})
+    if gui:
+        container_env.update(casa_distro.get('container_gui_env',{}))
+    for name, value in six.iteritems(container_env):
         value = value % casa_distro
         value = osp.expandvars(value)
         docker += ['-e', '%s=%s' % (name, value)]

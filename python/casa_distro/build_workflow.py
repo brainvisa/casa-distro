@@ -323,6 +323,8 @@ def create_build_workflow_directory(build_workflow_directory,
         casa_distro['container_gui_options'] = gui_options
     elif container_type == 'singularity':
         container_options = None
+        container_gui_env = {'DISPLAY': '${DISPLAY}'}
+        casa_distro['container_gui_env'] = container_gui_env
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
     if container_options:
@@ -373,9 +375,7 @@ def create_build_workflow_directory(build_workflow_directory,
             osp.dirname(osp.dirname(build_workflow_directory)),
             container_image,
             verbose=verbose)
-            
-            
-
+        
 
 def run_container(bwf_directory, command, gui=False, interactive=False, tmp_container=True, container_image=None,
                   container_options=[], verbose=False):

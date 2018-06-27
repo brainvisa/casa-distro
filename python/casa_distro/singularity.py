@@ -9,7 +9,7 @@ import shutil
 import fnmatch
 from subprocess import check_call, check_output
 
-from casa_distro import six
+from casa_distro import log, six
 from casa_distro.hash import file_hash
 from casa_distro.defaults import default_download_url
 
@@ -43,7 +43,8 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'], verbose=
     '''
     Creates singularity images by converting to docker images.
     Return the number of images processed.
-    ''' 
+    '''
+    verbose = log.getLogFile(verbose)
     output = check_output(['docker', 'images'])
     images_tags = [i.split(None, 2)[:2] for i in output.split('\n')[1:] if i.strip()]
     images = ['%s:%s' %(i,t) for i, t in images_tags if i != '<none>' and t not in ('<none>', 'latest')]
@@ -114,11 +115,25 @@ def download_singularity_image(build_workflows_repository, container_image):
     image_path = osp.join(build_workflows_repository, image_file)
     url = '%s/%s' % (default_download_url, image_file)
     print('Downloading', image_path, 'from', url)
-    urlretrieve(url, image_path)
-    urlretrieve(url + '.md5', image_path + '.md5')
+    try:
+        urlretrieve(url, image_path)
+    except:
+        print('Unable to update singularity image from', 
+              url, 'to', image_path)
+        return False
+    
+    try:
+        urlretrieve(url + '.md5', image_path + '.md5')
+    except:
+        print('Unable to update singularity image hash from', 
+              url + '.md5', 'to', image_path + '.md5')
+        return False
+    
+    return True
 
 
 def update_singularity_image(build_workflows_repository, container_image, verbose=False):
+    verbose = log.getLogFile(verbose)
     image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
     image_path = osp.join(build_workflows_repository, image_file)
     if osp.exists(image_path):
@@ -143,7 +158,11 @@ def update_singularity_image(build_workflows_repository, container_image, verbos
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None, container_options=[],
                     verbose=None):
-    singularity = ['singularity', 'exec', '--cleanenv', '--cleanenv']
+    verbose = log.getLogFile(verbose)
+    
+    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
+    # to the container
+    singularity = ['singularity', 'exec', '--cleanenv']
     if gui:
         gui_options = casa_distro.get('container_gui_options')
         if gui_options:
@@ -154,11 +173,18 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         dest = dest % casa_distro
         dest = osp.expandvars(dest)
         singularity += ['--bind', '%s:%s' % (source, dest)]
-    env = os.environ.copy()
-    for name, value in six.iteritems(casa_distro.get('container_env',{})):
+        
+    container_env = os.environ.copy()
+    tmp_env = casa_distro.get('container_env', {})
+    if gui:
+        tmp_env.update(casa_distro.get('container_gui_env', {}))
+    
+    # Creates environment with variables prefixed by SINGULARITYENV_
+    # with --cleanenv only these variables are given to the container
+    for name, value in six.iteritems(tmp_env):
         value = value % casa_distro
         value = osp.expandvars(value)
-        env['SINGULARITYENV_' + name] = value
+        container_env['SINGULARITYENV_' + name] = value
     singularity += casa_distro.get('container_options', [])
     singularity += container_options
     if container_image is None:
@@ -166,7 +192,8 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         if container_image is None:
             raise ValueError('container_image is missing from casa_distro.json')
         container_image = container_image.replace('/', '_').replace(':', '_')
-        container_image = osp.join(osp.dirname(osp.dirname(casa_distro['build_workflow_dir'])), '%s.sqsh' % container_image)
+        container_image = osp.join(osp.dirname(osp.dirname(
+            casa_distro['build_workflow_dir'])), '%s.sqsh' % container_image)
         if not osp.exists(container_image):
             raise ValueError("'%s' does not exist" % container_image)
     singularity += [container_image]
@@ -176,10 +203,10 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         print('Running singularity with the following command:', file=verbose)
         print(*("'%s'" % i for i in singularity), file=verbose)
         print('\nUsing the following environment:', file=verbose)
-        for n, v in six.iteritems(env):
+        for n, v in six.iteritems(container_env):
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
-    check_call(singularity, env=env)
+    check_call(singularity, env=container_env)
 
 if __name__ == '__main__':
     import sys
