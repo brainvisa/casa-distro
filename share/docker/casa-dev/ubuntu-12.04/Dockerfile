@@ -95,10 +95,15 @@ RUN apt-get update && apt-get install -y \
 # RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 
 # does not work any  longer...
-RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && pip install -U pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
+RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
+# pip 10 does not allow reinstalling some packages (numpy...) so we keep pip 9
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
+RUN pip install -U pkgconfig
+RUN pip install -U cython
+RUN pip install -U numpy
+RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
 # ipython / jupyter
@@ -106,7 +111,6 @@ RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install -U "tornado>=4,<5"
 RUN pip install jupyter
 RUN pip install -U zmq
-RUN pip install -U numpy
 RUN pip install -U scipy
 RUN pip install -U docutils
 RUN pip install -U nbsphinx
@@ -118,7 +122,6 @@ RUN pip install jupyter_client
 RUN pip install xmltodict
 RUN pip install "python_jenkins==0.4.16"
 RUN pip install nipype
-RUN pip install cython
 RUN pip install dipy
 RUN pip install -U nibabel
 RUN pip install sklearn
