@@ -13,7 +13,8 @@ casa_branches = ['latest_release', 'bug_fix']
 
 def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
                         system='*'):
-    for i in glob(osp.join(build_workflows_repository, distro, '%s_%s' % (branch, system), 'conf')):
+    for i in sorted(glob(osp.join(build_workflows_repository, distro, '%s_%s'
+                                  % (branch, system), 'conf'))):
         d, branch_system = osp.split(osp.dirname(i))
         the_branch, the_system = branch_system.rsplit('_', 1)
         d, the_distro  = osp.split(d)
