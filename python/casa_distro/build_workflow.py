@@ -265,7 +265,7 @@ def create_build_workflow_directory(build_workflow_directory,
     else:
         casa_distro = {}
 
-    container_volumes = {'%(build_workflow_dir)s': '/casa',
+    container_volumes = {'%(build_workflow_dir)s/home': '/casa/home',
                          '%(build_workflow_dir)s/conf': '/casa/conf',
                          '%(build_workflow_dir)s/src': '/casa/src',
                          '%(build_workflow_dir)s/build': '/casa/build',
@@ -274,17 +274,17 @@ def create_build_workflow_directory(build_workflow_directory,
                          '%(build_workflow_dir)s/tests': '/casa/tests',
                          '%(build_workflow_dir)s/custom/src': '/casa/custom/src',
                          '%(build_workflow_dir)s/custom/build': '/casa/custom/build'}
-    
+        
     container_env = {'CASA_DISTRO': '%(distro_name)s',
                      'CASA_BRANCH': '%(casa_branch)s',
                      'CASA_SYSTEM': '%(system)s',
                      'CASA_HOST_DIR': '%(build_workflow_dir)s',
-                     'HOME': '/casa'}
+                     'HOME': '/casa/home'}
     
     if system.startswith('windows'):
         container_volumes['%(build_workflow_dir)s/sys'] = '/casa/sys'
         container_env['WINEPREFIX'] = '/casa/sys/wine'
-            
+        
     casa_distro.update(dict(distro_source = distro_source,
                             distro_name = distro_name,
                             container_type = container_type,

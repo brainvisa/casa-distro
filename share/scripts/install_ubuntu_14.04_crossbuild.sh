@@ -793,7 +793,7 @@ chmod +x update_registry_path
 # ------------------------------------------------------------------------------
 if [ "${__install}" == "1" ] && [ "${SYSTEM}" == "1" ]; then
     echo "=========================== SYSTEM ==============================="
-    sudo apt-get -q -y install ${__sys_packages[@]}
+    sudo apt-get -q -y --force-yes install ${__sys_packages[@]}
 fi
 
 # ------------------------------------------------------------------------------
@@ -845,8 +845,8 @@ apt-get -q -y install libglu1:i386
 apt-get -q -y install libgl1-mesa-glx:i386
 apt-get -q -y install libudev1:i386
 apt-get -q -y install libcgmanager0:i386
-apt-get -q -y install wine1.8-i386
-apt-get -q -y install wine1.8 wine-gecko2.34 wine-mono4.5.4 winetricks
+apt-get -q -y --force-yes install wine1.8-i386
+apt-get -q -y --force-yes install wine1.8 wine-gecko2.34 wine-mono4.5.4 winetricks
 EOF
     chmod +x "${__build_dir}/apt-wine.sh"
     sudo "${__build_dir}/apt-wine.sh"

@@ -26,11 +26,13 @@ RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/bin/apt, /usr/bin/apt-get, 
 RUN chmod 440 /etc/sudoers.d/90_sudoers-apt
 
 # create casa directories for singularity compatibility            
-RUN mkdir -p /casa/pack \
+RUN mkdir -p /casa/home \
+             /casa/pack \
              /casa/install \
              /casa/tests
 
 RUN chmod 777 /casa \
+              /casa/home \
               /casa/pack \
               /casa/install \
               /casa/tests

@@ -10,11 +10,12 @@ ENV WINEDEBUG=-all
 RUN mkdir -p /casa
 RUN dpkg --add-architecture i386 \
   && apt-get update \
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5A9A06AEF9CB8DB0 \
   && apt-get install -q -y software-properties-common \
   && add-apt-repository -y ppa:ubuntu-wine/ppa \
   && apt-get update \
   && apt-get upgrade -y \
-  && apt-get install --no-install-recommends -y \
+  && apt-get install --no-install-recommends -y --force-yes \
     xvfb \
     libx11-xcb1 \
     libfontconfig1 \
@@ -70,11 +71,13 @@ RUN echo "ALL     ALL=(root)     NOPASSWD:      /usr/sbin/update-binfmts" > /etc
 RUN chmod 440 /etc/sudoers.d/90_sudoers-wine
 
 # create casa directories for singularity compatibility            
-RUN mkdir -p /casa/pack \
+RUN mkdir -p /casa/home \
+             /casa/pack \
              /casa/install \
              /casa/tests
 
 RUN chmod 777 /casa \
+              /casa/home \
               /casa/pack \
               /casa/install \
               /casa/tests
