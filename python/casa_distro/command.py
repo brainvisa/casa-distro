@@ -114,6 +114,9 @@ def get_main_parser():
                         help='Path of the directory containing build workflow (default=%s)' % default_build_workflow_repository)
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
+    parser.add_argument('--version', action='version',
+                        version='casa-distro version: %s' % __version__,
+                        help='Display casa-distro version number and exit')
     parser.add_argument('command', nargs=1, choices=list(commands.keys()),
                         help='\n\n'.join('%s\n%s' % ('%s\n%s\n%s' % ('='*len(i), i, '=' * len(i)), get_doc(commands[i])) for i in commands))
     parser.add_argument('command_options', nargs=argparse.REMAINDER,
