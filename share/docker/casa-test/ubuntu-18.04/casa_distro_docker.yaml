@@ -1,0 +1,5 @@
+image_sources:
+  - name: casa-test
+    tags:
+      - ubuntu-18.04
+    visibility: public
