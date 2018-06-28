@@ -236,20 +236,45 @@ ENV CASA_BUILD=/casa/build
 ENV CASA_INSTALL=/casa/install
 # Installation directory
 ENV CASA_PACK=/casa/pack
-# Default bv_maker branch
-ENV CASA_BRANCH=latest_release
 # Tests data directory
 ENV CASA_TESTS=/casa/tests
 # Custom projects
 ENV CASA_CUSTOM_SRC=/casa/custom/src
 ENV CASA_CUSTOM_BUILD=/casa/custom/build
 
+# create casa directories for singularity compatibility  
+RUN mkdir -p $CASA_CONF \
+             $CASA_SRC \
+             $CASA_CUSTOM_SRC \
+             $CASA_BUILD \
+             $CASA_CUSTOM_BUILD
+
+RUN chmod 777 $CASA_CONF \
+              $CASA_SRC \
+              $CASA_CUSTOM_SRC \
+              $CASA_BUILD \
+              $CASA_CUSTOM_BUILD
+              
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn
 
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
+
+# Install a version of brainvisa-cmake
+RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    mkdir /tmp/brainvisa-cmake  && \
+    cd /tmp/brainvisa-cmake && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install && cd .. && rm -r /tmp/brainvisa-cmake
+
+# Set PATH to have bv_env_host being either the one of the build directory (/casa/build)
+# or the one in the image (/casa/brainvisa-cmake)
+ENV PATH=${PATH}:/casa/build/bin:/casa/brainvisa-cmake/bin
+
+# Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
+ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
 
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev
