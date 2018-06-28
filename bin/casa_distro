@@ -617,6 +617,8 @@ def help(args_list=['help'], **kwargs):
        
 if __name__ == '__main__':
     
+    from casa_distro.info import __version__ as casa_distro_version
+
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
         def _split_lines(self, text, width):
             result = []
@@ -641,6 +643,10 @@ if __name__ == '__main__':
                         help='Path of the directory containing build workflow (default=%s)' % default_build_workflow_repository)
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
+    parser.add_argument('--version', action='version',
+                        version='casa-distro version: %s'
+                        % casa_distro_version,
+                        help='Display casa-distro version number and exit')
     parser.add_argument('command', nargs=1, choices=commands,
                         help='\n\n'.join('"%s": %s;\n\n' % (i, globals()[i].__doc__) for i in commands))
     parser.add_argument('command_options', nargs=argparse.REMAINDER,
