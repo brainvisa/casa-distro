@@ -15,6 +15,8 @@ def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
                         system='*'):
     for i in sorted(glob(osp.join(build_workflows_repository, distro, '%s_%s'
                                   % (branch, system), 'conf'))):
+        if not osp.exists(osp.join(osp.dirname(i), 'run_docker.sh')):
+            continue # incompatible casa-distro 2+ / singularity dir
         d, branch_system = osp.split(osp.dirname(i))
         the_branch, the_system = branch_system.rsplit('_', 1)
         d, the_distro  = osp.split(d)
