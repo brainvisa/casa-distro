@@ -195,5 +195,7 @@ RUN chmod +x /usr/local/bin/svn
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
+RUN ldconfig
+
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev
