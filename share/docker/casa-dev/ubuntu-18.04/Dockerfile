@@ -139,6 +139,7 @@ RUN apt-get update && apt-get upgrade -y \
     unzip \
     libopenjp2-7-dev \
     clang \
+    qt5-default \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
