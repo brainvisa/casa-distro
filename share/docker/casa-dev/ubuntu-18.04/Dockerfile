@@ -123,6 +123,7 @@ RUN apt-get update && apt-get upgrade -y \
     libqt5xmlpatterns5-dev \
     libqt5waylandclient5-dev \
     libphonon4qt5-dev \
+    qttools5-dev \
     libqwt-qt5-6 \
     qttools5-dev-tools \
     qtmultimedia5-dev \
@@ -140,6 +141,8 @@ RUN apt-get update && apt-get upgrade -y \
     libopenjp2-7-dev \
     clang \
     qt5-default \
+    ghostscript \
+    libqwt-qt5-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
