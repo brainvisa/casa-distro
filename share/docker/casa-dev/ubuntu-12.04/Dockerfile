@@ -216,5 +216,7 @@ ENV PATH=${PATH}:/casa/build/bin:/casa/brainvisa-cmake/bin
 # Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
 ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
 
+RUN ldconfig
+
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev
