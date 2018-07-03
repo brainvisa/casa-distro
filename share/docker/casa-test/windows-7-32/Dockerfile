@@ -45,15 +45,6 @@ RUN dpkg --add-architecture i386 \
 # Install base wine packages
 RUN wine msiexec /i /usr/share/wine/gecko/wine_gecko-2.34-x86.msi /L*v gecko-2.34-install.log ALLUSERS=1 \
     && wine msiexec /i /usr/share/wine/mono/wine-mono-4.5.4.msi /L*v mono-4.5.4-install.log ALLUSERS=1
-
-# Update wine configuration to match windows 7 version
-RUN wineboot -u \
-    && wineserver -w \
-    && sed -i 's/"CSDVersion"="Service Pack 2"/"CSDVersion"="Service Pack 1"/g' ${WINEPREFIX}/system.reg \
-    && sed -i 's/"CurrentBuildNumber"="3790"/"CurrentBuildNumber"="7601"/g' ${WINEPREFIX}/system.reg \
-    && sed -i 's/"CurrentVersion"="5.2"/"CurrentVersion"="6.1"/g' ${WINEPREFIX}/system.reg \
-    && sed -i 's/"ProductName"="Microsoft Windows XP"/"ProductName"="Microsoft Windows 7"/g' ${WINEPREFIX}/system.reg \
-    && sed -i 's/"CSDVersion"=dword:00000200/"CSDVersion"=dword:00000100/g' ${WINEPREFIX}/system.reg
   
 # copy a software-only mesa libGL in /usr/local/lib
 COPY libGL.so.1 /usr/local/lib/libGL.so.1
@@ -79,6 +70,21 @@ RUN chmod 777 /casa \
               /casa/install \
               /casa/tests
               
+# Update wine configuration to match windows 7 version
+RUN echo "#!/usr/bin/env bash \n" \
+         "wineboot -u " \
+         "&& wineserver -w " \
+         "&& sed -i 's/\"CSDVersion\"=\"Service Pack 2\"/\"CSDVersion\"=\"Service Pack 1\"/g' \${WINEPREFIX}/system.reg " \
+         "&& sed -i 's/\"CurrentBuildNumber\"=\"3790\"/\"CurrentBuildNumber\"=\"7601\"/g' \${WINEPREFIX}/system.reg " \
+         "&& sed -i 's/\"CurrentVersion\"=\"5.2\"/\"CurrentVersion\"=\"6.1\"/g' \${WINEPREFIX}/system.reg " \
+         "&& sed -i 's/\"ProductName\"=\"Microsoft Windows XP\"/\"ProductName\"=\"Microsoft Windows 7\"/g' \${WINEPREFIX}/system.reg " \
+         "&& sed -i 's/\"CSDVersion\"=dword:00000200/\"CSDVersion\"=dword:00000100/g' \${WINEPREFIX}/system.reg" > /usr/local/bin/init-workflow
+
+RUN chmod 777 /usr/local/bin/init-workflow
+
+# initialize for root
+RUN init-workflow
+
 COPY entrypoint /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]

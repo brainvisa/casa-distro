@@ -58,6 +58,11 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'], verbose=
         image_info = json.loads(stdout)
         docker_img_config = image_info[0]['Config']
         env = dict(i.split('=', 1) for i in docker_img_config.get('Env',[]))
+        env_prepend = {}
+        for v in ('PATH', 'LD_LIBRARY_PATH'):
+            if v in env:
+                env_prepend[v] = env.pop(v)
+            
         entry_point = docker_img_config.get('Entrypoint')
         cmd = docker_img_config.get('Cmd')
         if entry_point:
@@ -87,13 +92,15 @@ From: %s
 
 %%environment
 %s
-    %s
+%s
 
 %%runscript
     %s''' % (docker_files,
              docker_image,
-        '\n'.join('    %s=%s' % (n, v) for n, v in six.iteritems(env)),
-        'export %s' % ' '.join(env),
+        '\n'.join('    if [ -z "${%s}" ]; then export %s=%s;fi' % (n, n, v) \
+                  for n, v in six.iteritems(env)),
+        '\n'.join('    export %s=%s:${%s}' % (n, v, n) \
+                  for n, v in six.iteritems(env_prepend)),
         ' '.join("'%s'" %i for i in runscript)),        
                     file=out)
                     out.close()

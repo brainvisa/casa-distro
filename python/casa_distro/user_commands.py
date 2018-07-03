@@ -184,7 +184,7 @@ def update_image(distro='*', branch='*', system='*',
 def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
           gui=False, interactive=True, tmp_container=True, container_image=None,
-          container_options=[], args_list=[], verbose=None):
+          container_options=[], args_list=['-norc'], verbose=None):
     '''Start a bash shell in Docker with the given repository configuration.'''
     build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                distro=distro, 

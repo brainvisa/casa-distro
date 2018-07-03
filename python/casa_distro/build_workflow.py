@@ -8,7 +8,7 @@ import glob
 import shutil
 import json
 
-from casa_distro import share_directory, linux_os_ids
+from casa_distro import log, share_directory, linux_os_ids
 from casa_distro.docker import run_docker, update_docker_image
 from casa_distro.singularity import (download_singularity_image,
                                      run_singularity,
@@ -239,6 +239,7 @@ def create_build_workflow_directory(build_workflow_directory,
     # the context of a distribution in Zip format, the share_directory
     # is modified after import.
     import casa_distro as casa_distro_module
+    verbose = log.getLogFile(verbose)
 
     distro_source_dir = osp.join(casa_distro_module.share_directory,
                                  'distro', distro_source)
@@ -281,12 +282,25 @@ def create_build_workflow_directory(build_workflow_directory,
     container_env = {'CASA_DISTRO': '%(distro_name)s',
                      'CASA_BRANCH': '%(casa_branch)s',
                      'CASA_SYSTEM': '%(system)s',
-                     'CASA_HOST_DIR': '%(build_workflow_dir)s',
-                     'HOME': '/casa/home'}
+                     'CASA_HOST_DIR': '%(build_workflow_dir)s'}
+
+    # Set default user home
+    if casa_distro.get('container_env', {}).get('HOME') is None:
+        container_env['HOME'] = '/casa/home'
     
+    init_cmd = casa_distro.get('init_workflow_cmd')
     if system.startswith('windows'):
         container_volumes['%(build_workflow_dir)s/sys'] = '/casa/sys'
-        container_env['WINEPREFIX'] = '/casa/sys/wine'
+        
+        if casa_distro.get('container_env', {}).get('WINEPREFIX') is None:
+            container_env['WINEPREFIX'] = '/casa/sys/wine'
+        
+        if init_cmd is None:
+            init_cmd = 'init-workflow'
+
+            # Define the default command that must be used during initialization
+            casa_distro['init_workflow_cmd'] = init_cmd
+
         
     casa_distro.update(dict(distro_source = distro_source,
                             distro_name = distro_name,
@@ -302,11 +316,17 @@ def create_build_workflow_directory(build_workflow_directory,
             raise ValueError('No container_image found in %s' % casa_distro_source_json)
     container_image = container_image % casa_distro
     casa_distro['container_image'] = container_image
-
+                
     if container_type == 'docker':
-        casa_distro['container_volumes'].update({
-            '$HOME/.ssh/id_rsa': '/root/.ssh/id_rsa',
-            '$HOME/.ssh/id_rsa.pub': '/root/.ssh/id_rsa.pub'})
+        # Set default ssh files to mount because docker does not support to 
+        # mount a directory not readable by root
+        casa_distro.setdefault('container_volumes').setdefault(
+            '$HOME/.ssh/id_rsa', '%s/.ssh/id_rsa' 
+            % container_env.get('HOME', ''))
+        casa_distro.setdefault('container_volumes').setdefault(
+            '$HOME/.ssh/id_rsa.pub', '%s/.ssh/id_rsa.pub' 
+            % container_env.get('HOME', ''))
+    
         container_options = ['--net=host']
         if not sys.platform.startswith('win'):
             container_options += ['--user={0}:{1}'.format(os.getuid(),os.getgid())]
@@ -328,6 +348,7 @@ def create_build_workflow_directory(build_workflow_directory,
         container_options = None
         container_gui_env = {'DISPLAY': '${DISPLAY}'}
         casa_distro['container_gui_env'] = container_gui_env
+        
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
     if container_options:
@@ -336,7 +357,8 @@ def create_build_workflow_directory(build_workflow_directory,
     if not container_image:
         container_image = casa_distro.get('container_image')
         if container_image is None:
-            raise ValueError('No container_image found in %s' % casa_distro_source_json)
+            raise ValueError('No container_image found in %s'
+                % casa_distro_source_json)
     container_image = container_image % casa_distro
     casa_distro['container_image'] = container_image
     
@@ -379,8 +401,12 @@ def create_build_workflow_directory(build_workflow_directory,
             container_image,
             verbose=verbose)
         
+    if init_cmd:
+        # Initialize container for current user
+        run_container(bwf_dir, [init_cmd], verbose=verbose)
 
-def run_container(bwf_directory, command, gui=False, interactive=False, tmp_container=True, container_image=None,
+def run_container(bwf_directory, command, gui=False, interactive=False,
+                  tmp_container=True, container_image=None,
                   container_options=[], verbose=False):
     '''Run any command in the container defined in the build workflow directory
     '''
