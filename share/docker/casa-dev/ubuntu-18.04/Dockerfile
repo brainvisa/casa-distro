@@ -147,6 +147,11 @@ RUN apt-get update && apt-get upgrade -y \
     libqt5sensors5-dev \
     libqt5webchannel5-dev \
     libdouble-conversion-dev \
+    libgraphite2-dev \
+    libharfbuzz-dev \
+    libhyphen-dev \
+    libwebp-dev \
+    libwoff-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

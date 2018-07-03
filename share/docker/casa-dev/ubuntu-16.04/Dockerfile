@@ -158,6 +158,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     bash-completion \
     qtpositioning5-dev \
     libqt5sensors5-dev \
+    libdouble-conversion-dev \
+    libgraphite2-dev \
+    libharfbuzz-dev \
+    libhyphen-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
