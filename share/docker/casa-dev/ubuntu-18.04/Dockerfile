@@ -146,6 +146,7 @@ RUN apt-get update && apt-get upgrade -y \
     qtpositioning5-dev \
     libqt5sensors5-dev \
     libqt5webchannel5-dev \
+    libdouble-conversion-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
