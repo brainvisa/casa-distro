@@ -152,5 +152,25 @@ ENV PATH=${PATH}:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
 # Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
 ENV BRAINVISA_BVMAKER_CFG=$CASA_CONF/bv_maker.cfg
 
+# Generate workflow initilialization script
+RUN echo "#!/usr/bin/env bash \n" \
+         "/usr/local/bin/init-wine " \
+         '&& CASA_DEPS_WIN="$(winepath -w ${CASA_DEPS})" ' \
+         '&& CASA_DEPS_WIN="${CASA_DEPS_WIN//\\/\\\\}" ' \
+         "&& wineserver -k -w " \
+         "&& /casa/brainvisa-cmake/bin/bv_wine_regedit " \
+         "--registry-action 'prepend' " \
+         '--value-path "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\\PATH" ' \
+         '--value "${CASA_DEPS_WIN}\\\\bin" ' \ 
+         "&& /casa/brainvisa-cmake/bin/bv_wine_regedit " \         
+         '--value-path "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\\PYTHONHOME" ' \
+         '--value "${CASA_DEPS_WIN}\\python" ' \
+         "&& /casa/brainvisa-cmake/bin/bv_wine_regedit " \
+         "--registry-action 'prepend' " \         
+         '--value-path "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\\QT_PLUGIN_PATH" ' \
+         '--value "${CASA_DEPS_WIN}\\qt\\plugins"' > /usr/local/bin/init-workflow
+
+RUN chmod 777 /usr/local/bin/init-workflow
+
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev

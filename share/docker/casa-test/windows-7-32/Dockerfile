@@ -78,12 +78,12 @@ RUN echo "#!/usr/bin/env bash \n" \
          "&& sed -i 's/\"CurrentBuildNumber\"=\"3790\"/\"CurrentBuildNumber\"=\"7601\"/g' \${WINEPREFIX}/system.reg " \
          "&& sed -i 's/\"CurrentVersion\"=\"5.2\"/\"CurrentVersion\"=\"6.1\"/g' \${WINEPREFIX}/system.reg " \
          "&& sed -i 's/\"ProductName\"=\"Microsoft Windows XP\"/\"ProductName\"=\"Microsoft Windows 7\"/g' \${WINEPREFIX}/system.reg " \
-         "&& sed -i 's/\"CSDVersion\"=dword:00000200/\"CSDVersion\"=dword:00000100/g' \${WINEPREFIX}/system.reg" > /usr/local/bin/init-workflow
+         "&& sed -i 's/\"CSDVersion\"=dword:00000200/\"CSDVersion\"=dword:00000100/g' \${WINEPREFIX}/system.reg" > /usr/local/bin/init-wine
 
-RUN chmod 777 /usr/local/bin/init-workflow
+RUN chmod 777 /usr/local/bin/init-wine
 
 # initialize for root
-RUN init-workflow
+RUN init-wine
 
 COPY entrypoint /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
