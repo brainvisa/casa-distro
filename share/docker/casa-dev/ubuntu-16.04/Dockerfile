@@ -156,6 +156,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libnifti-dev \
     x11proto-print-dev \
     bash-completion \
+    qtpositioning5-dev \
+    libqt5sensors5-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

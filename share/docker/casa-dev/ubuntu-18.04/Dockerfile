@@ -143,6 +143,9 @@ RUN apt-get update && apt-get upgrade -y \
     qt5-default \
     ghostscript \
     libqwt-qt5-dev \
+    qtpositioning5-dev \
+    libqt5sensors5-dev \
+    libqt5webchannel-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
