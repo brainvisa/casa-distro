@@ -205,6 +205,9 @@ RUN pip install sklearn
 RUN pip install -U pyparsing
 RUN pip install -U pydot
 
+# fix python command used in jupyter kernel
+RUN sed -e 's/  "python",/  "python3",/' < /usr/local/share/jupyter/kernels/python3/kernel.json > /tmp/kernel3.json && cp /tmp/kernel3.json /usr/local/share/jupyter/kernels/python3/kernel.json
+
 # install Pycluster
 RUN cd /tmp \
   && wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz \
