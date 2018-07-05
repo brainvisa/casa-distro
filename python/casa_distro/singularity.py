@@ -150,7 +150,12 @@ def update_singularity_image(build_workflows_repository, container_image, verbos
             local_hash = open(hash_path).read()
             tmp = tempfile.NamedTemporaryFile()
             url = '%s/%s' % (default_download_url, hash_file)
-            urlretrieve(url, tmp.name)
+            try:
+                urlretrieve(url, tmp.name)
+            except:
+                print('Unable to update singularity image from', 
+                      url, 'to', tmp.name)
+
             remote_hash = open(tmp.name).read()
             if remote_hash == local_hash:
                 if verbose:

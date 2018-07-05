@@ -90,39 +90,55 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     perl-devel \
     perl-CPAN \
  && yum clean all
+ 
+ENV CEA_MIRROR_URL=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/centos-7.4
 
 # install dcmtk
 COPY build_dcmtk.sh /tmp/build_dcmtk.sh
-RUN bash /tmp/build_dcmtk.sh && rm /tmp/build_dcmtk.sh
+RUN bash -c "DCMTK_MIRROR_URL=${CEA_MIRROR_URL}/sources /tmp/build_dcmtk.sh" \
+    && rm /tmp/build_dcmtk.sh
 
 # install minc
 COPY build_minc.sh /tmp/build_minc.sh
-RUN bash /tmp/build_minc.sh && rm /tmp/build_minc.sh
+RUN bash -c "MINC_MIRROR_URL=${CEA_MIRROR_URL}/sources /tmp/build_minc.sh" \
+    && rm /tmp/build_minc.sh
 
 # install blitz
 COPY build_blitz.sh /tmp/build_blitz.sh
-RUN bash /tmp/build_blitz.sh && rm /tmp/build_blitz.sh
+RUN bash -c "BLITZ_MIRROR_URL=${CEA_MIRROR_URL}/sources /tmp/build_blitz.sh" \
+    && rm /tmp/build_blitz.sh
 
 # install doxygen
 COPY build_doxygen.sh /tmp/build_doxygen.sh
-RUN bash /tmp/build_doxygen.sh && rm /tmp/build_doxygen.sh
+RUN bash -c "DOXYGEN_MIRROR_URL=${CEA_MIRROR_URL}/sources /tmp/build_doxygen.sh" \
+    && rm /tmp/build_doxygen.sh
  
 # install git
 COPY build_git.sh /tmp/build_git.sh
-RUN bash /tmp/build_git.sh && rm /tmp/build_git.sh
+RUN bash -c "GIT_MIRROR_URL=${CEA_MIRROR_URL}/sources /tmp/build_git.sh" \
+    && rm /tmp/build_git.sh
 
-# RUN easy_install pip
+#RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 
 # does not work any  longer...
 RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
 RUN pip --version
+
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+RUN pip install -U pkgconfig
+RUN pip install -U cython
+RUN pip install -U numpy
+RUN pip install -U setuptools
+RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
+
+# ipython / jupyter
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install -U "tornado>=4,<5"
 RUN pip install jupyter
 RUN pip install -U zmq
-RUN pip install -U numpy
 RUN pip install -U scipy
-RUN pip install -U docutils
+#RUN pip install -U docutils
 RUN pip install -U nbsphinx
 RUN pip install -U traits
 RUN pip install -U dicom
@@ -136,10 +152,17 @@ RUN pip install jupyter_client
 RUN pip install xmltodict
 RUN pip install "python_jenkins==0.4.16"
 RUN pip install nipype
+RUN pip install dipy
+RUN pip install -U nibabel
+RUN pip install sklearn
+RUN pip install -U pyparsing
+RUN pip install -U pydot
+
 
 # install Pycluster
+# http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz
 RUN cd /tmp \
-  && wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz \
+  && wget ${CEA_MIRROR_URL}/sources/Pycluster-1.52.tar.gz \
   && tar xfz Pycluster-1.52.tar.gz \
   && cd Pycluster-1.52 \
   && python setup.py build \
@@ -158,7 +181,9 @@ RUN cd /tmp \
   && rm /tmp/qt_installer-1.6.tar.gz
 
 # Install jxrlib + openslide
-RUN cd /tmp && wget https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip && mkdir jxrlib && cd jxrlib && unzip ../jxrlib.zip; cd sourceCode/jxrlib && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib jxrlib.zip
+#https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip
+RUN cd /tmp \
+    && wget ${CEA_MIRROR_URL}/sources/jxrlib-1.1.zip -O jxrlib.zip && mkdir jxrlib && cd jxrlib && unzip ../jxrlib.zip && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib jxrlib.zip
 RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)

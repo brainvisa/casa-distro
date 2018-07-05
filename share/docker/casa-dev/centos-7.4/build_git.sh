@@ -16,7 +16,7 @@ pushd ${__tmp_dir}
 # ------------------------------------------------------------------------------
 GIT_VERSION=2.7.4
 GIT_INSTALL_PREFIX=${__install_prefix}
-GIT_SOURCE_URL=https://mirrors.edge.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz
+GIT_SOURCE_URL=${GIT_MIRROR_URL:-https://mirrors.edge.kernel.org/pub/software/scm/git}/git-${GIT_VERSION}.tar.gz
 
 echo "=============================== GIT ================================"
 if [ "${__download}" == "1" ]; then

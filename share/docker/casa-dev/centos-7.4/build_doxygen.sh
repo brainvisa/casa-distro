@@ -16,7 +16,7 @@ pushd ${__tmp_dir}
 # ------------------------------------------------------------------------------
 DOXYGEN_VERSION=1.8.7
 DOXYGEN_INSTALL_PREFIX=${__install_prefix}
-DOXYGEN_SOURCE_URL=ftp://ftp.stack.nl/pub/users/dimitri/doxygen-${DOXYGEN_VERSION}.src.tar.gz
+DOXYGEN_SOURCE_URL=${DOXYGEN_MIRROR_URL:-ftp://ftp.stack.nl/pub/users/dimitri}/doxygen-${DOXYGEN_VERSION}.src.tar.gz
 
 echo "=============================== DOXYGEN ================================"
 if [ "${__download}" == "1" ]; then

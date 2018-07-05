@@ -16,7 +16,7 @@ pushd ${__tmp_dir}
 # ------------------------------------------------------------------------------
 MINC_VERSION=2.2.00
 MINC_INSTALL_PREFIX=${__install_prefix}
-MINC_SOURCE_URL=http://packages.bic.mni.mcgill.ca/tgz/minc-${MINC_VERSION}.tar.gz
+MINC_SOURCE_URL=${MINC_MIRROR_URL:-http://packages.bic.mni.mcgill.ca/tgz}/minc-${MINC_VERSION}.tar.gz
 
 echo "========================= MINC =============================="
 if [ "${__download}" == "1" ]; then

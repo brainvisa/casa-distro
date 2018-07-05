@@ -15,7 +15,7 @@ pushd ${__tmp_dir}
 # ------------------------------------------------------------------------------
 DCMTK_VERSION=3.6.0
 DCMTK_INSTALL_PREFIX=${__install_prefix}
-DCMTK_SOURCE_URL=ftp://dicom.offis.de/pub/dicom/offis/software/dcmtk/dcmtk${DCMTK_VERSION//./}/dcmtk-${DCMTK_VERSION}.tar.gz
+DCMTK_SOURCE_URL=${DCMTK_MIRROR_URL:-ftp://dicom.offis.de/pub/dicom/offis/software/dcmtk/dcmtk${DCMTK_VERSION//./}}/dcmtk-${DCMTK_VERSION}.tar.gz
 
 echo "=============================== DCMTK ================================"
 if [ "${__download}" == "1" ]; then
