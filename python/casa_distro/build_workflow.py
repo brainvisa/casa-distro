@@ -163,10 +163,13 @@ def check_svn_secret(bwf_dir, warn_type='NOTE'):
               'in order to access the BrainVisa repository.')
         print('Place it at the following location:\n')
         print(osp.join(bwf_dir, 'conf', 'svn.secret'))
-        print('\nThis file should contain the two following lines (replacing '
+        print('\nThis file is a shell script that must set the variables '
+              'SVN_USERNAME and SVN_PASSWORD. Do not forget to properly quote '
+              'the values if they contains special characters.')
+        print('For instance, the file could contain the two following lines (replacing '
               '"your_login" and "your_password" by appropriate values:\n')
-        print('SVN_USERNAME=your_login')
-        print('SVN_PASSWORD=your_password\n')
+        print("SVN_USERNAME='your_login'")
+        print("SVN_PASSWORD='your_password'\n")
         print('If you are only using open-source projects, you can use the '
               '"public" login/password: brainvisa / Soma2009\n')
         print('Remember also that you can edit and customize the projects to '

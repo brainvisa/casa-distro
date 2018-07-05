@@ -239,7 +239,7 @@ Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this 
 
     python casa-distro.zip -r /home/me/casa create distro_source=opensource branch=bug_fix system=ubuntu-12.04
 
-This command specifies to setup a build workflow for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a Docker system based on Ubuntu 12.04.
+This command specifies to setup a build workflow for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a container system based on Ubuntu 12.04.
 Directories and files will be created accordingly in the repository directory, here ``/home/me/casa`` (default without the ``-r`` option is ``$HOME/casa_distro``).
 
 * build everything

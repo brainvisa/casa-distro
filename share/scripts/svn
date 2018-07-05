@@ -1,3 +1,3 @@
 #!/bin/sh
 . "$CASA_CONF/svn.secret"
-exec /usr/bin/svn --non-interactive --username $SVN_USERNAME --password $SVN_PASSWORD "$@"
+exec /usr/bin/svn --non-interactive --username "$SVN_USERNAME" --password "$SVN_PASSWORD" "$@"
