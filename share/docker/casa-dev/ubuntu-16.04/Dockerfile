@@ -205,6 +205,9 @@ RUN pip install sklearn
 RUN pip install -U pyparsing
 RUN pip install -U pydot
 
+# fix python command used in jupyter kernel
+RUN ipython3 kernel install
+
 # install Pycluster
 RUN cd /tmp \
   && wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz \
