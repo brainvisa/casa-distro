@@ -126,6 +126,7 @@ RUN pip install dipy
 RUN pip install -U nibabel
 RUN pip install sklearn
 RUN pip install -U dicom
+RUN pip install subprocess32
 
 # install Pycluster
 RUN cd /tmp \
