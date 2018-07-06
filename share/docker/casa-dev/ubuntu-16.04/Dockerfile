@@ -207,7 +207,10 @@ RUN pip install -U pyparsing
 RUN pip install -U pydot
 
 # fix python command used in jupyter kernel
-RUN ipython3 kernel install
+# note: the "official" way is to run: ipython3 kernel install, but here
+# in docker it runs an interactive shell for an unknown reason.
+# So we go back to manual patching
+RUN sed -e 's/  "python",/  "python3",/' < /usr/local/share/jupyter/kernels/python3/kernel.json > /tmp/kernel3.json && cp /tmp/kernel3.json /usr/local/share/jupyter/kernels/python3/kernel.json
 
 # install Pycluster
 RUN cd /tmp \
