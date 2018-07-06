@@ -162,6 +162,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libgraphite2-dev \
     libharfbuzz-dev \
     libhyphen-dev \
+    python-subprocess32 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
