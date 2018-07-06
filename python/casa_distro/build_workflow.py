@@ -323,10 +323,10 @@ def create_build_workflow_directory(build_workflow_directory,
     if container_type == 'docker':
         # Set default ssh files to mount because docker does not support to 
         # mount a directory not readable by root
-        casa_distro.setdefault('container_volumes').setdefault(
+        casa_distro.setdefault('container_volumes', {}).setdefault(
             '$HOME/.ssh/id_rsa', '%s/.ssh/id_rsa' 
             % container_env.get('HOME', ''))
-        casa_distro.setdefault('container_volumes').setdefault(
+        casa_distro.setdefault('container_volumes', {}).setdefault(
             '$HOME/.ssh/id_rsa.pub', '%s/.ssh/id_rsa.pub' 
             % container_env.get('HOME', ''))
     
@@ -348,7 +348,7 @@ def create_build_workflow_directory(build_workflow_directory,
                                  '-e', 'LD_LIBRARY_PATH=/usr/lib/nvidia-drv' ]
         casa_distro['container_gui_options'] = gui_options
     elif container_type == 'singularity':
-        container_options = None
+        container_options = ['--pwd', '/casa/home']
         container_gui_env = {'DISPLAY': '${DISPLAY}'}
         casa_distro['container_gui_env'] = container_gui_env
         
@@ -373,7 +373,7 @@ def create_build_workflow_directory(build_workflow_directory,
     
     os_dir = osp.join(distro_source_dir, system)
     all_subdirs = ('conf', 'src', 'build', 'install', 'tests', 'pack',
-                   'custom', 'custom/src', 'custom/build', 'home')
+                   'custom', 'custom/src', 'custom/build', 'home', 'home/tmp')
     
     if system.startswith('windows'):
         all_subdirs += ('sys',)

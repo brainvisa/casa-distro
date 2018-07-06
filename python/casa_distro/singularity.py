@@ -58,19 +58,19 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'], verbose=
         image_info = json.loads(stdout)
         docker_img_config = image_info[0]['Config']
         env = dict(i.split('=', 1) for i in docker_img_config.get('Env',[]))
-        env_prepend = {}
-        for v in ('PATH', 'LD_LIBRARY_PATH'):
-            if v in env:
-                env_prepend[v] = env.pop(v)
+        env_path = {}
+        for v in env.keys():
+            if v.endswith('PATH'):
+                env_path[v] = env.pop(v)
             
         entry_point = docker_img_config.get('Entrypoint')
         cmd = docker_img_config.get('Cmd')
         if entry_point:
-            runscript = entry_point
+            runscript = [[e] for e in entry_point]
             if cmd:
-                runscript += cmd
+                runscript += [cmd]
         elif cmd:
-            runscript = cmd
+            runscript = [cmd]
         tmp = tempfile.mkdtemp()
         try:
             container = subprocess.check_output(['docker', 'create', docker_image]).strip()
@@ -93,15 +93,25 @@ From: %s
 %%environment
 %s
 %s
+%s
+%s
 
 %%runscript
-    %s''' % (docker_files,
+%s''' % (docker_files,
              docker_image,
-        '\n'.join('    if [ -z "${%s}" ]; then export %s=%s;fi' % (n, n, v) \
-                  for n, v in six.iteritems(env)),
-        '\n'.join('    export %s=%s:${%s}' % (n, v, n) \
-                  for n, v in six.iteritems(env_prepend)),
-        ' '.join("'%s'" %i for i in runscript)),        
+        '\n'.join('    if [ -z "${%(var)s}" ];then export %(var)s=%(val)s;fi' \
+                  % {'var': n, 'val': v} for n, v in six.iteritems(env)),
+        '\n'.join('    if [ -z "${%(var)s_INIT}" ];'\
+                  'then export %(var)s=%(val)s;' \
+                  'else export %(var)s="${%(var)s_INIT}";fi' \
+                  % {'var': n, 'val': v} for n, v in six.iteritems(env_path)),
+        '\n'.join('    if [ -n "${%(var)s_PREPEND}" ];'\
+                  'then export %(var)s="${%(var)s_PREPEND}:${%(var)s}";fi' \
+                  % {'var': n} for n in env_path.keys()),
+        '\n'.join('    if [ -n "${%(var)s_APPEND}" ];'\
+                  'then export %(var)s="${%(var)s}:${%(var)s_APPEND}";fi' \
+                  % {'var': n} for n in env_path.keys()),
+        '\n'.join('. ' + ' '.join(["'%s'" % i for i in r]) for r in runscript)),        
                     file=out)
                     out.close()
                     subprocess.check_call(['sudo', 'singularity', 'build', singularity_image, recipe])
@@ -174,7 +184,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
-    singularity = ['singularity', 'exec', '--cleanenv']
+    singularity = ['singularity', 'run', '--cleanenv']
     if gui:
         gui_options = casa_distro.get('container_gui_options')
         if gui_options:
