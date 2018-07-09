@@ -179,6 +179,7 @@ RUN pip3 install cython
 RUN pip3 install dipy
 RUN pip3 install -U nibabel
 RUN pip3 install sklearn
+RUN pip3 install -U 'ipython>=5.0,<6.0'
 
 RUN easy_install pip
 
