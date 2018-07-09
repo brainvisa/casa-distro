@@ -32,6 +32,8 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     turbojpeg-devel \
     libpng-devel \
     libmng-devel \
+    libwebp-devel \
+    agg-devel \
     hdf5-devel \
     netcdf-devel \
     libsvm-devel \
