@@ -181,7 +181,10 @@ RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 RUN pip3 install -U 'ipython>=5.0,<6.0'
 
-RUN easy_install pip
+# WARNING: easy_install gets installed in /usr/local/bin/easy_install
+# for python 3! Same for pip, we have to force installing pip for python2
+# using the system easy_install (python2)
+RUN /usr/bin/easy_install pip
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
