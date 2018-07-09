@@ -3,7 +3,7 @@
 FROM cati/casa-test:ubuntu-16.04 
 
 # Install system dependencies
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+RUN apt-get update --fix-missing && apt-get upgrade -y && apt-get install -y \
     build-essential \
     cmake \
     cmake-curses-gui \

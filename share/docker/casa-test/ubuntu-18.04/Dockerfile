@@ -3,7 +3,7 @@
 FROM ubuntu:18.04
 
 # Install system dependencies
-RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recommends -y \
+RUN apt-get update --fix-missing && apt-get upgrade -y && apt-get install --no-install-recommends -y \
     xvfb \
     libx11-xcb1 \
     libfontconfig1 \
