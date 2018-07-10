@@ -340,8 +340,8 @@ __sys_packages=(apt-utils autoconf automake autopoint bash bison bzip2 cmake
                 libssl-dev libxml-parser-perl libxml2-utils libxslt-dev make 
                 openssl patch perl pkg-config python python-dev python-mako 
                 python-dateutil python-setuptools python-sphinx 
-                python-virtualenv ruby scons sed subversion unzip wget xvfb xdot
-                xz-utils yasm dos2unix texinfo)
+                python-virtualenv ruby scons sed subversion unzip wget xvfb 
+                xdot xz-utils yasm dos2unix texinfo)
 
 __build_packages=(wine mingw64 python)
 
@@ -359,8 +359,9 @@ __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six
                      python_paramiko python_pyro python_pil python_dicom
                      python_yaml python_xmltodict python_markupsafe 
                      python_jinja2 python_pygments python_docutils 
-                     python_sphinx python_pandas python_cython python_pyzmq 
-                     python_h5py python_dipy python_sklearn python_nibabel)
+                     python_pockets python_sphinx python_sphinx_napoleon
+                     python_pandas python_cython python_pyzmq python_h5py
+                     python_dipy python_sklearn python_nibabel)
 
 if [ -z "${CROSSBUILD_INSTALL_PREFIX}" ]; then
     CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
@@ -7729,6 +7730,63 @@ if [ "${PYTHON_SPHINX}" == "1" ]; then
         for __script in sphinx-apidoc.exe sphinx-autogen.exe sphinx-build.exe sphinx-quickstart.exe; do
             fix_python_script ${PYTHON_INSTALL_PREFIX}/Scripts/${__script}
         done
+    fi
+fi
+
+
+# ------------------------------------------------------------------------------
+# pockets
+# ------------------------------------------------------------------------------
+PYTHON_POCKETS_VERSION=0.6.2
+PYTHON_POCKETS_SOURCE_URL=https://files.pythonhosted.org/packages/3a/21/8074b659c374036660612106f95c4e61a4ea0d016154c5f303dc825d861c/pockets-${PYTHON_POCKETS_VERSION}-py2.py3-none-any.whl
+
+if [ "${PYTHON_POCKETS}" == "1" ]; then
+    echo "============================== PYTHON_POCKETS =============================="
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_POCKETS_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y pockets
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/pockets-${PYTHON_POCKETS_VERSION}-py2.py3-none-any.whl)" \
+        || exit 1
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# sphinx napoleon
+# ------------------------------------------------------------------------------
+PYTHON_SPHINX_NAPOLEON_VERSION=0.6.1
+PYTHON_SPHINX_NAPOLEON_SOURCE_URL=https://pypi.python.org/packages/ff/91/edcbcd8126333cf69493fc2a0f1663ffef26d267024125ffd7bd50137bdb/sphinxcontrib_napoleon-${PYTHON_SPHINX_NAPOLEON_VERSION}-py2.py3-none-any.whl
+
+if [ "${PYTHON_SPHINX_NAPOLEON}" == "1" ]; then
+    echo "============================== PYTHON_SPHINX_NAPOLEON =============================="
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_SPHINX_NAPOLEON_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y sphinxcontrib_napoleon
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/sphinxcontrib_napoleon-${PYTHON_SPHINX_NAPOLEON_VERSION}-py2.py3-none-any.whl)" \
+        || exit 1
     fi
 fi
 
