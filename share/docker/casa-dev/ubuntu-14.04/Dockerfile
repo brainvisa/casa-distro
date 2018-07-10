@@ -1,99 +1,102 @@
-# Dockerfile for image cati/brainvisa-devbase:ubuntu-12.04
+# Dockerfile for image cati/brainvisa-devbase:ubuntu-14.04
 
 FROM cati/casa-test:ubuntu-14.04
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    cmake-curses-gui \
-    subversion \
-    git \
-    qt4-dev-tools \
-    qt4-designer \
-    qt4-qmake \
-    qt4-qmlviewer \
-    qt4-qtconfig \
-    qt4-linguist-tools \
-    python-sip-dev \
-    python-qt4-dev \
-    libsigc++-2.0-dev \
-    zlib1g-dev \
-    sqlite3 \
-    libsqlite3-dev \
-    libnetcdf-dev \
-    libreadline-dev \
-    libboost-dev \
-    libblitz0-dev \
-    libtiff-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libmng-dev \
-    graphviz \
-    graphviz-dev \
-    libminc-dev \
-    libdcmtk2-dev \
-    libqwt5-qt4-dev \
-    pyro \
-    python-paramiko \
-    libxml2-dev \
-    gfortran \
-    libsvm-dev \
-    python-sphinx \
-    python-matplotlib \
-    python-qt4-gl \
-    openjdk-7-jdk \
-    libltdl7-dev \
-    libncurses5-dev \
-    vim \
-    nano \
-    wget \
-    libgtk2.0 \
-    libgtk2.0-dev \
-    libopenjpeg2 \
-    libopenjpeg-dev \
-    libgdk-pixbuf2.0-common \
-    libgdk-pixbuf2.0-0 \
-    libgdk-pixbuf2.0-dev \
-    automake \
-    texlive-fonts-recommended \
-    python-dicom \
-    python-traits \
-    lftp \
-    apt-utils \
-    libffi-dev \
-    libmpich-dev \
-    libgstreamer0.10-dev \
-    libgstreamer-plugins-base0.10-dev \
-    libgstreamer-plugins-base1.0-dev \
-    liborc-dev \
-    libxslt-dev \
-    libicu-dev \
-    gdb \
-    mesa-utils \
-    x11proto-gl-dev \
-    python-setuptools \
-    kdesdk-scripts \
-    net-tools \
-    liblapack-dev \
-    libatlas-dev \
-    libbz2-dev \
-    libzmq-dev \
-    libgsl0-dev \
-    libjasper-dev \
-    locate \
-    libaudio-dev \
-    python-yaml \
-    pandoc \
-    zip \
-    unzip \
-    libssl-dev \
-    flex \
-    bison \
-    bash-completion \
-#     libvtk5-dev \ # later ?
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+# WARNING: it is necessary to call apt-get install for each packages to 
+# avoid the 101th package issue
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake-curses-gui \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y subversion \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-dev-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-designer \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-qmake \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-qmlviewer \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-qtconfig \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-linguist-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sip-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libsigc++-2.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y zlib1g-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y sqlite3 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libsqlite3-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libnetcdf-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libreadline-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libboost-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libblitz0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libtiff-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libjpeg-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libpng-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libmng-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y graphviz \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y graphviz-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libminc-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libdcmtk2-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqwt5-qt4-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pyro \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-paramiko \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gfortran \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libsvm-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-7-jdk \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libltdl7-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libncurses5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y vim \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y nano \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y wget \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgtk2.0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgtk2.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libopenjpeg2 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libopenjpeg-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgdk-pixbuf2.0-common \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgdk-pixbuf2.0-0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgdk-pixbuf2.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y automake \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y texlive-fonts-recommended \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dicom \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-traits \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y lftp \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libffi-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libmpich-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgstreamer0.10-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgstreamer-plugins-base0.10-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgstreamer-plugins-base1.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y liborc-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxslt-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libicu-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gdb \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y mesa-utils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y x11proto-gl-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-setuptools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kdesdk-scripts \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y net-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y liblapack-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libatlas-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libbz2-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libzmq-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgsl0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libjasper-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y locate \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libaudio-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-yaml \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pandoc \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y zip \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y unzip \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y flex \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y bison \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y bash-completion \
+# && DEBIAN_FRONTEND=noninteractive apt-get install -y  libvtk5-dev \ # later ?
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 

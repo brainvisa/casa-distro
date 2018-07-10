@@ -1,19 +1,21 @@
-# Dockerfile for image cati/brainvisa-test:ubuntu-12.04
+# Dockerfile for image cati/brainvisa-test:ubuntu-14.04
 
 FROM ubuntu:14.04
 
 # Install system dependencies
-RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recommends -y \
-    xvfb \
-    libx11-xcb1 \
-    libfontconfig1 \
-    sudo \
-    libxrender1 \
-    libglib2.0-0 \
-    libxi6 \
-    wget \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+# WARNING: it is necessary to call apt-get install for each packages to 
+# avoid the 101th package issue
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libx11-xcb1 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libfontconfig1 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y sudo \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libxrender1 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libglib2.0-0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libxi6 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 # delete all the apt list files since they're big and get stale quickly
 
 # copy a software-only mesa libGL in /usr/local/lib
