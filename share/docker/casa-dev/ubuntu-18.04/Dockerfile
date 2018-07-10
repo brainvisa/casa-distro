@@ -283,7 +283,7 @@ RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brain
     make install && cd .. && rm -r /tmp/brainvisa-cmake
 
 # Set casa environement variables initialization
-RUN echo -e \
+RUN echo \
 'export PATH=${PATH}:/casa/brainvisa-cmake/bin\n'\
 'if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then\n'\
 '    . ${CASA_BUILD}/bin/bv_env.sh ${CASA_BUILD}\n'\
