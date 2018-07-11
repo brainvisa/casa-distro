@@ -15,6 +15,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libxrender1 \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libglib2.0-0 \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libxi6 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libxcomposite1 \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
