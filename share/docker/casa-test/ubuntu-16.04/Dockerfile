@@ -12,6 +12,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recomme
     libxrender1 \
     libglib2.0-0 \
     libxi6 \
+    libxcomposite1 \
     wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
