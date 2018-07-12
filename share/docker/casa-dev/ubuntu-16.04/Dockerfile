@@ -193,6 +193,7 @@ RUN pip3 install dipy
 RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 RUN pip3 install -U 'ipython>=5.0,<6.0'
+RUN pip3 install -U pandas
 
 # WARNING: easy_install gets installed in /usr/local/bin/easy_install
 # for python 3! Same for pip, we have to force installing pip for python2
@@ -222,6 +223,7 @@ RUN pip install -U nibabel
 RUN pip install sklearn
 RUN pip install -U pyparsing
 RUN pip install -U pydot
+RUN pip install -U pandas
 
 # fix python command used in jupyter kernel
 # note: the "official" way is to run: ipython3 kernel install, but here
