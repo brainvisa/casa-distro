@@ -325,6 +325,7 @@ do
         if [ "$image_arg" == 1 ]; then
             image_name="$1"
             image_arg=0
+            script_arg=1
         else
 
             if [ "$script_arg" == 0 ] && [ "$image_arg" == 0 ]; then
