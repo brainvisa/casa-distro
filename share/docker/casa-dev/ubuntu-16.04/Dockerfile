@@ -163,6 +163,19 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libharfbuzz-dev \
     libhyphen-dev \
     python-subprocess32 \
+    libxkbcommon-x11-dev \
+    libxcb-icccm4-dev \
+    libxcb-image0-dev \
+    libxcb-keysyms1-dev \
+    libxcb-randr0 \
+    libxcb-render-util0 \
+    libxcb-render0-dev \
+    libxcb-shape0-dev \
+    libxcb-shm0-dev \
+    libxcb-sync-dev \
+    libxcb-util-dev \
+    libxcb-xfixes0-dev \
+    libxcb-xkb-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
