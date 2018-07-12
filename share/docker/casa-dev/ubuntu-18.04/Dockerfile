@@ -154,6 +154,16 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libhyphen-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libwebp-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libwoff-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-keysyms1-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-randr0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-render-util0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-render0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-shape0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-shm0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-sync-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-util-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-xfixes0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-xkb-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
   
