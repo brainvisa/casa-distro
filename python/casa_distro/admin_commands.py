@@ -233,6 +233,7 @@ def publish_singularity(image_names = 'cati/*',
                         login=default_repository_login, verbose=None):
     '''Publish singularity images to the sftp server'''
     from subprocess import check_call
+    verbose = log.getLogFile(verbose)
     
     image_name_filters = [i.replace('/', '_').replace(':', '_') for i in image_names.split(',')]
     image_files = []
