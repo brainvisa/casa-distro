@@ -1,4 +1,4 @@
-# Dockerfile for image cati/brainvisa-devbase:ubuntu-14.04
+# Dockerfile for image cati/casa-dev:ubuntu-14.04
 
 FROM cati/casa-test:ubuntu-14.04
 

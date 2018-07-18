@@ -1,4 +1,4 @@
-# Dockerfile for image cati/brainvisa-dev:windows-7-64
+# Dockerfile for image cati/casa-dev:windows-7-64
 
 FROM cati/casa-test:windows-7-64
 

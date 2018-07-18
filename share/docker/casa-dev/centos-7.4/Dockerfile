@@ -1,4 +1,4 @@
-# Dockerfile for image cati/brainvisa-devbase:centos-7.4
+# Dockerfile for image cati/casa-dev:centos-7.4
 
 FROM cati/casa-test:centos-7.4 
 
@@ -64,7 +64,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     python-setuptools \
     lftp \
     libffi-devel \
-    libmpich-3.0-devel \
+    mpich-3.0-devel \
     gstreamer-devel \
     orc-devel \
     libxslt-devel \
@@ -91,8 +91,15 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     bash-completion \
     perl-devel \
     perl-CPAN \
+    mpi4py-mpich \
  && yum clean all
- 
+
+# create missing pth file to be able to use installed mpi4py
+# this can be discussed because I guess it could break the 
+# command: load module mpi-openmpi
+# but it is easier for python packaging
+RUN echo "mpich" > /usr/lib64/python2.7/site-packages/mpi4py.pth
+
 ENV CEA_MIRROR_URL=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/centos-7.4
 
 # install dcmtk
