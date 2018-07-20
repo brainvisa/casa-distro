@@ -299,7 +299,11 @@ RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brain
 RUN echo \
 'export PATH=${PATH}:/casa/brainvisa-cmake/bin\n'\
 'if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then\n'\
-'    . ${CASA_BUILD}/bin/bv_env.sh ${CASA_BUILD}\n'\
+'    OLD_CWD=$(pwd)\n'\
+'    cd ${CASA_BUILD}/bin\n'\
+'    PATH=.:"$PATH"\n'\
+'    . ./bv_env.sh\n'\
+'    unset OLD_CWD\n'\
 'fi' > /usr/local/bin/init-casa-env
 
 RUN sed -i 's%"$@"%. /usr/local/bin/init-casa-env\n"$@"%g' /usr/local/bin/entrypoint
