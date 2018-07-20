@@ -152,8 +152,21 @@ def list_command(distro='*', branch='*', system='*',
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
                                                 distro=distro, branch=branch,
                                                 system=system):
-        print('directory:', bwf_dir)
-        print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
+        conf_file = osp.join(bwf_dir, 'conf', 'casa_distro.json')
+        wf_conf = json.load(open(conf_file))
+        print('distro=%s branch=%s system=%s'
+              % (wf_conf['distro_name'], wf_conf['casa_branch'],
+                 wf_conf['system']))
+        print('  directory:', bwf_dir)
+        verbose_b = False
+        if verbose in ('True', 'true', '1'):
+            verbose_b = True
+        elif verbose in ('False', 'false', '0'):
+            verbose_b = False
+        elif verbose is not None:
+            verbose_b = bool(int(verbose))
+        if verbose_b:
+            print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
 
 @command
 def update_image(distro='*', branch='*', system='*', 
