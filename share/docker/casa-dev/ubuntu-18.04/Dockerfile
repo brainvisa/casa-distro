@@ -164,6 +164,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-util-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-xfixes0-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-xkb-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dbg \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
   

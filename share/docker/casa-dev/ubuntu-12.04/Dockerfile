@@ -92,6 +92,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y zip \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y unzip \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y bash-completion \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dbg \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

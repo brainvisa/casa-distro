@@ -94,6 +94,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y flex \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y bison \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y bash-completion \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dbg \
 # && DEBIAN_FRONTEND=noninteractive apt-get install -y  libvtk5-dev \ # later ?
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
