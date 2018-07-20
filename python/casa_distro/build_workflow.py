@@ -129,14 +129,14 @@ def cp(src, dst, not_override=[], verbose=None):
             if n in names:
               i = names.index(n)
               d = os.path.join(cur_dst, dst_names[i])
-              if os.path.exists(d):
+              if os.path.exists(d) or os.path.islink(d):
                 excluded.append(n)
                 if verbose:
                     print('file', d, 'exists,', 'skipping override.', 
                           file=verbose)
-        
+
         return excluded
-    
+
     copytree(src, dst, ignore=override_exclusion)
 
 
