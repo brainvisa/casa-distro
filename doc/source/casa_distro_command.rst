@@ -5,6 +5,42 @@ Using the casa_distro command
 Subcommands
 ===========
 
+help
+----
+
+.. highlight:: bash
+
+::
+
+    casa-distro help
+
+::
+
+    casa_distro help <command>
+
+list
+----
+
+create
+------
+
+run
+---
+
+.. _shell:
+
+shell
+-----
+
+bv_maker
+--------
+
+update_image
+------------
+
+specify :ref:`a workflow <workflow_options>`
+
+
 The complexity of arguments parsing
 ===================================
 
@@ -64,4 +100,96 @@ Here,
 * ``-r``, ``~/casa_distro``, ``run``, ``branch=bug_fix``, and ``X=1`` are options to ``casa_distro``
 * ``-d``, ``-v``, and ``/home/albert/my_data:/docker_data`` are options to ``run_docker.sh`` (and ``-v``, and ``/home/albert/my_data:/docker_data`` are actually options passed to ``docker``)
 * ``anatomist`` and ``/docker_data/image.nii`` are passed inside docker as the command to be run.
+
+
+Options common to several commands
+==================================
+
+.. _workflow_options:
+
+Workflow specification
+----------------------
+
+::
+
+    distro=brainvisa
+    branch=bug_fix
+    system=ubuntu-16.04
+
+.. _conf_option:
+
+Alternative configurations
+--------------------------
+
+in `run`_ and `shell`_ commands
+
+::
+
+    conf=test
+
+
+Environment variables
+=====================
+
+Rather than systematically passing options, some environment variables may be used to specify some parameters to `̀ casa_distro``:
+
+::
+
+    # replaces the -r option
+    CASA_DEFAULT_REPOSITORY=/home/someone/casa_distro
+
+
+Workflow configuration file
+===========================
+
+The ``casa_distro.json`` file found in each workflow subdirectory (in the ``conf`` subdirectory, actually)
+
+Alternative configurations
+--------------------------
+
+Alternative configurations are used with the :ref:`conf option <conf_option>` in `run`_ and `shell`_ commands. They allow to change or add some configuration variables during a specific run. A typical use is to run test cases for installed packages in a different, minimal, container to check for missing libraries or files in a package.
+
+They are specified as entries in an ``alt_configs`` sub-directory in the json configuration file. Otherwise they have the same structure as the main dictionary.
+
+.. code-block:: json
+
+    {
+        "container_env": {
+            "CASA_HOST_DIR": "%(build_workflow_dir)s",
+            "HOME": "/casa/home",
+            "CASA_BRANCH": "%(casa_branch)s",
+            "CASA_DISTRO": "%(distro_name)s",
+            "CASA_SYSTEM": "%(system)s"
+        },
+        "system": "ubuntu-16.04",
+        "distro_source": "opensource",
+        "container_gui_env": {
+            "DISPLAY": "${DISPLAY}"
+        },
+        "container_volumes": {
+            "%(build_workflow_dir)s/src": "/casa/src",
+            "%(build_workflow_dir)s/pack": "/casa/pack",
+            "%(build_workflow_dir)s/tests": "/casa/tests",
+            "%(build_workflow_dir)s/custom/src": "/casa/custom/src",
+            "%(build_workflow_dir)s/build": "/casa/build",
+            "%(build_workflow_dir)s/conf": "/casa/conf",
+            "%(build_workflow_dir)s/home": "/casa/home",
+            "%(build_workflow_dir)s/install": "/casa/install",
+            "%(build_workflow_dir)s/custom/build": "/casa/custom/build"
+        },
+        "container_options": [
+            "--pwd",
+            "/casa/home"
+        ],
+        "casa_branch": "bug_fix",
+        "container_type": "singularity",
+        "distro_name": "brainvisa",
+        "container_image": "cati/casa-dev:ubuntu-16.04",
+        "alt_configs": {
+            "test": {
+                "container_image": "cati/casa-test:ubuntu-18.04"
+            }
+        }
+    }
+
 

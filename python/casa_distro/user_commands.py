@@ -20,7 +20,18 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_branch)
 from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         create_build_workflow_directory,
-                                        update_container_image)
+                                        update_container_image, merge_config)
+
+
+def verbose_bool(verbose):
+    verbose_b = False
+    if verbose in ('True', 'true', '1'):
+        verbose_b = True
+    elif verbose in ('False', 'false', '0'):
+        verbose_b = False
+    elif verbose is not None:
+        verbose_b = bool(int(verbose))
+    return verbose_b
 
 
 def display_summary(status):
@@ -158,14 +169,7 @@ def list_command(distro='*', branch='*', system='*',
               % (wf_conf['distro_name'], wf_conf['casa_branch'],
                  wf_conf['system']))
         print('  directory:', bwf_dir)
-        verbose_b = False
-        if verbose in ('True', 'true', '1'):
-            verbose_b = True
-        elif verbose in ('False', 'false', '0'):
-            verbose_b = False
-        elif verbose is not None:
-            verbose_b = bool(int(verbose))
-        if verbose_b:
+        if verbose_bool(verbose):
             print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
 
 @command
@@ -180,9 +184,16 @@ def update_image(distro='*', branch='*', system='*',
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
                                                 distro=distro, branch=branch,
                                                 system=system):
-        casa_distro = json.load(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')))
-        images_to_update.setdefault(casa_distro['container_type'], set()).add(
-            casa_distro['container_image'])
+        casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
+                                              'casa_distro.json')))
+        confs = set(['dev'])
+        confs.update(casa_distro.get('alt_configs', {}).keys())
+        for conf in confs:
+            wfconf = merge_config(casa_distro, conf)
+            images_to_update.setdefault(wfconf['container_type'], set()).add(
+                wfconf['container_image'])
+        if verbose_bool(verbose):
+            print('images_to_update:', images_to_update)
     if not images_to_update:
         print('No build workflow match selection criteria', file=sys.stderr)
         return 1
@@ -197,7 +208,8 @@ def update_image(distro='*', branch='*', system='*',
 def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
           gui=False, interactive=True, tmp_container=True, container_image=None,
-          container_options=[], args_list=['-norc'], verbose=None):
+          container_options=[], args_list=['-norc'], verbose=None,
+          conf='dev'):
     '''Start a bash shell in Docker with the given repository configuration.'''
     build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                distro=distro, 
@@ -230,7 +242,8 @@ def shell(distro='*', branch='*', system='*',
     run_container(bwf_directory, command=command, gui=gui, 
                   interactive=interactive, tmp_container=tmp_container,
                   container_image=container_image,
-                  container_options=container_options, verbose=verbose)
+                  container_options=container_options, verbose=verbose,
+                  conf=conf)
 
 
 @command
@@ -238,11 +251,14 @@ def run(distro=None, branch=None, system=None,
         build_workflows_repository=default_build_workflow_repository,
         gui=False, interactive=False, tmp_container=True,
         container_image=None,container_options=[], args_list=[],
-        verbose=None):
+        verbose=None, conf='dev'):
     '''
     Start any command in Docker with the given repository configuration.
     example:
         casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+
+    The "conf" parameter may address an additional config dictionary within the
+    casa_distro.json config file. Typicall, a test config may use a different system image (casa-test images).
     '''
     default_distro = default_branch = default_system = False
     if distro is None:
@@ -298,7 +314,8 @@ def run(distro=None, branch=None, system=None,
             run_container(bwf_directory, command=command, gui=gui, 
                         interactive=interactive, tmp_container=tmp_container,
                         container_image=container_image,
-                        container_options=container_options, verbose=verbose)
+                        container_options=container_options, verbose=verbose,
+                        conf=conf)
             es.stop_time = time.localtime()
             es.error_code = 0
             es.status = 'succeeded'

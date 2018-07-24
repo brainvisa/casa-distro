@@ -7,6 +7,7 @@ import os.path as osp
 import glob
 import shutil
 import json
+import copy
 
 from casa_distro import log, share_directory, linux_os_ids
 from casa_distro.docker import run_docker, update_docker_image
@@ -408,13 +409,37 @@ def create_build_workflow_directory(build_workflow_directory,
         # Initialize container for current user
         run_container(bwf_dir, [init_cmd], verbose=verbose)
 
+def merge_config(casa_distro, conf):
+    ''' Merge casa_distro dictionary config with an alternative config
+        sub-directory found as key ``conf``
+    '''
+    def merge_dict(d, od):
+        for key, v in od.items():
+            if key not in d:
+                d[key] = v
+            else:
+                oldv = d[key]
+                if isinstance(oldv, dict):
+                    merge_dict(oldv, v)
+                elif isinstance(oldv, list):
+                    oldv += v
+                else:
+                    d[key] = v
+
+    if conf not in ('dev', '', None, 'default'):
+        # an alternative conf has been specified: merge sub-dictionary
+        casa_distro = copy.deepcopy(casa_distro)
+        merge_dict(casa_distro, casa_distro.get('alt_configs', {})[conf])
+    return casa_distro
+
 def run_container(bwf_directory, command, gui=False, interactive=False,
                   tmp_container=True, container_image=None,
-                  container_options=[], verbose=False):
+                  container_options=[], verbose=False, conf='dev'):
     '''Run any command in the container defined in the build workflow directory
     '''
     casa_distro_json = osp.join(bwf_directory, 'conf', 'casa_distro.json')
     casa_distro = json.load(open(casa_distro_json))
+    casa_distro = merge_config(casa_distro, conf)
     casa_distro['build_workflow_dir'] = bwf_directory
     container_type = casa_distro.get('container_type')
     if container_type:
