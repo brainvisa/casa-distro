@@ -99,6 +99,7 @@ def create(distro_source=default_distro,
            distro_name=None,
            container_type = None,
            container_image = None,
+           container_test_image = None,
            branch=default_branch,
            system=linux_os_ids[0],
            not_override='bv_maker.cfg,svn.secret',
@@ -126,6 +127,9 @@ def create(distro_source=default_distro,
     container_image: image to use for the compilation container. If no
         value is given, uses the one defined in the distro.
     
+    container_test_image: image to use for the package tests container. If no
+        value is given, uses the one defined in the distro.
+
     branch:
         bv_maker branch to use (latest_release, bug_fix or trunk)
     
@@ -144,6 +148,7 @@ def create(distro_source=default_distro,
                                     distro_name=distro_name,
                                     container_type=container_type,
                                     container_image=container_image,
+                                    container_test_image=container_test_image,
                                     casa_branch=branch,
                                     system=system,
                                     not_override=not_override_lst,

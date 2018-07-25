@@ -39,7 +39,8 @@ def image_name_match(image_name, filters):
         if fnmatch.fnmatch(image_name, f):
             return True
 
-def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'], verbose=None):
+def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'],
+                              verbose=None):
     '''
     Creates singularity images by converting to docker images.
     Return the number of images processed.
@@ -149,7 +150,8 @@ def download_singularity_image(build_workflows_repository, container_image):
     return True
 
 
-def update_singularity_image(build_workflows_repository, container_image, verbose=False):
+def update_singularity_image(build_workflows_repository, container_image,
+                             verbose=False):
     verbose = log.getLogFile(verbose)
     image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
     image_path = osp.join(build_workflows_repository, image_file)
