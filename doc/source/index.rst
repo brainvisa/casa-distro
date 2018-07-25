@@ -23,7 +23,7 @@ What is Casa-Distro ?
 
 It's a development environment which helps to provide developers with a working development environment for BrainVISA and CATI tools.
 
-It provides `Singularity <http://singularity.lbl.gov/>`_ and `Docker <https://www.docker.com>`_ images compatible with BrainVISA distributions with all needed setup to build custom toolboxes, package them, and test them, in the same environment.
+It provides `Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ images compatible with BrainVISA distributions with all needed setup to build custom toolboxes, package them, and test them, in the same environment.
 
 Casa-distro is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It is a metronome because the distribution procedures, and especially the distribution frequency, is defined in casa-distro documentation (`bioproj wiki <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Casa-distro>`_). It is a swiss knife because it provides a tool for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
 
@@ -42,14 +42,14 @@ What Casa-Distro is **not**
 
   The user will be able to use the build system (:bv-cmake:`bv_maker <bv_maker.html>`), inside Docker, in a way that ensures to build, run, and ship software that is compatible with public distributions of BrainVisa.
 
-* Casa-Distro is not a binary distribution of BrainVisa. Even if it could be used that way. Binary distributions provide binaries that try to work on the wider possible variety of systems. Casa-distro is one (or a small set) of these systems with developemnt, distribution, and run environment.
+* Casa-Distro is not a binary distribution of BrainVisa. Even if it could be used that way. Binary distributions provide binaries that try to work on the wider possible variety of systems. Casa-distro is one (or a small set) of these systems with development, distribution, and run environment.
 
 
 II - Background: distributions, versions and build workflows.
 =============================================================
 
-Casa-distro is composed of many versioned software components (more than
-50 at the time of this writing). Each one has its own time line for
+Casa (BrainVISA / CATI) is composed of many versioned software components
+(more than 50 at the time of this writing). Each one has its own time line for
 development and release. Casa team is not big enough to follow the
 release of all projects and make sure that good practices are followed
 (for instance make sure that the project version is increased whenever
@@ -178,7 +178,7 @@ Requirements
 To use Casa-Distro, a user (or rather a developer) must have a system with 
 the following characteristics:
 
-* Either `Singularity <http://singularity.lbl.gov/>`_ or 
+* Either `Singularity <https://www.sylabs.io/>`_ or
   `Docker <https://www.docker.com>`_ must be installed and setup for the user
   on the building system. These container technologies only runs 
   on reasonably recent Linux systems, recent Mac systems, and Windows. 
@@ -280,7 +280,7 @@ Note that graphical software need to run the containers with a graphical "bridge
 
 .. warning:: BUT...
 
-    But soma-workflow distributed execution will not spawn Docker (or casa_distro run) in remote processing. Modifications could be done to handle it.
+    But soma-workflow distributed execution, in its current released version, will not spawn Docker or Singularity (or casa_distro run) in remote processing. We have made modifications in the `github/master branch <https://github.com/neurospin/soma-workflow>`_ (which is included in brainvisa/bug_fix branches) to add support for it. However it needs some additional configuration on server side to specify how to run the containers.
 
 Remember that software run that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the file ``container_options`` item in ``<casa_distro_build_workflow>/conf/casa_distro.json``.
 
@@ -292,6 +292,14 @@ Remember that software run that way live in a container, which is more or less i
 .. toctree::
 
     casa_distro_command
+
+
+:doc:`casa_distro_admin_command`
+================================
+
+.. toctree::
+
+    casa_distro_admin_command
 
 
 :doc:`install_setup`

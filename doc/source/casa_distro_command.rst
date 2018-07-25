@@ -142,7 +142,19 @@ Rather than systematically passing options, some environment variables may be us
 Workflow configuration file
 ===========================
 
-The ``casa_distro.json`` file found in each workflow subdirectory (in the ``conf`` subdirectory, actually)
+The ``casa_distro.json`` file found in each workflow subdirectory (in the ``conf`` subdirectory, actually) is a dictionary which contains varaibles used to define the build workflow, the type of container used (docker or singularity), mounted directories in the container image, etc.
+
+Some variables substitution can occur in the string values, in a "pythonic" shape: ``%(variable)s`` will be replaced by the contents of a variable ``variable``. The following variables are available:
+
+::
+
+  build_workflow_dir
+  casa_branch
+  distro_name
+  system
+
+Moreover some environment variables replacement also takes place, in the shape: ``${VARIABLE}``.
+
 
 Alternative configurations
 --------------------------
