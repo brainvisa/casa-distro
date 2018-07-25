@@ -187,6 +187,7 @@ def create_build_workflow_directory(build_workflow_directory,
                                     distro_name=None,
                                     container_type = None,
                                     container_image = None,
+                                    container_test_image = None,
                                     casa_branch='latest_release',
                                     system=linux_os_ids[0],
                                     not_override=[],
@@ -222,7 +223,14 @@ def create_build_workflow_directory(build_workflow_directory,
         it first try to see if Singularity is installed or try to see if
         Docker is installed.
     container_image: image to use for the compilation container. If no
-        value is given, uses the one defined in the distro. In the name
+        value is given, uses the one defined in the distro. The name
+        of the image can contain the following substring are replaced:
+          %(distro_name): the name of the distro
+          %(distro_source): the name of the distro source template
+          %(casa_branch): the name of the CASA source branch
+          %(sysem): the name of the operating system
+    container_test_image: image to use for the packages test container. If no
+        value is given, uses the one defined in the distro. The name
         of the image can contain the following substring are replaced:
           %(distro_name): the name of the distro
           %(distro_source): the name of the distro source template
@@ -267,7 +275,8 @@ def create_build_workflow_directory(build_workflow_directory,
     if casa_branch not in ('bug_fix', 'trunk', 'latest_release'):
         raise ValueError('Invalid value for casa_branch: %s' % repr(casa_branch))
     
-    casa_distro_source_json = osp.join(distro_source_dir, 'conf', 'casa_distro.json')
+    casa_distro_source_json = osp.join(distro_source_dir, 'conf',
+                                       'casa_distro.json')
     if os.path.exists(casa_distro_source_json):
         casa_distro = json.load(open(casa_distro_source_json))
     else:
@@ -305,6 +314,8 @@ def create_build_workflow_directory(build_workflow_directory,
             # Define the default command that must be used during initialization
             casa_distro['init_workflow_cmd'] = init_cmd
 
+    alt_configs = {}
+
         
     casa_distro.update(dict(distro_source = distro_source,
                             distro_name = distro_name,
@@ -321,6 +332,14 @@ def create_build_workflow_directory(build_workflow_directory,
     container_image = container_image % casa_distro
     casa_distro['container_image'] = container_image
                 
+    if not container_test_image:
+        container_test_image = casa_distro.get('alt_configs', {}).get(
+            'test', {}).get('container_image')
+        if container_test_image is not None:
+            container_test_image = container_test_image % casa_distro
+            casa_distro.setdefault('alt_configs', {}).setdefault(
+                'test', {})['container_image'] = container_test_image
+
     if container_type == 'docker':
         # Set default ssh files to mount because docker does not support to 
         # mount a directory not readable by root
@@ -357,14 +376,6 @@ def create_build_workflow_directory(build_workflow_directory,
         raise ValueError('Unsupported container type: %s' % container_type)
     if container_options:
         casa_distro['container_options'] = container_options
-    
-    if not container_image:
-        container_image = casa_distro.get('container_image')
-        if container_image is None:
-            raise ValueError('No container_image found in %s'
-                % casa_distro_source_json)
-    container_image = container_image % casa_distro
-    casa_distro['container_image'] = container_image
     
     build_workflow_directory = build_workflow_directory % casa_distro
     bwf_dir = osp.normpath(osp.abspath(build_workflow_directory))
