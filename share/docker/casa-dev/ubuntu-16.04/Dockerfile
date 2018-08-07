@@ -181,6 +181,8 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-render-util0-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dbg \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y wkhtmltopdf \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-opengl \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
