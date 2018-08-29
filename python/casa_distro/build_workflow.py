@@ -272,7 +272,8 @@ def create_build_workflow_directory(build_workflow_directory,
             raise ValueError('Cannot guess container_type according to '
                              'Singularity or Docker command research')
     
-    if casa_branch not in ('bug_fix', 'trunk', 'latest_release'):
+    if casa_branch not in ('bug_fix', 'trunk', 'latest_release',
+                           'release_candidate'):
         raise ValueError('Invalid value for casa_branch: %s' % repr(casa_branch))
     
     casa_distro_source_json = osp.join(distro_source_dir, 'conf',
