@@ -312,7 +312,10 @@ def create_build_workflow_directory(build_workflow_directory,
     container_env = {'CASA_DISTRO': '%(distro_name)s',
                      'CASA_BRANCH': '%(casa_branch)s',
                      'CASA_SYSTEM': '%(system)s',
-                     'CASA_HOST_DIR': '%(build_workflow_dir)s'}
+                     'CASA_HOST_DIR': '%(build_workflow_dir)s',
+                     'BRAINVISA_TESTS_DIR': '/casa/tests/test',
+                     'BRAINVISA_TEST_REF_DATA_DIR': '/casa/tests/ref',
+                     'BRAINVISA_TEST_RUN_DATA_DIR':'/casa/tests/test'}
 
     # Set default user home
     if casa_distro.get('container_env', {}).get('HOME') is None:
@@ -324,7 +327,8 @@ def create_build_workflow_directory(build_workflow_directory,
         
         if casa_distro.get('container_env', {}).get('WINEPREFIX') is None:
             container_env['WINEPREFIX'] = '/casa/sys/wine'
-        
+            container_env['WINEDLLOVERRIDES'] = 'mscoree,mshtml='
+
         if init_cmd is None:
             init_cmd = 'init-workflow'
 
