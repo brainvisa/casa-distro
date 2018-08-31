@@ -1,0 +1,1 @@
+attributes = {'distribution_strategy': 'single-threading', 'toolbox_pages': ['Data-Import', 'FastQC', 'T1-Quality-Check', 'SPGR3D-Quality-Check', 'T2Star-Quality-Check', 'R2Star', 'DWI-Quality-Check', 'Management']}

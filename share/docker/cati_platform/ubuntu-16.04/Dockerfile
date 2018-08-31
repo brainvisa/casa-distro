@@ -14,9 +14,13 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     graphviz-dev \
     ipython \
     lftp \
+    libasound2-dev \
+    libavahi-compat-libdnssd-dev \
     libblas-dev \
     libblitz0-dev \
     libboost-dev \
+    libbz2-dev \
+    libcurl4-openssl-dev \
     libdcmtk2-dev \
     libffi-dev \
     libgdk-pixbuf2.0-0 \
@@ -34,40 +38,63 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libncurses5-dev \
     libnetcdf-dev \
     libopenjpeg-dev \
+    libopenslide-dev \
+    liborc-0.4-dev \
     libpng12-dev \
+    libqt4-dev \
     libqtwebkit-dev \
     libqwt5-qt4-dev \
     libreadline-dev \
     libsigc++-2.0-dev \
     libsqlite3-dev \
+    libssl-dev \
     libsvm-dev \
     libtiff-dev \
+    libx11-dev \
     libxml2-dev \
     libxslt1-dev \
+    mesa-utils \
+    mriconvert \
+    mricron \
     openjdk-8-jdk \
     pyro \
     python-dicom \
+    python-epydoc \
+    python-libxslt1 \
     python-matplotlib \
+    python-nipype \
     python-numpy \
+    python-pandas \
     python-paramiko \
+    python-poppler-qt4 \
     python-qt4-dev \
     python-qt4-gl \
     python-requests \
     python-scipy \
     python-sip-dev \
     python-six \
+    python-skimage \
     python-sphinx \
     python-traits \
+    python-xlrd \
+    python-xlwt \
     qt4-designer \
     qt4-dev-tools \
     qt4-linguist-tools \
     qt4-qmake \
     qt4-qmlviewer \
     qt4-qtconfig \
+    qtcreator \
     sqlite3 \
     subversion \
     texlive-fonts-recommended \
+    vim \
     wget \
+    xalan \
+    xorg-dev \
     zlib1g-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+  
+RUN pip install dpath
+RUN mkdir --parents /cati/qualicati/database /cati/qualicati/save /cati/qualicati/database_debug
