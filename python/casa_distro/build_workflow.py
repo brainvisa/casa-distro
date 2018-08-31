@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import collections
 import sys
 import os
 import os.path as osp
@@ -8,12 +9,27 @@ import glob
 import shutil
 import json
 import copy
+import six
 
 from casa_distro import log, share_directory, linux_os_ids
 from casa_distro.docker import run_docker, update_docker_image
 from casa_distro.singularity import (download_singularity_image,
                                      run_singularity,
                                      update_singularity_image)
+
+
+def update_dict_recursively(dict_to_update, dict_to_read):
+    '''
+    Recursively merge dict_to_read into dict_to_update
+    '''
+    for k, v in six.iteritems(dict_to_read):
+        if (k in dict_to_update and isinstance(dict_to_update[k], dict)
+                and isinstance(v, collections.Mapping)):
+            update_dict_recursively(dict_to_update[k],
+                                    dict_to_read[k])
+        else:
+            dict_to_update[k] = dict_to_read[k]
+
 
 
 def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
@@ -318,13 +334,15 @@ def create_build_workflow_directory(build_workflow_directory,
     alt_configs = {}
 
         
-    casa_distro.update(dict(distro_source = distro_source,
-                            distro_name = distro_name,
-                            container_type = container_type,
-                            casa_branch = casa_branch,
-                            system = system,
-                            container_volumes = container_volumes,
-                            container_env = container_env))
+    update_dict_recursively(
+        casa_distro,
+        dict(distro_source = distro_source,
+            distro_name = distro_name,
+            container_type = container_type,
+            casa_branch = casa_branch,
+            system = system,
+            container_volumes = container_volumes,
+            container_env = container_env))
 
     if not container_image:
         container_image = casa_distro.get('container_image')
