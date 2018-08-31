@@ -321,6 +321,8 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
         gui_options = casa_distro.get('container_gui_options')
         if gui_options:
             docker += [osp.expandvars(i) for i in gui_options]
+    # could add options for gdb:
+    # docker += ['--security-opt', 'seccomp=unconfined']
     for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
         source = source % casa_distro
         source = osp.expandvars(source)

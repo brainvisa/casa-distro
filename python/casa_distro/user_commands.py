@@ -20,7 +20,8 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_branch)
 from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         create_build_workflow_directory,
-                                        update_container_image, merge_config)
+                                        update_container_image, merge_config,
+                                        update_build_workflow)
 
 
 def verbose_bool(verbose):
@@ -176,6 +177,31 @@ def list_command(distro='*', branch='*', system='*',
         print('  directory:', bwf_dir)
         if verbose_bool(verbose):
             print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
+
+@command
+def update(distro='*',
+           branch='*',
+           system='*',
+           build_workflows_repository=default_build_workflow_repository,
+           verbose=None):
+    '''
+    Update an existing build workflow directory.
+
+    distro:
+        Name of the distro that will be created. If omited, the name
+        of the distro source (or distro source directory) is used.
+
+    branch:
+        bv_maker branch to use (latest_release, bug_fix or trunk)
+
+    system:
+        Name of the target system.
+    '''
+    images_to_update = {}
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+                                                distro=distro, branch=branch,
+                                                system=system):
+        update_build_workflow(bwf_dir, verbose=verbose)
 
 @command
 def update_image(distro='*', branch='*', system='*', 

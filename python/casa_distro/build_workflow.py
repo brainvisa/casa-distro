@@ -434,10 +434,49 @@ def create_build_workflow_directory(build_workflow_directory,
             osp.dirname(osp.dirname(build_workflow_directory)),
             container_image,
             verbose=verbose)
-        
+
+    update_build_workflow(build_workflow_directory)
+
     if init_cmd:
         # Initialize container for current user
         run_container(bwf_dir, [init_cmd], verbose=verbose)
+
+def update_build_workflow(build_workflow_directory, verbose=None):
+    '''
+    Update an existing build workflow directory. It basically recreates the
+    casa_distro run script
+
+    Parameters
+    ----------
+    build_workflow_directory:
+        Directory containing all files of a build workflow.
+    '''
+    bin_dir = os.path.join(build_workflow_directory, 'bin')
+    if verbose:
+        print('update_build_workflow:', build_workflow_directory)
+    if not os.path.exists(bin_dir):
+        if verbose:
+            print('create directory:', bin_dir)
+        os.mkdir(bin_dir)
+    script_file = os.path.join(bin_dir, 'casa_distro')
+    module_path = os.path.dirname(os.path.dirname(__file__))
+    if sys.platform.startswith('win'):
+        # windows: .bat script
+        script_file += '.bat'
+        with open(script_file, 'w') as f:
+            f.write('''@setlocal
+@set PYTHONPATH="%s"
+@"%s" "%s" \%*
+@endlocal''' % (module_path, sys.executable, sys.argv[0]))
+    else:
+        # unix: bash script
+        with open(script_file, 'w') as f:
+            f.write('''#!/bin/bash
+export PYTHONPATH=%s
+exec %s %s "$@"''' % (module_path, sys.executable, sys.argv[0]))
+    os.chmod(script_file, 0775)
+    if verbose:
+        print('created run script:', script_file)
 
 def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config
