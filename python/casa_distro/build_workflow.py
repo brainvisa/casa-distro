@@ -409,7 +409,9 @@ def create_build_workflow_directory(build_workflow_directory,
     os_dir = osp.join(distro_source_dir, system)
     all_subdirs = ('conf', 'src', 'build', 'install', 'tests', 'pack',
                    'custom', 'custom/src', 'custom/build', 'home', 'home/tmp')
-    
+    more_dirs = tuple(i for i in os.listdir(distro_source_dir) if i not in all_subdirs and 
+                      osp.isdir(osp.join(distro_source_dir,i)))
+    all_subdirs = all_subdirs + more_dirs
     if system.startswith('windows'):
         all_subdirs += ('sys',)
     
