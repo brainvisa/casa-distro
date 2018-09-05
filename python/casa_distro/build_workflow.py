@@ -466,6 +466,7 @@ def update_build_workflow(build_workflow_directory, verbose=None):
         os.mkdir(bin_dir)
     script_file = os.path.join(bin_dir, 'casa_distro')
     module_path = os.path.dirname(os.path.dirname(__file__))
+    casa_distro_path = os.path.normpath(os.path.abspath(sys.argv[0]))
     if sys.platform.startswith('win'):
         # windows: .bat script
         script_file += '.bat'
@@ -473,13 +474,13 @@ def update_build_workflow(build_workflow_directory, verbose=None):
             f.write('''@setlocal
 @set PYTHONPATH="%s"
 @"%s" "%s" \%*
-@endlocal''' % (module_path, sys.executable, sys.argv[0]))
+@endlocal''' % (module_path, sys.executable, casa_distro_path))
     else:
         # unix: bash script
         with open(script_file, 'w') as f:
             f.write('''#!/bin/bash
 export PYTHONPATH=%s
-exec %s %s "$@"''' % (module_path, sys.executable, sys.argv[0]))
+exec %s %s "$@"''' % (module_path, sys.executable, casa_distro_path))
     os.chmod(script_file, 0775)
     if verbose:
         print('created run script:', script_file)
