@@ -244,7 +244,8 @@ def create_docker_images(image_name_filters = ['*']):
                     print('Docker context:', os.listdir(target_directory))
                     print('-'*40)
                     check_call(cmd)
-                    if get_image_id(image_full_name) != old_id:
+                    if old_id is not None \
+                            and get_image_id(image_full_name) != old_id:
                         to_clean.append(old_id)
                     if old_base_id:
                         to_clean.append(old_base_id)

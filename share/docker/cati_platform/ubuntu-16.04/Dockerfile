@@ -44,7 +44,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libqt4-dev \
     libqtwebkit-dev \
     libqwt5-qt4-dev \
-    libreadline-dev \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y libreadline-dev \
     libsigc++-2.0-dev \
     libsqlite3-dev \
     libssl-dev \
