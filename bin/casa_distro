@@ -616,8 +616,11 @@ def help(args_list=['help'], **kwargs):
         print()
        
 if __name__ == '__main__':
-    
-    from casa_distro.info import __version__ as casa_distro_version
+    try:
+        from casa_distro.info import __version__ as casa_distro_version
+    except ImportError:
+        sys.path.append(osp.join(osp.dirname(osp.dirname(__file__)), 'python'))
+        from casa_distro.info import __version__ as casa_distro_version       
 
     class ArgumentLineBreakFormatter(argparse.HelpFormatter):
         def _split_lines(self, text, width):
