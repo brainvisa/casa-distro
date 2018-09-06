@@ -108,7 +108,7 @@ def create(distro_source=default_distro,
            verbose=None):
     '''
     Initialize a new build workflow directory. This creates a conf
-    subdirectory with build_workflow.json, bv_maker.cfg and svn.secret
+    subdirectory with casa_distro.json, bv_maker.cfg and svn.secret
     files that can be edited before compilation.
 
     distro_source:
@@ -185,7 +185,9 @@ def update(distro='*',
            build_workflows_repository=default_build_workflow_repository,
            verbose=None):
     '''
-    Update an existing build workflow directory.
+    Update an existing build workflow directory. For now it only re-creates
+    the run script in bin/casa_distro, pointing to the casa_distro command
+    used to actually perform the update.
 
     distro:
         Name of the distro that will be created. If omited, the name
@@ -208,7 +210,7 @@ def update_image(distro='*', branch='*', system='*',
          build_workflows_repository=default_build_workflow_repository,
          verbose=None):
     '''
-    Update container image of (eventually selected) build workflows
+    Update the container images of (eventually selected) build workflows
     created by "create" command.
     '''
     images_to_update = {}
@@ -241,7 +243,9 @@ def shell(distro='*', branch='*', system='*',
           gui=False, interactive=True, tmp_container=True, container_image=None,
           container_options=[], args_list=['-norc'], verbose=None,
           conf='dev'):
-    '''Start a bash shell in Docker with the given repository configuration.'''
+    '''
+    Start a bash shell in the configured container with the given repository
+    configuration.'''
     build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                distro=distro, 
                                                branch=branch, 
@@ -284,12 +288,15 @@ def run(distro=None, branch=None, system=None,
         container_image=None,container_options=[], args_list=[],
         verbose=None, conf='dev'):
     '''
-    Start any command in Docker with the given repository configuration.
+    Start any command in the configured container (Docker or Singularity) with
+    the given repository configuration.
+
     example:
         casa_distro -r /home/casa run branch=bug_fix ls -als /casa
 
     The "conf" parameter may address an additional config dictionary within the
-    casa_distro.json config file. Typicall, a test config may use a different system image (casa-test images).
+    casa_distro.json config file. Typically, a test config may use a different
+    system image (casa-test images), or options, or mounted directories.
     '''
     default_distro = default_branch = default_system = False
     if distro is None:
@@ -376,8 +383,8 @@ def bv_maker(distro=None, branch=None, system=None,
              container_image=None, container_options=[], args_list=[],
              verbose=None):
     '''
-    Start bv_maker in Docker for all the selected build workflows (by default,
-    all created build workflows).'''    
+    Start bv_maker in the configured container for all the selected build
+    workflows (by default, all created build workflows).'''
     args_list = ['bv_env_host', 'bv_maker' ] + args_list
     run(distro=distro, branch=branch, system=system,
          build_workflows_repository=build_workflows_repository, gui=gui,

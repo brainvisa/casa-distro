@@ -111,7 +111,10 @@ def get_main_parser():
         formatter_class=ArgumentLineBreakFormatter)
 
     parser.add_argument('-r', '--repository', default=None,
-                        help='Path of the directory containing build workflow (default=%s)' % default_build_workflow_repository)
+                        help='Path of the directory containing build '
+                        'workflows (default=%s)\n'
+                        'This base directory may also be specified via an '
+                        'environment variable: CASA_DEFAULT_REPOSITORY' % default_build_workflow_repository)
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display information during processing')
     parser.add_argument('--version', action='version',
