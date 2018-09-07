@@ -65,7 +65,7 @@ def display_summary(status):
             print(message)
             if es.error_code:
                 global_failed = True
-    
+
     if global_failed:
         status = 'There were errors.'
     else:
@@ -78,7 +78,7 @@ class ExecutionStatus:
                   'succeeded': 'OK         ',
                   'failed': 'FAILED     ',
                   'interrupted': 'INTERRUPTED'}
-    
+ 
     def __init__(self,
                     error_code = None, 
                     exception = None, 
@@ -90,7 +90,7 @@ class ExecutionStatus:
         self.status = status
         self.start_time = start_time
         self.stop_time = stop_time
-        
+
     def get_status_mapped(self):
         return self.status_map.get(self.status)
 
@@ -284,7 +284,7 @@ def shell(distro='*', branch='*', system='*',
 @command
 def run(distro=None, branch=None, system=None,
         build_workflows_repository=default_build_workflow_repository,
-        gui=False, interactive=False, tmp_container=True,
+        gui=True, interactive=False, tmp_container=True,
         container_image=None,container_options=[], args_list=[],
         verbose=None, conf='dev'):
     '''
@@ -323,8 +323,7 @@ def run(distro=None, branch=None, system=None,
               file=sys.stderr)
         return 1
     
-    if (default_distro or default_branch or default_system) \
-        and len(build_workflows) > 1:
+    if len(build_workflows) > 1:
         print('Several build workflows found, you must explicitely select many',
               'giving values for distro, system and branch. You can list '
               'existing workflows using:\n'
@@ -335,6 +334,79 @@ def run(distro=None, branch=None, system=None,
               % {'bwf_dir':build_workflows_repository}, 
               file=sys.stderr)
         return 1
+
+    if isinstance(container_options, six.string_types):
+        container_options = container_options.split(' ')
+        
+    status = {}
+    global_failed = False
+
+    d, b, s, bwf_dir = build_workflows[0]
+    es = ExecutionStatus(start_time = time.localtime())
+    status[(d, b, s)] = (es, bwf_dir)
+    try:
+        command = args_list
+        bwf_directory = osp.join(build_workflows_repository, '%s' % d,
+                                '%s_%s' % (b, s))
+        run_container(bwf_directory, command=command, gui=gui, 
+                    interactive=interactive, tmp_container=tmp_container,
+                    container_image=container_image,
+                    container_options=container_options, verbose=verbose,
+                    conf=conf)
+        es.stop_time = time.localtime()
+        es.error_code = 0
+        es.status = 'succeeded'
+    
+    except subprocess.CalledProcessError:
+        global_failed = True
+        es.stop_time = time.localtime()
+        es.exception = traceback.format_exc()
+        es.error_code = 1
+        es.status = 'failed'
+        
+    except KeyboardInterrupt:
+        global_failed = True
+        es.stop_time = time.localtime()
+        es.error_code = 1
+        es.status = 'interrupted'
+
+    display_summary(status)
+    return global_failed
+
+
+@command
+def mrun(distro='*', branch='*', system='*',
+         build_workflows_repository=default_build_workflow_repository,
+         gui=True, interactive=False, tmp_container=True,
+         container_image=None,container_options=[], args_list=[],
+         verbose=None, conf='dev'):
+    '''
+    Start any command in one or several container with the given
+    repository configuration. By default, command is executed in
+    all existing build workflows.
+    
+    example:
+        # Launch bv_maker on all build workflows using any version of Ubuntu
+        casa_distro mrun bv_maker system=ubuntu-*
+
+    The "conf" parameter may address an additional config dictionary within the
+    casa_distro.json config file. Typically, a test config may use a different
+    system image (casa-test images), or options, or mounted directories.
+    '''
+    build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                               distro=distro, 
+                                               branch=branch, 
+                                               system=system))
+    if not build_workflows:
+        print('Cannot find requested build workflow.',
+              'You can list existing workflows using:\n'
+              'casa_distro -r %(bwf_dir)s list_build_workflows\n'
+              'Or create new one using:\n'
+              'casa_distro -r %(bwf_dir)s create_build_workflow'
+              % {'bwf_dir':build_workflows_repository}, 
+              file=sys.stderr)
+        return 1
+    
 
     if isinstance(container_options, six.string_types):
         container_options = container_options.split(' ')
@@ -377,18 +449,21 @@ def run(distro=None, branch=None, system=None,
 
 
 @command
-def bv_maker(distro=None, branch=None, system=None,
+def bv_maker(distro='*', branch='*', system='*',
              build_workflows_repository=default_build_workflow_repository,
              gui=False, interactive=False, tmp_container=True, 
              container_image=None, container_options=[], args_list=[],
              verbose=None):
     '''
     Start bv_maker in the configured container for all the selected build
-    workflows (by default, all created build workflows).'''
-    args_list = ['bv_env_host', 'bv_maker' ] + args_list
-    run(distro=distro, branch=branch, system=system,
-         build_workflows_repository=build_workflows_repository, gui=gui,
-         interactive=interactive, tmp_container=tmp_container,
-         container_image=container_image,
-         container_options=container_options, args_list=args_list,
-         verbose=verbose)
+    workflows (by default, all created build workflows).
+    
+    This is a shortcut to "mrun bv_maker"
+    '''    
+    args_list = ['bv_maker' ] + args_list
+    mrun(distro=distro, branch=branch, system=system,
+          build_workflows_repository=build_workflows_repository, gui=gui,
+          interactive=interactive, tmp_container=tmp_container,
+          container_image=container_image,
+          container_options=container_options, args_list=args_list,
+          verbose=verbose)

@@ -151,12 +151,14 @@ def main():
     if options.verbose and 'verbose' in cargs.args:
         kwargs['verbose'] = sys.stdout
         
+    allows_kwargs = True
     for i in options.command_options:
         l = i.split('=', 1)
-        if len(l) == 2:
+        if allows_kwargs and len(l) == 2:
             kwargs[l[0]] = l[1]
         else:
             args.append(i)
+            allows_kwargs = False
     
     if 'args_list' in cargs.args:
         kwargs['args_list'] = args + args_list
