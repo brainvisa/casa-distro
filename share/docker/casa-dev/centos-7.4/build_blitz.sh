@@ -16,7 +16,7 @@ pushd ${__tmp_dir}
 # ------------------------------------------------------------------------------
 BLITZ_VERSION=0.10
 BLITZ_INSTALL_PREFIX=${__install_prefix}
-BLITZ_SOURCE_URL=http://sourceforge.mirrorservice.org/b/bl/blitz/blitz/Blitz%2B%2B%20${BLITZ_VERSION}/blitz-${BLITZ_VERSION}.tar.gz
+BLITZ_SOURCE_URL=${BLITZ_MIRROR_URL:-http://sourceforge.mirrorservice.org/b/bl/blitz/blitz/Blitz%2B%2B%20${BLITZ_VERSION}}/blitz-${BLITZ_VERSION}.tar.gz
 
 echo "=============================== BLITZ ================================"
 if [ "${__download}" == "1" ]; then

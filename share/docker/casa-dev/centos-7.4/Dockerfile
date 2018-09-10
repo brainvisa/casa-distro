@@ -64,7 +64,6 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     python-setuptools \
     lftp \
     libffi-devel \
-    mpich-3.0-devel \
     gstreamer-devel \
     orc-devel \
     libxslt-devel \
@@ -91,14 +90,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     bash-completion \
     perl-devel \
     perl-CPAN \
-    mpi4py-mpich \
  && yum clean all
-
-# create missing pth file to be able to use installed mpi4py
-# this can be discussed because I guess it could break the 
-# command: load module mpi-openmpi
-# but it is easier for python packaging
-RUN echo "mpich" > /usr/lib64/python2.7/site-packages/mpi4py.pth
 
 ENV CEA_MIRROR_URL=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/centos-7.4
 
@@ -127,6 +119,12 @@ COPY build_git.sh /tmp/build_git.sh
 RUN bash -c "GIT_MIRROR_URL=${CEA_MIRROR_URL}/sources /tmp/build_git.sh" \
     && rm /tmp/build_git.sh
 
+# install openmpi
+COPY build_openmpi.sh /tmp/build_openmpi.sh
+RUN bash -c "OPENMPI_MIRROR_URL=${CEA_MIRROR_URL}/sources /tmp/build_openmpi.sh" \
+    && rm /tmp/build_openmpi.sh
+
+    
 #RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 
 # does not work any  longer...
@@ -163,9 +161,10 @@ RUN pip install "python_jenkins==0.4.16"
 RUN pip install nipype
 RUN pip install dipy
 RUN pip install -U nibabel
-RUN pip install sklearn
+RUN pip install "scikit-learn==0.19.1"
 RUN pip install -U pyparsing
 RUN pip install -U pydot
+RUN pip install mpi4py
 
 
 # install Pycluster
