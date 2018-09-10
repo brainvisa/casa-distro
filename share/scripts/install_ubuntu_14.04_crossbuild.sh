@@ -160,7 +160,8 @@ function download() {
         wget --no-check-certificate \
              --user-agent "Mozilla" \
              "${__url}" \
-             -O ${__download_dir}/${__out_file_name}
+             -O ${__download_dir}/${__out_file_name} \
+             || exit 1
     fi
     __d=
     __download_type=
@@ -794,7 +795,8 @@ chmod +x update_registry_path
 # ------------------------------------------------------------------------------
 if [ "${__install}" == "1" ] && [ "${SYSTEM}" == "1" ]; then
     echo "=========================== SYSTEM ==============================="
-    sudo apt-get -q -y --force-yes install ${__sys_packages[@]}
+    sudo apt-get -q -y --force-yes install ${__sys_packages[@]} \
+    || exit 1
 fi
 
 # ------------------------------------------------------------------------------
@@ -831,23 +833,25 @@ if [ "${__install}" == "1" ] && [ "${WINE}" == "1" ]; then
     echo "============================ WINE ================================"
     cat << EOF > "${__build_dir}/apt-wine.sh"
 #!/usr/bin/env sh
-dpkg --add-architecture i386
-add-apt-repository -y ppa:ubuntu-wine/ppa
-apt-get -q -y update
-apt-get -q -y -f install
-apt-get -q -y autoremove
+dpkg --add-architecture i386 \
+&& add-apt-repository -y ppa:ubuntu-wine/ppa \
+&& apt-get -q -y update \
+&& apt-get -q -y -f install \
+&& apt-get -q -y autoremove \
+|| exit 1
 
 # Explicit calls are used to ensure i386 installation,
 # otherwise it may fails
-apt-get -q -y install p11-kit:i386
-apt-get -q -y install libp11-kit-gnome-keyring:i386
-apt-get -q -y install libglu1-mesa:i386
-apt-get -q -y install libglu1:i386
-apt-get -q -y install libgl1-mesa-glx:i386
-apt-get -q -y install libudev1:i386
-apt-get -q -y install libcgmanager0:i386
-apt-get -q -y --force-yes install wine1.8-i386
-apt-get -q -y --force-yes install wine1.8 wine-gecko2.34 wine-mono4.5.4 winetricks
+apt-get -q -y install p11-kit:i386 \
+&& apt-get -q -y install libp11-kit-gnome-keyring:i386 \
+&& apt-get -q -y install libglu1-mesa:i386 \
+&& apt-get -q -y install libglu1:i386 \
+&& apt-get -q -y install libgl1-mesa-glx:i386 \
+&& apt-get -q -y install libudev1:i386 \
+&& apt-get -q -y install libcgmanager0:i386 \
+&& apt-get -q -y --force-yes install wine1.8-i386 \
+&& apt-get -q -y --force-yes install wine1.8 wine-gecko2.34 wine-mono4.5.4 winetricks \
+|| exit 1
 EOF
     chmod +x "${__build_dir}/apt-wine.sh"
     sudo "${__build_dir}/apt-wine.sh"
@@ -991,7 +995,8 @@ if [ "${__install}" == "1" ] && [ "${MINGW64}"  == "1" ]; then
                                mingw-w64-x86-64-dev \
                                mingw32 \
                                mingw32-binutils \
-                               mingw32-runtime
+                               mingw32-runtime \
+                               || exit 1
 fi
 
 # get version once mingw64 has been installed
@@ -1150,11 +1155,13 @@ if [ "${LIBICONV}"  == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/libiconv-${LIBICONV_VERSION}.tar.gz
         pushd ${__build_dir}/libiconv-${LIBICONV_VERSION}
+        
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBICONV_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1186,10 +1193,12 @@ if [ "${ZLIB}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/zlib-${ZLIB_VERSION}.tar.gz
         pushd ${__build_dir}/zlib-${ZLIB_VERSION}
+        
         cmake -DCMAKE_INSTALL_PREFIX=${ZLIB_INSTALL_PREFIX} \
               -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
               -DCMAKE_CROSSCOMPILING=ON \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1227,6 +1236,7 @@ if [ "${BZIP2}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/bzip2-${BZIP2_VERSION}.tar.gz
         pushd ${__build_dir}/bzip2-${BZIP2_VERSION}
+        
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
@@ -1266,12 +1276,14 @@ if [ "${LIBXML2}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/libxml2-sources-${LIBXML2_VERSION}.tar.gz
         pushd ${__build_dir}/libxml2-${LIBXML2_VERSION}
+        
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBXML2_INSTALL_PREFIX} \
                 --with-python=${PYTHON_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1320,12 +1332,15 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile.in Makefile.in
  
  installlib: \$(LIBRARY) \$(APIHEADER) expat.pc
 EOF
-        patch -f -N -i expat-${EXPAT_VERSION}.patch -p0
+        patch -f -N -i expat-${EXPAT_VERSION}.patch -p0 \
+        || exit 1
+        
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${EXPAT_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1503,7 +1518,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines src/CMakeLists.txt src/CM
  )
  
 EOF
-        patch -f -N -i hdf5-${HDF5_VERSION}.patch -p0
+        patch -f -N -i hdf5-${HDF5_VERSION}.patch -p0 \
+        || exit 1
 
         cmake -C ${__build_dir}/hdf5-${HDF5_VERSION}-cache.cmake \
               -DCMAKE_INSTALL_PREFIX=${HDF5_INSTALL_PREFIX} \
@@ -1522,6 +1538,7 @@ EOF
               -DCMAKE_CXX_STANDARD_LIBRARIES="-lws2_32 -lnetapi32 -lwsock32" \
               . \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1571,7 +1588,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines gettext-runtime/intl/pri
        on Unix; we use the function _vsnwprintf() instead.  */
  #  define system_vswprintf _vsnwprintf
 EOF
-        patch -f -N -i gettext-${GETTEXT_VERSION}.patch -p0
+        patch -f -N -i gettext-${GETTEXT_VERSION}.patch -p0 \
+        || exit 1
 
         # Due to a bug in the library, it is necessary to build with -O2
         CFLAGS="-O2 ${CFLAGS}" \
@@ -1581,6 +1599,7 @@ EOF
                 --host=${__toolchain} \
                 --prefix=${GETTEXT_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1613,6 +1632,7 @@ if [ "${SQLITE}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/sqlite-autoconf-${SQLITE_VERSION_STD}.tar.gz
         pushd ${__build_dir}/sqlite-autoconf-${SQLITE_VERSION_STD}
+        
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
@@ -1620,6 +1640,7 @@ if [ "${SQLITE}" == "1" ]; then
                 --with-python=${PYTHON_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1667,13 +1688,15 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines sigc++/signal_base.h sig
  #include <sigc++config.h>
  #include <sigc++/type_traits.h>
 EOF
-        patch -f -N -i libsigc++-${LIBSIGCPP_VERSION}.patch -p0
+        patch -f -N -i libsigc++-${LIBSIGCPP_VERSION}.patch -p0 \
+        || exit 1
 
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBSIGCPP_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1706,11 +1729,13 @@ if [ "${FREETYPE}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/freetype-${FREETYPE_VERSION}.tar.gz
         pushd ${__build_dir}/freetype-${FREETYPE_VERSION}
+        
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${FREETYPE_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
         
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1743,12 +1768,14 @@ if [ "${LIBREGEX}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/mingw-libgnurx-${LIBREGEX_VERSION}-src.tar.gz
         pushd ${__build_dir}/mingw-libgnurx-${LIBREGEX_VERSION}
+        
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBREGEX_INSTALL_PREFIX} \
         || exit 1
-        make -j${__build_proc_num}
+        
+        make -j${__build_proc_num} || exit 1
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1837,7 +1864,9 @@ if [ "${BLITZ}" == "1" ]; then
  libblitz_la_SOURCES = \$(top_srcdir)/src/globals.cpp
 EOF
 
-        patch -f -N -i blitz-${BLITZ_VERSION}.patch -p0
+        patch -f -N -i blitz-${BLITZ_VERSION}.patch -p0 \
+        || exit 1
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -1849,6 +1878,7 @@ EOF
                 --prefix=${BLITZ_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1881,8 +1911,7 @@ if [ "${LIBFFI}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/libffi-${LIBFFI_VERSION}.tar.gz
         pushd ${__build_dir}/libffi-${LIBFFI_VERSION}
-        
-        # Generate patch to build shared library
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -2077,7 +2106,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines makefile.cfg makefile.cfg
  	cmp \$(srcdir)/testimg.jpg testout.jpg
 
 EOF
-        patch -f -N -i jpeg-${LIBJPEG_VERSION}.patch -p0
+        patch -f -N -i jpeg-${LIBJPEG_VERSION}.patch -p0 \
+        || exit 1
 
         #CFLAGS="-O2 -DBUILD" \
         ./configure \
@@ -2085,6 +2115,7 @@ EOF
                 --host=${__toolchain} \
                 --prefix=${LIBJPEG_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2135,13 +2166,15 @@ diff -NurB --strip-trailing-cr --suppress-common-lines jmorecfg.h jmorecfg.h
  #define FALSE  0       /* values of boolean */
 
 EOF
-        patch -f -N -i libjpeg-turbo-${LIBJPEGTURBO_VERSION}.patch -p0
+        patch -f -N -i libjpeg-turbo-${LIBJPEGTURBO_VERSION}.patch -p0 \
+        || exit 1
 
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBJPEGTURBO_INSTALL_PREFIX} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2175,6 +2208,7 @@ if [ "${LIBTIFF}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/tiff-${LIBTIFF_VERSION}.tar.gz
         pushd ${__build_dir}/tiff-${LIBTIFF_VERSION}
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -2186,6 +2220,7 @@ if [ "${LIBTIFF}" == "1" ]; then
                 --prefix=${LIBTIFF_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2244,7 +2279,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeList
  configure_file(\${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpng.pc.in
    \${CMAKE_CURRENT_BINARY_DIR}/libpng.pc)
 EOF
-        patch -f -N -i libpng-${LIBPNG_VERSION}.patch -p0
+        patch -f -N -i libpng-${LIBPNG_VERSION}.patch -p0 \
+        || exit 1
 
         cmake -DCMAKE_INSTALL_PREFIX=${LIBPNG_INSTALL_PREFIX} \
               -DCMAKE_FIND_ROOT_PATH=${CROSSBUILD_INSTALL_PREFIX} \
@@ -2333,7 +2369,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines libmng_types.h libmng_ty
  #endif /* MNG_INCLUDE_IJG6B */
  
 EOF
-        patch -f -N -i libmng-${LIBMNG_VERSION}.patch -p0
+        patch -f -N -i libmng-${LIBMNG_VERSION}.patch -p0 \
+        || exit 1
 
         cmake -DCMAKE_INSTALL_PREFIX=${LIBMNG_INSTALL_PREFIX} \
               -DCMAKE_FIND_ROOT_PATH=${CROSSBUILD_INSTALL_PREFIX} \
@@ -2374,6 +2411,7 @@ if [ "${FONTCONFIG}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/fontconfig-${FONTCONFIG_VERSION}.tar.gz
         pushd ${__build_dir}/fontconfig-${FONTCONFIG_VERSION}
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -2386,6 +2424,7 @@ if [ "${FONTCONFIG}" == "1" ]; then
                 --prefix=${FONTCONFIG_INSTALL_PREFIX} \
                 --with-freetype-config=${FREETYPE_INSTALL_PREFIX}/bin/freetype-config \
         || exit 1
+        
         # Fontconfig fails to install using multi processors
         make -j${__build_proc_num} || exit 1
         make install || exit 1
@@ -2480,7 +2519,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines glib/tests/fileutils.c g
 EOF
         fi
 
-        patch -f -N -i glib-${GLIB_VERSION}.patch -p0
+        patch -f -N -i glib-${GLIB_VERSION}.patch -p0 \
+        || exit 1
 
         libtoolize --force \
         && aclocal \
@@ -2494,6 +2534,7 @@ EOF
                 --with-python=${PYTHON_HOST_COMMAND} \
                 --enable-shared \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2535,12 +2576,14 @@ if [ "${OPENJPEG}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/openjpeg-${OPENJPEG_VERSION}.tar.gz
         pushd ${__build_dir}/openjpeg-version.${OPENJPEG_VERSION}
+        
         cmake \
             -DCMAKE_INSTALL_PREFIX=${OPENJPEG_INSTALL_PREFIX} \
             -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
             -DCMAKE_CROSSCOMPILING=ON \
             -DBUILD_PKGCONFIG_FILES=ON \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2813,7 +2856,8 @@ EOF
                  Makefile \
                  libjxr.pc.in
         
-        patch -f -N -i jxrlib-${JPEGXR_VERSION}.patch -p0
+        patch -f -N -i jxrlib-${JPEGXR_VERSION}.patch -p0 \
+        || exit 1
 
         DIR_INSTALL=${JPEGXR_INSTALL_PREFIX} \
         SHARED=1 \
@@ -2874,6 +2918,7 @@ if [ "${JASPER}" == "1" ]; then
                 --prefix=${JASPER_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2936,7 +2981,9 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines gdk-pixbuf/io-png.c gdk-
 
 EOF
 
-        patch -f -N -i gdk-pixbuf-${GDKPIXBUF_VERSION}.patch -p0
+        patch -f -N -i gdk-pixbuf-${GDKPIXBUF_VERSION}.patch -p0 \
+        || exit 1
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -2949,6 +2996,7 @@ EOF
                 --enable-shared \
                 PKG_CONFIG=${PKG_CONFIG} \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2999,7 +3047,9 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines test/utils.c test/utils.
  		  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE,
 
 EOF
-        patch -f -N -i pixman-${PIXMAN_VERSION}.patch -p0
+        patch -f -N -i pixman-${PIXMAN_VERSION}.patch -p0 \
+        || exit 1
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3011,6 +3061,7 @@ EOF
                 --prefix=${PIXMAN_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3043,6 +3094,7 @@ if [ "${CAIRO}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/cairo-${CAIRO_VERSION}.tar.xz
         pushd ${__build_dir}/cairo-${CAIRO_VERSION}
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3058,6 +3110,7 @@ if [ "${CAIRO}" == "1" ]; then
                 --enable-xlib-xcb=no \
                 --enable-pthread=no \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3113,7 +3166,9 @@ diff -NurB --strip-trailing-cr --suppress-common-lines Makefile.am Makefile.am
  if WINDOWS_RESOURCES
  src_libopenslide_la_SOURCES += src/openslide-dll.rc
 EOF
-        patch -f -N -i openslide-${OPENSLIDE_VERSION}.patch -p0
+        patch -f -N -i openslide-${OPENSLIDE_VERSION}.patch -p0 \
+        || exit 1
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3395,7 +3450,9 @@ diff -Nruwb dcmdata/include/dcmtk/dcmdata/dcuid.h dcmdata/include/dcmtk/dcmdata/
 +#define OFFIS_DTK_IMPLEMENTATION_VERSION_NAME2  "OFFIS_DCMBP_" PACKAGE_VERSION_NUMBER_STRING
 EOF
 
-        patch -f -N -i dcmtk-${DCMTK_VERSION}.patch -p0
+        patch -f -N -i dcmtk-${DCMTK_VERSION}.patch -p0 \
+        || exit 1
+        
         cmake -DCMAKE_INSTALL_PREFIX=${DCMTK_INSTALL_PREFIX} \
               -DCMAKE_FIND_ROOT_PATH=${CROSSBUILD_INSTALL_PREFIX} \
               -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
@@ -3502,7 +3559,9 @@ diff -NurB --strip-trailing-cr --suppress-common-lines libdispatch/v2i.c libdisp
  static size_t
  nvdims(int ncid, int varid)
 EOF
-        patch -f -N -i netcdf-${NETCDF_VERSION}.patch -p0
+        patch -f -N -i netcdf-${NETCDF_VERSION}.patch -p0 \
+        || exit 1
+        
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3516,6 +3575,7 @@ EOF
                 --enable-dll \
                 --disable-fortran-type-check \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3686,10 +3746,12 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines conversion/Acr_nema/dico
  }
 
 EOF
-        patch -f -N -i minc-${MINC_VERSION}.patch -p0
+        patch -f -N -i minc-${MINC_VERSION}.patch -p0 \
+        || exit 1
 
         mkdir -p build
         pushd build
+        
         cmake -DCMAKE_INSTALL_PREFIX=${MINC_INSTALL_PREFIX} \
               -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
               -DCMAKE_CROSSCOMPILING=ON \
@@ -3706,6 +3768,7 @@ EOF
         || exit 1
 
         make -j${__build_proc_num} install || exit 1
+        
         popd
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3858,7 +3921,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
 +install: install-svm-predict install-svm-train install-svm-scale install-lib install-include
 
 EOF
-        patch -f -N -i libsvm-${LIBSVM_VERSION}.patch -p0
+        patch -f -N -i libsvm-${LIBSVM_VERSION}.patch -p0 \
+        || exit 1
 
         INSTALL_PREFIX=${LIBSVM_INSTALL_PREFIX} \
         CROSS_COMPILE=1 \
@@ -4055,7 +4119,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines demos/browser/browser.pr
  
  build_all:!build_pass {
 EOF
-        patch -f -N -i qt-${QT_VERSION}.patch -p0
+        patch -f -N -i qt-${QT_VERSION}.patch -p0 \
+        || exit 1
 
         # It is necessary to unset toolchain for qmake build otherwise -platform 
         # parameter is overriden and qmake build fails
@@ -4175,11 +4240,12 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qwtconfig.pri qwtconfig.p
  target.path    = $$INSTALLBASE/lib
 
 EOF
-        patch -f -N -i qwt5-${QWT5_VERSION}.patch -p0
+        patch -f -N -i qwt5-${QWT5_VERSION}.patch -p0 \
+        || exit 1
 
         export QTDIR=${QT_INSTALL_PREFIX}
         export QMAKESPEC=${QT_INSTALL_PREFIX}/mkspecs/win32-g++
-        ${QT_INSTALL_PREFIX}/bin/qmake
+        ${QT_INSTALL_PREFIX}/bin/qmake || exit 1
 
         make -j${__build_proc_num} install || exit 1
 
@@ -4248,7 +4314,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines include/yaml.h include/ya
  #endif
 
 EOF
-        patch -f -N -i yaml-${YAML_VERSION}.patch -p0
+        patch -f -N -i yaml-${YAML_VERSION}.patch -p0 \
+        || exit 1
 
         libtoolize --force \
         && aclocal \
@@ -4261,6 +4328,7 @@ EOF
                 --prefix=${YAML_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
+        
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -4365,10 +4433,12 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qt_installer_script qt_in
 +    gui.clickButton(buttons.FinishButton);
 +}
 EOF
-        patch -f -N -i qtifw-${QTIFW_VERSION}.patch -p0
+        patch -f -N -i qtifw-${QTIFW_VERSION}.patch -p0 \
+        || exit 1
 
-        xvfb-run ${__wine_cmd} ${__download_dir}/QtInstallerFramework-win-x86-${QTIFW_VERSION}.exe \
-            --script ${__build_dir}/qtifw-${QTIFW_VERSION}/qt_installer_script
+        xvfb-run --auto-servernum ${__wine_cmd} ${__download_dir}/QtInstallerFramework-win-x86-${QTIFW_VERSION}.exe \
+            --script ${__build_dir}/qtifw-${QTIFW_VERSION}/qt_installer_script \
+        || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
         rm -f qtifw && ln -fs qtifw-${QTIFW_VERSION} qtifw
@@ -4841,7 +4911,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
      g.add_option("--show-platforms", action="store_true", default=False,
 
 EOF
-        patch -f -N -i sip-${PYTHON_SIP_VERSION}.patch -p0
+        patch -f -N -i sip-${PYTHON_SIP_VERSION}.patch -p0 \
+        || exit 1
 
         ${PYTHON_HOST_COMMAND} configure.py \
                     -p win32-g++ \
@@ -4867,6 +4938,7 @@ EOF
         || exit 1
 
         make -j${__build_proc_num} install || exit 1
+        
         pushd ${CROSSBUILD_INSTALL_PREFIX}
         pushd bin;ln -fs ../python/sip.exe ./;popd
         pushd include;ln -fs ../python/include/sip.h ./;popd
@@ -5166,7 +5238,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDBus/qpydbus.pro qp
 EOF
         fi
         
-        patch -f -N -i pyqt-${PYTHON_PYQT_VERSION}.patch -p0
+        patch -f -N -i pyqt-${PYTHON_PYQT_VERSION}.patch -p0 \
+        || exit 1
 
         export PYTHONPATH="${PYTHON_INSTALL_PREFIX}/Lib/site-packages:${PYTHONPATH}"
         export QTDIR=${QT_INSTALL_PREFIX}
@@ -5198,6 +5271,7 @@ EOF
         # doing so allows us to use multiple processors
         make -j${__build_proc_num} -C qpy || exit 1
         make -j${__build_proc_num} install || exit 1
+        
         pushd ${CROSSBUILD_INSTALL_PREFIX}
         pushd bin;ln -fs ../python/pylupdate4.exe \
                          ../python/pyrcc4.exe \
@@ -5402,7 +5476,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
  execfile(join('traits', '__init__.py'), d)
 
 EOF
-        patch -f -N -i traits-${PYTHON_TRAITS_VERSION}.patch -p0 
+        patch -f -N -i traits-${PYTHON_TRAITS_VERSION}.patch -p0  \
+        || exit 1
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -5410,7 +5485,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
 
         popd
 
@@ -5451,7 +5527,8 @@ if [ "${PYTHON_DATEUTIL}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -5492,7 +5569,8 @@ if [ "${PYTHON_PYTZ}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -5554,7 +5632,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
  import sys
 
 EOF
-        patch -f -N -i pyparsing-${PYTHON_PYPARSING_VERSION}.patch -p0 
+        patch -f -N -i pyparsing-${PYTHON_PYPARSING_VERSION}.patch -p0 \
+        || exit 1
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -5562,7 +5641,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -5633,7 +5713,8 @@ if [ "${PYTHON_SINGLEDISPATCH}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -5675,7 +5756,8 @@ if [ "${PYTHON_TORNADO}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -5775,7 +5857,8 @@ if [ "${PYTHON_NOSE}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -5979,7 +6062,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
    )
 
 EOF
-        patch -f -N -i pycairo-${PYTHON_CAIRO_VERSION}.patch -p0 
+        patch -f -N -i pycairo-${PYTHON_CAIRO_VERSION}.patch -p0 \
+        || exit 1
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -5987,7 +6071,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
 
         popd
 
@@ -6049,7 +6134,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
  NAME = 'configobj'
 
 EOF
-        patch -f -N -i configobj-${PYTHON_CONFIGOBJ_VERSION}.patch -p0 
+        patch -f -N -i configobj-${PYTHON_CONFIGOBJ_VERSION}.patch -p0 \
+        || exit 1
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -6057,7 +6143,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -6655,7 +6742,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.cfg setup.cfg
 +#
 
 EOF
-        patch -f -N -i matplotlib-${PYTHON_MATPLOTLIB_VERSION}.patch -p0 
+        patch -f -N -i matplotlib-${PYTHON_MATPLOTLIB_VERSION}.patch -p0 \
+        || exit 1
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -6663,7 +6751,8 @@ EOF
         CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS} $(get_c_flags ${PYTHON_MATPLOTLIB_DEPENDENCIES})" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS} $(get_link_flags ${PYTHON_MATPLOTLIB_DEPENDENCIES})" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
 
         popd
 
@@ -6697,6 +6786,7 @@ if [ "${PYTHON_CRYPTO}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/pycrypto-${PYTHON_CRYPTO_VERSION}.tar.gz
         pushd ${__build_dir}/pycrypto-${PYTHON_CRYPTO_VERSION}
+        
         # Generate patch to build shared library
         cat << EOF > pycrypto-${PYTHON_CRYPTO_VERSION}.patch
 diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
@@ -6809,7 +6899,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines src/stream_template.c src
  #include <string.h>
  
 EOF
-        patch -f -N -i pycrypto-${PYTHON_CRYPTO_VERSION}.patch -p0 
+        patch -f -N -i pycrypto-${PYTHON_CRYPTO_VERSION}.patch -p0 \
+        || exit 1
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -6817,7 +6908,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
 
         popd
 
@@ -6859,7 +6951,8 @@ if [ "${PYTHON_PARAMIKO}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -6922,7 +7015,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
  import sets
 
 EOF
-        patch -f -N -i pyro-${PYTHON_PYRO_VERSION}.patch -p0 
+        patch -f -N -i pyro-${PYTHON_PYRO_VERSION}.patch -p0 \
+        || exit 1
 
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -6930,7 +7024,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -7022,7 +7117,8 @@ if [ "${PYTHON_DICOM}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
 
         popd
 
@@ -7119,7 +7215,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.cfg setup.cfg
 
 EOF
 
-        patch -f -N -i python-yaml-${PYTHON_YAML_VERSION}.patch -p0 
+        patch -f -N -i python-yaml-${PYTHON_YAML_VERSION}.patch -p0 \
+        || exit 1
         
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
@@ -7127,7 +7224,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS} $(get_c_flags ${PYTHON_YAML_DEPENDENCIES})" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS} $(get_link_flags ${PYTHON_YAML_DEPENDENCIES})" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
 
         popd
 
@@ -7169,7 +7267,8 @@ if [ "${PYTHON_XMLTODICT}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
         
         popd
 
@@ -7241,7 +7340,8 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 
 EOF
 
-        patch -f -N -i python-markupsafe-${PYTHON_MARKUPSAFE_VERSION}.patch -p0 
+        patch -f -N -i python-markupsafe-${PYTHON_MARKUPSAFE_VERSION}.patch -p0 \
+        || exit 1
 
         
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
@@ -7250,7 +7350,8 @@ EOF
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX}
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
         
         popd
 
@@ -7292,7 +7393,8 @@ if [ "${PYTHON_JINJA2}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
         
         popd
 
@@ -7334,7 +7436,8 @@ if [ "${PYTHON_PYGMENTS}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
         
         popd
 
@@ -7527,7 +7630,8 @@ if [ "${PYTHON_NIBABEL}" == "1" ]; then
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
         
         popd
 
@@ -7663,16 +7767,17 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 
 EOF
 
-        patch -f -N -i python-docutils-${PYTHON_DOCUTILS_VERSION}.patch -p0 
+        patch -f -N -i python-docutils-${PYTHON_DOCUTILS_VERSION}.patch -p0 \
+        || exit 1
 
-        
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
         CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
         CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
         LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
         LDSHARED="${CC} -shared" \
-        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
+        || exit 1
         
         popd
 
