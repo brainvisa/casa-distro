@@ -51,7 +51,7 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'],
     images = ['%s:%s' %(i,t) for i, t in images_tags if i != '<none>' and t not in ('<none>', 'latest')]
     images = [i for i in images if image_name_match(i, image_name_filters)]
     for docker_image in images:
-        singularity_image = osp.join(bwf_dir, docker_image.replace('/', '_').replace(':','_') + '.sqsh')
+        singularity_image = osp.join(bwf_dir, docker_image.replace('/', '_').replace(':','_') + '.simg')
         print('Creating image', singularity_image, 'from', docker_image, file=verbose)
         if osp.exists(singularity_image):
             os.remove(singularity_image)
@@ -129,7 +129,7 @@ From: %s
 
 
 def download_singularity_image(build_workflows_repository, container_image):
-    image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
+    image_file = container_image.replace('/', '_').replace(':', '_') + '.simg'
     image_path = osp.join(build_workflows_repository, image_file)
     url = '%s/%s' % (default_download_url, image_file)
     print('Downloading', image_path, 'from', url)
@@ -153,7 +153,7 @@ def download_singularity_image(build_workflows_repository, container_image):
 def update_singularity_image(build_workflows_repository, container_image,
                              verbose=False):
     verbose = log.getLogFile(verbose)
-    image_file = container_image.replace('/', '_').replace(':', '_') + '.sqsh'
+    image_file = container_image.replace('/', '_').replace(':', '_') + '.simg'
     image_path = osp.join(build_workflows_repository, image_file)
     if osp.exists(image_path):
         hash_file = image_file + '.md5'
@@ -217,7 +217,9 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
             raise ValueError('container_image is missing from casa_distro.json')
         container_image = container_image.replace('/', '_').replace(':', '_')
         container_image = osp.join(osp.dirname(osp.dirname(
-            casa_distro['build_workflow_dir'])), '%s.sqsh' % container_image)
+            casa_distro['build_workflow_dir'])), container_image)
+        if not osp.exists(container_image):
+            container_image += '.simg'
         if not osp.exists(container_image):
             raise ValueError("'%s' does not exist" % container_image)
     singularity += [container_image]
@@ -232,18 +234,35 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         print('-' * 40, file=verbose)
     check_call(singularity, env=container_env)
 
-if __name__ == '__main__':
-    import sys
-    import casa_distro.docker
 
-    function = getattr(casa_distro.docker, sys.argv[1])
-    args=[]
-    kwargs={}
-    for i in sys.argv[2:]:
-        l = i.split('=', 1)
-        if len(l) == 2:
-            kwargs[l[0]] = l[1]
-        else:
-            args.append(i)
-    function(*args, **kwargs)
 
+def create_writable_singularity_image(image, 
+                                      build_workflow_directory,
+                                      build_workflows_repository,            
+                                      verbose):
+    verbose = log.getLogFile(verbose)
+    if build_workflow_directory:
+        casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
+        casa_distro = json.load(open(casa_distro_json))
+        image = casa_distro.get('container_image')
+        
+    read_image = image.replace('/', '_').replace(':', '_')
+    read_image = osp.join(build_workflows_repository, '%s.simg' % read_image)
+    write_image = read_image[:-4] + 'writable'
+    check_call(['sudo', 'singularity', 'build', '--sandbox', write_image, read_image])
+
+
+def singularity_root_shell(image, 
+                           build_workflow_directory,
+                           build_workflows_repository,            
+                           verbose):
+    verbose = log.getLogFile(verbose)
+    if build_workflow_directory:
+        casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
+        casa_distro = json.load(open(casa_distro_json))
+        image = casa_distro.get('container_image')
+        
+    read_image = image.replace('/', '_').replace(':', '_')
+    read_image = osp.join(build_workflows_repository, '%s.simg' % read_image)
+    write_image = read_image[:-4] + 'writable'
+    check_call(['sudo', 'singularity', 'shell', '--writable', write_image])

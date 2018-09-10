@@ -238,7 +238,7 @@ def publish_singularity(image_names = 'cati/*',
     image_name_filters = [i.replace('/', '_').replace(':', '_') for i in image_names.split(',')]
     image_files = []
     for filter in image_name_filters:
-        image_files += glob.glob(osp.join(build_workflows_repository, filter + '.sqsh'))
+        image_files += glob.glob(osp.join(build_workflows_repository, filter + '.simg'))
     if not image_files:
         print('No image match filter "%s"' % image_names, file=sys.stderr)
         return 1

@@ -22,6 +22,8 @@ from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         create_build_workflow_directory,
                                         update_container_image, merge_config,
                                         update_build_workflow)
+from casa_distro.singularity import (create_writable_singularity_image,
+                                     singularity_root_shell)
 
 
 def verbose_bool(verbose):
@@ -253,10 +255,9 @@ def shell(distro='*', branch='*', system='*',
     if not build_workflows:
         print('Cannot find requested build workflow.',
               'You can list existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s list_build_workflows\n'
+              '    casa_distro list\n'
               'Or create new one using:\n'
-              'casa_distro -r %(bwf_dir)s create_build_workflow'
-              % {'bwf_dir':build_workflows_repository}, 
+              '    casa_distro create ...',
               file=sys.stderr)
         return 1
     
@@ -316,22 +317,19 @@ def run(distro=None, branch=None, system=None,
     if not build_workflows:
         print('Cannot find requested build workflow.',
               'You can list existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s list_build_workflows\n'
+              '    casa_distro list\n'
               'Or create new one using:\n'
-              'casa_distro -r %(bwf_dir)s create_build_workflow'
-              % {'bwf_dir':build_workflows_repository}, 
+              '    casa_distro create ...',
               file=sys.stderr)
         return 1
     
     if len(build_workflows) > 1:
-        print('Several build workflows found, you must explicitely select many',
+        print('Several build workflows found, you must explicitely select one',
               'giving values for distro, system and branch. You can list '
               'existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s list_build_workflows\n'
-              'You can run bv_maker on all existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s bv_maker \'distro=*\' \'branch=*\' '
-              '\'system=*\''
-              % {'bwf_dir':build_workflows_repository}, 
+              '    casa_distro list\n'
+              'You can run a command on all several workflows using:\n'
+              '    casa_distro mrun ...',
               file=sys.stderr)
         return 1
 
@@ -400,10 +398,9 @@ def mrun(distro='*', branch='*', system='*',
     if not build_workflows:
         print('Cannot find requested build workflow.',
               'You can list existing workflows using:\n'
-              'casa_distro -r %(bwf_dir)s list_build_workflows\n'
+              '    casa_distro list\n'
               'Or create new one using:\n'
-              'casa_distro -r %(bwf_dir)s create_build_workflow'
-              % {'bwf_dir':build_workflows_repository}, 
+              '    casa_distro create ...',
               file=sys.stderr)
         return 1
     
@@ -467,3 +464,125 @@ def bv_maker(distro='*', branch='*', system='*',
           container_image=container_image,
           container_options=container_options, args_list=args_list,
           verbose=verbose)
+
+
+@command
+def create_writable_image(singularity_image=None, distro=None, branch=None, system=None,
+             build_workflows_repository=default_build_workflow_repository,            
+             verbose=None):
+    '''
+    Create a writable version of a Singularity image used to run containers.
+    This allows to modify an image (for instance install custom packages). To
+    use a writable image in a build workflow, it is necessary to edit its
+    "casa_distro.json" file (located in the "conf" directory of the build
+    workflow) to add ".writable" to the image name. For instance :
+    
+        "container_image": "cati/casa-dev:ubuntu-16.04.writable"
+
+    The singularity image can be identified by its Docker-like name :
+        casa_distro create_writable_image cati/casa-dev:ubuntu-16.04
+    
+    It is also possible to identify an image by selecting a build workflow:
+        casa_distro create_writable_image distro=brainvisa branch=bug_fix
+
+    Due to Singularity security, it is necessary to be root on the host 
+    system to create an image (sudo is used for that and can ask you a password).
+    
+    '''
+    if (distro or branch or system) and singularity_image:
+        raise ValueError('Image selection must be done with either an image '
+                        'name or a build workflow selection but not both')
+    if not singularity_image:
+        if not distro:
+            distro = '*'
+        if not branch:
+            branch = '*'
+        if not system:
+            system = '*'
+        build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                                   distro=distro, 
+                                                   branch=branch, 
+                                                   system=system))
+        if not build_workflows:
+            print('Cannot find requested build workflow.',
+                'You can list existing workflows using:\n'
+                '    casa_distro list\n'
+                'Or create new one using:\n'
+                '    casa_distro create ...',
+                file=sys.stderr)
+            return 1
+        
+        if len(build_workflows) > 1:
+            print('Several build workflows found, you must explicitely select one',
+                'giving values for distro, system and branch. You can list '
+                'existing workflows using:\n'
+                '    casa_distro list',
+                file=sys.stderr)
+            return 1
+        d, b, s, bwf_dir = build_workflows[0]
+    else:
+        bwf_dir = None
+        
+    create_writable_singularity_image(image=singularity_image, 
+                                      build_workflow_directory=bwf_dir,
+                                      build_workflows_repository=build_workflows_repository,
+                                      verbose=None)
+
+@command
+def root_shell(singularity_image=None, distro=None, branch=None, system=None,
+               build_workflows_repository=default_build_workflow_repository,            
+               verbose=None):
+    '''
+    Start a shell with root privileges allowing to modify a writable
+    singularity image. Before using this command, a writable image 
+    must have been created with create_writable_image command. Using
+    this command allow to modify the writable image (for instance install
+    packages).
+    Due to Singularity security, it is necessary to be
+    root on the host system to start a root shell within the container (sudo 
+    is used for that and can ask you a password).
+    
+    Image can be identified by its Docker-like name :
+        casa_distro root_shell cati/casa-dev:ubuntu-16.04
+    
+    It is also possible to identify an image by selecting a build workflow:
+        casa_distro root_shell distro=brainvisa branch=bug_fix
+    '''
+    if (distro or branch or system) and singularity_image:
+        raise ValueError('Image selection must be done with either an image '
+                         'name or a build workflow selection but not both')
+    if not singularity_image:
+        if not distro:
+            distro = '*'
+        if not branch:
+            branch = '*'
+        if not system:
+            system = '*'
+        build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                                   distro=distro, 
+                                                   branch=branch, 
+                                                   system=system))
+        if not build_workflows:
+            print('Cannot find requested build workflow.',
+                'You can list existing workflows using:\n'
+                '    casa_distro list\n'
+                'Or create new one using:\n'
+                '    casa_distro create ...',
+                file=sys.stderr)
+            return 1
+        
+        if len(build_workflows) > 1:
+            print('Several build workflows found, you must explicitely select one',
+                'giving values for distro, system and branch. You can list '
+                'existing workflows using:\n'
+                '    casa_distro list',
+                file=sys.stderr)
+            return 1
+        d, b, s, bwf_dir = build_workflows[0]
+    else:
+        bwf_dir = None
+        
+    singularity_root_shell(image=singularity_image, 
+                           build_workflow_directory=bwf_dir,
+                           build_workflows_repository=build_workflows_repository,
+                           verbose=None)
