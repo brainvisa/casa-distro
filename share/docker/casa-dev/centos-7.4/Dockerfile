@@ -62,6 +62,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     texlive-fontwrap \
     texlive-fontmisc \
     python-setuptools \
+    python-subprocess32 \
     lftp \
     libffi-devel \
     gstreamer-devel \
@@ -165,7 +166,6 @@ RUN pip install "scikit-learn==0.19.1"
 RUN pip install -U pyparsing
 RUN pip install -U pydot
 RUN pip install mpi4py
-
 
 # install Pycluster
 # http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz
