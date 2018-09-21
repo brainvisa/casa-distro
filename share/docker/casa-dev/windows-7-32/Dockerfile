@@ -19,6 +19,7 @@ ENV CASA_TESTS=/casa/tests
 # Custom projects
 ENV CASA_CUSTOM_SRC=/casa/custom/src
 ENV CASA_CUSTOM_BUILD=/casa/custom/build
+ENV CASA_SYS=/casa/sys
 
 # Copy script to cross compile thirdparty dependencies
 COPY install_ubuntu_14.04_crossbuild.sh /tmp/install_ubuntu_14.04_crossbuild.sh

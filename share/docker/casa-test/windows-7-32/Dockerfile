@@ -83,7 +83,7 @@ RUN echo "#!/usr/bin/env bash \n" \
 RUN chmod 777 /usr/local/bin/init-wine
 
 # initialize for root
-RUN init-wine
+RUN /usr/local/bin/init-wine
 
 COPY entrypoint /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
