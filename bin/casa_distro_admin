@@ -1,0 +1,6 @@
+#! /usr/bin/env python
+
+from casa_distro.command import main
+from casa_distro import admin_commands
+
+main()

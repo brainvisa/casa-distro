@@ -1,0 +1,8 @@
+{
+    "container_image": "cati/casa-dev:%(system)s",
+    "alt_configs": {
+        "test": {
+            "container_image": "cati/casa-test:%(system)s"
+        }
+    }
+}

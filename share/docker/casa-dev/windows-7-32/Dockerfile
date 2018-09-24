@@ -1,4 +1,4 @@
-# Dockerfile for image cati/brainvisa-dev:windows-7-32
+# Dockerfile for image cati/casa-dev:windows-7-32
 
 FROM cati/casa-test:windows-7-32
 
@@ -14,13 +14,12 @@ ENV CASA_BUILD=/casa/build
 ENV CASA_INSTALL=/casa/install
 # Installation directory
 ENV CASA_PACK=/casa/pack
-# Default bv_maker branch
-ENV CASA_BRANCH=latest_release
 # Tests data directory
 ENV CASA_TESTS=/casa/tests
 # Custom projects
 ENV CASA_CUSTOM_SRC=/casa/custom/src
 ENV CASA_CUSTOM_BUILD=/casa/custom/build
+ENV CASA_SYS=/casa/sys
 
 # Copy script to cross compile thirdparty dependencies
 COPY install_ubuntu_14.04_crossbuild.sh /tmp/install_ubuntu_14.04_crossbuild.sh
@@ -118,12 +117,61 @@ RUN cd /tmp \
 # Add jenkins package
 RUN pip install python_jenkins==0.4.15
 
+# create casa directories for singularity compatibility  
+RUN mkdir -p $CASA_CONF \
+             $CASA_SRC \
+             $CASA_CUSTOM_SRC \
+             $CASA_BUILD \
+             $CASA_CUSTOM_BUILD \
+             $CASA_SYS
+
+RUN chmod 777 $CASA_CONF \
+              $CASA_SRC \
+              $CASA_CUSTOM_SRC \
+              $CASA_BUILD \
+              $CASA_CUSTOM_BUILD \
+              $CASA_SYS
+              
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn
 
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
+
+# Install a version of brainvisa-cmake
+RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    mkdir /tmp/brainvisa-cmake  && \
+    cd /tmp/brainvisa-cmake && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install && cd .. && rm -r /tmp/brainvisa-cmake
+
+# Set PATH to have bv_env_host being either the one of the build directory (/casa/build)
+# or the one in the image (/casa/brainvisa-cmake)
+ENV PATH=${PATH}:$CASA_BUILD/bin:/casa/brainvisa-cmake/bin
+
+# Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
+ENV BRAINVISA_BVMAKER_CFG=$CASA_CONF/bv_maker.cfg
+
+# Generate workflow initilialization script
+RUN echo "#!/usr/bin/env bash \n" \
+         "/usr/local/bin/init-wine " \
+         '&& CASA_DEPS_WIN="$(winepath -w ${CASA_DEPS})" ' \
+         '&& CASA_DEPS_WIN="${CASA_DEPS_WIN//\\/\\\\}" ' \
+         "&& wineserver -k -w " \
+         "&& /casa/brainvisa-cmake/bin/bv_wine_regedit " \
+         "--registry-action 'prepend' " \
+         '--value-path "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\\PATH" ' \
+         '--value "${CASA_DEPS_WIN}\\\\bin" ' \ 
+         "&& /casa/brainvisa-cmake/bin/bv_wine_regedit " \         
+         '--value-path "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\\PYTHONHOME" ' \
+         '--value "${CASA_DEPS_WIN}\\python" ' \
+         "&& /casa/brainvisa-cmake/bin/bv_wine_regedit " \
+         "--registry-action 'prepend' " \         
+         '--value-path "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\\QT_PLUGIN_PATH" ' \
+         '--value "${CASA_DEPS_WIN}\\qt\\plugins"' > /usr/local/bin/init-workflow
+
+RUN chmod 777 /usr/local/bin/init-workflow
 
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev

@@ -1,0 +1,7 @@
+dependencies:
+    - ../../casa-test
+image_sources:
+  - name: casa-dev
+    tags:
+      - centos-7.4
+    visibility: public

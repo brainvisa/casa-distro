@@ -1,183 +1,190 @@
-# Dockerfile for image cati/brainvisa-devbase:ubuntu-16.04
+# Dockerfile for image cati/casa-dev:ubuntu-16.04
 
 FROM cati/casa-test:ubuntu-16.04 
 
 # Install system dependencies
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    build-essential \
-    cmake \
-    cmake-curses-gui \
-    subversion \
-    git \
-    qt4-dev-tools \
-    qt4-designer \
-    qt4-qmake \
-    qt4-qmlviewer \
-    qt4-qtconfig \
-    qt4-linguist-tools \
-    python-sip-dev \
-    python-qt4-dev \
-    libsigc++-2.0-dev \
-    zlib1g-dev \
-    sqlite3 \
-    libsqlite3-dev \
-    libnetcdf-dev \
-    libreadline-dev \
-    libboost-dev \
-    libblitz0-dev \
-    libtiff-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libmng-dev \
-    graphviz \
-    graphviz-dev \
-    libminc-dev \
-    libdcmtk2-dev \
-    libqwt5-qt4-dev \
-    doxygen \
-    pyro \
-    python-paramiko \
-    libxml2-dev \
-    gfortran \
-    libsvm-dev \
-    python-epydoc \
-    python-sphinx \
-    python-matplotlib \
-    python-qt4-gl \
-    openjdk-8-jdk \
-    libltdl7-dev \
-    libncurses5-dev \
-    vim \
-    nano \
-    wget \
-    libgtk2.0 \
-    libgtk2.0-dev \
-    libopenjpeg-dev \
-    libgdk-pixbuf2.0-common \
-    libgdk-pixbuf2.0-0 \
-    libgdk-pixbuf2.0-dev \
-    automake \
-    texlive-fonts-recommended \
-    python-dicom \
-    python-traits \
-    lftp \
-    apt-utils \
-    g++-4.9 \
-    libgfortran-4.9-dev \
-#    openslide-tools \  # Needed?
-#    libqtassistantclient4 \  # Needed?
-    libqtwebkit-dev \
-    libblas-dev \
-    liblapack-dev \
-    libffi-dev \
-    libmpich-dev \
-    libgstreamer1.0-dev \
-    libgstreamer-plugins-base0.10-dev \
-    libgstreamer-plugins-base1.0-dev \
-    liborc-dev \
-    libxslt-dev \
-    libicu-dev \
-    gdb \
-    mesa-utils \
-    x11proto-gl-dev \
-    python-setuptools \
-    kdesdk-scripts \
-    net-tools \
-    liblapack-dev \
-    libatlas-dev \
-    libbz2-dev \
-    libzmq-dev \
-    libgsl0-dev \
-    libjasper-dev \
-    locate \
-    libaudio-dev \
-    python-yaml \
-    pandoc \
-#     libvtk5-dev \ # later ?
-    gadfly \
-    python-pyqt5 \
-    python-pyqt5.qtmultimedia \
-    python-pyqt5.qtopengl \
-    python-pyqt5.qtsvg \
-    python-pyqt5.qtwebkit \
-    python-pyqt5.qtsql \
-    python-pyqt5.qtwebsockets \
-    python-pyqt5.qtxmlpatterns \
-    python-mysqldb \
-    python-requests \
-    python-jenkins \
-    ipython3 \
-    ipython3-notebook \
-    ipython3-qtconsole \
-    python3-matplotlib \
-    python3-pyqt5 \
-    python3-pyqt5.qtmultimedia \
-    python3-pyqt5.qtopengl \
-    python3-pyqt5.qtsvg \
-    python3-pyqt5.qtwebkit \
-    python3-pyqt5.qtsql \
-    python3-pyqt5.qtwebsockets \
-    python3-pyqt5.qtxmlpatterns \
-    python3-traits \
-    python3-pip \
-    python3-pydot \
-    python3-configobj \
-    python3-sip-dev \
-    python3-pyqt4.qtsql \
-    python3-pyqt4.phonon \
-    python3-pyqt4.qtopengl \
-    python3-sphinx \
-    python3-sphinx-paramlinks \
-    python3-pandas \
-    python-xmltodict \
-    python3-xmltodict \
-    python3-fastcluster \
-    python3-mysqldb \
-    pyqt5-dev \
-    pyqt5-dev-tools \
-    libqt5opengl5-dev \
-    libqt5svg5-dev \
-    libqt5webkit5-dev \
-    libqt5websockets5-dev \
-    libqt5x11extras5-dev \
-    libqt5xmlpatterns5-dev \
-    libqt5waylandclient5-dev \
-    libphonon4qt5-dev \
-    libqwt-qt5-6 \
-    qttools5-dev-tools \
-    qtmultimedia5-dev \
-    python3-pyqt5.qtx11extras \
-    python3-ipython-genutils \
-    cython3 \
-    python3-yaml \
-    python3-requests \
-    python3-jenkins \
-    python3-opengl \
-    libnifti-dev \
-    x11proto-print-dev \
-    bash-completion \
-    qtpositioning5-dev \
-    libqt5sensors5-dev \
-    libdouble-conversion-dev \
-    libgraphite2-dev \
-    libharfbuzz-dev \
-    libhyphen-dev \
-    python-subprocess32 \
-    libxkbcommon-x11-dev \
-    libxcb-icccm4-dev \
-    libxcb-image0-dev \
-    libxcb-keysyms1-dev \
-    libxcb-randr0 \
-    libxcb-render-util0 \
-    libxcb-render0-dev \
-    libxcb-shape0-dev \
-    libxcb-shm0-dev \
-    libxcb-sync-dev \
-    libxcb-util-dev \
-    libxcb-xfixes0-dev \
-    libxcb-xkb-dev \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+# WARNING: it is necessary to call apt-get install for each packages to 
+# avoid the 101th package issue
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake-curses-gui \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y subversion \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-dev-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-designer \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-qmake \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-qmlviewer \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-qtconfig \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-linguist-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sip-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libsigc++-2.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y zlib1g-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y sqlite3 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libsqlite3-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libnetcdf-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libreadline-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libboost-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libblitz0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libtiff-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libjpeg-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libpng-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libmng-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y graphviz \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y graphviz-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libminc-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libdcmtk2-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqwt5-qt4-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y doxygen \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pyro \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-paramiko \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gfortran \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libsvm-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-epydoc \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jdk \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libltdl7-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libncurses5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y vim \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y nano \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y wget \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgtk2.0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgtk2.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libopenjpeg-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgdk-pixbuf2.0-common \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgdk-pixbuf2.0-0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgdk-pixbuf2.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y automake \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y texlive-fonts-recommended \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dicom \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-traits \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y lftp \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.9 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgfortran-4.9-dev \
+# && DEBIAN_FRONTEND=noninteractive apt-get install -y openslide-tools \  # Needed?
+# && DEBIAN_FRONTEND=noninteractive apt-get install -y libqtassistantclient4 \  # Needed?
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqtwebkit-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libblas-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y liblapack-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libffi-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libmpich-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgstreamer1.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgstreamer-plugins-base0.10-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgstreamer-plugins-base1.0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y liborc-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxslt-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libicu-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gdb \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y mesa-utils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y x11proto-gl-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-setuptools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kdesdk-scripts \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y net-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y liblapack-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libatlas-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libbz2-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libzmq-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgsl0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libjasper-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y locate \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libaudio-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-yaml \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pandoc \
+# && DEBIAN_FRONTEND=noninteractive apt-get install -y libvtk5-dev \ # later ?
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gadfly \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtmultimedia \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtopengl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtsvg \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtwebkit \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtsql \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtwebsockets \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtxmlpatterns \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-mysqldb \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-requests \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-jenkins \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y ipython3 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y ipython3-notebook \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y ipython3-qtconsole \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-matplotlib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtmultimedia \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtopengl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtsvg \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtwebkit \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtsql \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtwebsockets \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtxmlpatterns \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-traits \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pip \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pydot \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-configobj \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-sip-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt4.qtsql \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt4.phonon \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt4.qtopengl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-sphinx \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-sphinx-paramlinks \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pandas \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-xmltodict \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-xmltodict \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-fastcluster \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-mysqldb \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pyqt5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pyqt5-dev-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5opengl5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5svg5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5webkit5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5websockets5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5x11extras5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5xmlpatterns5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5waylandclient5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libphonon4qt5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqwt-qt5-6 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qttools5-dev-tools \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qtmultimedia5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtx11extras \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-ipython-genutils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y cython3 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-yaml \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-requests \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-jenkins \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-opengl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libnifti-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y x11proto-print-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y bash-completion \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qtpositioning5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5sensors5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libdouble-conversion-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libgraphite2-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libharfbuzz-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libhyphen-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-subprocess32 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-keysyms1-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-randr0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-render-util0 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-render0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-shape0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-shm0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-sync-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-util-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-xfixes0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-xkb-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-image0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-icccm4-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-render-util0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dbg \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y wkhtmltopdf \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-opengl \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # pip3 modules should be installed first, then some commands
 # (/usr/local/bin/jupyter* for instance) will be replaced by python2
@@ -193,6 +200,7 @@ RUN pip3 install dipy
 RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 RUN pip3 install -U 'ipython>=5.0,<6.0'
+RUN pip3 install -U pandas
 
 # WARNING: easy_install gets installed in /usr/local/bin/easy_install
 # for python 3! Same for pip, we have to force installing pip for python2
@@ -222,6 +230,7 @@ RUN pip install -U nibabel
 RUN pip install sklearn
 RUN pip install -U pyparsing
 RUN pip install -U pydot
+RUN pip install -U pandas
 
 # fix python command used in jupyter kernel
 # note: the "official" way is to run: ipython3 kernel install, but here
@@ -289,20 +298,55 @@ ENV CASA_BUILD=/casa/build
 ENV CASA_INSTALL=/casa/install
 # Installation directory
 ENV CASA_PACK=/casa/pack
-# Default bv_maker branch
-ENV CASA_BRANCH=latest_release
 # Tests data directory
 ENV CASA_TESTS=/casa/tests
 # Custom projects
 ENV CASA_CUSTOM_SRC=/casa/custom/src
 ENV CASA_CUSTOM_BUILD=/casa/custom/build
 
+# create casa directories for singularity compatibility  
+RUN mkdir -p $CASA_CONF \
+             $CASA_SRC \
+             $CASA_CUSTOM_SRC \
+             $CASA_BUILD \
+             $CASA_CUSTOM_BUILD
+
+RUN chmod 777 $CASA_CONF \
+              $CASA_SRC \
+              $CASA_CUSTOM_SRC \
+              $CASA_BUILD \
+              $CASA_CUSTOM_BUILD
+              
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
 RUN chmod +x /usr/local/bin/svn
 
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
+
+# Install a version of brainvisa-cmake
+RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    mkdir /tmp/brainvisa-cmake  && \
+    cd /tmp/brainvisa-cmake && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    make install && cd .. && rm -r /tmp/brainvisa-cmake
+
+# Set casa environement variables initialization
+RUN echo \
+'export PATH=${PATH}:/casa/brainvisa-cmake/bin\n'\
+'if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then\n'\
+'    OLD_CWD=$(pwd)\n'\
+'    cd ${CASA_BUILD}/bin\n'\
+'    PATH=.:"$PATH"\n'\
+'    . ./bv_env.sh\n'\
+'    unset OLD_CWD\n'\
+'fi' > /usr/local/bin/init-casa-env
+
+RUN sed -i 's%"$@"%. /usr/local/bin/init-casa-env\n"$@"%g' /usr/local/bin/entrypoint
+
+
+# Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
+ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
 
 RUN ldconfig
 

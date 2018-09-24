@@ -3,6 +3,5 @@ dependencies:
 image_sources:
   - name: casa-dev
     tags:
-      - latest
       - ubuntu-14.04
     visibility: public

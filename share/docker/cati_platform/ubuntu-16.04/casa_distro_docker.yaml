@@ -1,0 +1,7 @@
+dependencies:
+    - ../../casa-dev
+image_sources:
+  - name: cati_platform
+    tags:
+      - ubuntu-16.04
+    visibility: public
