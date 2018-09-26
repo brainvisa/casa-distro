@@ -3,7 +3,7 @@ import sys
 # Capsul current version
 version_major = 2
 version_minor = 0
-version_micro = 3
+version_micro = 4
 version_extra = ""
 
 short_version = '{0}.{1}'.format(version_major, version_minor)
