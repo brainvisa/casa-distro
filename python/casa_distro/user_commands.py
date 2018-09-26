@@ -242,7 +242,7 @@ def update_image(distro='*', branch='*', system='*',
 @command
 def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
-          gui=False, interactive=True, tmp_container=True, container_image=None,
+          gui=True, interactive=True, tmp_container=True, container_image=None,
           container_options=[], args_list=['-norc'], verbose=None,
           conf='dev'):
     '''
@@ -309,7 +309,6 @@ def run(distro=None, branch=None, system=None,
     if system is None:
         default_system = True
         system = '*'
-    
     build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                distro=distro, 
                                                branch=branch, 
@@ -336,40 +335,15 @@ def run(distro=None, branch=None, system=None,
     if isinstance(container_options, six.string_types):
         container_options = container_options.split(' ')
         
-    status = {}
-    global_failed = False
-
     d, b, s, bwf_dir = build_workflows[0]
-    es = ExecutionStatus(start_time = time.localtime())
-    status[(d, b, s)] = (es, bwf_dir)
-    try:
-        command = args_list
-        bwf_directory = osp.join(build_workflows_repository, '%s' % d,
-                                '%s_%s' % (b, s))
-        run_container(bwf_directory, command=command, gui=gui, 
-                    interactive=interactive, tmp_container=tmp_container,
-                    container_image=container_image,
-                    container_options=container_options, verbose=verbose,
-                    conf=conf)
-        es.stop_time = time.localtime()
-        es.error_code = 0
-        es.status = 'succeeded'
-    
-    except subprocess.CalledProcessError:
-        global_failed = True
-        es.stop_time = time.localtime()
-        es.exception = traceback.format_exc()
-        es.error_code = 1
-        es.status = 'failed'
-        
-    except KeyboardInterrupt:
-        global_failed = True
-        es.stop_time = time.localtime()
-        es.error_code = 1
-        es.status = 'interrupted'
-
-    display_summary(status)
-    return global_failed
+    command = args_list
+    bwf_directory = osp.join(build_workflows_repository, '%s' % d,
+                            '%s_%s' % (b, s))
+    run_container(bwf_directory, command=command, gui=gui, 
+                interactive=interactive, tmp_container=tmp_container,
+                container_image=container_image,
+                container_options=container_options, verbose=verbose,
+                conf=conf)
 
 
 @command
