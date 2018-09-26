@@ -262,7 +262,8 @@ def singularity_root_shell(image,
         casa_distro = json.load(open(casa_distro_json))
         image = casa_distro.get('container_image')
         
-    read_image = image.replace('/', '_').replace(':', '_')
-    read_image = osp.join(build_workflows_repository, '%s.simg' % read_image)
-    write_image = read_image[:-4] + 'writable'
+    write_image = image.replace('/', '_').replace(':', '_')
+    write_image = osp.join(build_workflows_repository, write_image)
+    if not write_image.endswith('.writable'):
+        write_image = write_image + '.writable'
     check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
