@@ -9,7 +9,8 @@ import zipfile
 try:
     from casa_distro.command import main
 except ImportError:
-    sys.path.append(osp.join(osp.dirname(osp.dirname(__file__)), 'python'))
+    sys.path.append(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 
+                             'python'))
     from casa_distro.command import main
 
 from casa_distro import user_commands
