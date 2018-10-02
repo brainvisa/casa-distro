@@ -120,21 +120,20 @@ def update_release_plan(components=None, build_workflows_repository=default_buil
 
 
 @command
-def publish_release_plan(login=None, password=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
-    '''send information to the CASA forum about things that would be done with the release plan file'''
-    from casa_distro.bv_maker import publish_release_plan_on_wiki
-    if password is None:
-        password = getpass('BioProj password for %s: ' % login)
+def html_release_plan(login=None, password=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
+    '''Convert a release plan to an HTML file for human inspection'''
+    from casa_distro.bv_maker import release_plan_to_html
     release_plan_file = osp.join(build_workflows_repository, 'release_plan.yaml')
-    publish_release_plan_on_wiki(login, password, release_plan_file)
+    release_plan_html = osp.join(build_workflows_repository, 'release_plan.html')
+    release_plan_to_html(release_plan_file, release_plan_html)
 
 
 @command
-def apply_release_plan(build_workflows_repository=default_build_workflow_repository, dry=None, ignore_warning = False, verbose=None):
-    '''apply actions defined in release plan file'''
+def create_latest_release(build_workflows_repository=default_build_workflow_repository, dry=None, ignore_warning = False, verbose=True):
+    '''apply actions defined in the release plan file for the creation of the latest_release branch.'''
     import os, types
     from distutils.util import strtobool
-    from casa_distro.bv_maker import FailOn, apply_release_plan
+    from casa_distro.bv_maker import apply_latest_release_todo
     
     try:
         if type(dry) in (types.StringType, types.UnicodeType):
@@ -161,17 +160,19 @@ def apply_release_plan(build_workflows_repository=default_build_workflow_reposit
     
     release_plan_file = osp.join(build_workflows_repository, 
                                  'release_plan.yaml')
+    previous_run_output = osp.join(build_workflows_repository, 
+                                   'create_latest_release.log')
         
     try:
-        fail_on = FailOn.ERROR
-        fail_on |= FailOn.NONE if ignore_warning else FailOn.WARNING
+        fail_on_error = True
+        fail_on_warning = not ignore_warning
         
-        apply_release_plan(release_plan_file, dry, fail_on, verbose)
+        apply_latest_release_todo(release_plan_file, previous_run_output, dry, fail_on_warning, fail_on_error, verbose)
         
     except RuntimeError as e:
         print('Impossible to apply release plan.', e.message,
               file = sys.stderr)
-        sys.exit(1)
+        raise
         
 @command
 def create_docker(image_names = '*', verbose=None):

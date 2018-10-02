@@ -1,3 +1,20 @@
-#!/bin/sh
-. "$CASA_CONF/svn.secret"
-exec /usr/bin/svn --non-interactive --username "$SVN_USERNAME" --password "$SVN_PASSWORD" "$@"
+#!/bin/bash
+
+args=
+argi=0
+read_secret=0
+secret="svn.secret"
+for i in "$@"; do
+  if [ "$i" == "--secret" ]; then
+    read_secret=1
+  elif [ "$read_secret" == "1" ]; then
+    secret="$i"
+    read_secret=0
+  else
+    args[argi]="$i"
+    argi=$((argi+1))
+  fi
+done
+
+. "$CASA_CONF/$secret"
+exec /usr/bin/svn --non-interactive --username "$SVN_USERNAME" --password "$SVN_PASSWORD" "${args[@]}"
