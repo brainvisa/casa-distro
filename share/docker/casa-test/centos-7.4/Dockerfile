@@ -13,6 +13,7 @@ RUN yum -y update --security && \
     glib2 \
     libXi \
     wget \
+    which \
   && yum clean all
 # delete all the yum list files since they're big and get stale quickly
 
