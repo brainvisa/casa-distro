@@ -290,7 +290,7 @@ ziplink = os.path.join(out_dir, 'casa-distro.zip')
 #print('zip file', zipfile)
 #print('zip link', ziplink)
 
-if os.path.exists(ziplink):
+if os.path.exists(ziplink) or os.path.islink(ziplink):
     os.unlink(ziplink)
 if not platform.system().lower().startswith('win'):
     os.symlink(os.path.basename(zipfile), ziplink)
