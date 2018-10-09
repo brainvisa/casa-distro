@@ -98,6 +98,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y wkhtmltopdf \
 # && DEBIAN_FRONTEND=noninteractive apt-get install -y  libvtk5-dev \ # later ?
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pax-utils \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 

@@ -91,6 +91,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     bash-completion \
     perl-devel \
     perl-CPAN \
+    pax-utils \
  && yum clean all
 
 ENV CEA_MIRROR_URL=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/centos-7.4
