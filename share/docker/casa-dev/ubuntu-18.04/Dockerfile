@@ -3,9 +3,15 @@
 FROM cati/casa-test:ubuntu-18.04
 
 # Install system dependencies
-# WARNING: it is necessary to call apt-get install for each packages to 
+
+# add neurodebian repositories and install packages
+# WARNING: it is necessary to call apt-get install for each packages to
 # avoid the 101th package issue
 RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gnupg2 \
+ &&  wget -O- http://neuro.debian.net/lists/bionic.de-m.full | tee /etc/apt/sources.list.d/neurodebian.sources.list \
+ && apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9 \
+ && apt-get update \
  && apt-get upgrade -y \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake \
@@ -171,7 +177,11 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y wkhtmltopdf \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-opengl \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y pax-utils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-joblib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-tqdm \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-joblib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-tqdm \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libpcl-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
   

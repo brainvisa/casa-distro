@@ -3,7 +3,12 @@
 FROM cati/casa-test:ubuntu-16.04 
 
 # Install system dependencies
-# WARNING: it is necessary to call apt-get install for each packages to 
+
+# add neurodebian repositories and install a few packages
+RUN wget -O- http://neuro.debian.net/lists/xenial.de-m.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list \
+    && apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
+
+# WARNING: it is necessary to call apt-get install for each package to
 # avoid the 101th package issue
 RUN apt-get update \
  && apt-get upgrade -y \
@@ -183,7 +188,11 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y wkhtmltopdf \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-opengl \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y pax-utils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-joblib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-tqdm \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-joblib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-tqdm \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libpcl-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -344,7 +353,6 @@ RUN echo \
 'fi' > /usr/local/bin/init-casa-env
 
 RUN sed -i 's%"$@"%. /usr/local/bin/init-casa-env\n"$@"%g' /usr/local/bin/entrypoint
-
 
 # Set variable to make bv_maker use /casa/conf/bv_maker.cfg by default
 ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
