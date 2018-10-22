@@ -286,7 +286,7 @@ def shell(distro='*', branch='*', system='*',
 def run(distro=None, branch=None, system=None,
         build_workflows_repository=default_build_workflow_repository,
         gui=True, interactive=False, tmp_container=True,
-        container_image=None,container_options=[], args_list=[],
+        container_image=None,container_options=[], cwd=None, args_list=[],
         verbose=None, conf='dev'):
     '''
     Start any command in the configured container (Docker or Singularity) with
@@ -341,7 +341,7 @@ def run(distro=None, branch=None, system=None,
                             '%s_%s' % (b, s))
     run_container(bwf_directory, command=command, gui=gui, 
                 interactive=interactive, tmp_container=tmp_container,
-                container_image=container_image,
+                container_image=container_image, cwd=cwd,
                 container_options=container_options, verbose=verbose,
                 conf=conf)
 

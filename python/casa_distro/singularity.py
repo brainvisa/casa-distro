@@ -180,13 +180,17 @@ def update_singularity_image(build_workflows_repository, container_image,
 
     
 def run_singularity(casa_distro, command, gui=False, interactive=False,
-                    tmp_container=True, container_image=None, container_options=[],
+                    tmp_container=True, container_image=None,
+                    cwd=None, container_options=[],
                     verbose=None):
     verbose = log.getLogFile(verbose)
     
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
     singularity = ['singularity', 'run', '--cleanenv']
+    print('cwd:', cwd)
+    if cwd:
+        singularity += ['--pwd', cwd]
     if gui:
         gui_options = casa_distro.get('container_gui_options')
         if gui_options:
@@ -209,7 +213,13 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         value = value % casa_distro
         value = osp.expandvars(value)
         container_env['SINGULARITYENV_' + name] = value
-    singularity += casa_distro.get('container_options', [])
+    conf_options = casa_distro.get('container_options', [])
+    if cwd:
+        for i, opt in enumerate(conf_options):
+            if opt == '--pwd':
+                conf_options = conf_options[:i] + conf_options[i+2:]
+                break
+    singularity += conf_options
     singularity += container_options
     if container_image is None:
         container_image = casa_distro.get('container_image')

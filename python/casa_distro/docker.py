@@ -308,7 +308,8 @@ def update_docker_image(container_image):
 
 
 def run_docker(casa_distro, command, gui=False, interactive=False,
-               tmp_container=True, container_image=None, container_options=[],
+               tmp_container=True, container_image=None, cwd=None,
+               container_options=[],
                verbose=None):
     
     verbose = log.getLogFile(verbose)
@@ -318,6 +319,8 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
         docker += ['-it']
     if tmp_container:
         docker += ['--rm']
+    if cwd:
+        docker += ['-w', cwd]
     if gui:
         gui_options = casa_distro.get('container_gui_options')
         if gui_options:
