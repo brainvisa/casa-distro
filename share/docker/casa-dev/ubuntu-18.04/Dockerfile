@@ -321,6 +321,7 @@ RUN echo \
 '    cd ${CASA_BUILD}/bin\n'\
 '    PATH=.:"$PATH"\n'\
 '    . ./bv_env.sh\n'\
+'    cd ${OLD_CWD}'\
 '    unset OLD_CWD\n'\
 'fi' > /usr/local/bin/init-casa-env
 
