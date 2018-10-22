@@ -5,6 +5,7 @@ import sys
 import tempfile
 import os.path as osp
 import glob
+import os
 
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
@@ -15,6 +16,24 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
                                   default_repository_server_directory,
                                   default_repository_login)
+from casa_distro.defaults import default_download_url
+
+try:
+    # Try Python 3 only import
+    from urllib.request import urlretrieve
+except ImportError:
+    # Provide a Python 2 implementation of urlretrieve
+    import urllib2
+    def urlretrieve(url, filename):
+        buffer_size = 1024 * 4
+        input = urllib2.urlopen(url)
+        with open(filename,'wb') as output:
+            while True:
+                buffer = input.read(buffer_size)
+                if buffer:
+                    output.write(buffer)
+                if len(buffer) < buffer_size:
+                    break
 
 @command
 def package_casa_distro(build_workflows_repository=default_build_workflow_repository):
@@ -243,7 +262,34 @@ def publish_singularity(image_names = 'cati/*',
     if not image_files:
         print('No image match filter "%s"' % image_names, file=sys.stderr)
         return 1
-                  
+
+    # check if uploads are needed or if images already habe valid md5 on the
+    # server
+    server_url = default_download_url
+    valid_files = []
+    for image_file in image_files:
+        hash_path = image_file + '.md5'
+        hash_file = os.path.basename(hash_path)
+        local_hash = open(hash_path).read()
+        tmp = tempfile.NamedTemporaryFile()
+        url = '%s/%s' % (server_url, hash_file)
+        try:
+            urlretrieve(url, tmp.name)
+            remote_hash = open(tmp.name).read()
+            if remote_hash == local_hash:
+                valid_files.append(image_file)
+                if verbose:
+                    print('Not updating', image_file, 'which is up-to-date',
+                          file=verbose)
+        except Exception as e:
+            pass # not on server
+    image_files = [f for f in image_files if f not in valid_files]
+    if len(image_files) == 0:
+        # nothing to do
+        if verbose:
+            print('All images are up-to-date.')
+        return
+
     lftp_script = tempfile.NamedTemporaryFile()
     if login:
         remote = 'sftp://%s@%s' % (login, repository_server)
