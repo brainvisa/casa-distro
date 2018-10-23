@@ -308,7 +308,7 @@ def update_docker_image(container_image):
 
 
 def run_docker(casa_distro, command, gui=False, interactive=False,
-               tmp_container=True, container_image=None, cwd=None,
+               tmp_container=True, container_image=None, cwd=None, env=None,
                container_options=[],
                verbose=None):
     
@@ -333,9 +333,11 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
         dest = dest % casa_distro
         dest = osp.expandvars(dest)
         docker += ['-v', '%s:%s' % (source, dest)]
-    container_env = casa_distro.get('container_env',{})
+    container_env = dict(casa_distro.get('container_env',{}))
     if gui:
         container_env.update(casa_distro.get('container_gui_env',{}))
+    if env is not None:
+        container_env.update(env)
     for name, value in six.iteritems(container_env):
         value = value % casa_distro
         value = osp.expandvars(value)

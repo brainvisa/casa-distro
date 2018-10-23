@@ -75,6 +75,39 @@ def display_summary(status):
     print(status)
 
 
+def parse_string(msg):
+    out_msg = []
+    sub_msg = []
+    esc = False
+    in_quote = None
+    for c in msg:
+        if esc:
+            print('esc:', c)
+            sub_msg.append(c)
+            esc = False
+        else:
+            if c == '\\':
+                esc = True
+            elif in_quote and c == in_quote:
+                in_quote = None
+            elif in_quote:
+                sub_msg.append(c)
+            elif c in ('"', "'"):
+                in_quote = c
+            elif c == ' ':
+                m = ''.join(sub_msg).strip()
+                if m != '':
+                    out_msg.append(m)
+                sub_msg = []
+            else:
+                sub_msg.append(c)
+    if len(sub_msg) != 0:
+        m = ''.join(sub_msg).strip()
+        if m != '':
+            out_msg.append(m)
+    return out_msg
+
+
 class ExecutionStatus:
     status_map = {'not run': '',
                   'succeeded': 'OK         ',
@@ -243,7 +276,8 @@ def update_image(distro='*', branch='*', system='*',
 def shell(distro='*', branch='*', system='*',
           build_workflows_repository=default_build_workflow_repository,
           gui=True, interactive=True, tmp_container=True, container_image=None,
-          container_options=[], args_list=['-norc'], verbose=None,
+          cwd=None, env=None, container_options=[], args_list=['-norc'],
+          verbose=None,
           conf='dev'):
     '''
     Start a bash shell in the configured container with the given repository
@@ -269,15 +303,26 @@ def shell(distro='*', branch='*', system='*',
               % build_workflows_repository, 
               file=sys.stderr)
         return 1
-    if isinstance(container_options, six.string_types):
-        container_options = container_options.split(' ')        
+
+    if isinstance(container_options, six.string_types) \
+            and len(container_options) != 0:
+        container_options = parse_string(container_options)
+    if isinstance(env, six.string_types) \
+            and len(env) != 0:
+        env_list = parse_string(env)
+        try:
+            env = dict(e.split('=') for e in env_list)
+        except:
+            raise ValueError('env syntax error. Should be in the shape '
+                             '"VAR1=value1 VAR2=value2" etc.')
+
     distro, branch, system, bwf_dir = build_workflows[0]
     bwf_directory = osp.join(build_workflows_repository, '%s' % distro,
                              '%s_%s' % (branch, system))
     command = ['/bin/bash' ] + args_list
     run_container(bwf_directory, command=command, gui=gui, 
                   interactive=interactive, tmp_container=tmp_container,
-                  container_image=container_image,
+                  container_image=container_image, cwd=cwd, env=env,
                   container_options=container_options, verbose=verbose,
                   conf=conf)
 
@@ -286,8 +331,8 @@ def shell(distro='*', branch='*', system='*',
 def run(distro=None, branch=None, system=None,
         build_workflows_repository=default_build_workflow_repository,
         gui=True, interactive=False, tmp_container=True,
-        container_image=None,container_options=[], cwd=None, args_list=[],
-        verbose=None, conf='dev'):
+        container_image=None,container_options=[], cwd=None, env=None,
+        args_list=[], verbose=None, conf='dev'):
     '''
     Start any command in the configured container (Docker or Singularity) with
     the given repository configuration.
@@ -332,16 +377,25 @@ def run(distro=None, branch=None, system=None,
               file=sys.stderr)
         return 1
 
-    if isinstance(container_options, six.string_types):
-        container_options = container_options.split(' ')
-        
+    if isinstance(container_options, six.string_types) \
+            and len(container_options) != 0:
+        container_options = parse_string(container_options)
+    if isinstance(env, six.string_types) \
+            and len(env) != 0:
+        env_list = parse_string(env)
+        try:
+            env = dict(e.split('=') for e in env_list)
+        except:
+            raise ValueError('env syntax error. Should be in the shape '
+                             '"VAR1=value1 VAR2=value2" etc.')
+
     d, b, s, bwf_dir = build_workflows[0]
     command = args_list
     bwf_directory = osp.join(build_workflows_repository, '%s' % d,
                             '%s_%s' % (b, s))
     run_container(bwf_directory, command=command, gui=gui, 
                 interactive=interactive, tmp_container=tmp_container,
-                container_image=container_image, cwd=cwd,
+                container_image=container_image, cwd=cwd, env=env,
                 container_options=container_options, verbose=verbose,
                 conf=conf)
 
@@ -350,8 +404,8 @@ def run(distro=None, branch=None, system=None,
 def mrun(distro='*', branch='*', system='*',
          build_workflows_repository=default_build_workflow_repository,
          gui=True, interactive=False, tmp_container=True,
-         container_image=None,container_options=[], args_list=[],
-         verbose=None, conf='dev'):
+         container_image=None, cwd=None, env=None, container_options=[],
+         args_list=[], verbose=None, conf='dev'):
     '''
     Start any command in one or several container with the given
     repository configuration. By default, command is executed in
@@ -365,7 +419,7 @@ def mrun(distro='*', branch='*', system='*',
     casa_distro.json config file. Typically, a test config may use a different
     system image (casa-test images), or options, or mounted directories.
     '''
-    build_workflows = list(iter_build_workflow(build_workflows_repository, 
+    build_workflows = list(iter_build_workflow(build_workflows_repository,
                                                distro=distro, 
                                                branch=branch, 
                                                system=system))
@@ -379,9 +433,18 @@ def mrun(distro='*', branch='*', system='*',
         return 1
     
 
-    if isinstance(container_options, six.string_types):
-        container_options = container_options.split(' ')
-        
+    if isinstance(container_options, six.string_types) \
+            and len(container_options) != 0:
+        container_options = parse_string(container_options)
+    if isinstance(env, six.string_types) \
+            and len(env) != 0:
+        env_list = parse_string(env)
+        try:
+            env = dict(e.split('=') for e in env_list)
+        except:
+            raise ValueError('env syntax error. Should be in the shape '
+                             '"VAR1=value1 VAR2=value2" etc.')
+
     status = {}
     global_failed = False
 
@@ -394,7 +457,8 @@ def mrun(distro='*', branch='*', system='*',
                                     '%s_%s' % (b, s))
             run_container(bwf_directory, command=command, gui=gui, 
                         interactive=interactive, tmp_container=tmp_container,
-                        container_image=container_image,
+                        container_image=container_image, cwd=cwd,
+                        env=env,
                         container_options=container_options, verbose=verbose,
                         conf=conf)
             es.stop_time = time.localtime()
@@ -423,8 +487,8 @@ def mrun(distro='*', branch='*', system='*',
 def bv_maker(distro='*', branch='*', system='*',
              build_workflows_repository=default_build_workflow_repository,
              gui=False, interactive=False, tmp_container=True, 
-             container_image=None, container_options=[], args_list=[],
-             verbose=None):
+             container_image=None, cwd=None, env=None, container_options=[],
+             args_list=[], verbose=None):
     '''
     Start bv_maker in the configured container for all the selected build
     workflows (by default, all created build workflows).
@@ -435,7 +499,7 @@ def bv_maker(distro='*', branch='*', system='*',
     mrun(distro=distro, branch=branch, system=system,
           build_workflows_repository=build_workflows_repository, gui=gui,
           interactive=interactive, tmp_container=tmp_container,
-          container_image=container_image,
+          container_image=container_image, cwd=cwd, env=env,
           container_options=container_options, args_list=args_list,
           verbose=verbose)
 

@@ -181,7 +181,7 @@ def update_singularity_image(build_workflows_repository, container_image,
     
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None,
-                    cwd=None, container_options=[],
+                    cwd=None, env=None, container_options=[],
                     verbose=None):
     verbose = log.getLogFile(verbose)
     
@@ -202,9 +202,11 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         singularity += ['--bind', '%s:%s' % (source, dest)]
         
     container_env = os.environ.copy()
-    tmp_env = casa_distro.get('container_env', {})
+    tmp_env = dict(casa_distro.get('container_env', {}))
     if gui:
         tmp_env.update(casa_distro.get('container_gui_env', {}))
+    if env is not None:
+        tmp_env.update(env)
     
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container

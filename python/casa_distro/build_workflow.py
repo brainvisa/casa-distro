@@ -507,7 +507,7 @@ def merge_config(casa_distro, conf):
 
 def run_container(bwf_directory, command, gui=False, interactive=False,
                   tmp_container=True, container_image=None,
-                  cwd=None,
+                  cwd=None, env=None,
                   container_options=[], verbose=False, conf='dev'):
     '''Run any command in the container defined in the build workflow directory
     '''
@@ -522,17 +522,17 @@ def run_container(bwf_directory, command, gui=False, interactive=False,
                             interactive=interactive,
                             tmp_container=tmp_container,
                             container_image=container_image,
-                            cwd=cwd,
+                            cwd=cwd, env=env,
                             container_options=container_options,
                             verbose=verbose)
         elif container_type == 'docker':
             run_docker(casa_distro, command, gui=gui,
                        interactive=interactive,
                        tmp_container=tmp_container,
-                       cwd=cwd,
+                       cwd=cwd, env=env,
                        container_image=container_image,
                        container_options=container_options,
-                       verbose=verbose)            
+                       verbose=verbose)
         else:
             raise ValueError('%s is no a valid container system (in "%s")' % (container_type, casa_distro_json))
     else:
