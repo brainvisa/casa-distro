@@ -188,7 +188,6 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
     singularity = ['singularity', 'run', '--cleanenv']
-    print('cwd:', cwd)
     if cwd:
         singularity += ['--pwd', cwd]
     if gui:
