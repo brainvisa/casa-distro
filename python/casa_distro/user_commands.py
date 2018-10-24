@@ -94,7 +94,7 @@ def parse_string(msg):
                 sub_msg.append(c)
             elif c in ('"', "'"):
                 in_quote = c
-            elif c == ' ':
+            elif c == ',':
                 m = ''.join(sub_msg).strip()
                 if m != '':
                     out_msg.append(m)
