@@ -9,9 +9,10 @@ import socket
 import time
 import os
 import sys
+import subprocess
 
 
-def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.2):
+def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3):
     '''
     Download a file from the given URL to the local path ``dest``.
 
@@ -30,6 +31,8 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.2):
         size of the file
     speed:
         instant speed in bytes/second
+    block: number of blocks read since the beginning of file
+    count: count of the number of calls to the callback function
 
     Parameters
     ----------
@@ -60,6 +63,7 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.2):
     base_url = os.path.basename(url)
     last_pos = 0
     speed = 0
+    cbk_count = 0
     with open(dest,'wb') as output:
         while True:
             try:
@@ -71,7 +75,9 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.2):
                         speed = (dl_len - last_pos) / (time.time() - last_time)
                         last_pos = dl_len
                         last_time = time.time()
-                        callback(base_url, dl_len, size, speed, block)
+                        callback(base_url, dl_len, size, speed, block,
+                                 cbk_count)
+                        cbk_count += 1
                 block += 1
                 if len(buffer) < buffer_size:
                     break
@@ -87,10 +93,15 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.2):
             callback(base_url, dl_len, size, speed, block)
             print()
 
-
-def stdout_progress(url, pos, size, speed, block):
+def stdout_progress(url, pos, size, speed, block, count):
     ''' Print the current download progress on stdout
     '''
+    term_width = 79
+    try:
+        term_width = int(subprocess.check_output(['stty', 'size']).split()[1]) - 1
+    except:
+        term_width = 80
+    url_width = term_width - 30
     if pos > (1<<30):
         posstr = '%.2fGB' % (float(pos) / (1<<30))
     elif pos > (1<<20):
@@ -114,9 +125,18 @@ def stdout_progress(url, pos, size, speed, block):
     elif speed > (1<<10):
         spstr = '%.2fKB/s' % (float(speed) / (1<<10))
     else:
-        spstr = '%dB/s' % speed
-    print('\r%s   %s / %s, %s    \r'
-          % (url, posstr, szstr, spstr), end='')
+        spstr = '%.2fB/s' % speed
+    l = len(url)
+    if l > url_width:
+        dl = len(url) - url_width
+        decal = l - url_width - abs(count % (dl * 2) - dl)
+        url = url[decal:decal + url_width]
+    msg = '%s   %s / %s, %s' % (url, posstr, szstr, spstr)
+    if len(msg) > term_width:
+        msg = msg[-term_width:]
+    else:
+        msg += ' ' * (term_width - len(msg))
+    print('\r%s\r' % msg, end='')
     sys.stdout.flush()
 
 
