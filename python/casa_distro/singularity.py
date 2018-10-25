@@ -12,23 +12,8 @@ from subprocess import check_call, check_output
 from casa_distro import log, six
 from casa_distro.hash import file_hash
 from casa_distro.defaults import default_download_url
+from . import downloader
 
-try:
-    # Try Python 3 only import
-    from urllib.request import urlretrieve
-except ImportError:
-    # Provide a Python 2 implementation of urlretrieve
-    import urllib2
-    def urlretrieve(url, filename):
-        buffer_size = 1024 * 4
-        input = urllib2.urlopen(url)
-        with open(filename,'wb') as output:
-            while True:
-                buffer = input.read(buffer_size)
-                if buffer:
-                    output.write(buffer)
-                if len(buffer) < buffer_size:
-                    break
 
 def image_name_match(image_name, filters):
     '''
@@ -134,14 +119,15 @@ def download_singularity_image(build_workflows_repository, container_image):
     url = '%s/%s' % (default_download_url, image_file)
     print('Downloading', image_path, 'from', url)
     try:
-        urlretrieve(url, image_path)
+        downloader.download_file(url, image_path,
+                                 callback=downloader.stdout_progress)
     except:
         print('Unable to update singularity image from', 
               url, 'to', image_path)
         return False
     
     try:
-        urlretrieve(url + '.md5', image_path + '.md5')
+        downloader.download_file(url + '.md5', image_path + '.md5')
     except:
         print('Unable to update singularity image hash from', 
               url + '.md5', 'to', image_path + '.md5')
@@ -163,10 +149,11 @@ def update_singularity_image(build_workflows_repository, container_image,
             tmp = tempfile.NamedTemporaryFile()
             url = '%s/%s' % (default_download_url, hash_file)
             try:
-                urlretrieve(url, tmp.name)
-            except:
+                downloader.download_file(url, tmp.name)
+            except Exception as e:
                 print('Unable to update singularity image from', 
                       url, 'to', tmp.name)
+                print(e)
 
             remote_hash = open(tmp.name).read()
             if remote_hash == local_hash:
