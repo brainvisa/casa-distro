@@ -10,7 +10,7 @@ import fnmatch
 from subprocess import check_call, check_output
 
 from casa_distro import log, six
-from casa_distro.hash import file_hash
+from casa_distro.hash import file_hash, check_hash
 from casa_distro.defaults import default_download_url
 from . import downloader
 
@@ -113,6 +113,10 @@ From: %s
     return len(images)
 
 
+def check_md5(filename, md5_file):
+
+
+
 def download_singularity_image(build_workflows_repository, container_image):
     image_file = container_image.replace('/', '_').replace(':', '_') + '.simg'
     image_path = osp.join(build_workflows_repository, image_file)
@@ -121,19 +125,21 @@ def download_singularity_image(build_workflows_repository, container_image):
     try:
         downloader.download_file(url, image_path,
                                  callback=downloader.stdout_progress)
-    except:
+    except Exception as e:
         print('Unable to update singularity image from', 
               url, 'to', image_path)
+        print(e)
         return False
     
     try:
         downloader.download_file(url + '.md5', image_path + '.md5')
-    except:
+    except Exception as e:
         print('Unable to update singularity image hash from', 
               url + '.md5', 'to', image_path + '.md5')
+        print(e)
         return False
-    
-    return True
+    if not check_hashimage_path, image_path + '.md5':
+        raise ValueError('Mismatching md5 hash on file %s' % image_path)
 
 
 def update_singularity_image(build_workflows_repository, container_image,

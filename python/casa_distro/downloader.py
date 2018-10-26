@@ -90,7 +90,7 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3):
                 new_url = urllib2.Request(url, headers=headers)
                 input = urllib2.urlopen(new_url, timeout=timeout)
         if callback:
-            callback(base_url, dl_len, size, speed, block)
+            callback(base_url, dl_len, size, speed, block, cbk_count)
             print()
 
 def stdout_progress(url, pos, size, speed, block, count):

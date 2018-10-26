@@ -8,7 +8,7 @@
 # else, typically in the sources of casa-test images.
 # Use the host-side script: build_mesa_host.sh to run this one inside docker.
 
-NETCDF_VERSION=4.4.1.1
+NETCDF_VERSION=4.6.1
 OLD=
 # NETCDF_VERSION=4.1.1
 # OLD=old/
@@ -18,7 +18,7 @@ wget ftp://ftp.unidata.ucar.edu/pub/netcdf/${OLD}netcdf-$NETCDF_VERSION.tar.gz
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 mkdir netcdf_build
 cd netcdf_build
-cmake ../netcdf-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETCDF_VERSION -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF
+cmake ../netcdf-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETCDF_VERSION -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DHAVE_HDF5_H=/usr/include/hdf5/serial
 make -j4
 make -j4 install
 cd ..
