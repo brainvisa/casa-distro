@@ -139,6 +139,8 @@ def download_singularity_image(build_workflows_repository, container_image):
         print(e)
         return False
     if not check_hashimage_path, image_path + '.md5':
+        os.unkink(image_path)
+        os.unkink(image_path + '.md5')
         raise ValueError('Mismatching md5 hash on file %s' % image_path)
 
 
