@@ -113,10 +113,6 @@ From: %s
     return len(images)
 
 
-def check_md5(filename, md5_file):
-
-
-
 def download_singularity_image(build_workflows_repository, container_image):
     image_file = container_image.replace('/', '_').replace(':', '_') + '.simg'
     image_path = osp.join(build_workflows_repository, image_file)
