@@ -118,26 +118,40 @@ def download_singularity_image(build_workflows_repository, container_image):
     image_path = osp.join(build_workflows_repository, image_file)
     url = '%s/%s' % (default_download_url, image_file)
     print('Downloading', image_path, 'from', url)
+    tmp_path = image_path + '.tmp'
     try:
-        downloader.download_file(url, image_path,
+        downloader.download_file(url, tmp_path,
                                  callback=downloader.stdout_progress)
     except Exception as e:
         print('Unable to update singularity image from', 
               url, 'to', image_path)
         print(e)
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
         return False
     
+    tmp_md5 =  image_path + '.md5.tmp'
     try:
-        downloader.download_file(url + '.md5', image_path + '.md5')
+        downloader.download_file(url + '.md5', tmp_md5)
     except Exception as e:
         print('Unable to update singularity image hash from', 
               url + '.md5', 'to', image_path + '.md5')
         print(e)
+        if os.path.exists(tmp_md5):
+            os.unlink(tmp_md5)
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
         return False
-    if not check_hashimage_path(image_path, image_path + '.md5'):
-        os.unlink(image_path)
-        os.unlink(image_path + '.md5')
+    if not check_hash(tmp_path, tmp_md5):
+        os.unlink(tmp_md5)
+        os.unlink(tmp_path)
         raise ValueError('Mismatching md5 hash on file %s' % image_path)
+    if os.path.exists(image_path):
+        os.unlink(image_path)
+    if os.path.exists(image_path + '.md5'):
+        os.unlink(image_path + '.md5')
+    shutil.move(tmp_path, image_path)
+    shutil.move(tmp_md5, image_path + '.md5')
 
 
 def update_singularity_image(build_workflows_repository, container_image,
