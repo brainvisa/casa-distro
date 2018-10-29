@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import hashlib
+import os
 
 def file_hash(path, blocksize=2**20):
     m = hashlib.md5()
