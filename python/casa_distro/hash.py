@@ -14,7 +14,7 @@ def file_hash(path, blocksize=2**20):
     return m.hexdigest()
 
 def check_hash(path, md5_file):
-    if os.path.isfile(pash):
+    if os.path.isfile(path):
         hashsum = file_hash(path)
     else:
         hashsum = path
