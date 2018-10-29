@@ -173,6 +173,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-image0-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-icccm4-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-render-util0-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y libxcb-xinerama0-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dbg \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y wkhtmltopdf \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
