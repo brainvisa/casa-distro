@@ -1,0 +1,64 @@
+================
+I - Introduction
+================
+
+To create a VirtualBox image for BrainVISA, two software are used: VirtualBox and Vagrant.
+To install them:
+  sudo apt install virtualbox vagrant
+
+Vagrant is used mainly because it allows to start a virtual machine and to wait for its ssh server to be ready in order to install software. We could use one of the VirtualBox images provided by Vagrant as starting point to install BrainVISA. But we need a kind of minimal desktop image and it was not easy to find information about existing images (what is inside, is it still maintained, etc.). Therefore, I decided to adapt a recipe found on internet to build our own Vagrant base system. The next chapter of this document explain how to create such a base system from scratch. Then, the following chapter explain how to install BrainVISA starting from this base system.
+
+======================================
+II - How to create a base system image
+======================================
+
+In this chapter we will use Ubuntu 16.04 as a base system but it can be easily adapted to another system. In Vagrant, the base images used to create various kind of virtual machines are called boxes. We show here how to create a box called brainvisa/ubuntu-16.04 that can be used as starting point to install BrainVISA using Vagrant. In Vagrant a box can have several "providers" wich are the type of virtual machines (VirtualBox, VMWare, etc.). Here, we only focus on VirtualBox. A Vagrant user must add a box to its environment (with command vagrand box add ...), he can find a box either on a hub via internet or on file previously created with Vagrant. We will use a file to share our Vagrant box. Therefore, all this recipe explain how to create an ubuntu-16.04-brainvisa.box file. 
+
+1) Install VirtualBox
+2) cd in directory containing this README file
+3) create the "vbox" directory that will contain all the VirtualBox image files
+4) Download ubuntu-16.04.5-desktop-amd64.iso in the current directory
+5) launch the script create_ubuntu-16.04_vm.sh to create an empty VirtualBox image with appropriate base settings
+6) Perform Ubuntu installation with an autologin account named "vagrant"
+7) Perform system updates
+8) Configure the VM to share clipboard with host
+9) Reboot the VM
+10) Download and install VirtualBox guest additions
+11) Install vagrant public key and allow sudo to vagrant user without password
+    Run in the VM:
+        mkdir -p /home/vagrant/.ssh
+        wget --no-check-certificate https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
+        # Ensure we have the correct permissions set
+        chmod 0700 /home/vagrant/.ssh
+        chmod 0600 /home/vagrant/.ssh/authorized_keys
+        chown -R vagrant /home/vagrant/.ssh
+        # Enable passwordless sudo to vagrant user
+        echo 'vagrant ALL=(ALL) NOPASSWD:ALL' | sudo cp /dev/stdin /etc/sudoers.d/vagrant
+        sudo chmod 0440 /etc/sudoers.d/vagrant
+12) Shutdown the VM
+13) Create a Vagant box file:
+    vagrant package --base ubuntu-16.04-brainvisa --output ubuntu-16.04-brainvisa.box
+
+==========================================
+III - Create and install a BrainVISA image
+==========================================
+
+To create an image, it is necessary to have a casa_distro build workflow using the same system as the target image (in our case Ubuntu 16.04). From this build workflow, the content of the /casa/install directory will be copied to the VirtualBox image. Therefore, one must have previously installed all what is to be included in the image. For instance, launch:
+
+  casa_distro run distro=brainvisa system=ubuntu-16.04 make BRAINVISA_INSTALL_PREFIX=/casa/install install-runtime
+
+We use Vagrant to create a VirtualBox image. In Vagrant, base images used to create virtual machines are called boxes. It is necessary to include brainvisa/ubuntu-16.04 box in Vagrant. To check if such a box is already present, use the following command:
+
+    vagrant box list
+
+To include the box in Vagrant, one must obtain the file ubuntu-16.04-brainvisa.box and run the following command:
+
+    vagrant box add --name brainvisa/ubuntu-16.04 ubuntu-16.04-brainvisa.box
+
+Then to build a BrainVISA image, just cd to the directory containing this README file and run the following commands:
+    
+    export CASA_DIR="<build_workflow_directory>"
+    vagrant up
+    vagrant ssh -c 'sudo halt'
+
+This will use the Vagrantfile to setup, start and install the virtual machine. This Vagrantfile uses the install_brainvisa.sh file in order to copy the build_workflow install directory into /casa/install and to install dependencies. It is necessary to halt the machine to take into account the file /etc/profile.d/brainvisa that contains environment variables necessary to run BrainVISA commands.
