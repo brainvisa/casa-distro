@@ -97,6 +97,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-mysqldb \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-requests \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sqlalchemy \
 # && DEBIAN_FRONTEND=noninteractive apt-get install -y python-jenkins
  && DEBIAN_FRONTEND=noninteractive apt-get install -y ipython3 \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y ipython3-qtconsole \
@@ -120,6 +121,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-xmltodict \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-xmltodict \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-fastcluster \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-sqlalchemy \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-mysqldb \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y pyqt5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y pyqt5-dev-tools \
@@ -208,6 +210,7 @@ RUN pip3 install cython
 RUN pip3 install dipy
 RUN pip3 install -U nibabel
 RUN pip3 install sklearn
+RUN pip3 install -U lark-parser
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
@@ -233,6 +236,7 @@ RUN pip install sklearn
 RUN pip install -U pyparsing
 RUN pip install -U pydot
 RUN pip install "python_jenkins==0.4.16"
+RUN pip install -U lark-parser
 
 # install Pycluster
 RUN cd /tmp \

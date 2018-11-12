@@ -46,6 +46,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     python-sphinx \
     python-matplotlib \
     python-matplotlib-qt4 \
+    python-sqlalchemy \
     java-1.7.0-openjdk \
     libtool-ltdl-devel \
     ncurses-devel \
@@ -167,6 +168,8 @@ RUN pip install "scikit-learn==0.19.1"
 RUN pip install -U pyparsing
 RUN pip install -U pydot
 RUN pip install mpi4py
+
+RUN pip install -U lark-parser
 
 # install Pycluster
 # http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz

@@ -47,9 +47,10 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gfortran \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libsvm-dev \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sqlalchemy \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-7-jdk \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libltdl7-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libncurses5-dev \
@@ -142,6 +143,8 @@ RUN pip install dipy
 RUN pip install -U nibabel
 RUN pip install sklearn
 RUN pip install subprocess32
+
+RUN pip install -U lark-parser
 
 # install Pycluster
 RUN cd /tmp \

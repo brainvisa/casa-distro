@@ -49,6 +49,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gfortran \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libsvm-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sqlalchemy \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-7-jdk \
@@ -141,6 +142,8 @@ RUN pip install sklearn
 RUN pip install -U dicom
 RUN pip install subprocess32
 RUN pip install tqdm
+
+RUN pip install -U lark-parser
 
 # install Pycluster
 RUN cd /tmp \

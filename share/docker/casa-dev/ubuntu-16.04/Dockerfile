@@ -49,9 +49,10 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gfortran \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libsvm-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-epydoc \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sqlalchemy \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jdk \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libltdl7-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libncurses5-dev \
@@ -141,6 +142,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-xmltodict \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-fastcluster \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-mysqldb \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-sqlalchemy \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y pyqt5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y pyqt5-dev-tools \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5opengl5-dev \
@@ -211,6 +213,7 @@ RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 RUN pip3 install -U 'ipython>=5.0,<6.0'
 RUN pip3 install -U pandas
+RUN pip3 install -U lark-parser
 
 # WARNING: easy_install gets installed in /usr/local/bin/easy_install
 # for python 3! Same for pip, we have to force installing pip for python2
@@ -241,6 +244,7 @@ RUN pip install sklearn
 RUN pip install -U pyparsing
 RUN pip install -U pydot
 RUN pip install -U pandas
+RUN pip install -U lark-parser
 
 # fix python command used in jupyter kernel
 # note: the "official" way is to run: ipython3 kernel install, but here
