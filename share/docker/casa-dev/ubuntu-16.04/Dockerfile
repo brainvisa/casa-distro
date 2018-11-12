@@ -246,6 +246,12 @@ RUN pip install -U pydot
 RUN pip install -U pandas
 RUN pip install -U lark-parser
 
+# setuptools and pip must be upgraded conjointly, otherwise some packages
+# will break them
+RUN pip3 install -U "pip==18.1" "setuptools==40.5.0"
+RUN pip3 install scikit-image
+RUN pip install scikit-image
+
 # fix python command used in jupyter kernel
 # note: the "official" way is to run: ipython3 kernel install, but here
 # in docker it runs an interactive shell for an unknown reason.

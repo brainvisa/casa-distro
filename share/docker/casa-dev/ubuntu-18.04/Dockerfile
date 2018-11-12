@@ -211,6 +211,7 @@ RUN pip3 install dipy
 RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 RUN pip3 install -U lark-parser
+RUN pip3 install -U ipython
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
@@ -237,6 +238,10 @@ RUN pip install -U pyparsing
 RUN pip install -U pydot
 RUN pip install "python_jenkins==0.4.16"
 RUN pip install -U lark-parser
+# this one needs reinstalling in pip since the whole module backports has
+# changed location... pip is a mess, I tell you...
+RUN pip3 install -U backports.functools_lru_cache
+RUN pip install -U backports.functools_lru_cache
 
 # install Pycluster
 RUN cd /tmp \
