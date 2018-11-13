@@ -9,7 +9,10 @@ RUN yum -y update --security && \
     libX11 \
     fontconfig \
     sudo \
-    Xrender \
+    libXrender \
+    libXrandr \
+    libXcursor \
+    libXinerama \
     glib2 \
     libXi \
     wget \
