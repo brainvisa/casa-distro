@@ -7918,6 +7918,87 @@ if [ "${PYTHON_PANDAS}" == "1" ]; then
     fi
 fi
 
+PYTHON_SQLALCHEMY_VERSION=1.2.14
+PYTHON_SQLALCHEMY_SOURCE_URL=https://files.pythonhosted.org/packages/e2/0a/05b7d13618ad41c108a6c2b886af83bf9bb7e35f8951227abb18b1330745/SQLAlchemy-${PYTHON_SQLALCHEMY_VERSION}.tar.gz
+if [ "${PYTHON_SQLALCHEMY}" == "1" ]; then
+    echo "================================ PYTHON_SQLALCHEMY ================================"
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_SQLALCHEMY_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y sqlalchemy
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        tar xvf ${__download_dir}/SQLAlchemy-${PYTHON_SQLALCHEMY_VERSION}.tar.gz
+        pushd ${__build_dir}/SQLAlchemy-${PYTHON_SQLALCHEMY_VERSION}
+
+        # Generate patch to build shared library
+        cat << EOF > python-sqlalchemy-${PYTHON_SQLALCHEMY_VERSION}.patch
+diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
+--- setup.py        2018-11-13 14:24:58.112395852 +0000
++++ setup.py    2018-11-13 14:29:11.235948740 +0000
+@@ -2,6 +2,31 @@
+ import platform
+ import re
+ import sys
++try:
++    from wheel import pep425tags
++except ImportError:
++    pass
++else:
++    pep425tags.get_abi_tag = lambda: 'none'
++
++try:
++    from setuptools import setup, Command
++
++except ImportError:
++     from distutils.core import setup, Command
++    
++from distutils import sysconfig
++def _init_posix():
++    """Initialize the module as appropriate for POSIX systems."""
++    # _sysconfigdata is generated at build time, see the sysconfig module
++    from _sysconfigdata import build_time_vars
++    sysconfig._config_vars = {}
++    sysconfig._config_vars.update(build_time_vars)
++    sysconfig._config_vars['SO'] = '.pyd'
++    sysconfig._config_vars['EXE'] = '.exe'
++
++sysconfig._init_posix = _init_posix
++
+ from distutils.command.build_ext import build_ext
+ from distutils.errors import CCompilerError
+ from distutils.errors import DistutilsExecError
+
+EOF
+
+        patch -f -N -i python-sqlalchemy-${PYTHON_SQLALCHEMY_VERSION}.patch -p0 \
+        || exit 1
+
+        PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
+        CROSS_COMPILE="${__toolchain}-" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
+        LDSHARED="${CC} -shared" \
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
+        
+        popd
+
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__build_dir}/SQLAlchemy-${PYTHON_SQLALCHEMY_VERSION}/dist/SQLAlchemy-${PYTHON_SQLALCHEMY_VERSION}-cp27-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+    fi
+fi
+
 popd
 
 # ------------------------------------------------------------------------------
