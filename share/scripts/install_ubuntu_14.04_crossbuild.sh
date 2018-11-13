@@ -361,8 +361,8 @@ __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six
                      python_yaml python_xmltodict python_markupsafe 
                      python_jinja2 python_pygments python_docutils 
                      python_pockets python_sphinx python_sphinx_napoleon
-                     python_pandas python_cython python_pyzmq python_h5py
-                     python_dipy python_sklearn python_nibabel)
+                     python_pandas python_sqlalchemy python_cython python_pyzmq 
+                     python_h5py python_dipy python_sklearn python_nibabel)
 
 if [ -z "${CROSSBUILD_INSTALL_PREFIX}" ]; then
     CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
