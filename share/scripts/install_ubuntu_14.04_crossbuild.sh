@@ -361,8 +361,9 @@ __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six
                      python_yaml python_xmltodict python_markupsafe 
                      python_jinja2 python_pygments python_docutils 
                      python_pockets python_sphinx python_sphinx_napoleon
-                     python_pandas python_sqlalchemy python_cython python_pyzmq 
-                     python_h5py python_dipy python_sklearn python_nibabel)
+                     python_pandas python_sqlalchemy python_larkparser 
+                     python_cython python_pyzmq python_h5py python_dipy 
+                     python_sklearn python_nibabel)
 
 if [ -z "${CROSSBUILD_INSTALL_PREFIX}" ]; then
     CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
@@ -7998,6 +7999,45 @@ EOF
         || exit 1
     fi
 fi
+
+PYTHON_LARKPARSER_VERSION=0.6.5
+PYTHON_LARKPARSER_SOURCE_URL=https://files.pythonhosted.org/packages/05/45/76b301c40337863a710239a5c3db5c55bc59eabc6c5cd839344652483273/lark-parser-${PYTHON_LARKPARSER_VERSION}.tar.gz
+if [ "${PYTHON_LARKPARSER}" == "1" ]; then
+    echo "================================ PYTHON_LARKPARSER ================================"
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_LARKPARSER_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y lark_parser
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        tar xvf ${__download_dir}/lark-parser-${PYTHON_LARKPARSER_VERSION}.tar.gz
+        pushd ${__build_dir}/lark-parser-${PYTHON_LARKPARSER_VERSION}
+
+        PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
+        CROSS_COMPILE="${__toolchain}-" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
+        LDSHARED="${CC} -shared" \
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
+        
+        popd
+
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__build_dir}/lark-parser-${PYTHON_LARKPARSER_VERSION}/dist/lark_parser-${PYTHON_LARKPARSER_VERSION}-py2.py3-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+    fi
+fi
+
 
 popd
 
