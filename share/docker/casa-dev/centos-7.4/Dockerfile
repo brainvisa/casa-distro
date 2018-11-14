@@ -47,6 +47,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     python-matplotlib \
     python-matplotlib-qt4 \
     python-sqlalchemy \
+    python-lark-parser \
     java-1.7.0-openjdk \
     libtool-ltdl-devel \
     ncurses-devel \
