@@ -31,7 +31,6 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libsqlite3-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libnetcdf-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libreadline-dev \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y libboost-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libblitz0-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libtiff-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libjpeg-dev \
@@ -49,7 +48,6 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gfortran \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libsvm-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sqlalchemy \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-7-jdk \
@@ -144,6 +142,7 @@ RUN pip install subprocess32
 RUN pip install tqdm
 
 RUN pip install -U lark-parser
+RUN pip install -U sqlalchemy
 
 # install Pycluster
 RUN cd /tmp \
