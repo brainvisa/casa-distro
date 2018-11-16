@@ -82,6 +82,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     jasper-devel \
     pandoc \
     mlocate \
+    gstreamer-plugins-base-devel \
     gstreamer1-plugins-base-devel \
     audiofile-devel \
     openpgm-devel \
