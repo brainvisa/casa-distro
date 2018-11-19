@@ -87,6 +87,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     audiofile-devel \
     openpgm-devel \
     libyaml-devel \
+    jbigkit-devel \
     PyYAML \
     zip \
     unzip \
