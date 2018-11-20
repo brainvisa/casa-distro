@@ -216,7 +216,8 @@ def create_docker_images(image_name_filters = ['*']):
                                 shutil.rmtree(target)
                             shutil.copytree(source, target)
                         elif f.endswith('.template'):
-                            content = apply_template_parameters(open(source).read(), template_parameters)
+                            content = apply_template_parameters(open(source).read(),
+                                                                template_parameters)
                             open(target[:-9], 'w').write(content)
                         else:
                             shutil.copy2(source, target)
@@ -236,8 +237,19 @@ def create_docker_images(image_name_filters = ['*']):
                         if base_image:
                             old_base_id = pull_image(base_image)
 
-                    cmd = ['docker', 'build', '--force-rm',
-                           '--tag', image_full_name, target_directory]
+                    docker_ver = get_docker_version()
+                    # Docker 1.13 adds the --network option to build commands.
+                    # This is useful to avoid a DNS (/etc/resolv.conf) problem
+                    # happening on many Ubuntu computers where the host
+                    # /etc/resolv.conf uses 127.0.0.1 Unfortunately it is not
+                    # available in older releases of docker, including
+                    # those shipped in Ubuntu 16.04 (which is 1.12).
+                    if docker_ver >= [1, 13]:
+                        cmd = ['docker', 'build', '--network=host']
+                    else:
+                        cmd = ['docker', 'build']
+                    cmd += ['--force-rm', '--tag', image_full_name, 
+                            target_directory]
                     print('-'*40)
                     print('Creating image %s' % image_full_name)
                     print(*cmd)

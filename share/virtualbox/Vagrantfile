@@ -68,8 +68,33 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
 
-  config.vm.synced_folder ENV["CASA_DIR"], "/casa_host"
+#   config.vm.synced_folder ENV["CASA_DIR"], "/casa_host"
+  
+#   config.vm.provision "shell", inline: <<-SHELL
+#     sudo systemctl disable apt-daily.service
+#     sudo systemctl disable apt-daily.timer
+#   SHELL
+  
+  config.vm.provision "disable-apt-periodic-updates", type: "shell" do |s|
+    s.privileged = true
+    s.inline = "echo 'APT::Periodic::Enable \"0\";' > /etc/apt/apt.conf.d/02periodic"
+  end
 
-  config.vm.provision "shell", path: "install_brainvisa.sh"
+  config.vm.provision "file", source: "../docker/casa-test/ubuntu-16.04/libGL.so.1", destination: "/tmp/libGL.so.1"
+  config.vm.provision "file", source: "../docker/casa-test/ubuntu-16.04/libglapi.so.0", destination: "/tmp/libglapi.so.0"
+  config.vm.provision "file", source: "../docker/casa-test/ubuntu-16.04/entrypoint", destination: "/tmp/entrypoint"
+  config.vm.provision "shell" do |s|
+    s.inline = "sudo mv /tmp/libGL.so.1 /usr/local/lib/libGL.so.1; sudo mv /tmp/libglapi.so.0 /usr/local/lib/libglapi.so.0; sudo mv /tmp/entrypoint /usr/local/bin/entrypoint"
+  end
+  config.vm.provision "shell", path: "../docker/casa-test/ubuntu-16.04/install.sh"
+
+  config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/environment.sh", destination: "/casa/environment.sh"
+  config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/build_netcdf.sh", destination: "/tmp/build_netcdf.sh"
+  config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/svn.secret", destination: "/casa/conf/svn.secret"
+  config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/svn", destination: "/tmp/svn"
+  config.vm.provision "shell" do |s|
+    s.inline = "sudo mv /tmp/svn /usr/local/bin/svn"
+  end
+  config.vm.provision "shell", path: "../docker/casa-dev/ubuntu-16.04/install.sh"
 
 end
