@@ -358,4 +358,7 @@ $SUDO echo \
 '    unset OLD_CWD\n'\
 'fi' > /usr/local/bin/init-casa-env
 
+$SUDO chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
+$SUDO git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
+
 ldconfig
