@@ -218,7 +218,9 @@ RUN chmod 777 $CASA_CONF \
               
 COPY svn.secret $CASA_CONF/svn.secret
 COPY svn /usr/local/bin/svn
-RUN chmod +x /usr/local/bin/svn
+COPY askpass-bioproj.sh /usr/local/bin/askpass-bioproj.sh
+RUN chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
+RUN git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
 
 # allow attach gdb to a process
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
