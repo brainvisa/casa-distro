@@ -300,6 +300,8 @@ def publish_singularity(image_names = 'cati/*',
     for f in image_files:
         print('put', f, file=lftp_script)
         print('put', f + '.md5', file=lftp_script)
+        if os.path.exists(f + '.dockerid'):
+            print('put', f + '.dockerid', file=lftp_script)
     lftp_script.flush()
     cmd = ['lftp', '-f', lftp_script.name]
     if verbose:

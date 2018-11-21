@@ -31,13 +31,27 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'],
     Return the number of images processed.
     '''
     verbose = log.getLogFile(verbose)
-    output = check_output(['docker', 'images'])
-    images_tags = [i.split(None, 2)[:2] for i in output.split('\n')[1:] if i.strip()]
-    images = ['%s:%s' %(i,t) for i, t in images_tags if i != '<none>' and t not in ('<none>', 'latest')]
+    output = check_output(['docker', 'images', '--no-trunc'])
+    images_tags = [i.split(None, 3)[:3] for i in output.split('\n')[1:] if i.strip()]
+
+    images = ['%s:%s' %(i,t) for i, t, iid in images_tags if i != '<none>' and t not in ('<none>', 'latest')]
     images = [i for i in images if image_name_match(i, image_name_filters)]
     for docker_image in images:
-        singularity_image = osp.join(bwf_dir, docker_image.replace('/', '_').replace(':','_') + '.simg')
-        print('Creating image', singularity_image, 'from', docker_image, file=verbose)
+        singularity_image = osp.join(
+            bwf_dir,
+            docker_image.replace('/', '_').replace(':','_') + '.simg')
+        docker_id_file = singularity_image + '.dockerid'
+        if os.path.exists(docker_id_file):
+            try:
+                did = open(docker_id_file).read().strip()
+                if did == iid:
+                    print('image', singularity_image, 'is up-to-date.')
+                    continue
+            except:
+                print('could not read latest docker ID for image',
+                      singularity_image, ': recreating it.')
+        print('Creating image', singularity_image, 'from', docker_image,
+              file=verbose)
         if osp.exists(singularity_image):
             os.remove(singularity_image)
         stdout = subprocess.check_output(['docker', 'inspect', docker_image])
@@ -103,6 +117,7 @@ From: %s
                     subprocess.check_call(['sudo', 'singularity', 'build', singularity_image, recipe])
                     image_hash = file_hash(singularity_image)
                     open(singularity_image + '.md5', 'w').write(image_hash)
+                    open(docker_id_file, 'w').write(iid)
                 finally:
                     subprocess.call(['sudo', 'rm', '-Rf', docker_files]) 
             finally:
@@ -146,12 +161,18 @@ def download_singularity_image(build_workflows_repository, container_image):
         os.unlink(tmp_md5)
         os.unlink(tmp_path)
         raise ValueError('Mismatching md5 hash on file %s' % image_path)
+    if os.path.exists(image_path + '.dockerid'):
+        os.unkink(image_path + '.dockerid')
     if os.path.exists(image_path):
         os.unlink(image_path)
     if os.path.exists(image_path + '.md5'):
         os.unlink(image_path + '.md5')
     shutil.move(tmp_path, image_path)
     shutil.move(tmp_md5, image_path + '.md5')
+    try:
+        downloader.download_file(url + '.dockerid', image_path + '.dockerid')
+    except:
+        pass # no docker id. oh, well...
 
 
 def update_singularity_image(build_workflows_repository, container_image,
