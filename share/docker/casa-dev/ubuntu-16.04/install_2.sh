@@ -93,13 +93,13 @@ chmod 777 $CASA_CONF \
               $CASA_BUILD \
               $CASA_CUSTOM_BUILD
               
-chmod +x /usr/local/bin/svn
+$SUDO chmod +x /usr/local/bin/svn
 
 # allow attach gdb to a process
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
 # Install a version of brainvisa-cmake
-svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix
+/usr/bin/svn --non-interactive --username brainvisa --password Soma2009 export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix
 mkdir /tmp/brainvisa-cmake
 cd /tmp/brainvisa-cmake
 cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix
