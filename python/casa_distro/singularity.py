@@ -162,7 +162,7 @@ def download_singularity_image(build_workflows_repository, container_image):
         os.unlink(tmp_path)
         raise ValueError('Mismatching md5 hash on file %s' % image_path)
     if os.path.exists(image_path + '.dockerid'):
-        os.unkink(image_path + '.dockerid')
+        os.unlink(image_path + '.dockerid')
     if os.path.exists(image_path):
         os.unlink(image_path)
     if os.path.exists(image_path + '.md5'):
