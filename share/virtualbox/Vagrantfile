@@ -92,9 +92,11 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/build_netcdf.sh", destination: "/tmp/build_netcdf.sh"
   config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/svn.secret", destination: "/casa/conf/svn.secret"
   config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/svn", destination: "/tmp/svn"
+  config.vm.provision "file", source: "../docker/casa-dev/ubuntu-16.04/askpass-bioproj.sh", destination: "/tmp/askpass-bioproj.sh"
   config.vm.provision "shell" do |s|
-    s.inline = "sudo mv /tmp/svn /usr/local/bin/svn"
+    s.inline = "sudo mv /tmp/svn /tmp/askpass-bioproj.sh /usr/local/bin/"
   end
-  config.vm.provision "shell", path: "../docker/casa-dev/ubuntu-16.04/install.sh"
+  config.vm.provision "shell", path: "../docker/casa-dev/ubuntu-16.04/install_1.sh"
+  config.vm.provision "shell", path: "../docker/casa-dev/ubuntu-16.04/install_2.sh"
 
 end
