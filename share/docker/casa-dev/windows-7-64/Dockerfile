@@ -141,10 +141,10 @@ RUN git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
 # Install a version of brainvisa-cmake
-RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+RUN git clone https://github.com/brainvisa/brainvisa-cmake.git $CASA_SRC/development/brainvisa-cmake/master && \
     mkdir /tmp/brainvisa-cmake  && \
     cd /tmp/brainvisa-cmake && \
-    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/master && \
     make install && cd .. && rm -r /tmp/brainvisa-cmake
 
 # Set PATH to have bv_env_host being either the one of the build directory (/casa/build)

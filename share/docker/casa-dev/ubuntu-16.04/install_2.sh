@@ -99,10 +99,10 @@ $SUDO chmod +x /usr/local/bin/svn
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
 # Install a version of brainvisa-cmake
-/usr/bin/svn --non-interactive --username brainvisa --password Soma2009 export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix
+/usr/bin/git clone https://github.com/brainvisa/brainvisa-cmake.git $CASA_SRC/development/brainvisa-cmake/master
 mkdir /tmp/brainvisa-cmake
 cd /tmp/brainvisa-cmake
-cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix
+cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/master
 make install
 cd ..
 rm -r /tmp/brainvisa-cmake

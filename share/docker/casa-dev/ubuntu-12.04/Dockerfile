@@ -12,10 +12,12 @@ RUN wget -O- http://neuro.debian.net/lists/precise.de-m.full | sudo tee /etc/apt
 # avoid the 101th package issue
 RUN apt-get update \
  && apt-get upgrade -y \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake-curses-gui \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y subversion \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python-software-properties \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-dev-tools \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y qt4-designer \
@@ -101,9 +103,21 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y pax-utils \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-joblib \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+ 
+# # WARNING: The package repository for apt can not be added before first update
+# # because it needs the apt-transport-https to be installed previously. This leed
+# # to a second necessary apt update call. Moreover, it does not actually work
+# # on ubuntu 12.04 because git is not recent enough (version>=1.8.2 required)
+# RUN wget --no-check-certificate -O- "https://packagecloud.io/install/repositories/github/git-lfs/config_file.list?os=ubuntu&dist=precise&source=script" \
+#     | sudo tee /etc/apt/sources.list.d/github_git-lfs.list \
+#     && wget --no-check-certificate -O- https://packagecloud.io/github/git-lfs/gpgkey 2>/dev/null | apt-key add - \
+#     && apt-get update \
+#     && DEBIAN_FRONTEND=noninteractive apt-get install -y git-lfs \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
+ 
 # RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 
 # does not work any  longer...
@@ -222,10 +236,10 @@ RUN git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
 RUN echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
 # Install a version of brainvisa-cmake
-RUN svn export https://bioproj.extra.cea.fr/neurosvn/brainvisa/development/brainvisa-cmake/branches/bug_fix $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+RUN git clone https://github.com/brainvisa/brainvisa-cmake.git $CASA_SRC/development/brainvisa-cmake/master && \
     mkdir /tmp/brainvisa-cmake  && \
     cd /tmp/brainvisa-cmake && \
-    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/bug_fix && \
+    cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/master && \
     make install && cd .. && rm -r /tmp/brainvisa-cmake
 
 # Set casa environement variables initialization
