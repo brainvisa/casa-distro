@@ -24,7 +24,7 @@ def image_name_match(image_name, filters):
         if fnmatch.fnmatch(image_name, f):
             return True
 
-def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'],
+def create_singularity_images(bwf_dir, image_name_filters=['cati/*'],
                               verbose=None):
     '''
     Creates singularity images by converting to docker images.
@@ -34,9 +34,11 @@ def create_singularity_images(bwf_dir, image_name_filters = ['cati/*'],
     output = check_output(['docker', 'images', '--no-trunc'])
     images_tags = [i.split(None, 3)[:3] for i in output.split('\n')[1:] if i.strip()]
 
-    images = ['%s:%s' %(i,t) for i, t, iid in images_tags if i != '<none>' and t not in ('<none>', 'latest')]
-    images = [i for i in images if image_name_match(i, image_name_filters)]
-    for docker_image in images:
+    images = dict([('%s:%s' %(i,t), iid) for i, t, iid in images_tags
+                   if i != '<none>' and t not in ('<none>', 'latest')])
+    images = dict([(i, iid) for i, iid in images.items()
+                   if image_name_match(i, image_name_filters)])
+    for docker_image, iid in images.items():
         singularity_image = osp.join(
             bwf_dir,
             docker_image.replace('/', '_').replace(':','_') + '.simg')
