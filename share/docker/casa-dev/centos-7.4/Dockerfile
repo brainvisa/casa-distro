@@ -173,6 +173,8 @@ RUN pip install -U pydot
 RUN pip install mpi4py
 
 RUN pip install -U lark-parser
+RUN pip install -U xlrd
+RUN pip install -U xlwt
 
 # install Pycluster
 # http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz

@@ -519,6 +519,8 @@ RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 RUN pip3 install -U lark-parser
 RUN pip3 install -U ipython
+RUN pip3 install -U xlrd
+RUN pip3 install -U xlwt
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
@@ -549,6 +551,8 @@ RUN pip install -U lark-parser
 # changed location... pip is a mess, I tell you...
 RUN pip3 install -U backports.functools_lru_cache
 RUN pip install -U backports.functools_lru_cache
+RUN pip install -U xlrd
+RUN pip install -U xlwt
 
 # install Pycluster
 RUN cd /tmp \

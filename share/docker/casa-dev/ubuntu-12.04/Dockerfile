@@ -157,6 +157,8 @@ RUN pip install tqdm
 
 RUN pip install -U lark-parser
 RUN pip install -U sqlalchemy
+RUN pip install -U xlrd
+RUN pip install -U xlwt
 
 # install Pycluster
 RUN cd /tmp \
