@@ -363,7 +363,7 @@ __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six
                      python_pockets python_sphinx python_sphinx_napoleon
                      python_pandas python_sqlalchemy python_larkparser 
                      python_cython python_pyzmq python_h5py python_dipy 
-                     python_sklearn python_nibabel)
+                     python_sklearn python_nibabel python_xlrd python_xlwt)
 
 if [ -z "${CROSSBUILD_INSTALL_PREFIX}" ]; then
     CROSSBUILD_INSTALL_PREFIX="${HOME}/${__toolchain}/usr/local"
@@ -7644,6 +7644,67 @@ if [ "${PYTHON_NIBABEL}" == "1" ]; then
 
     fi
 fi
+
+# ------------------------------------------------------------------------------
+# xlrd
+# ------------------------------------------------------------------------------
+PYTHON_XLRD_VERSION=1.1.0
+PYTHON_XLRD_SOURCE_URL=https://files.pythonhosted.org/packages/07/e6/e95c4eec6221bfd8528bcc4ea252a850bffcc4be88ebc367e23a1a84b0bb/xlrd-${PYTHON_XLRD_VERSION}-py2.py3-none-any.whl
+
+if [ "${PYTHON_XLRD}" == "1" ]; then
+    echo "============================== PYTHON_XLRD =============================="
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_XLRD_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y xlrd
+    fi
+
+    if [ "${__install}" == "1" ]; then
+
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/xlrd-${PYTHON_XLRD_VERSION}-py2.py3-none-any.whl)" \
+        || exit 1
+
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# xlwt
+# ------------------------------------------------------------------------------
+PYTHON_XLWT_VERSION=1.3.0
+PYTHON_XLWT_SOURCE_URL=https://files.pythonhosted.org/packages/44/48/def306413b25c3d01753603b1a222a011b8621aed27cd7f89cbc27e6b0f4/xlwt-${PYTHON_XLWT_VERSION}-py2.py3-none-any.whl
+
+if [ "${PYTHON_XLWT}" == "1" ]; then
+    echo "============================== PYTHON_XLWT =============================="
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_XLWT_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y xlwt
+    fi
+
+    if [ "${__install}" == "1" ]; then
+    
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__download_dir}/xlwt-${PYTHON_XLWT_VERSION}-py2.py3-none-any.whl)" \
+        || exit 1
+
+    fi
+fi
+
 # 
 # # ------------------------------------------------------------------------------
 # # nipype
