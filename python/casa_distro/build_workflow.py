@@ -432,6 +432,12 @@ def create_build_workflow_directory(build_workflow_directory,
     
     casa_distro_json = osp.join(bwf_dir, 'conf', 'casa_distro.json')
     json.dump(casa_distro, open(casa_distro_json, 'w'), indent=4)
+
+    open(os.path.join(bwf_dir, 'home', '.bashrc'), 'w').write('''
+if [ -f /etc/profile ]; then
+    . /etc/profile
+fi
+''')
     
     check_svn_secret(bwf_dir)
     
