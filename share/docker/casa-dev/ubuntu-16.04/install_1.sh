@@ -48,7 +48,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y graphviz
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y graphviz-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libminc-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libdcmtk2-dev
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libqwt5-qt4-dev
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libqwt5-qt4
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libqwt-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y doxygen
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y pyro
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-paramiko
@@ -158,6 +159,7 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libqt5xmlpatterns5-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libqt5waylandclient5-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libphonon4qt5-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libqwt-qt5-6
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libqwt-qt5-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y qttools5-dev-tools
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y qtmultimedia5-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtx11extras
@@ -457,6 +459,8 @@ $SUDO pip3 install sklearn
 $SUDO pip3 install -U 'ipython>=5.0,<6.0'
 $SUDO pip3 install -U pandas
 $SUDO pip3 install -U lark-parser
+$SUDO pip3 install -U xlrd
+$SUDO pip3 install -U xlwt
 
 # WARNING: easy_install gets installed in /usr/local/bin/easy_install
 # for python 3! Same for pip, we have to force installing pip for python2
@@ -488,3 +492,5 @@ $SUDO pip install -U pyparsing
 $SUDO pip install -U pydot
 $SUDO pip install -U pandas
 $SUDO pip install -U lark-parser
+$SUDO pip install -U xlrd
+$SUDO pip install -U xlwt
