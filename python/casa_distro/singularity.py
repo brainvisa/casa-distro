@@ -268,7 +268,8 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         print('Running singularity with the following command:', file=verbose)
         print(*("'%s'" % i for i in singularity), file=verbose)
         print('\nUsing the following environment:', file=verbose)
-        for n, v in six.iteritems(container_env):
+        for n in sorted(container_env):
+            v = container_env[n]
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
     check_call(singularity, env=container_env)
