@@ -35,7 +35,7 @@ wget http://brainvisa.info/static/qt_installer-1.6.tar.gz
 cd /usr/local
 $SUDO tar xfz /tmp/qt_installer-1.6.tar.gz
 $SUDO ln -s qt_installer-1.6 qt_installer
-cd /usr/local/bin \
+cd /usr/local/bin
 $SUDO ln -s ../qt_installer/bin/* .
 rm /tmp/qt_installer-1.6.tar.gz
 
