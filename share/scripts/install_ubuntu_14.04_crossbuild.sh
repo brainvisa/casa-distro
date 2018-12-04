@@ -352,8 +352,8 @@ __build_libs=(libiconv zlib libxml2 expat hdf5 gettext sqlite libsigcpp freetype
               dcmtk netcdf minc libsvm qt qwt5 yaml qtifw)
 
 __build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six 
-                     python_numpy python_scipy python_traits python_dateutil 
-                     python_pytz python_pyparsing python_cycler
+                     python_subprocess32 python_numpy python_scipy python_traits
+                     python_dateutil python_pytz python_pyparsing python_cycler
                      python_singledispatch python_tornado python_certifi
                      python_backports_abc python_nose python_cairo
                      python_configobj python_matplotlib python_crypto
@@ -5353,6 +5353,82 @@ if [ "${PYTHON_SIX}" == "1" ]; then
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install ${__download_dir}/six-${PYTHON_SIX_VERSION}-py2.py3-none-any.whl \
         || exit 1
+    fi
+fi
+
+
+# ------------------------------------------------------------------------------
+# subprocess32
+# ------------------------------------------------------------------------------
+PYTHON_SUBPROCESS32_VERSION=3.5.3
+PYTHON_SUBPROCESS32_SOURCE_URL=https://files.pythonhosted.org/packages/be/2b/beeba583e9877e64db10b52a96915afc0feabf7144dcbf2a0d0ea68bf73d/subprocess32-${PYTHON_SUBPROCESS32_VERSION}.tar.gz
+
+if [ "${PYTHON_SUBPROCESS32}" == "1" ]; then
+    echo "============================== PYTHON_SUBPROCESS32 =============================="
+    if [ "${__download}" == "1" ]; then
+        download ${PYTHON_SUBPROCESS32_SOURCE_URL}
+    fi
+
+    if [ "${__remove_before_install}" == "1"  ]; then
+        # Uninstall using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                                    -m pip uninstall -y subprocess32
+    fi
+
+    if [ "${__install}" == "1" ]; then
+        tar xvf ${__download_dir}/subprocess32-${PYTHON_SUBPROCESS32_VERSION}.tar.gz
+        pushd ${__build_dir}/subprocess32-${PYTHON_SUBPROCESS32_VERSION}
+        # Generate patch to build shared library
+        cat << EOF > subprocess32-${PYTHON_SUBPROCESS32_VERSION}.patch
+diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
+--- setup.py    2018-12-04 13:51:27.354523020 +0100
++++ setup.py    2018-12-04 13:58:22.497769517 +0100
+@@ -50,14 +50,14 @@
+     cmdclass = {}
+     if sys.version_info[0] == 2:  # PY2
+         py_modules.append('subprocess32')
+-        if os.name == 'posix':
+-            ext = Extension('_posixsubprocess32', ['_posixsubprocess.c'],
+-                            depends=['_posixsubprocess_helpers.c',
+-                                     '_posixsubprocess_config.h'])
+-            ext_modules.append(ext)
+-            # Cause ./configure to be run before we build the extension.
+-            cmdclass['build_configure'] = BuildConfigure
+-            cmdclass['build_ext'] = BuildExtensionAfterConfigure
++        #if os.name == 'posix':
++            #ext = Extension('_posixsubprocess32', ['_posixsubprocess.c'],
++                            #depends=['_posixsubprocess_helpers.c',
++                                     #'_posixsubprocess_config.h'])
++            #ext_modules.append(ext)
++            ## Cause ./configure to be run before we build the extension.
++            #cmdclass['build_configure'] = BuildConfigure
++            #cmdclass['build_ext'] = BuildExtensionAfterConfigure
+     else:  # PY3
+         # Install a redirect that makes subprocess32 == subprocess on import.
+         packages.append('subprocess32')
+
+EOF
+        patch -f -N -i subprocess32-${PYTHON_SUBPROCESS32_VERSION}.patch -p0 \
+        || exit 1
+
+        PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
+        CROSS_COMPILE="${__toolchain}-" \
+        CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
+        CFLAGS="${CFLAGS} ${PYTHON_CFLAGS}" \
+        LDFLAGS="${LDFLAGS} ${PYTHON_LDFLAGS}" \
+        LDSHARED="${CC} -shared" \
+        ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
+        || exit 1
+
+        popd
+
+        # Install using target python
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "$(winepath -w ${__build_dir}/subprocess32-${PYTHON_SUBPROCESS32_VERSION}/dist/subprocess32-${PYTHON_SUBPROCESS32_VERSION}-py2-none-${PYTHON_WIN_ARCH_SUFFIX}.whl)" \
+        || exit 1
+
     fi
 fi
 
