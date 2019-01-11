@@ -353,6 +353,8 @@ def create_build_workflow_directory(build_workflow_directory,
         if container_image is None:
             raise ValueError('No container_image found in %s' % casa_distro_source_json)
     container_image = container_image % casa_distro
+    if os.path.exists(container_image) and not os.path.isabs(container_image):
+        container_image = os.path.abspath(container_image)
     casa_distro['container_image'] = container_image
                 
     if not container_test_image:
@@ -360,6 +362,9 @@ def create_build_workflow_directory(build_workflow_directory,
             'test', {}).get('container_image')
         if container_test_image is not None:
             container_test_image = container_test_image % casa_distro
+            if os.path.exists(container_test_image) \
+                    and not os.path.isabs(container_test_image):
+                container_test_image = os.path.abspath(container_test_image)
             casa_distro.setdefault('alt_configs', {}).setdefault(
                 'test', {})['container_image'] = container_test_image
 

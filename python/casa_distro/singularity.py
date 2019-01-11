@@ -130,9 +130,21 @@ From: %s
     return len(images)
 
 
+def get_image_filename(container_image, build_workflows_repository=None):
+    if os.path.exists(container_image):
+        return container_image
+    image_file = container_image.replace('/', '_').replace(':', '_')
+    if not osp.isabs(image_file):
+        image_file = osp.join(build_workflows_repository, image_file)
+    if not osp.exists(image_file) and not image_file.endswith('.simg'):
+        image_file += '.simg'
+    return image_file
+
+
 def download_singularity_image(build_workflows_repository, container_image):
-    image_file = container_image.replace('/', '_').replace(':', '_') + '.simg'
-    image_path = osp.join(build_workflows_repository, image_file)
+    image_path = get_image_filename(container_image,
+                                    build_workflows_repository)
+    image_file = osp.basename(image_path)
     url = '%s/%s' % (default_download_url, image_file)
     print('Downloading', image_path, 'from', url)
     tmp_path = image_path + '.tmp'
@@ -180,8 +192,13 @@ def download_singularity_image(build_workflows_repository, container_image):
 def update_singularity_image(build_workflows_repository, container_image,
                              verbose=False):
     verbose = log.getLogFile(verbose)
-    image_file = container_image.replace('/', '_').replace(':', '_') + '.simg'
-    image_path = osp.join(build_workflows_repository, image_file)
+    if os.path.exists(container_image):
+        # If the image is actually a local filename, then we don't try to
+        # update.
+        return True
+    image_path = get_image_filename(container_image,
+                                    build_workflows_repository)
+    image_file = osp.basename(image_path)
     if osp.exists(image_path):
         hash_file = image_file + '.md5'
         hash_path = image_path + '.md5'
@@ -254,11 +271,9 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         container_image = casa_distro.get('container_image')
         if container_image is None:
             raise ValueError('container_image is missing from casa_distro.json')
-        container_image = container_image.replace('/', '_').replace(':', '_')
-        container_image = osp.join(osp.dirname(osp.dirname(
-            casa_distro['build_workflow_dir'])), container_image)
-        if not osp.exists(container_image):
-            container_image += '.simg'
+        container_image = get_image_filename(
+            container_image,
+            osp.dirname(osp.dirname(casa_distro['build_workflow_dir'])))
         if not osp.exists(container_image):
             raise ValueError("'%s' does not exist" % container_image)
     singularity += [container_image]
@@ -286,8 +301,7 @@ def create_writable_singularity_image(image,
         casa_distro = json.load(open(casa_distro_json))
         image = casa_distro.get('container_image')
         
-    read_image = image.replace('/', '_').replace(':', '_')
-    read_image = osp.join(build_workflows_repository, '%s.simg' % read_image)
+    read_image = get_image_filename(image, build_workflows_repository)
     write_image = read_image[:-4] + 'writable'
     check_call(['sudo', 'singularity', 'build', '--sandbox', write_image, read_image])
 
@@ -302,8 +316,10 @@ def singularity_root_shell(image,
         casa_distro = json.load(open(casa_distro_json))
         image = casa_distro.get('container_image')
         
-    write_image = image.replace('/', '_').replace(':', '_')
-    write_image = osp.join(build_workflows_repository, write_image)
-    if not write_image.endswith('.writable'):
+    write_image = get_image_filename(image, build_workflows_repository)
+    if not write_image.endswith('.writable.simg') \
+            and not write_image.endswith('.writable'):
+        if write_image.endswith('.simg'):
+            write_image = write_image[:-5] + '.writable'
         write_image = write_image + '.writable'
     check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
