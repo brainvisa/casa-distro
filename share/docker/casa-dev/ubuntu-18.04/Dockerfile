@@ -529,6 +529,11 @@ RUN cd /tmp && wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0
 # https://stackoverflow.com/questions/38027292/configure-a-qt5-5-7-application-for-android-with-cmake/40256862#40256862
 RUN sed 's/^\(set_property.*INTERFACE_COMPILE_FEATURES.*\)$/#\ \1/' < /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake > /tmp/Qt5CoreConfigExtras.cmake && cp -f /tmp/Qt5CoreConfigExtras.cmake /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
 
+# reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
+# and virtual C++ inheritance
+COPY build_sip_pyqt.sh /tmp/build_sip_pyqt.sh
+RUN bash /tmp/build_sip_pyqt.sh
+
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
 ENV CASA_CONF=/casa/conf
 # Directory containing source code
