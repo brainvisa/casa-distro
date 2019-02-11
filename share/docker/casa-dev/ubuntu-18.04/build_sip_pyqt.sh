@@ -46,7 +46,7 @@ cd ../..
 
 rm -rf "$BUILD"
 
-${SUDO} ln -s sip-${SIP_VERSION} "$PREFIX/sip"
+${SUDO} ln -s sip-${SIP_VERSION} "$PREFIX/../sip"
 cd /usr/local/lib/python2.7/dist-packages
 ${SUDO} ln -s ../../../sip/lib/python2.7/dist-packages/* .
 cd /usr/local/lib/python3.6/dist-packages
