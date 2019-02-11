@@ -116,7 +116,8 @@ From: %s
         '\n'.join('. ' + ' '.join(["'%s'" % i for i in r]) for r in runscript)),        
                     file=out)
                     out.close()
-                    subprocess.check_call(['sudo', 'singularity', 'build', singularity_image, recipe])
+                    subprocess.check_call(['sudo', '-E', 'singularity',
+                                           'build', singularity_image, recipe])
                     image_hash = file_hash(singularity_image)
                     open(singularity_image + '.md5', 'w').write(image_hash)
                     open(docker_id_file, 'w').write(iid)
