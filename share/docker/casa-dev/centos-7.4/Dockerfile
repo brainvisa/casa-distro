@@ -96,6 +96,10 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     perl-devel \
     perl-CPAN \
     pax-utils \
+    python36 \
+    python36-devel \
+    python36-numpy \
+    python36-setuptools \
  && yum clean all
 
 ENV CEA_MIRROR_URL=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/centos-7.4
@@ -141,7 +145,7 @@ RUN pip --version
 # otherwise it will install an incompatible binary
 RUN pip install -U pkgconfig
 RUN pip install -U cython
-RUN pip install -U numpy
+RUN pip install -U "numpy==1.15.4"
 RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
@@ -175,6 +179,12 @@ RUN pip install mpi4py
 RUN pip install -U lark-parser
 RUN pip install -U xlrd
 RUN pip install -U xlwt
+
+# # install pip3 and pytorch in python3
+# RUN mkdir -p /usr/local/lib/python3.6/site-packages
+# RUN easy_install-3.6 pip
+# RUN pip3 install torch
+
 
 # install Pycluster
 # http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz
