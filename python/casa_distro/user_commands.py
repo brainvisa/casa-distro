@@ -259,7 +259,7 @@ def update_image(distro='*', branch='*', system='*',
         for conf in confs:
             wfconf = merge_config(casa_distro, conf)
             images_to_update.setdefault(wfconf['container_type'], set()).add(
-                wfconf['container_image'])
+                wfconf['container_image'].replace('.writable', ''))
         if verbose_bool(verbose):
             print('images_to_update:', images_to_update)
     if not images_to_update:
