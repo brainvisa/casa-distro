@@ -321,6 +321,6 @@ def singularity_root_shell(image,
     if not write_image.endswith('.writable.simg') \
             and not write_image.endswith('.writable'):
         if write_image.endswith('.simg'):
-            write_image = write_image[:-5] + '.writable'
+            write_image = write_image[:-5]
         write_image = write_image + '.writable'
     check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
