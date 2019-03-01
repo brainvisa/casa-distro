@@ -2,24 +2,23 @@
 I - Introduction
 ================
 
-To create a VirtualBox image for BrainVISA, two software are used: VirtualBox and Vagrant.
-To install them:
-  sudo apt install virtualbox vagrant
+To create a VirtualBox image for BrainVISA, VirtualBox must be installed:
+  sudo apt install virtualbox
 
-Vagrant is used mainly because it allows to start a virtual machine and to wait for its ssh server to be ready in order to install software. We could use one of the VirtualBox images provided by Vagrant as starting point to install BrainVISA. But we need a kind of minimal desktop image and it was not easy to find information about existing images (what is inside, is it still maintained, etc.). Therefore, I decided to adapt a recipe found on internet to build our own Vagrant base system. The next chapter of this document explain how to create such a base system from scratch. Then, the following chapter explain how to install BrainVISA starting from this base system.
+We need a kind of minimal desktop image to start with. The next chapter of this document explain how to create such a base system from scratch. Then, the following chapter explain how to install BrainVISA starting from this base system.
 
 ======================================
 II - How to create a base system image
 ======================================
 
-In this chapter we will use Ubuntu 16.04 as a base system but it can be easily adapted to another system. In Vagrant, the base images used to create various kind of virtual machines are called boxes. We show here how to create a box called brainvisa/ubuntu-16.04 that can be used as starting point to install BrainVISA using Vagrant. In Vagrant a box can have several "providers" wich are the type of virtual machines (VirtualBox, VMWare, etc.). Here, we only focus on VirtualBox. A Vagrant user must add a box to its environment (with command vagrand box add ...), he can find a box either on a hub via internet or on file previously created with Vagrant. We will use a file to share our Vagrant box. Therefore, all this recipe explain how to create an ubuntu-16.04-brainvisa.box file. 
+In this chapter we will use Ubuntu 16.04 as a base system in VirtualBox but it can be easily adapted to another system.
 
 1) Install VirtualBox
 2) cd in directory containing this README file
 3) create the "vbox" directory that will contain all the VirtualBox image files
 4) Download ubuntu-16.04.5-desktop-amd64.iso in the current directory
 5) launch the script create_ubuntu-16.04_vm.sh to create an empty VirtualBox image with appropriate base settings
-6) Perform Ubuntu installation with an autologin account named "vagrant"
+6) Perform Ubuntu installation with an autologin account named "brainvisa" and with password "brainvisa"
 7) Perform system updates
 8) Configure the VM to share clipboard with host
 9) Reboot the VM

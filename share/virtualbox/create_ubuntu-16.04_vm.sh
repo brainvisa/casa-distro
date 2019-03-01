@@ -7,7 +7,7 @@ VBoxManage createvm --name $IMAGE --ostype Ubuntu_64 --register --basefolder $IM
 VBoxManage modifyvm $IMAGE --memory 1024 --boot1 dvd
 VBoxManage modifyvm $IMAGE --nic1 nat
 # Create 10Gb system disk
-VBoxManage createhd --filename $IMAGE_DIR/$IMAGE.vdi --size 10280 --format VDI --variant Standard
+VBoxManage createhd --filename $IMAGE_DIR/$IMAGE.vdi --size 16384 --format VDI --variant Standard
 # Create a SATA controller in the VM
 VBoxManage storagectl $IMAGE --name "${IMAGE}_SATA" --add sata
 # Attach the system disk to the machine

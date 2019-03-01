@@ -35,7 +35,7 @@ if [ -z "$BRAINVISA_BVMAKER_CFG" ]; then
     export BRAINVISA_BVMAKER_CFG="$CASA_CONF/bv_maker.cfg"
 fi
 
-export PATH=${PATH}:/casa/brainvisa-cmake/bin
+export PATH=${PATH}:/usr/local/bin:/casa/brainvisa-cmake/bin
 if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then
     OLD_CWD=$(pwd)
     cd ${CASA_BUILD}/bin
