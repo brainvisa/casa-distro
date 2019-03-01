@@ -16,33 +16,14 @@ In this chapter we will use Ubuntu 16.04 as a base system in VirtualBox but it c
 1) Install VirtualBox
 2) cd in directory containing this README file
 3) create the "vbox" directory that will contain all the VirtualBox image files
-4) Download ubuntu-16.04.5-desktop-amd64.iso in the current directory
+4) Download ubuntu-16.04.6-desktop-amd64.iso in the current directory
 5) launch the script create_ubuntu-16.04_vm.sh to create an empty VirtualBox image with appropriate base settings
 6) Perform Ubuntu installation with an autologin account named "brainvisa" and with password "brainvisa"
 7) Perform system updates
-8) Configure the VM to share clipboard with host
+8) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
 9) Reboot the VM
 10) Download and install VirtualBox guest additions
-11) Install vagrant public key and allow sudo to vagrant user without password
-    Run in the VM:
-        mkdir -p /home/vagrant/.ssh
-        wget --no-check-certificate https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
-        # Ensure we have the correct permissions set
-        chmod 0700 /home/vagrant/.ssh
-        chmod 0600 /home/vagrant/.ssh/authorized_keys
-        chown -R vagrant /home/vagrant/.ssh
-        # Enable passwordless sudo to vagrant user
-        echo 'vagrant ALL=(ALL) NOPASSWD:ALL' | sudo cp /dev/stdin /etc/sudoers.d/vagrant
-        sudo chmod 0440 /etc/sudoers.d/vagrant
-        echo 'APT::Periodic::Enable \"0\";' | sudo tee --append /etc/apt/apt.conf.d/02periodic
-12) Stop automatic package update to avoid locking the installation system during the installation script
-    In "System settings" select "Software & Updates" adn go to the "Updates" tab.
-    Then set the following values :
-        Automatically check for updates => Never
-        Notify me of a new Ubuntu version => Never
-13) Shutdown the VM
-14) Create a Vagant box file:
-    vagrant package --base ubuntu-16.04-brainvisa --output ubuntu-16.04-brainvisa.box
+11) Reboot the VM
 
 ==========================================
 III - Create and install a BrainVISA image

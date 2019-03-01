@@ -13,9 +13,6 @@ VBoxManage startvm $DST_IMAGE
 VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE mkdir /casa
 VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- /bin/chown $USER:$USER /casa
 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /usr/local/lib ../docker/casa-test/ubuntu-16.04/libGL.so.1
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /usr/local/lib ../docker/casa-test/ubuntu-16.04/libglapi.so.0
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /usr/local/bin ../docker/casa-test/ubuntu-16.04/entrypoint
 VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /usr/local/bin ../scripts/askpass-bioproj.sh
 VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /usr/local/bin ../scripts/svn
 
@@ -35,5 +32,5 @@ VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE r
 VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE rm /tmp/install_2.sh 
 VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE rm /tmp/build_netcdf.sh
 
-VBoxManage guestcontrol --username $USER --password "$USER_PASSWORD" $DST_IMAGE copyto -R --target-directory /casa /casa/src
-VBoxManage guestcontrol --username $USER --password "$USER_PASSWORD" $DST_IMAGE copyto -R --target-directory /casa /casa/build
+VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- apt update
+VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- apt install ssh-server
