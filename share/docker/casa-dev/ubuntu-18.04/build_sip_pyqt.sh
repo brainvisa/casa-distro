@@ -51,4 +51,6 @@ cd /usr/local/lib/python2.7/dist-packages
 ${SUDO} ln -s ../../../sip/lib/python2.7/dist-packages/* .
 cd /usr/local/lib/python3.6/dist-packages
 ${SUDO} ln -s ../../../sip/lib/python3.6/dist-packages/* .
+cd "$PREFIX/../bin"
+${SUDO} ln -s ../sip/bin/* .
 
