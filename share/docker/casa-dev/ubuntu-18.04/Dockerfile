@@ -184,6 +184,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-tqdm \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-joblib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-tqdm \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-dicom \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y cython \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y default-libmysqlclient-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gdal-data \
