@@ -461,6 +461,9 @@ $SUDO pip3 install -U pandas
 $SUDO pip3 install -U lark-parser
 $SUDO pip3 install -U xlrd
 $SUDO pip3 install -U xlwt
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py h5py
 
 # WARNING: easy_install gets installed in /usr/local/bin/easy_install
 # for python 3! Same for pip, we have to force installing pip for python2

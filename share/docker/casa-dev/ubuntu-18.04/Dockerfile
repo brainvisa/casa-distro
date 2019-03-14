@@ -459,6 +459,9 @@ RUN pip3 install -U lark-parser
 RUN pip3 install -U ipython
 RUN pip3 install -U xlrd
 RUN pip3 install -U xlwt
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+RUN CPPFLAGS='-I/usr/include/mpi' pip3 install --no-binary=h5py h5py
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
