@@ -446,6 +446,15 @@ RUN cd /tmp \
 # (/usr/local/bin/jupyter* for instance) will be replaced by python2
 # equivalents when installed by pip2. jupyter modules especially handle
 # these conflicts very badly.
+#
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+RUN pip3 install -U pkgconfig
+RUN pip3 install -U cython
+RUN pip3 install -U numpy
+RUN pip3 install -U setuptools
+RUN CPPFLAGS='-I/usr/include/mpi' pip3 install --no-binary=h5py h5py
+
 RUN pip3 install -U numpy
 RUN pip3 install -U scipy
 RUN pip3 install nipype
@@ -459,9 +468,6 @@ RUN pip3 install -U lark-parser
 RUN pip3 install -U ipython
 RUN pip3 install -U xlrd
 RUN pip3 install -U xlwt
-# install h5py from sources to force using the system libhdf5,
-# otherwise it will install an incompatible binary
-RUN CPPFLAGS='-I/usr/include/mpi' pip3 install --no-binary=h5py h5py
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary

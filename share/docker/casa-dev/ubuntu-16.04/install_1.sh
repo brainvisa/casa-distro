@@ -447,6 +447,15 @@ $SUDO rm -rf /var/lib/apt/lists/*
 # (/usr/local/bin/jupyter* for instance) will be replaced by python2
 # equivalents when installed by pip2. jupyter modules especially handle
 # these conflicts very badly.
+#
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+$SUDO pip3 install -U pkgconfig
+$SUDO pip3 install -U cython
+$SUDO pip3 install -U numpy
+$SUDO pip3 install -U setuptools
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py h5py
+
 $SUDO pip3 install -U numpy
 $SUDO pip3 install -U scipy
 $SUDO pip3 install nipype
@@ -461,9 +470,6 @@ $SUDO pip3 install -U pandas
 $SUDO pip3 install -U lark-parser
 $SUDO pip3 install -U xlrd
 $SUDO pip3 install -U xlwt
-# install h5py from sources to force using the system libhdf5,
-# otherwise it will install an incompatible binary
-CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py h5py
 
 # WARNING: easy_install gets installed in /usr/local/bin/easy_install
 # for python 3! Same for pip, we have to force installing pip for python2
