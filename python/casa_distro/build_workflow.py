@@ -442,6 +442,16 @@ def create_build_workflow_directory(build_workflow_directory,
 if [ -f /etc/profile ]; then
     . /etc/profile
 fi
+
+# source any bash_completion scripts
+if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
+    for d in "$CASA_BUILD/etc/bash_completion.d/"*; do
+        if [ -f "$d" ]; then
+            . "$d"
+        fi
+    done
+fi
+
 ''')
     
     check_svn_secret(bwf_dir)
