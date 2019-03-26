@@ -14,6 +14,9 @@ else
     NCPU=4
 fi
 SUDO=
+PY3=3.6m
+PY3_S=3.6
+QMAKE=/usr/lib/qt5/bin/qmake
 
 if [ ! -d "$BUILD" ]; then mkdir -p "$BUILD"; fi
 cd "$BUILD"
@@ -45,7 +48,7 @@ make -j$NCPU
 ${SUDO} make install
 
 make clean
-python3 configure.py -b "$PREFIX/bin" -d "$PREFIX/lib/python3.6/dist-packages" -e "$PREFIX/include/python3.6m" -v "$PREFIX/share/sip" ${SIP_OPTS}
+python3 configure.py -b "$PREFIX/bin" -d "$PREFIX/lib/python${PY3_S}/dist-packages" -e "$PREFIX/include/python${PY3}" -v "$PREFIX/share/sip" ${SIP_OPTS}
 make -j$NCPU
 ${SUDO} make install
 cd ..
@@ -60,12 +63,12 @@ cd "$PYQT"
 if [ -n "$PRE_4_18" ]; then
     patch -p1 < ../pyqt_patch
 fi
-python configure.py --confirm-license --sip-incdir="$PREFIX/include/python2.7" -b "$PREFIX/bin" -d "$PREFIX/lib/python2.7/dist-packages" --designer-plugindir="$PREFIX/lib/qt5/plugins/designer" --qml-plugindir="$PREFIX/lib/qt5/plugins/PyQt5" -v "$PREFIX/share/sip/PyQt5" --qmake="/usr/lib/qt5/bin/qmake" ${PYQT_OPTS}
+python configure.py --confirm-license --sip-incdir="$PREFIX/include/python2.7" -b "$PREFIX/bin" -d "$PREFIX/lib/python2.7/dist-packages" --designer-plugindir="$PREFIX/lib/qt5/plugins/designer" --qml-plugindir="$PREFIX/lib/qt5/plugins/PyQt5" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" ${PYQT_OPTS}
 make -j$NCPU
 ${SUDO} make install
 
 make clean
-python3 configure.py --confirm-license --sip-incdir="$PREFIX/include/python3.6m" -b "$PREFIX/bin" -d "$PREFIX/lib/python3.6/dist-packages" --designer-plugindir="$PREFIX/lib/qt5/plugins/designer" --qml-plugindir="$PREFIX/lib/qt5/plugins/PyQt5" -v "$PREFIX/share/sip/PyQt5" --qmake="/usr/lib/qt5/bin/qmake" ${PYQT_OPTS}
+python3 configure.py --confirm-license --sip-incdir="$PREFIX/include/python${PY3}" -b "$PREFIX/bin" -d "$PREFIX/lib/python${PY3_S}/dist-packages" --designer-plugindir="$PREFIX/lib/qt5/plugins/designer" --qml-plugindir="$PREFIX/lib/qt5/plugins/PyQt5" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" ${PYQT_OPTS}
 make -j$NCPU
 ${SUDO} make install
 cd ../..
@@ -75,8 +78,10 @@ rm -rf "$BUILD"
 ${SUDO} ln -s sip-${SIP_VERSION} "$PREFIX/../sip"
 cd /usr/local/lib/python2.7/dist-packages
 ${SUDO} ln -s ../../../sip/lib/python2.7/dist-packages/* .
-cd /usr/local/lib/python3.6/dist-packages
-${SUDO} ln -s ../../../sip/lib/python3.6/dist-packages/* .
+${SUDO} ln -s PyQt5/sip.so .
+cd /usr/local/lib/python${PY3_S}/dist-packages
+${SUDO} ln -s ../../../sip/lib/python${PY3_S}/dist-packages/* .
+${SUDO} ln -s PyQt5/sip.so .
 cd "$PREFIX/../bin"
 ${SUDO} ln -s ../sip/bin/* .
 
