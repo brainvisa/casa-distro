@@ -134,6 +134,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5waylandclient5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5webenginewidgets5 \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libqt5webview5-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y qtwebengine5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libphonon4qt5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y qttools5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libqwt-qt5-6 \
