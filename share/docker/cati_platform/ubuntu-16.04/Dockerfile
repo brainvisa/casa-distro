@@ -8,6 +8,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     automake \
     cmake \
     doxygen \
+    firefox \
     g++-4.9 \
     git \
     graphviz \
@@ -23,6 +24,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libcurl4-openssl-dev \
     libdcmtk2-dev \
     libffi-dev \
+    libgdcm-tools \
     libgdk-pixbuf2.0-0 \
     libgdk-pixbuf2.0-common \
     libgdk-pixbuf2.0-dev \
@@ -37,6 +39,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libming-dev \
     libncurses5-dev \
     libnetcdf-dev \
+    libopenblas-dev \
     libopenjpeg-dev \
     libopenslide-dev \
     liborc-0.4-dev \
@@ -56,6 +59,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     mesa-utils \
     mriconvert \
     mricron \
+    nautilus \
     openjdk-8-jdk \
     pyro \
     python-dicom \
@@ -97,4 +101,5 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
   
 RUN pip install dpath
+RUN pip install reportlab
 RUN mkdir --parents /cati/qualicati/database /cati/qualicati/save /cati/qualicati/database_debug
