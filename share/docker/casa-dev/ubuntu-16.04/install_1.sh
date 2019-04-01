@@ -453,12 +453,11 @@ $SUDO rm -rf /var/lib/apt/lists/*
 # otherwise it will install an incompatible binary
 $SUDO pip3 install -U pkgconfig
 $SUDO pip3 install -U cython
-$SUDO pip3 install -U numpy
+$SUDO pip3 install -U 'numpy==1.16.2'
 $SUDO pip3 install -U setuptools
 CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py h5py
 
-$SUDO pip3 install -U numpy
-$SUDO pip3 install -U scipy
+$SUDO pip3 install -U 'scipy==1.2.1'
 $SUDO pip3 install nipype
 $SUDO pip3 install jupyter
 $SUDO pip3 install nbsphinx
@@ -481,7 +480,7 @@ $SUDO /usr/bin/easy_install pip
 # otherwise it will install an incompatible binary
 $SUDO pip install -U pkgconfig
 $SUDO pip install -U cython
-$SUDO pip install -U numpy
+$SUDO pip install -U 'numpy==1.16.2'
 $SUDO pip install -U setuptools
 CPPFLAGS='-I/usr/include/mpi' $SUDO pip install --no-binary=h5py h5py
 
@@ -489,7 +488,7 @@ CPPFLAGS='-I/usr/include/mpi' $SUDO pip install --no-binary=h5py h5py
 $SUDO pip install -U 'ipython>=5.0,<6.0'
 $SUDO pip install jupyter
 $SUDO pip install -U zmq
-$SUDO pip install -U scipy
+$SUDO pip install -U 'scipy==1.2.1'
 $SUDO pip install -U nbsphinx
 # sphinx 1.7 has bugs
 $SUDO pip install -U "sphinx>=1.5,<1.7"

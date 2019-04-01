@@ -455,12 +455,11 @@ RUN cd /tmp \
 # otherwise it will install an incompatible binary
 RUN pip3 install -U pkgconfig
 RUN pip3 install -U cython
-RUN pip3 install -U numpy
+RUN pip3 install -U 'numpy==1.16.2'
 RUN pip3 install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip3 install --no-binary=h5py h5py
 
-RUN pip3 install -U numpy
-RUN pip3 install -U scipy
+RUN pip3 install -U 'scipy==1.2.1'
 RUN pip3 install nipype
 RUN pip3 install jupyter
 RUN pip3 install nbsphinx
@@ -477,7 +476,7 @@ RUN pip3 install -U xlwt
 # otherwise it will install an incompatible binary
 RUN pip install -U pkgconfig
 RUN pip install -U cython
-RUN pip install -U numpy
+RUN pip install -U 'numpy==1.16.2'
 RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
@@ -485,7 +484,7 @@ RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install jupyter
 RUN pip install -U zmq
-RUN pip install -U scipy
+RUN pip install -U 'scipy==1.2.1'
 RUN pip install -U nbsphinx
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx>=1.5,<1.7"

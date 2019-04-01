@@ -128,7 +128,7 @@ RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445c
 # otherwise it will install an incompatible binary
 RUN pip install -U pkgconfig
 RUN pip install -U cython
-RUN pip install -U numpy
+RUN pip install -U 'numpy==1.16.2'
 RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
@@ -137,7 +137,7 @@ RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install -U "tornado>=4,<5"
 RUN pip install jupyter
 RUN pip install -U zmq
-RUN pip install -U scipy
+RUN pip install -U 'scipy==1.2.1'
 RUN pip install -U docutils
 RUN pip install -U nbsphinx
 # sphinx 1.7 has bugs
