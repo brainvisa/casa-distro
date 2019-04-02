@@ -4,6 +4,17 @@ FROM cati/casa-test:ubuntu-12.04
 
 # Install system dependencies
 
+# install python and pip to get apt-mirror-updater
+# in order to select an efficient debian mirror.
+# (try installing up to 5 times if the default server sometimes disconnects)
+RUN for trial in 1 2 3 4 5; do apt-get update && break; done \
+ && for trial in 1 2 3 4 5; do DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip && break; done \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+RUN pip install apt-mirror-updater
+# setup best mirror in /etc/apt/sources.list
+RUN apt-mirror-updater -a
+
 # add neurodebian repositories and install a few packages
 RUN wget -O- http://neuro.debian.net/lists/precise.de-m.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list \
     && apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9

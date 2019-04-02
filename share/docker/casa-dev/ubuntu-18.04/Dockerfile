@@ -4,6 +4,17 @@ FROM cati/casa-test:ubuntu-18.04
 
 # Install system dependencies
 
+# install python and pip to get apt-mirror-updater
+# in order to select an efficient debian mirror.
+# (try installing up to 5 times if the default server sometimes disconnects)
+RUN for trial in 1 2 3 4 5; do apt-get update && break; done \
+ && for trial in 1 2 3 4 5; do DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip && break; done \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+RUN pip install apt-mirror-updater
+# setup best mirror in /etc/apt/sources.list
+RUN apt-mirror-updater -a
+
 # add neurodebian repositories and install packages
 # WARNING: it is necessary to call apt-get install for each packages to
 # avoid the 101th package issue
@@ -618,6 +629,10 @@ RUN sed -i 's%"$@"%. /usr/local/bin/init-casa-env\n"$@"%g' /usr/local/bin/entryp
 ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
 
 RUN ldconfig
+
+# reset the default ubuntu server (because we don't know where this image
+# will be used, possibly in a different location from where it was built)
+# RUN apt-mirror-updater -c http://archive.ubuntu.com/ubuntu
 
 # newer additions, to be placed in the other apt line, later
 # RUN apt-get update && apt-get install something-dev

@@ -27,6 +27,18 @@ COPY install_ubuntu_14.04_crossbuild.sh /tmp/install_ubuntu_14.04_crossbuild.sh
 RUN chmod +x /tmp/install_ubuntu_14.04_crossbuild.sh
 
 # Install system dependencies
+
+# install python and pip to get apt-mirror-updater
+# in order to select an efficient debian mirror.
+# (try installing up to 5 times if the default server sometimes disconnects)
+RUN for trial in 1 2 3 4 5; do apt-get update && break; done \
+ && for trial in 1 2 3 4 5; do DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip && break; done \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+RUN pip install apt-mirror-updater
+# setup best mirror in /etc/apt/sources.list
+RUN apt-mirror-updater -a
+
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake-curses-gui \
