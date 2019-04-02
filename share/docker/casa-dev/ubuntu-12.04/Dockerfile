@@ -103,6 +103,15 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-opengl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y pax-utils \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-joblib \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gedit \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kwrite \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kate \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y meld \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kompare \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kdiff3 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gitg \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gitk \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y spyder \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
  

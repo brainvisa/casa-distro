@@ -434,6 +434,15 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y xbitmaps \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y xterm \ 
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libpcl-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gedit \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kwrite \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kate \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y meld \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kompare \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y kdiff3 \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gitg \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gitk \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y spyder \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
   
@@ -468,7 +477,7 @@ RUN pip3 install dipy
 RUN pip3 install -U nibabel
 RUN pip3 install sklearn
 RUN pip3 install -U lark-parser
-RUN pip3 install -U ipython
+RUN pip3 install --ignore-installed -U ipython
 RUN pip3 install -U xlrd
 RUN pip3 install -U xlwt
 
@@ -481,7 +490,7 @@ RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
 # ipython / jupyter
-RUN pip install -U 'ipython>=5.0,<6.0'
+RUN pip install --ignore-installed -U 'ipython>=5.0,<6.0'
 RUN pip install jupyter
 RUN pip install -U zmq
 RUN pip install -U 'scipy==1.2.1'

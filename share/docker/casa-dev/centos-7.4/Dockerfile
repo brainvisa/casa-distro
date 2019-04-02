@@ -100,6 +100,16 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     python36-devel \
     python36-numpy \
     python36-setuptools \
+    vim \
+    gedit \
+    kwrite \
+    kate \
+    meld \
+    kompare \
+    kdiff3 \
+    gitg \
+    gitk \
+    spyder \
  && yum clean all
 
 ENV CEA_MIRROR_URL=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/centos-7.4
@@ -145,7 +155,7 @@ RUN pip --version
 # otherwise it will install an incompatible binary
 RUN pip install -U pkgconfig
 RUN pip install -U cython
-RUN pip install -U "numpy==1.15.4"
+RUN pip install -U "numpy==1.16.2"
 RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
@@ -154,7 +164,7 @@ RUN pip install -U 'ipython>=5.0,<6.0'
 RUN pip install -U "tornado>=4,<5"
 RUN pip install jupyter
 RUN pip install -U zmq
-RUN pip install -U scipy
+RUN pip install -U 'scipy==1.2.1'
 #RUN pip install -U docutils
 RUN pip install -U nbsphinx
 RUN pip install -U traits

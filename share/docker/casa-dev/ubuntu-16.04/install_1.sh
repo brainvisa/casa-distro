@@ -441,6 +441,16 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y va-driver-all
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y vtk6
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y x11proto-scrnsaver-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libpcl-dev
+# graphical tools
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gedit
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y kwrite
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y kate
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y meld
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y kompare
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y kdiff3
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitg
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitk
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y spyder
 $SUDO apt-get clean
 $SUDO rm -rf /var/lib/apt/lists/*
 
@@ -465,8 +475,8 @@ $SUDO pip3 install cython
 $SUDO pip3 install dipy
 $SUDO pip3 install -U nibabel
 $SUDO pip3 install sklearn
-$SUDO pip3 install -U 'ipython>=5.0,<6.0'
-$SUDO pip3 install -U pandas
+$SUDO pip3 install --ignore-installed -U 'ipython>=5.0,<6.0'
+$SUDO pip3 install -U 'pandas==0.24.2'
 $SUDO pip3 install -U lark-parser
 $SUDO pip3 install -U xlrd
 $SUDO pip3 install -U xlwt
@@ -485,7 +495,7 @@ $SUDO pip install -U setuptools
 CPPFLAGS='-I/usr/include/mpi' $SUDO pip install --no-binary=h5py h5py
 
 # ipython / jupyter
-$SUDO pip install -U 'ipython>=5.0,<6.0'
+$SUDO pip install --ignore-installed -U 'ipython>=5.0,<6.0'
 $SUDO pip install jupyter
 $SUDO pip install -U zmq
 $SUDO pip install -U 'scipy==1.2.1'
@@ -499,7 +509,7 @@ $SUDO pip install -U nibabel
 $SUDO pip install sklearn
 $SUDO pip install -U pyparsing
 $SUDO pip install -U pydot
-$SUDO pip install -U pandas
+$SUDO pip install -U 'pandas==0.24.2'
 $SUDO pip install -U lark-parser
 $SUDO pip install -U xlrd
 $SUDO pip install -U xlwt
