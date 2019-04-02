@@ -384,7 +384,7 @@ def create_build_workflow_directory(build_workflow_directory,
         gui_options = ['-v', '/tmp/.X11-unix:/tmp/.X11-unix',
                        '-e', 'QT_X11_NO_MITSHM=1', 
                        '--privileged', 
-                       '-e', 'DISPLAY=$DISPLAY', 
+                       '-e', 'DISPLAY=:0',
                        '-v', '/usr/share/X11/locale:/usr/share/X11/locale:ro']
         if osp.exists('/dev/nvidiactl'):
             nv_dirs = glob.glob('/usr/lib/nvidia-???')
@@ -397,7 +397,7 @@ def create_build_workflow_directory(build_workflow_directory,
         casa_distro['container_gui_options'] = gui_options
     elif container_type == 'singularity':
         container_options = ['--pwd', '/casa/home']
-        container_gui_env = {'DISPLAY': '${DISPLAY}'}
+        container_gui_env = {'DISPLAY': ':0'}
         casa_distro['container_gui_env'] = container_gui_env
         
     else:
