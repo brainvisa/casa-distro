@@ -14,6 +14,9 @@ function _complete_casa_distro_option_()
     if [ "${COMP_WORDS[1]}" = "-r" ] \
         || [  "${COMP_WORDS[1]}" = "--repository" ]; then
         local CASA_DEFAULT_REPOSITORY="${COMP_WORDS[2]}"
+        local cmd="${COMP_WORDS[3]}"
+    else
+        local cmd="${COMP_WORDS[1]}"
     fi
     # TODO: catch cmd option build_workflows_repository
     if [ -z "$CASA_DEFAULT_REPOSITORY" ]; then
@@ -38,8 +41,14 @@ function _complete_casa_distro_option_()
         COMPREPLY=($(compgen -W "$images" -- "${word}"))
         ;;
     image_names)
-        local images=$CASA_DEFAULT_REPOSITORY/*.simg
-        local nimages="cati/casa-test: cati/casa-dev: cati/cati_platform:"
+        if [ "$cmd" = "publish_singularity" ]; then
+            # take existing singularity images
+            local images=$CASA_DEFAULT_REPOSITORY/*.simg
+        fi
+        if [ "$cmd" = "create_docker" ]; then
+            # use prefedined image names
+            local nimages="cati/casa-test: cati/casa-dev: cati/cati_platform:"
+        fi
         for f in $images
         do
             local b=$(basename "$f")
@@ -50,11 +59,14 @@ function _complete_casa_distro_option_()
             local b=${b%_*}:${b##*_}
             local nimages="$nimages ${b:0:-5}"
         done
-        # complete using existing docker images
-        local docker=$(which docker)
-        if [ "$?" -eq 0 ]; then
-            local dimages=$(docker images --format "{{.Repository}}:{{.Tag}}")
-            local nimages="$nimages $dimages"
+        if [ "$cmd" = "publish_docker" ] || [ "$cmd" = "create_singularity" ];
+        then
+            # complete using existing docker images
+            local docker=$(which docker)
+            if [ "$?" -eq 0 ]; then
+                local dimages=$(docker images --format "{{.Repository}}:{{.Tag}}")
+                local nimages="$nimages $dimages"
+            fi
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
@@ -84,12 +96,17 @@ function _complete_casa_distro_image_names_tag_()
     if [ "${COMP_WORDS[1]}" = "-r" ] \
         || [  "${COMP_WORDS[1]}" = "--repository" ]; then
         local CASA_DEFAULT_REPOSITORY="${COMP_WORDS[2]}"
+        local cmd="${COMP_WORDS[3]}"
+    else
+        local cmd="${COMP_WORDS[1]}"
     fi
     if [ -z "$CASA_DEFAULT_REPOSITORY" ]; then
         local CASA_DEFAULT_REPOSITORY="$HOME/casa_distro"
     fi
 
-    local images=$CASA_DEFAULT_REPOSITORY/*.simg
+    if [ "$cmd" = "publish_singularity" ]; then
+        local images=$CASA_DEFAULT_REPOSITORY/*.simg
+    fi
     local nimages=""
     for f in $images
     do
@@ -101,11 +118,16 @@ function _complete_casa_distro_image_names_tag_()
         local b=${b%_*}:${b##*_}
         local nimages="$nimages ${b:0:-5}"
     done
-    # complete using existing docker images
-    local docker=$(which docker)
-    if [ "$?" -eq 0 ]; then
-        local dimages=$(docker images --format "{{.Repository}}:{{.Tag}}")
-        local nimages="$nimages ${dimages}"
+    if [ "$cmd" = "create_singularity" ] || [ "$cmd" = "publish_docker" ]; then
+        # complete using existing docker images
+        local docker=$(which docker)
+        if [ "$?" -eq 0 ]; then
+            local dimages=$(docker images --format "{{.Repository}}:{{.Tag}}")
+            local nimages="$nimages ${dimages}"
+        fi
+    fi
+    if [ "$cmd" = "create_docker" ]; then
+        local nimages="${image}:ubuntu-12.04 ${image}:ubuntu-14.04 ${image}:ubuntu-16.04 ${image}:ubuntu-18.04 ${image}:centos-7.4 ${image}:windows-7-32 ${image}:windows-7-64"
     fi
 
     local matching=($(compgen -W "$nimages" -- "${image}:${word}"))
