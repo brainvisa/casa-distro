@@ -126,7 +126,7 @@ RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445c
 # otherwise it will install an incompatible binary
 RUN pip install -U 'pkgconfig<1.6'
 RUN pip install -U 'cython<0.30'
-RUN pip install -U 'numpy<1.17'
+RUN pip install -U --ignore-installed 'numpy<1.17'
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py 'h5py<2.9'
 
 # ipython / jupyter
