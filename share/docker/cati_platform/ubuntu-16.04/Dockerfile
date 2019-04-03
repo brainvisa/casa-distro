@@ -22,7 +22,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libboost-dev \
     libbz2-dev \
     libcurl4-openssl-dev \
-    libdcmtk2-dev \
+    dcmtk \
     libffi-dev \
     libgdcm-tools \
     libgdk-pixbuf2.0-0 \
@@ -97,9 +97,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     xalan \
     xorg-dev \
     zlib1g-dev \
+    poppler-utils \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
   
-RUN pip install dpath
-RUN pip install reportlab
+RUN pip install 'dpath==1.4.2'
+RUN pip install 'reportlab==3'
 RUN mkdir --parents /cati/qualicati/database /cati/qualicati/save /cati/qualicati/database_debug

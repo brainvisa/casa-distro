@@ -142,7 +142,6 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt4.phonon
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt4.qtopengl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sphinx
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sphinx-paramlinks
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pandas
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-xmltodict
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-xmltodict
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-fastcluster

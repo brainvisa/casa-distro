@@ -18,25 +18,27 @@ fi
 #
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-$SUDO pip3 install -U pkgconfig
-$SUDO pip3 install -U cython
-$SUDO pip3 install -U 'numpy==1.16.2'
-$SUDO pip3 install -U setuptools
-CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py h5py
+$SUDO pip3 install -U 'pkgconfig<1.6'
+$SUDO pip3 install -U 'cython<0.30'
+$SUDO pip3 install -U 'numpy<1.17'
+$SUDO pip3 install -U 'setuptools==40.8.0'
+$SUDO pip3 install -U 'pip<19.1'
+$SUDO hash pip3
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py 'h5py<2.9'
 
-$SUDO pip3 install -U 'scipy==1.2.1'
-$SUDO pip3 install nipype
-$SUDO pip3 install jupyter
-$SUDO pip3 install nbsphinx
-$SUDO pip3 install cython
-$SUDO pip3 install dipy
-$SUDO pip3 install -U nibabel
-$SUDO pip3 install sklearn
-$SUDO pip3 install --ignore-installed -U 'ipython>=5.0,<6.0'
-$SUDO pip3 install -U 'pandas==0.24.2'
-$SUDO pip3 install -U lark-parser
-$SUDO pip3 install -U xlrd
-$SUDO pip3 install -U xlwt
+$SUDO pip3 install --ignore-installed -U 'scipy<1.3'
+$SUDO pip3 install 'nipype<1.2'
+$SUDO pip3 install --ignore-installed -U 'pyzmq<18.1'
+$SUDO pip3 install --ignore-installed -U 'ipython<8'
+$SUDO pip3 install 'jupyter==1.0.0'
+$SUDO pip3 install 'nbsphinx<0.4'
+$SUDO pip3 install 'dipy<0.15'
+$SUDO pip3 install -U 'nibabel<2.4'
+$SUDO pip3 install 'scikit-learn<0.21'
+$SUDO pip3 install -U 'pandas<0.25'
+$SUDO pip3 install -U 'lark-parser<0.7'
+$SUDO pip3 install -U 'xlrd<1.3'
+$SUDO pip3 install -U 'xlwt<1.4'
 
 # remove python-pip since it can cause conflicts with upgraded versions:
 # strangely, /usr/lib/python2.7/dist-packages is *before*
@@ -49,33 +51,32 @@ $SUDO /usr/bin/easy_install pip
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-$SUDO pip install -U pkgconfig
-$SUDO pip install -U cython
-$SUDO pip install -U 'numpy==1.16.2'
-$SUDO pip install -U setuptools
-$SUDO pip install -U pip
+$SUDO pip install -U 'pkgconfig<1.6'
+$SUDO pip install -U 'cython<0.30'
+$SUDO pip install -U 'numpy<1.16'
+$SUDO pip install -U 'setuptools==40.8.0'
+$SUDO pip install -U 'pip<19.1'
 $SUDO hash pip
-CPPFLAGS='-I/usr/include/mpi' $SUDO pip install --no-binary=h5py h5py
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip install --no-binary=h5py 'h5py<2.9'
 
 # ipython / jupyter
-$SUDO pip install --ignore-installed -U 'ipython>=5.0,<6.0'
+$SUDO pip install --ignore-installed -U 'ipython<6.0'
 $SUDO pip install 'ipython<6'
 $SUDO pip install 'ipykernel<5'
-$SUDO pip install --ignore-installed -U pyzmq
-$SUDO pip install jupyter
-$SUDO pip install -U zmq
-$SUDO pip install --ignore-installed -U 'scipy==1.2.1'
-$SUDO pip install -U nbsphinx
+$SUDO pip install --ignore-installed -U 'pyzmq<18.1'
+$SUDO pip install 'jupyter==1.0.0'
+$SUDO pip install -U --no-deps --ignore-installed 'scipy<1.2'
+$SUDO pip install -U 'nbsphinx<0.4'
 # sphinx 1.7 has bugs
-$SUDO pip install -U "sphinx>=1.5,<1.7"
+$SUDO pip install -U "sphinx<1.7"
 
-$SUDO pip install -U pyparsing
-$SUDO pip install nipype
-$SUDO pip install dipy
-$SUDO pip install -U nibabel
-$SUDO pip install sklearn
-$SUDO pip install -U pydot
-$SUDO pip install -U 'pandas==0.24.2'
-$SUDO pip install -U lark-parser
-$SUDO pip install --ignore-installed -U xlrd
-$SUDO pip install --ignore-installed -U xlwt
+$SUDO pip install -U 'pyparsing<2.4'
+$SUDO pip install 'nipype<1.2'
+$SUDO pip install 'dipy<0.15'
+$SUDO pip install -U 'nibabel<2.4'
+$SUDO pip install 'scikit-learn<0.21'
+$SUDO pip install -U 'pydot<1.4'
+$SUDO pip install -U 'pandas<0.25'
+$SUDO pip install -U 'lark-parser<0.7'
+$SUDO pip install --ignore-installed -U 'xlrd<1.3'
+$SUDO pip install --ignore-installed -U 'xlwt<1.4'

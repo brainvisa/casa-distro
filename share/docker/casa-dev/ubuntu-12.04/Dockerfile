@@ -8,12 +8,19 @@ FROM cati/casa-test:ubuntu-12.04
 # in order to select an efficient debian mirror.
 # (try installing up to 5 times if the default server sometimes disconnects)
 RUN for trial in 1 2 3 4 5; do apt-get update && break; done \
- && for trial in 1 2 3 4 5; do DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip && break; done \
+ && for trial in 1 2 3 4 5; do DEBIAN_FRONTEND=noninteractive apt-get install -y python-setuptools && break; done \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-RUN pip install apt-mirror-updater
-# setup best mirror in /etc/apt/sources.list
-RUN apt-mirror-updater -a
+# RUN easy_install pip
+# pip cannot be installed any longer using easy_install, the system pip
+# does not work any  longer...
+RUN cd /tmp && wget --no-check-certificate https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
+# pip 10 does not allow reinstalling some packages (numpy...) so we keep pip 9
+
+# RUN pip install apt-mirror-updater
+# (note: actually apt-mirror-updater does not work well on ubuntu 12.04)
+# # setup best mirror in /etc/apt/sources.list
+# RUN apt-mirror-updater -a
 
 # add neurodebian repositories and install a few packages
 RUN wget -O- http://neuro.debian.net/lists/precise.de-m.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list \
@@ -79,7 +86,6 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y automake \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y texlive-fonts-recommended \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-dicom \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y python-setuptools \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-traits \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y lftp \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils \
@@ -105,7 +111,6 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libgstreamer-plugins-base0.10-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libaudio-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-yaml \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y pandoc \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y zip \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y unzip \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y bash-completion \
@@ -138,12 +143,6 @@ RUN apt-get update \
 #     && apt-get clean \
 #     && rm -rf /var/lib/apt/lists/*
  
-# RUN easy_install pip
-# pip cannot be installed any longer using easy_install, the system pip 
-# does not work any  longer...
-RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
-# pip 10 does not allow reinstalling some packages (numpy...) so we keep pip 9
-
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
 RUN pip install -U pkgconfig
@@ -163,6 +162,7 @@ RUN pip install -U nbsphinx
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx>=1.5,<1.7"
 RUN pip install jupyter_client
+RUN pip install "pandoc<2.0"
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
