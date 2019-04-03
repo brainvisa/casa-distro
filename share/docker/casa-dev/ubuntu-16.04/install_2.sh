@@ -11,115 +11,71 @@ fi
 
 . /casa/environment.sh
 
-# fix python command used in jupyter kernel
-# note: the "official" way is to run: ipython3 kernel install, but here
-# in docker it runs an interactive shell for an unknown reason.
-# So we go back to manual patching
-sed -e 's/  "python",/  "python3",/' < /usr/local/share/jupyter/kernels/python3/kernel.json > /tmp/kernel3.json
-$SUDO cp /tmp/kernel3.json /usr/local/share/jupyter/kernels/python3/kernel.json
+# pip3 modules should be installed first, then some commands
+# (/usr/local/bin/jupyter* for instance) will be replaced by python2
+# equivalents when installed by pip2. jupyter modules especially handle
+# these conflicts very badly.
+#
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+$SUDO pip3 install -U pkgconfig
+$SUDO pip3 install -U cython
+$SUDO pip3 install -U 'numpy==1.16.2'
+$SUDO pip3 install -U setuptools
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py h5py
 
+$SUDO pip3 install -U 'scipy==1.2.1'
+$SUDO pip3 install nipype
+$SUDO pip3 install jupyter
+$SUDO pip3 install nbsphinx
+$SUDO pip3 install cython
+$SUDO pip3 install dipy
+$SUDO pip3 install -U nibabel
+$SUDO pip3 install sklearn
+$SUDO pip3 install --ignore-installed -U 'ipython>=5.0,<6.0'
+$SUDO pip3 install -U 'pandas==0.24.2'
+$SUDO pip3 install -U lark-parser
+$SUDO pip3 install -U xlrd
+$SUDO pip3 install -U xlwt
 
-# install Pycluster
-cd /tmp
-wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz
-tar xfz Pycluster-1.52.tar.gz
-cd Pycluster-1.52
-python setup.py build
-$SUDO python setup.py install
-cd ..
-rm -r Pycluster-1.52 Pycluster-1.52.tar.gz
+# remove python-pip since it can cause conflicts with upgraded versions:
+# strangely, /usr/lib/python2.7/dist-packages is *before*
+# /usr/local/lib/python2.7/dist-packages in sys.path !
+$SUDO apt-get remove -y python-pip
+# WARNING: easy_install gets installed in /usr/local/bin/easy_install
+# for python 3! Same for pip, we have to force installing pip for python2
+# using the system easy_install (python2)
+$SUDO /usr/bin/easy_install pip
 
-# Install Qt Installer Framework (prebuilt on Mandriva 2008)
-cd /tmp
-wget http://brainvisa.info/static/qt_installer-1.6.tar.gz
-cd /usr/local
-$SUDO tar xfz /tmp/qt_installer-1.6.tar.gz
-$SUDO ln -s qt_installer-1.6 qt_installer
-cd /usr/local/bin
-$SUDO ln -s ../qt_installer/bin/* .
-rm /tmp/qt_installer-1.6.tar.gz
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+$SUDO pip install -U pkgconfig
+$SUDO pip install -U cython
+$SUDO pip install -U 'numpy==1.16.2'
+$SUDO pip install -U setuptools
+$SUDO pip install -U pip
+$SUDO hash pip
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip install --no-binary=h5py h5py
 
-cd /tmp
-wget https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip
-mkdir jxrlib
-cd jxrlib
-# Unzip returns 1 in case of warning : temporarily disable stop on error
-set +e
-unzip ../jxrlib.zip
-set -e
-cd sourceCode/jxrlib
-DIR_INSTALL=/usr/local SHARED=1 $SUDO make -j4 install
-cd /tmp
-rm -R jxrlib jxrlib.zip
+# ipython / jupyter
+$SUDO pip install --ignore-installed -U 'ipython>=5.0,<6.0'
+$SUDO pip install 'ipython<6'
+$SUDO pip install 'ipykernel<5'
+$SUDO pip install --ignore-installed -U pyzmq
+$SUDO pip install jupyter
+$SUDO pip install -U zmq
+$SUDO pip install --ignore-installed -U 'scipy==1.2.1'
+$SUDO pip install -U nbsphinx
+# sphinx 1.7 has bugs
+$SUDO pip install -U "sphinx>=1.5,<1.7"
 
-cd /tmp
-git clone https://github.com/MIRCen/openslide.git
-cd openslide
-$SUDO libtoolize --force
-$SUDO aclocal 
-$SUDO autoheader
-$SUDO automake --force-missing --add-missing
-$SUDO autoconf
-$SUDO ./configure
-$SUDO make -j4 install
-cd /tmp
-$SUDO rm -R openslide
-
-# install a version of netcdf with fewer dependencies
-$SUDO bash /tmp/build_netcdf.sh
-rm /tmp/build_netcdf.sh
-
-# install libXp, used by some external software (SPM...)
-cd /tmp
-wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz
-tar xf libxp_1.0.2.orig.tar.gz
-cd libXp-1.0.2
-./configure
-make -j4
-$SUDO make -j4 install
-cd /tmp
-rm -R libxp_1.0.2.orig.tar.gz libXp-1.0.2
-
-# create casa directories for singularity compatibility  
-mkdir -p $CASA_CONF \
-             $CASA_SRC \
-             $CASA_CUSTOM_SRC \
-             $CASA_BUILD \
-             $CASA_CUSTOM_BUILD
-
-chmod 777 $CASA_CONF \
-              $CASA_SRC \
-              $CASA_CUSTOM_SRC \
-              $CASA_BUILD \
-              $CASA_CUSTOM_BUILD
-              
-$SUDO chmod +x /usr/local/bin/svn
-
-# allow attach gdb to a process
-echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
-
-# Install a version of brainvisa-cmake
-/usr/bin/git clone https://github.com/brainvisa/brainvisa-cmake.git $CASA_SRC/development/brainvisa-cmake/master
-mkdir /tmp/brainvisa-cmake
-cd /tmp/brainvisa-cmake
-cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/master
-make install
-cd ..
-rm -r /tmp/brainvisa-cmake
-
-# Set casa environement variables initialization
-$SUDO echo \
-'export PATH=${PATH}:/casa/brainvisa-cmake/bin\n'\
-'if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then\n'\
-'    OLD_CWD=$(pwd)\n'\
-'    cd ${CASA_BUILD}/bin\n'\
-'    PATH=.:"$PATH"\n'\
-'    . ./bv_env.sh\n'\
-'    cd ${OLD_CWD}\n'\
-'    unset OLD_CWD\n'\
-'fi' > /usr/local/bin/init-casa-env
-
-$SUDO chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
-$SUDO git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
-
-ldconfig
+$SUDO pip install -U pyparsing
+$SUDO pip install nipype
+$SUDO pip install dipy
+$SUDO pip install -U nibabel
+$SUDO pip install sklearn
+$SUDO pip install -U pydot
+$SUDO pip install -U 'pandas==0.24.2'
+$SUDO pip install -U lark-parser
+$SUDO pip install --ignore-installed -U xlrd
+$SUDO pip install --ignore-installed -U xlwt
