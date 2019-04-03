@@ -4,17 +4,6 @@ FROM cati/casa-test:ubuntu-14.04
 
 # Install system dependencies
 
-# install python and pip to get apt-mirror-updater
-# in order to select an efficient debian mirror.
-# (try installing up to 5 times if the default server sometimes disconnects)
-RUN for trial in 1 2 3 4 5; do apt-get update && break; done \
- && for trial in 1 2 3 4 5; do DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip && break; done \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
-RUN pip install apt-mirror-updater
-# setup best mirror in /etc/apt/sources.list
-RUN apt-mirror-updater -a
-
 # add neurodebian repositories and install a few packages
 RUN wget -O- http://neuro.debian.net/lists/trusty.de-m.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list \
     && apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
@@ -60,18 +49,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
- && DEBIAN_FRON# install python and pip to get apt-mirror-updater
-# in order to select an efficient debian mirror.
-# (try installing up to 5 times if the default server sometimes disconnects)
-RUN for trial in 1 2 3 4 5; do apt-get update && break; done \
- && for trial in 1 2 3 4 5; do DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip && break; done \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
-RUN pip install apt-mirror-updater
-# setup best mirror in /etc/apt/sources.list
-RUN apt-mirror-updater -a
-
-TEND=noninteractive apt-get install -y openjdk-7-jdk \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-7-jdk \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libltdl7-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libncurses5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y vim \
@@ -142,41 +120,40 @@ TEND=noninteractive apt-get install -y openjdk-7-jdk \
 # RUN easy_install pip
 # pip cannot be installed any longer using easy_install, the system pip 
 # does not work any  longer...
-RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz#md5=b15b33f9aad61f88d0f8c866d16c55d8 && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && pip install -U 'pip<10' && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
+RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && pip install -U 'setuptools==40.8.0' && pip install -U 'pip<19.1' && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
 
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-RUN pip install -U pkgconfig
-RUN pip install -U cython
-RUN pip install -U 'numpy==1.16.2'
-RUN pip install -U setuptools
-RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
+RUN pip install -U 'pkgconfig<1.6'
+RUN pip install -U 'cython<0.30'
+RUN pip install -U 'numpy<1.17'
+RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py 'h5py<2.9'
 
 # ipython / jupyter
-RUN pip install -U 'ipython>=5.0,<6.0' 'pathlib2!=2.3.1'
-RUN pip install -U "tornado>=4,<5"
-RUN pip install jupyter
-RUN pip install -U zmq
-RUN pip install -U 'scipy==1.2.1'
+RUN pip install -U 'ipython<6.0' 'pathlib2!=2.3.1'
+RUN pip install -U "tornado<5"
+RUN pip install 'jupyter==1.0.0'
+RUN pip3 install --ignore-installed -U 'pyzmq<18.1'
+RUN pip install -U 'scipy<1.3'
 RUN pip install -U docutils
-RUN pip install -U nbsphinx
+RUN pip install -U 'nbsphinx<0.4'
 # sphinx 1.7 has bugs
-RUN pip install -U "sphinx>=1.5,<1.7"
+RUN pip install -U "sphinx<1.7"
 RUN pip install jupyter_client
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
 RUN pip install "python_jenkins==0.4.16"
-RUN pip install nipype
-RUN pip install dipy
-RUN pip install -U nibabel
-RUN pip install sklearn
+RUN pip install 'nipype<1.2'
+RUN pip install 'dipy<0.15'
+RUN pip install -U 'nibabel<2.4'
+RUN pip install 'scikit-learn<0.21'
 RUN pip install subprocess32
 
-RUN pip install -U lark-parser
-RUN pip install -U sqlalchemy
-RUN pip install -U xlrd
-RUN pip install -U xlwt
+RUN pip install -U 'lark-parser<0.7'
+RUN pip install -U 'sqlalchemy<1.4'
+RUN pip install -U 'xlrd<1.3'
+RUN pip install -U 'xlwt<1.4'
 
 # install Pycluster
 RUN cd /tmp \
