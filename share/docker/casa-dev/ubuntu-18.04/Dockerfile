@@ -107,11 +107,8 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pyqt5.qtxmlpatterns \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-mysqldb \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-requests \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sqlalchemy \
 # && DEBIAN_FRONTEND=noninteractive apt-get install -y python-jenkins
- && DEBIAN_FRONTEND=noninteractive apt-get install -y ipython3 \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y ipython3-qtconsole \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-matplotlib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5 \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtmultimedia \
@@ -153,7 +150,6 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y qtmultimedia5-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pyqt5.qtx11extras \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-ipython-genutils \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y cython3 \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-yaml \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-requests \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-jenkins \
@@ -199,7 +195,6 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-joblib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-tqdm \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python3-dicom \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y cython \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y default-libmysqlclient-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gdal-data \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y i965-va-driver \
@@ -466,63 +461,76 @@ RUN cd /tmp \
   && cd .. \
   && rm -rf 1.0.1.zip blitz-1.0.1
 
+# remove a few packages that will be reinstalled via pip as newer versions
+RUN apt-get remove -y python3-scipy
+RUN apt-get remove -y python-scipy
+RUN apt-get remove -y python-zmq
+# RUN apt-get remove -y cython3
+# RUN apt-get remove -y cython
+
 # pip3 modules should be installed first, then some commands
 # (/usr/local/bin/jupyter* for instance) will be replaced by python2
 # equivalents when installed by pip2. jupyter modules especially handle
 # these conflicts very badly.
 #
+RUN pip3 install -U 'setuptools==40.8.0'
+RUN pip3 install -U 'pip<19.1'
+RUN hash pip3
+RUN pip3 install -U 'pkgconfig<1.6'
+RUN pip3 install -U 'cython<0.30'
+RUN pip3 install -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-RUN pip3 install -U pkgconfig
-RUN pip3 install -U cython
-RUN pip3 install -U 'numpy==1.16.2'
-RUN pip3 install -U setuptools
-RUN CPPFLAGS='-I/usr/include/mpi' pip3 install --no-binary=h5py h5py
+RUN CPPFLAGS='-I/usr/include/mpi' pip3 install --no-binary=h5py 'h5py<2.10'
 
-RUN pip3 install -U 'scipy==1.2.1'
-RUN pip3 install nipype
+RUN pip3 install -U 'scipy<1.3'
+RUN pip3 install 'nipype<1.2'
+RUN pip3 install -U 'pyzmq<18.1'
+RUN pip3 install -U 'ipython<8'
 RUN pip3 install jupyter
-RUN pip3 install nbsphinx
-RUN pip3 install cython
-RUN pip3 install dipy
-RUN pip3 install -U nibabel
-RUN pip3 install sklearn
-RUN pip3 install -U lark-parser
-RUN pip3 install --ignore-installed -U ipython
-RUN pip3 install -U xlrd
-RUN pip3 install -U xlwt
+RUN pip3 install 'qtconsole<4.5'
+RUN pip3 install -U 'nbsphinx<0.5'
+RUN pip3 install 'dipy<0.17'
+RUN pip3 install -U 'nibabel<2.5'
+RUN pip3 install 'scikit-learn<0.21'
+RUN pip3 install -U 'lark-parser<0.8'
+RUN pip3 install -U 'xlrd<1.3'
+RUN pip3 install -U 'xlwt<1.4'
 
+RUN pip install -U 'setuptools==40.8.0'
+RUN pip install -U 'pip<19.1'
+RUN hash pip
+RUN pip install -U 'pkgconfig<1.6'
+RUN pip install -U 'cython<0.30'
+RUN pip install -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-RUN pip install -U pkgconfig
-RUN pip install -U cython
-RUN pip install -U 'numpy==1.16.2'
-RUN pip install -U setuptools
-RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
+RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py 'h5py<2.10'
 
 # ipython / jupyter
-RUN pip install --ignore-installed -U 'ipython>=5.0,<6.0'
+RUN pip install -U 'pyzmq<18.1'
+RUN pip install -U 'ipython<6.0'
 RUN pip install jupyter
-RUN pip install -U zmq
-RUN pip install -U 'scipy==1.2.1'
-RUN pip install -U nbsphinx
+RUN pip install 'qtconsole<4.5'
+RUN pip install -U 'scipy<1.3'
+RUN pip install -U 'nbsphinx<0.5'
 # sphinx 1.7 has bugs
-RUN pip install -U "sphinx>=1.5,<1.7"
+RUN pip install -U "sphinx<1.7"
 
-RUN pip install nipype
-RUN pip install dipy
-RUN pip install -U nibabel
-RUN pip install sklearn
-RUN pip install -U pyparsing
-RUN pip install -U pydot
+RUN pip install 'nipype<1.2'
+RUN pip install 'dipy<0.17'
+RUN pip install -U 'nibabel<2.5'
+RUN pip install 'scikit-learn<0.21'
+RUN pip install -U 'pyparsing<2.4'
+RUN pip install -U 'pydot<1.3'
 RUN pip install "python_jenkins==0.4.16"
-RUN pip install -U lark-parser
+RUN pip install -U 'lark-parser<0.8'
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...
 RUN pip3 install -U backports.functools_lru_cache
 RUN pip install -U backports.functools_lru_cache
-RUN pip install -U xlrd
-RUN pip install -U xlwt
+RUN pip install -U 'xlrd<1.3'
+RUN pip install -U 'xlwt<1.4'
 
 # install Pycluster
 RUN cd /tmp \

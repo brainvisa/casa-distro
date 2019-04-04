@@ -122,31 +122,41 @@ RUN apt-get update \
 # does not work any  longer...
 RUN cd /tmp && wget https://pypi.python.org/packages/c4/44/e6b8056b6c8f2bfd1445cc9990f478930d8e3459e9dbf5b8e2d2922d64d3/pip-9.0.3.tar.gz && tar xf pip-9.0.3.tar.gz && cd pip-9.0.3 && python setup.py install && hash pip && pip install -U 'setuptools==40.8.0' && pip install -U 'pip<19.1' && cd .. && rm -rf pip-9.0.3 pip-9.0.3.tar.gz
 
-# install h5py from sources to force using the system libhdf5,
-# otherwise it will install an incompatible binary
 RUN pip install -U 'pkgconfig<1.6'
 RUN pip install -U 'cython<0.30'
 RUN pip install -U --ignore-installed 'numpy<1.17'
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py 'h5py<2.9'
 
+# remove a few packages that will be reinstalled via pip as newer versions
+RUN apt-get remove -y ipython
+RUN apt-get remove -y python-zmq
+RUN apt-get remove -y python-scipy
+RUN apt-get remove -y python-docutils
+RUN apt-get remove -y python-simplejson
+
 # ipython / jupyter
+RUN pip install --ignore-installed -U 'pyzmq<18.1'
 RUN pip install -U 'ipython<6.0' 'pathlib2!=2.3.1'
 RUN pip install -U "tornado<5"
 RUN pip install 'jupyter==1.0.0'
-RUN pip3 install --ignore-installed -U 'pyzmq<18.1'
+RUN pip install 'qtconsole<4.5'
+RUN pip install 'jupyter_client<5.3'
 RUN pip install -U 'scipy<1.3'
-RUN pip install -U docutils
-RUN pip install -U 'nbsphinx<0.4'
+RUN pip install -U 'docutils<0.15'
+RUN pip install -U -I 'pyparsing<2.4'
+RUN pip install -U 'nbsphinx<0.5'
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx<1.7"
-RUN pip install jupyter_client
+RUN pip install "pandoc<2.0"
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
 RUN pip install "python_jenkins==0.4.16"
+RUN pip install -U 'nibabel<2.4'
 RUN pip install 'nipype<1.2'
 RUN pip install 'dipy<0.15'
-RUN pip install -U 'nibabel<2.4'
 RUN pip install 'scikit-learn<0.21'
 RUN pip install subprocess32
 

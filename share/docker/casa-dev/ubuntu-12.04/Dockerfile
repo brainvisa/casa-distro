@@ -67,7 +67,6 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gfortran \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y libsvm-dev \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y python-sphinx \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-matplotlib \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y python-qt4-gl \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-7-jdk \
@@ -142,43 +141,55 @@ RUN apt-get update \
 #     && DEBIAN_FRONTEND=noninteractive apt-get install -y git-lfs \
 #     && apt-get clean \
 #     && rm -rf /var/lib/apt/lists/*
- 
+
+# remove a few packages that will be reinstalled via pip as newer versions
+RUN apt-get remove -y ipython
+RUN apt-get remove -y python-zmq
+RUN apt-get remove -y python-scipy
+RUN apt-get remove -y python-chardet
+RUN apt-get remove -y python-docutils
+RUN apt-get remove -y python-simplejson
+
+RUN pip install -U 'setuptools==40.8.0'
+RUN pip install -U 'pip<19.1'
+RUN hash pip
+RUN pip install -U 'pkgconfig<1.6'
+RUN pip install -U 'cython<0.30'
+RUN pip install --ignore-installed -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-RUN pip install -U pkgconfig
-RUN pip install -U cython
-RUN pip install -U 'numpy==1.16.2'
-RUN pip install -U setuptools
-RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
+RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py 'h5py<2.9'
 
 # ipython / jupyter
-RUN pip install -U 'ipython>=5.0,<6.0'
-RUN pip install -U "tornado>=4,<5"
-RUN pip install jupyter
-RUN pip install -U zmq
-RUN pip install -U 'scipy==1.2.1'
-RUN pip install -U docutils
-RUN pip install -U nbsphinx
+RUN pip install -U 'pyzmq<18.1'
+RUN pip install -U 'ipython<6.0'
+RUN pip install -U "tornado<5"
+RUN pip install 'jupyter==1.0.0'
+RUN pip install 'qtconsole<4.5'
+RUN pip install -U 'jupyter_client<5.3'
+RUN pip install -U 'scipy<1.3'
+RUN pip install -U 'docutils<0.15'
 # sphinx 1.7 has bugs
-RUN pip install -U "sphinx>=1.5,<1.7"
-RUN pip install jupyter_client
+RUN pip install -U "sphinx<1.7"
+RUN pip install -U 'nbsphinx<0.4'
 RUN pip install "pandoc<2.0"
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
 RUN pip install "python_jenkins==0.4.16"
-RUN pip install nipype
-RUN pip install dipy
-RUN pip install -U nibabel
-RUN pip install sklearn
-RUN pip install -U dicom
+RUN pip install 'simplejson<3.17'
+RUN pip install 'nipype<1.2'
+RUN pip install 'dipy<0.17'
+RUN pip install -U 'nibabel<2.5'
+RUN pip install 'scikit-learn<0.21'
+RUN pip install -U 'dicom<0.10'
 RUN pip install subprocess32
 RUN pip install tqdm
 
-RUN pip install -U lark-parser
-RUN pip install -U sqlalchemy
-RUN pip install -U xlrd
-RUN pip install -U xlwt
+RUN pip install -U 'lark-parser<0.8'
+RUN pip install -U 'sqlalchemy<1.4'
+RUN pip install -U 'xlrd<1.3'
+RUN pip install -U 'xlwt<1.4'
 
 # install Pycluster
 RUN cd /tmp \
