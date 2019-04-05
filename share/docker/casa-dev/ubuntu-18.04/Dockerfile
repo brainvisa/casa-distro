@@ -490,18 +490,19 @@ RUN pip3 install -U 'ipython<8'
 RUN pip3 install jupyter
 RUN pip3 install 'qtconsole<4.5'
 RUN pip3 install -U 'nbsphinx<0.5'
-RUN pip3 install 'dipy<0.17'
+RUN pip3 install 'dipy<0.15'
 RUN pip3 install -U 'nibabel<2.5'
 RUN pip3 install 'scikit-learn<0.21'
 RUN pip3 install -U 'lark-parser<0.8'
 RUN pip3 install -U 'xlrd<1.3'
 RUN pip3 install -U 'xlwt<1.4'
 
-RUN pip install -U 'setuptools==40.8.0'
-RUN pip install -U 'pip<19.1'
+# pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
+RUN python -m pip install -U 'setuptools==40.8.0'
+RUN python -m pip install -U 'pip<19.1'
 RUN hash pip
 RUN pip install -U 'pkgconfig<1.6'
-RUN pip install -U 'cython<0.30'
+RUN pip install --ignore-installed -U 'cython<0.30'
 RUN pip install -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
@@ -518,7 +519,7 @@ RUN pip install -U 'nbsphinx<0.5'
 RUN pip install -U "sphinx<1.7"
 
 RUN pip install 'nipype<1.2'
-RUN pip install 'dipy<0.17'
+RUN pip install 'dipy<0.15'
 RUN pip install -U 'nibabel<2.5'
 RUN pip install 'scikit-learn<0.21'
 RUN pip install -U 'pyparsing<2.4'

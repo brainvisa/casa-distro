@@ -44,8 +44,6 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     python-paramiko \
     libxml2-devel \
     python-sphinx \
-    python-matplotlib \
-    python-matplotlib-qt4 \
     python-sqlalchemy \
     python-lark-parser \
     java-1.7.0-openjdk \
@@ -98,7 +96,6 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     pax-utils \
     python36 \
     python36-devel \
-    python36-numpy \
     python36-setuptools \
     vim \
     gedit \
@@ -109,8 +106,10 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     kdiff3 \
     gitg \
     gitk \
-    spyder \
  && yum clean all
+
+# spyder cannot be installed because it needs "python-rope" which doesn't
+# exist.
 
 ENV CEA_MIRROR_URL=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/centos-7.4
 
@@ -155,16 +154,16 @@ RUN pip --version
 # otherwise it will install an incompatible binary
 RUN pip install -U pkgconfig
 RUN pip install -U cython
-RUN pip install -U "numpy==1.16.2"
+RUN pip install -U "numpy<1.17"
 RUN pip install -U setuptools
 RUN CPPFLAGS='-I/usr/include/mpi' pip install --no-binary=h5py h5py
 
 # ipython / jupyter
-RUN pip install -U 'ipython>=5.0,<6.0'
+RUN pip install -U 'ipython<6.0'
 RUN pip install -U "tornado>=4,<5"
 RUN pip install jupyter
 RUN pip install -U zmq
-RUN pip install -U 'scipy==1.2.1'
+RUN pip install -U 'scipy<1.3'
 #RUN pip install -U docutils
 RUN pip install -U nbsphinx
 RUN pip install -U traits
@@ -174,12 +173,13 @@ RUN pip install -U pyro
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx>=1.5,<1.7"
 RUN pip install jupyter_client
+RUN pip install 'matplotlib<3.1'
 
 # install xmltodict and other python packages
 RUN pip install xmltodict
 RUN pip install "python_jenkins==0.4.16"
 RUN pip install nipype
-RUN pip install dipy
+RUN pip install 'dipy<0.15'
 RUN pip install -U nibabel
 RUN pip install "scikit-learn==0.19.1"
 RUN pip install -U pyparsing

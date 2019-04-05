@@ -127,6 +127,7 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gitg \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gitk \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y spyder \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y pandoc \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
  
@@ -179,7 +180,7 @@ RUN pip install xmltodict
 RUN pip install "python_jenkins==0.4.16"
 RUN pip install 'simplejson<3.17'
 RUN pip install 'nipype<1.2'
-RUN pip install 'dipy<0.17'
+RUN pip install 'dipy<0.15'
 RUN pip install -U 'nibabel<2.5'
 RUN pip install 'scikit-learn<0.21'
 RUN pip install -U 'dicom<0.10'
@@ -190,6 +191,7 @@ RUN pip install -U 'lark-parser<0.8'
 RUN pip install -U 'sqlalchemy<1.4'
 RUN pip install -U 'xlrd<1.3'
 RUN pip install -U 'xlwt<1.4'
+RUN pip install -U 'jinja2<2.11'
 
 # install Pycluster
 RUN cd /tmp \
