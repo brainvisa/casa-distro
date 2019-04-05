@@ -456,7 +456,8 @@ def update_build_workflow(build_workflow_directory, verbose=None):
     '''
     Update an existing build workflow directory. It basically:
     * recreates the casa_distro run script
-    * copies the home .Xauthority file, if it exists, to the casa home dir
+    * creates a symlink to the home .Xauthority file, if it exists,
+      in the casa home dir
     * writes a .bashrc in the casa home dir if there is not any yet.
 
     Parameters
@@ -489,13 +490,15 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
     if verbose:
         print('created run script:', script_file)
 
-    # copy $HOME/.Xauthority if this file exists, in order to enable display
-    # through ssh
+    # symlink $HOME/.Xauthority if this file exists, in order to enable display
+    # through ssh ($HOME is mounted in singularity)
     homexauth = os.path.join(os.environ['HOME'], '.Xauthority')
     if os.path.exists(homexauth):
         casaxhauth = os.path.join(build_workflow_directory, 'home',
                                   '.Xauthority')
-        cp(homexauth, casaxhauth)
+        if os.path.exists(casaxhauth):
+            os.unlink(casaxhauth)
+        os.symlink(homexauth, casaxhauth)
 
     bashrc = os.path.join(build_workflow_directory, 'home', '.bashrc')
     if not os.path.exists(bashrc):
