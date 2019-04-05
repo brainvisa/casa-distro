@@ -516,7 +516,7 @@ if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
     done
 fi
 
-export PS1='\[\033[33m\]\u@\h \$\[\033[0m\] '
+export PS1='\[\\033[33m\]\u@\h \$\[\\033[0m\] '
 ''')
 
 def merge_config(casa_distro, conf):
