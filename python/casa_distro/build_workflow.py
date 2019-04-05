@@ -438,23 +438,6 @@ def create_build_workflow_directory(build_workflow_directory,
     casa_distro_json = osp.join(bwf_dir, 'conf', 'casa_distro.json')
     json.dump(casa_distro, open(casa_distro_json, 'w'), indent=4)
 
-    open(os.path.join(bwf_dir, 'home', '.bashrc'), 'w').write('''
-if [ -f /etc/profile ]; then
-    . /etc/profile
-fi
-
-# source any bash_completion scripts
-if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
-    for d in "$CASA_BUILD/etc/bash_completion.d/"*; do
-        if [ -f "$d" ]; then
-            . "$d"
-        fi
-    done
-fi
-
-export PS1='\[\033[33m\]\u@\h \$\[\033[0m\] '
-''')
-    
     check_svn_secret(bwf_dir)
     
     if container_type == 'singularity':
@@ -471,8 +454,10 @@ export PS1='\[\033[33m\]\u@\h \$\[\033[0m\] '
 
 def update_build_workflow(build_workflow_directory, verbose=None):
     '''
-    Update an existing build workflow directory. It basically recreates the
-    casa_distro run script
+    Update an existing build workflow directory. It basically:
+    * recreates the casa_distro run script
+    * copies the home .Xauthority file, if it exists, to the casa home dir
+    * writes a .bashrc in the casa home dir if there is not any yet.
 
     Parameters
     ----------
@@ -503,6 +488,33 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
     os.chmod(script_file, 0775)
     if verbose:
         print('created run script:', script_file)
+
+    # copy $HOME/.Xauthority if this file exists, in order to enable display
+    # through ssh
+    homexauth = os.path.join(os.environ['HOME'], '.Xauthority')
+    if os.path.exists(homexauth):
+        casaxhauth = os.path.join(build_workflow_directory, 'home',
+                                  '.Xauthority')
+        cp(homexauth, casaxhauth)
+
+    bashrc = os.path.join(build_workflow_directory, 'home', '.bashrc')
+    if not os.path.exists(bashrc):
+        open(bashrc, 'w').write('''
+if [ -f /etc/profile ]; then
+    . /etc/profile
+fi
+
+# source any bash_completion scripts
+if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
+    for d in "$CASA_BUILD/etc/bash_completion.d/"*; do
+        if [ -f "$d" ]; then
+            . "$d"
+        fi
+    done
+fi
+
+export PS1='\[\033[33m\]\u@\h \$\[\033[0m\] '
+''')
 
 def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config
