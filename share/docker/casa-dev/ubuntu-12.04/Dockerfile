@@ -187,7 +187,7 @@ RUN pip install -U 'dicom<0.10'
 RUN pip install subprocess32
 RUN pip install tqdm
 
-RUN pip install -U 'lark-parser<0.8'
+RUN pip install -U 'lark-parser<0.7'
 RUN pip install -U 'sqlalchemy<1.4'
 RUN pip install -U 'xlrd<1.3'
 RUN pip install -U 'xlwt<1.4'

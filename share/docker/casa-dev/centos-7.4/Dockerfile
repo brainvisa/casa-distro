@@ -186,7 +186,7 @@ RUN pip install -U pyparsing
 RUN pip install -U pydot
 RUN pip install mpi4py
 
-RUN pip install -U lark-parser
+RUN pip install -U 'lark-parser<0.7'
 RUN pip install -U xlrd
 RUN pip install -U xlwt
 
