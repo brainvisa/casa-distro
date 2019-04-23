@@ -76,7 +76,7 @@ RUN chmod 777 /casa \
 # Update wine configuration to match windows 7 version
 RUN echo "#!/usr/bin/env bash \n" \
          "wineboot -u " \
-         "&& wineserver -w " \
+         "&& wineserver -k -w " \
          "&& sed -i 's/\"CSDVersion\"=\"Service Pack 2\"/\"CSDVersion\"=\"Service Pack 1\"/g' \${WINEPREFIX}/system.reg " \
          "&& sed -i 's/\"CurrentBuildNumber\"=\"3790\"/\"CurrentBuildNumber\"=\"7601\"/g' \${WINEPREFIX}/system.reg " \
          "&& sed -i 's/\"CurrentVersion\"=\"5.2\"/\"CurrentVersion\"=\"6.1\"/g' \${WINEPREFIX}/system.reg " \

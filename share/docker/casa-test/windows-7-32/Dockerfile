@@ -38,6 +38,7 @@ RUN dpkg --add-architecture i386 \
     wine-mono4.5.4 \
     winetricks \
     wget \
+    bash-completion \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 # delete all the apt list files since they're big and get stale quickly
@@ -73,7 +74,7 @@ RUN chmod 777 /casa \
 # Update wine configuration to match windows 7 version
 RUN echo "#!/usr/bin/env bash \n" \
          "wineboot -u " \
-         "&& wineserver -w " \
+         "&& wineserver -k -w " \
          "&& sed -i 's/\"CSDVersion\"=\"Service Pack 2\"/\"CSDVersion\"=\"Service Pack 1\"/g' \${WINEPREFIX}/system.reg " \
          "&& sed -i 's/\"CurrentBuildNumber\"=\"3790\"/\"CurrentBuildNumber\"=\"7601\"/g' \${WINEPREFIX}/system.reg " \
          "&& sed -i 's/\"CurrentVersion\"=\"5.2\"/\"CurrentVersion\"=\"6.1\"/g' \${WINEPREFIX}/system.reg " \
