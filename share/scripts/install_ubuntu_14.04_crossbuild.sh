@@ -342,7 +342,7 @@ __sys_packages=(apt-utils autoconf automake autopoint bash bison bzip2 cmake
                 openssl patch perl pkg-config python python-dev python-mako 
                 python-dateutil python-setuptools python-sphinx 
                 python-virtualenv ruby scons sed subversion unzip wget xvfb 
-                xdot xz-utils yasm dos2unix texinfo)
+                xdot xz-utils yasm dos2unix texinfo curl)
 
 __build_packages=(wine mingw64 python)
 
@@ -798,6 +798,9 @@ if [ "${__install}" == "1" ] && [ "${SYSTEM}" == "1" ]; then
     echo "=========================== SYSTEM ==============================="
     sudo apt-get -q -y --force-yes install ${__sys_packages[@]} \
     || exit 1
+    (curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash) || exit 1
+    DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git-lfs || exit 1
+
 fi
 
 # ------------------------------------------------------------------------------
@@ -7938,6 +7941,7 @@ fi
 # ------------------------------------------------------------------------------
 PYTHON_SPHINX_VERSION=1.2.2
 PYTHON_SPHINX_SOURCE_URL=https://pypi.python.org/packages/ff/91/edcbcd8126333cf69493fc2a0f1663ffef26d267024125ffd7bd50137bdb/Sphinx-${PYTHON_SPHINX_VERSION}-py27-none-any.whl
+PYTHON_SPHINX_GALLERY_VERSION=0.3.1
 
 if [ "${PYTHON_SPHINX}" == "1" ]; then
     echo "============================== PYTHON_SPHINX =============================="
@@ -7949,7 +7953,7 @@ if [ "${PYTHON_SPHINX}" == "1" ]; then
         # Uninstall using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
-                                    -m pip uninstall -y sphinx
+                                    -m pip uninstall -y sphinx sphinx-gallery
     fi
 
     if [ "${__install}" == "1" ]; then
@@ -7957,6 +7961,10 @@ if [ "${PYTHON_SPHINX}" == "1" ]; then
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
                     -m pip install "$(winepath -w ${__download_dir}/sphinx-${PYTHON_SPHINX_VERSION}-py27-none-any.whl)" \
+        || exit 1
+        PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
+        ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
+                    -m pip install "sphinx-gallery==${PYTHON_SPHINX_GALLERY_VERSION}" \
         || exit 1
 
         # Add links to python scripts

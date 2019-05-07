@@ -172,6 +172,7 @@ RUN pip install -U 'scipy<1.3'
 RUN pip install -U 'docutils<0.15'
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx<1.7"
+RUN pip install -U "sphinx-gallery<0.4"
 RUN pip install -U 'nbsphinx<0.4'
 RUN pip install "pandoc<2.0"
 

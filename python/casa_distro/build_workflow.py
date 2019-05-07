@@ -459,6 +459,7 @@ def update_build_workflow(build_workflow_directory, verbose=None):
     * creates a symlink to the home .Xauthority file, if it exists,
       in the casa home dir
     * writes a .bashrc in the casa home dir if there is not any yet.
+    * runs the command 'git lfs install' if git-lfs is available
 
     Parameters
     ----------
@@ -516,8 +517,18 @@ if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
     done
 fi
 
+# colored prompt to show we are in a casa-distro shell
 export PS1='\[\\033[33m\]\u@\h \$\[\\033[0m\] '
+# convenient aliases
+alias ls='ls -F --color'
+alias ll='ls -als'
 ''')
+    # initialize git-lfs for the local home
+    run_container(
+        build_workflow_directory,
+        ['bash', '-c',
+         'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
+        verbose=verbose)
 
 def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config

@@ -114,6 +114,9 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gitg \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gitk \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y spyder \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y curl \
+ && (curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash) \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y git-lfs \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -149,6 +152,7 @@ RUN pip install -U -I 'pyparsing<2.4'
 RUN pip install -U 'nbsphinx<0.5'
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx<1.7"
+RUN pip install -U "sphinx-gallery<0.4"
 RUN pip install "pandoc<2.0"
 
 # install xmltodict and other python packages

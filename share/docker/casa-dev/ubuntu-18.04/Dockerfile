@@ -449,9 +449,12 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gitg \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y gitk \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y spyder \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y curl \
+ && (curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash) \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y git-lfs \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-  
+
 
 RUN cd /tmp \
   && wget --no-check-certificate https://github.com/blitzpp/blitz/archive/1.0.1.zip && unzip 1.0.1.zip && cd blitz-1.0.1 \
@@ -490,6 +493,7 @@ RUN pip3 install -U 'ipython<8'
 RUN pip3 install jupyter
 RUN pip3 install 'qtconsole<4.5'
 RUN pip3 install -U 'nbsphinx<0.5'
+RUN pip3 install 'sphinx-gallery<0.4'
 RUN pip3 install 'dipy<0.15'
 RUN pip3 install -U 'nibabel<2.5'
 RUN pip3 install 'scikit-learn<0.21'
@@ -517,6 +521,7 @@ RUN pip install -U 'scipy<1.3'
 RUN pip install -U 'nbsphinx<0.5'
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx<1.7"
+RUN pip install 'sphinx-gallery<0.4'
 
 RUN pip install 'nipype<1.2'
 RUN pip install 'dipy<0.15'

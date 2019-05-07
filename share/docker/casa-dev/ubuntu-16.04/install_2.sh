@@ -32,6 +32,9 @@ $SUDO pip3 install --ignore-installed -U 'pyzmq<18.1'
 $SUDO pip3 install --ignore-installed -U 'ipython<8'
 $SUDO pip3 install 'jupyter==1.0.0'
 $SUDO pip3 install 'nbsphinx<0.4'
+# sphinx 1.7 has bugs
+$SUDO pip3 install -U "sphinx<1.7"
+$SUDO pip3 install 'sphinx-gallery<0.4'
 $SUDO pip3 install 'dipy<0.15'
 $SUDO pip3 install -U 'nibabel<2.4'
 $SUDO pip3 install 'scikit-learn<0.21'
@@ -69,6 +72,7 @@ $SUDO pip install -U --no-deps --ignore-installed 'scipy<1.2'
 $SUDO pip install -U 'nbsphinx<0.4'
 # sphinx 1.7 has bugs
 $SUDO pip install -U "sphinx<1.7"
+$SUDO pip install 'sphinx-gallery<0.4'
 
 $SUDO pip install -U 'pyparsing<2.4'
 $SUDO pip install 'nipype<1.2'
@@ -80,3 +84,4 @@ $SUDO pip install -U 'pandas<0.25'
 $SUDO pip install -U 'lark-parser<0.7'
 $SUDO pip install --ignore-installed -U 'xlrd<1.3'
 $SUDO pip install --ignore-installed -U 'xlwt<1.4'
+

@@ -450,6 +450,12 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y kdiff3
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitg
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitk
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y spyder
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y curl
+
+# add repository for git-lfs
+curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | $SUDO bash
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y git-lfs
+
 $SUDO apt-get clean
 $SUDO rm -rf /var/lib/apt/lists/*
 

@@ -106,6 +106,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     kdiff3 \
     gitg \
     gitk \
+    git-lfs \
  && yum clean all
 
 # spyder cannot be installed because it needs "python-rope" which doesn't
@@ -172,6 +173,7 @@ RUN pip install -U pydicom
 RUN pip install -U pyro
 # sphinx 1.7 has bugs
 RUN pip install -U "sphinx>=1.5,<1.7"
+RUN pip install "sphinx-gallery<0.4"
 RUN pip install jupyter_client
 RUN pip install 'matplotlib<3.1'
 
