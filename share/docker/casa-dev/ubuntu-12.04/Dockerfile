@@ -193,6 +193,7 @@ RUN pip install -U 'sqlalchemy<1.4'
 RUN pip install -U 'xlrd<1.3'
 RUN pip install -U 'xlwt<1.4'
 RUN pip install -U 'jinja2<2.11'
+RUN pip install 'pandas<0.25'
 
 # install Pycluster
 RUN cd /tmp \
