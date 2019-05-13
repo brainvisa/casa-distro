@@ -157,6 +157,8 @@ in `run`_ and `shell`_ commands
 
     conf=test
 
+This selects the appropriate sub-configuration block in the configuration file of the build workflow. See :ref:`alt_configs`
+
 
 Environment variables
 =====================
@@ -185,6 +187,41 @@ Some variables substitution can occur in the string values, in a "pythonic" shap
 
 Moreover some environment variables replacement also takes place, in the shape: ``${VARIABLE}``.
 
+
+Configuration dictionary variables
+----------------------------------
+
+alt_configs: dictionary
+    alternative configurations dictionary. see :ref:`alt_configs`.
+build_workflow_dir: string
+    build workflow directory
+casa_branch: string
+    name of the source and build branch (``bug_fix``, ``trunk``, ``latest_release``, ``release_candidate``)
+container_env: dictionary
+    environment variables set when running a container.
+container_gui_env: dictionary
+    environment variables set when running a container in gui mode.
+container_gui_options: list
+    list of commandline options passed to the container command in gui mode: depends on the container types.
+container_image: string
+    container image name. May be a filename, or a docker-style identifier. Docker-style identifiers are converted into filenames when using singularity, thus are still understood, so ``cati/casa-dev:ubuntu-16.04`` is a valid name.
+container_options: list
+    list of commandline options passed to the container command: depends on the container types, options passed to docker and to singularity actually differ.
+container_type: string
+    ``docker`` or ``singularity``. New container types, ``virtualbox`` for instance, may be added in future extensions.
+container_volumes: dictionary
+    mount points in the container. Directories from the host filesystem (source) are exported to the container (dest). The dictionary is a map of source:destination directories.
+distro_name: string
+    name of the distribution (set of configured sources built in the build workflow).
+distro_source: string
+    name of the distribution used to base this one on. ``brainvisa``, ``opensource``, ``cati_platform``.
+init_workflow_cmd: string
+    command run when initializing the build workflow. Normally none.
+system: string
+    system the container runs (``ubuntu-12.04``, ``ubuntu-14.04``, ``ubuntu-16.04``, ``ubuntu-18.04``, ``centos-7.4``, ``windows-7-64``).
+
+
+.. _alt_configs:
 
 Alternative configurations
 --------------------------
