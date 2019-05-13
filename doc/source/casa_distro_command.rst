@@ -48,15 +48,78 @@ or print help about a command:
 
     casa_distro help <command>
 
-list
-----
+bv_maker
+--------
 
-List (eventually selected) build workflows created by the `create`_ command.
+Start bv_maker in the configured container for all the selected build workflows (by default, all created build workflows).
+
+clean_images
+------------
+
+Delete singularity images which are no longer used in any build workflow, or those listed in image_names.
 
 create
 ------
 
 Initialize a new build workflow directory. This creates a conf subdirectory with casa_distro.json, bv_maker.cfg and svn.secret files that can be edited before compilation.
+
+create_writable_image
+---------------------
+
+Create a writable version of a Singularity image used to run containers. This allows to modify an image (for instance install custom packages). To use a writable image in a build workflow, it is necessary to edit its "casa_distro.json" file (located in the "conf" directory of the build workflow) to add ".writable" to the image name. For instance::
+
+    "container_image": "cati/casa-dev:ubuntu-16.04.writable"
+
+The singularity image can be identified by its Docker-like name::
+
+    casa_distro create_writable_image cati/casa-dev:ubuntu-16.04
+
+It is also possible to identify an image by selecting a build workflow::
+
+    casa_distro create_writable_image distro=brainvisa branch=bug_fix
+
+Due to Singularity security, it is necessary to be root on the host system to create an image (sudo is used for that and can ask you a password).
+
+delete
+------
+
+Delete (physically remove files) an entire build workflow. The container image will not be erased, see clean_images for that.
+
+example::
+
+    casa_distro delete branch=bug_fix
+
+By default the "interactive" mode is on, and a confirmation will be asked before proceding. If interactive is disabled, then the deletion will be done without confirmation.
+
+list
+----
+
+List (eventually selected) build workflows created by the `create`_ command.
+
+mrun
+----
+
+Start any command in one or several container with the given repository configuration. By default, command is executed in all existing build workflows.
+
+example::
+
+    # Launch bv_maker on all build workflows using any version of Ubuntu
+    casa_distro mrun bv_maker system=ubuntu-*
+
+The "conf" parameter may address an additional config dictionary within the casa_distro.json config file. Typically, a test config may use a different system image (casa-test images), or options, or mounted directories.
+
+root_shell
+----------
+
+Start a shell with root privileges allowing to modify a writable singularity image. Before using this command, a writable image must have been created with the create_writable_image command. Using this command allows to modify the writable image (for instance to install packages). Due to Singularity security, it is necessary to be root on the host system to start a root shell within the container (sudo is used for that and can ask you a password).
+
+The image can be identified by its Docker-like name::
+
+    casa_distro root_shell cati/casa-dev:ubuntu-16.04
+
+It is also possible to identify an image by selecting a build workflow::
+
+    casa_distro root_shell distro=brainvisa branch=bug_fix
 
 run
 ---
@@ -74,20 +137,16 @@ shell
 
 Start a bash shell in the configured container with the given repository configuration.
 
-bv_maker
---------
+update
+------
 
-Start bv_maker in the configured container for all the selected build workflows (by default, all created build workflows).
+Update an existing build workflow directory. For now it only re-creates the run script in bin/casa_distro, pointing to the casa_distro command used to actually perform the update.
 
 update_image
 ------------
 
 Update the container images of (eventually selected) build workflows created by `create`_ command.
 
-update
-------
-
-Update an existing build workflow directory. For now it only re-creates the run script in bin/casa_distro, pointing to the casa_distro command used to actually perform the update.
 
 
 The complexity of arguments parsing

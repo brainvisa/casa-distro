@@ -415,6 +415,7 @@ def mrun(distro='*', branch='*', system='*',
     
     example:
         # Launch bv_maker on all build workflows using any version of Ubuntu
+
         casa_distro mrun bv_maker system=ubuntu-*
 
     The "conf" parameter may address an additional config dictionary within the
@@ -515,11 +516,11 @@ def create_writable_image(singularity_image=None, distro=None, branch=None, syst
     This allows to modify an image (for instance install custom packages). To
     use a writable image in a build workflow, it is necessary to edit its
     "casa_distro.json" file (located in the "conf" directory of the build
-    workflow) to add ".writable" to the image name. For instance :
+    workflow) to add ".writable" to the image name. For instance:
     
         "container_image": "cati/casa-dev:ubuntu-16.04.writable"
 
-    The singularity image can be identified by its Docker-like name :
+    The singularity image can be identified by its Docker-like name:
         casa_distro create_writable_image cati/casa-dev:ubuntu-16.04
     
     It is also possible to identify an image by selecting a build workflow:
@@ -575,14 +576,14 @@ def root_shell(singularity_image=None, distro=None, branch=None, system=None,
     '''
     Start a shell with root privileges allowing to modify a writable
     singularity image. Before using this command, a writable image 
-    must have been created with create_writable_image command. Using
-    this command allow to modify the writable image (for instance install
+    must have been created with the create_writable_image command. Using
+    this command allows to modify the writable image (for instance to install
     packages).
     Due to Singularity security, it is necessary to be
     root on the host system to start a root shell within the container (sudo 
     is used for that and can ask you a password).
     
-    Image can be identified by its Docker-like name :
+    The image can be identified by its Docker-like name:
         casa_distro root_shell cati/casa-dev:ubuntu-16.04
     
     It is also possible to identify an image by selecting a build workflow:

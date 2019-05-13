@@ -66,7 +66,7 @@ Images can be uploaded to a centralized place to allow other users to use them.
 
 By default ``publish_docker`` will use `Docker Hub <https://hub.docker.com/>`_, which requires an account and access rights to push images.
 
-Singularity has no public hub, so ``publish_singularity`` will push by default somewhere on the `BrainVISA web site <http://brainvisa.info>`_, which also requires to have access to the website account to push.
+Singularity did not have a public hub by the time we started casa-distro, so ``publish_singularity`` will push by default somewhere on the `BrainVISA web site <http://brainvisa.info>`_, which also requires to have access to the website account to push. We could use `Singularity Hub <https://singularity-hub.org/>`_ in the future.
 
 Downloading and updating images do not need any access rights, they are public.
 
