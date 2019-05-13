@@ -41,7 +41,7 @@ function _complete_casa_distro_option_()
         COMPREPLY=($(compgen -W "$images" -- "${word}"))
         ;;
     image_names)
-        if [ "$cmd" = "publish_singularity" ]; then
+        if [ "$cmd" = "publish_singularity" ] | [ "$cmd" = "clean_images" ]; then
             # take existing singularity images
             local images=$CASA_DEFAULT_REPOSITORY/*.simg
         fi
@@ -142,7 +142,7 @@ function _complete_casa_distro_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help create list update update_image shell run mrun bv_maker create_writable_image root_shell"
+    local cmd_list="help create list update update_image shell run mrun bv_maker create_writable_image root_shell delete clean_images"
     local opt_list="-r --repository -h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -176,6 +176,15 @@ function _complete_casa_distro_()
              || [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = "=" ]; then
             # after = sign: complete an option value
             _complete_casa_distro_option_
+            return
+        fi
+
+        if { [ "$word" = ":" ] \
+             && [ "${COMP_WORDS[$(( COMP_CWORD - 3 ))]}" = "image_names" ]; } \
+             || { [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = ":" ] \
+                  && [ "${COMP_WORDS[$(( COMP_CWORD - 4 ))]}" = "image_names" ];}; then
+            # in image_names option, after : sign
+            _complete_casa_distro_image_names_tag_
             return
         fi
 
@@ -215,6 +224,12 @@ function _complete_casa_distro_()
             ;;
         update_image)
             COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= verbose=" -- "${word}"))
+            ;;
+        delete)
+            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= interactive=" -- "${word}"))
+            ;;
+        clean_images)
+            COMPREPLY=($(compgen -W "build_workflows_repository= image_names= verbose= interactive=" -- "${word}"))
             ;;
         esac
         ;;

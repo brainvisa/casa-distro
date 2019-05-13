@@ -21,9 +21,11 @@ from casa_distro.defaults import (default_build_workflow_repository,
 from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         create_build_workflow_directory,
                                         update_container_image, merge_config,
-                                        update_build_workflow)
+                                        update_build_workflow,
+                                        delete_build_workflow)
 from casa_distro.singularity import (create_writable_singularity_image,
-                                     singularity_root_shell)
+                                     singularity_root_shell,
+                                     clean_singularity_images)
 
 
 def verbose_bool(verbose):
@@ -624,3 +626,59 @@ def root_shell(singularity_image=None, distro=None, branch=None, system=None,
                            build_workflow_directory=bwf_dir,
                            build_workflows_repository=build_workflows_repository,
                            verbose=None)
+
+@command
+def delete(distro='*', branch='*', system='*',
+        build_workflows_repository=default_build_workflow_repository,
+        interactive=True):
+    '''
+    Delete (physically remove files) an entire build workflow.
+    The container image will not be erased, see clean_images for that.
+
+    example:
+        casa_distro delete branch=bug_fix
+
+    By default the "interactive" mode is on, and a confirmation will be asked before proceding. If interactive is disabled, then the deletion will be done without confirmation.
+    '''
+    build_workflows = [bwf
+                       for bwf in iter_build_workflow(
+                            build_workflows_repository,
+                            distro=distro,
+                            branch=branch,
+                            system=system) if osp.exists(bwf[-1])]
+    print('the following build workflows will be permanently deleted:')
+    print('\n'.join([bwf[-1] for bwf in build_workflows]))
+
+    if len(build_workflows) != 0 and interactive:
+        print('delete build worflow(s) ? (y/[n]): ', end='')
+        sys.stdout.flush()
+        confirm = sys.stdin.readline()
+        if confirm.strip().lower() not in ('y', 'yes'):
+            print('abort.')
+            return 0
+
+    for d, b, s, bwf_directory in build_workflows:
+        delete_build_workflow(bwf_directory)
+
+@command
+def clean_images(build_workflows_repository=default_build_workflow_repository,
+                 image_names='*', verbose=False, interactive=True):
+    '''
+    Delete singularity images which are no longer used in any build workflow,
+    or those listed in image_names.
+    '''
+    images_to_keep = {}
+    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+                                                distro='*', branch='*',
+                                                system='*'):
+        casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
+                                              'casa_distro.json')))
+        confs = set(['dev'])
+        confs.update(casa_distro.get('alt_configs', {}).keys())
+        for conf in confs:
+            wfconf = merge_config(casa_distro, conf)
+            images_to_keep.setdefault(wfconf['container_type'], set()).add(
+                wfconf['container_image'])
+
+    clean_singularity_images(build_workflows_repository, image_names,
+                             images_to_keep, verbose, interactive)

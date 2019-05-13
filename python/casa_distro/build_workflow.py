@@ -597,3 +597,6 @@ def update_container_image(build_workflows_repository, container_type,
     else:
         raise ValueError('%s is no a valid container system' % container_type)
     
+def delete_build_workflow(bwf_directory):
+    shutil.rmtree(bwf_directory)
+

@@ -8,6 +8,8 @@ import tempfile
 import shutil
 import fnmatch
 from subprocess import check_call, check_output
+import glob
+import sys
 
 from casa_distro import log, six
 from casa_distro.hash import file_hash, check_hash
@@ -324,3 +326,51 @@ def singularity_root_shell(image,
             write_image = write_image[:-5]
         write_image = write_image + '.writable'
     check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
+
+def clean_singularity_images(build_workflows_repository, image_names,
+                             images_to_keep, verbose, interactive=True):
+    verbose = log.getLogFile(verbose)
+    image_name_filters = [i.replace('/', '_').replace(':', '_') for i in image_names.split(',')]
+    image_files = []
+    for filter in image_name_filters:
+        image_files += glob.glob(osp.join(build_workflows_repository,
+                                          filter + '.simg')) \
+                       + glob.glob(osp.join(build_workflows_repository,
+                                            filter + '.writable'))
+    images_to_keep = set([get_image_filename(image, build_workflows_repository)
+                          for image in images_to_keep.get('singularity', [])])
+    remove_images = []
+    for image_name in image_files:
+        if image_name in images_to_keep:
+            if verbose:
+                print(image_name, 'is still in use', file=verbose)
+                continue
+        if interactive or verbose:
+            print('to remove:', image_name, file=verbose)
+        remove_images.append(image_name)
+    confirm = ''
+    if interactive and len(remove_images) != 0:
+        print('proceed or confirm individually (i) ? (y/[n]/i): ', end='')
+        sys.stdout.flush()
+        confirm = sys.stdin.readline().strip().lower()
+        if confirm not in ('y', 'yes', 'i', 'ind'):
+            print('abort.')
+            return
+
+    for image_name in image_files:
+        if image_name not in images_to_keep:
+            if confirm in ('i', 'ind'):
+                print('remove', image_name, '? (y/[n]): ', end='')
+                c = sys.stdin.readline().strip().lower()
+            else:
+                c = 'y'
+            if c in ('y', 'yes'):
+                if verbose:
+                    print('removing:', image_name, file=verbose)
+                if os.path.isdir(image_name):
+                    # writable image directory, needs root access
+                    check_call(['sudo', 'rm', '-rf', image_name])
+                else:
+                    os.unlink(image_name)
+
+
