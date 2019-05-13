@@ -16,9 +16,16 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libglib2.0-0 \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libxi6 \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y x11-utils \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y mesa-utils \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 # delete all the apt list files since they're big and get stale quickly
+
+# virtualGL
+RUN cd /tmp && wget --no-check-certificate https://sourceforge.net/projects/virtualgl/files/2.6.1/virtualgl_2.6.1_amd64.deb \
+  && dpkg -i virtualgl_2.6.1_amd64.deb \
+  && rm -f /tmp/virtualgl_2.6.1_amd64.deb
 
 # copy a software-only mesa libGL in /usr/local/lib
 COPY libGL.so.1 /usr/local/lib/libGL.so.1

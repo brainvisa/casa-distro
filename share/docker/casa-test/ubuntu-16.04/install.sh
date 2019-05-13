@@ -23,9 +23,16 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y 
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y libxi6
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y libxcomposite1
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y wget
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y x11-utils
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y mesa-utils
 $SUDO apt-get clean
 $SUDO rm -rf /var/lib/apt/lists/*
 # delete all the apt list files since they're big and get stale quickly
+
+# virtualGL
+cd /tmp && wget --no-check-certificate https://sourceforge.net/projects/virtualgl/files/2.6.1/virtualgl_2.6.1_amd64.deb \
+  && $SUDO dpkg -i virtualgl_2.6.1_amd64.deb
+rm -f /tmp/virtualgl_2.6.1_amd64.deb
 
 $SUDO ldconfig
 
