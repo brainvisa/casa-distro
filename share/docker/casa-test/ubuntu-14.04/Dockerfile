@@ -7,6 +7,7 @@ FROM ubuntu:14.04
 # avoid the 101th package issue
 RUN apt-get update \
  && apt-get upgrade -y \
+ && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y xvfb \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libx11-xcb1 \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libfontconfig1 \
  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y sudo \
