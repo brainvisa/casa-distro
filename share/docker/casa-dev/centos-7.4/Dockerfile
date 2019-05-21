@@ -107,6 +107,9 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     gitg \
     gitk \
     git-lfs \
+    python36-pyqt5-sip \
+    python36-qt5-devel \
+    python36-qt5-webkit \
  && yum clean all
 
 # spyder cannot be installed because it needs "python-rope" which doesn't
