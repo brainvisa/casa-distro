@@ -110,6 +110,25 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     python36-pyqt5-sip \
     python36-qt5-devel \
     python36-qt5-webkit \
+    python36-numpy \
+    python36-scipy \
+    python36-pip \
+    libvorbis-devel \
+    libogg-devel \
+    flac-devel \
+    libsndfile-devel \
+    json-c-devel \
+    libasyncns-devel \
+    pulseaudio-libs-devel \
+    libxkbcommon-devel \
+    qwt-devel \
+    qt5-qtsvg-devel \
+    qt5-qtwebkit-devel \
+    qt5-qtxmlpatterns-devel \
+    qt5-qtmultimedia-devel \
+    tcp_wrappers-devel \
+    libxkbcommon-x11-devel \
+    qt5-linguist \
  && yum clean all
 
 # spyder cannot be installed because it needs "python-rope" which doesn't
@@ -194,6 +213,8 @@ RUN pip install mpi4py
 RUN pip install -U 'lark-parser<0.7'
 RUN pip install -U xlrd
 RUN pip install -U xlwt
+
+RUN python3 -m pip install 'pandas<0.25'
 
 # # install pip3 and pytorch in python3
 # RUN mkdir -p /usr/local/lib/python3.6/site-packages
@@ -287,3 +308,4 @@ ENV BRAINVISA_BVMAKER_CFG=/casa/conf/bv_maker.cfg
 
 # newer additions, to be placed in the other yum line, later
 # RUN yum -y install something-dev
+
