@@ -249,6 +249,9 @@ RUN cd /tmp \
     && wget ${CEA_MIRROR_URL}/sources/jxrlib-1.1.zip -O jxrlib.zip && mkdir jxrlib && cd jxrlib && unzip ../jxrlib.zip && DIR_INSTALL=/usr/local SHARED=1 make -j4 install && cd /tmp && rm -R jxrlib jxrlib.zip
 RUN cd /tmp && git clone https://github.com/MIRCen/openslide.git && cd openslide && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure && make -j4 install && cd /tmp && rm -R openslide
 
+# Add variable to be able search for openslide using pkg-config
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
 # Directory containing all files used to configure a build directory (svn passwords, bv_maker.cfg, etc.)
 ENV CASA_CONF=/casa/conf
 # Directory containing source code
