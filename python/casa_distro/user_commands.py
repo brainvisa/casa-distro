@@ -220,11 +220,13 @@ def update(distro='*',
            branch='*',
            system='*',
            build_workflows_repository=default_build_workflow_repository,
-           verbose=None):
+           verbose=None, command=None):
     '''
     Update an existing build workflow directory. For now it only re-creates
     the run script in bin/casa_distro, pointing to the casa_distro command
-    used to actually perform the update.
+    inside the build workflow sources tree if it is found there, or to the one
+    used to actually perform the update if none is found in the sources. Using
+    the ``command`` option allows to change this behavior.
 
     distro:
         Name of the distro that will be created. If omited, the name
@@ -235,12 +237,18 @@ def update(distro='*',
 
     system:
         Name of the target system.
+
+    command:
+        casa_distro command actually called in the run script. May be either
+        "host" (the calling command from the host system), "workflow" (use the
+        sources from the build-workflow, the default), or a hard-coded path to
+        the casa_distro command.
     '''
     images_to_update = {}
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
                                                 distro=distro, branch=branch,
                                                 system=system):
-        update_build_workflow(bwf_dir, verbose=verbose)
+        update_build_workflow(bwf_dir, verbose=verbose, command=command)
 
 @command
 def update_image(distro='*', branch='*', system='*', 

@@ -397,7 +397,8 @@ def create_build_workflow_directory(build_workflow_directory,
         casa_distro['container_gui_options'] = gui_options
     elif container_type == 'singularity':
         container_options = ['--pwd', '/casa/home']
-        container_gui_env = {'DISPLAY': '${DISPLAY}'}
+        container_gui_env = {'DISPLAY': '${DISPLAY}',
+                             'XAUTHORITY': '${HOME}/.Xauthority'}
         casa_distro['container_gui_env'] = container_gui_env
         
     else:
@@ -452,7 +453,8 @@ def create_build_workflow_directory(build_workflow_directory,
         # Initialize container for current user
         run_container(bwf_dir, [init_cmd], verbose=verbose)
 
-def update_build_workflow(build_workflow_directory, verbose=None):
+def update_build_workflow(build_workflow_directory, verbose=None,
+                          command=None):
     '''
     Update an existing build workflow directory. It basically:
     * recreates the casa_distro run script
@@ -465,7 +467,14 @@ def update_build_workflow(build_workflow_directory, verbose=None):
     ----------
     build_workflow_directory:
         Directory containing all files of a build workflow.
-    '''
+    verbose: bool
+        verbose mode
+    command: str
+        casa_distro command actually called in the run script. May be either
+        "host" (the calling command from the host system), "workflow" (use the
+        sources from the build-workflow, the default), or a hard-coded path to
+        the casa_distro command.
+     '''
     bin_dir = os.path.join(build_workflow_directory, 'bin')
     if verbose:
         print('update_build_workflow:', build_workflow_directory)
@@ -474,7 +483,23 @@ def update_build_workflow(build_workflow_directory, verbose=None):
             print('create directory:', bin_dir)
         os.mkdir(bin_dir)
     script_file = os.path.join(bin_dir, 'casa_distro')
-    casa_distro_path = os.path.normpath(os.path.abspath(sys.argv[0]))
+    if command in (None, 'workflow'):
+        # try to use casa_distro in sources from the build workflow, then if
+        # it is not found, fallback to the calling one.
+        branches = ['master', 'integration', 'release_candidate',
+                    'latest_release']
+        try_paths = [os.path.join(build_workflow_directory, 'src',
+                                  'development', 'casa-distro', branch, 'bin',
+                                  'casa_distro')
+                    for branch in branches]
+    elif command == 'host':
+        # no default path, use the fallback
+        try_paths = []
+    else:
+        try_paths = [command]
+    try_paths = [p for p in try_paths if os.path.exists(p)]
+    casa_distro_path = (try_paths
+                        + [os.path.normpath(os.path.abspath(sys.argv[0]))])[0]
     if sys.platform.startswith('win'):
         # windows: .bat script
         script_file += '.bat'

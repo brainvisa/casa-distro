@@ -66,6 +66,9 @@ used to distribute all the component of a distro to end users.
 Distributions
 -------------
 
+What is a distribution
+++++++++++++++++++++++
+
 A distribution (or distro) is a selection of software components that
 can be shared with collaborators. All the distro are compiled, tested
 and packaged the same way and at the same time. But each distro have its 
@@ -86,7 +89,7 @@ managed by CASA :
    and SHFJ.
 
 Distribution frequency
-----------------------
+++++++++++++++++++++++
 
 (in the future)
 
@@ -96,7 +99,7 @@ distribution to be released. However, in case of emergency, it is
 possible to add exceptional distributions.
 
 Distribution versioning
------------------------
++++++++++++++++++++++++
 
 It has been chosen to use a classical version numbering convention :
 ``<major>.<minor>.<patch>`` where :
@@ -111,7 +114,7 @@ It has been chosen to use a classical version numbering convention :
    modifications are done.
 
 Distribution creation
----------------------
++++++++++++++++++++++
 
 The creation of a distribution is a three steps process :
 
@@ -186,13 +189,15 @@ the following characteristics:
 
 The rest takes place inside containers, so are normally not restricted by the building system, (as long as it has enough memory and disk space).
 
-For instance, to use Singularity on Debian based Linux systems (such as Ubuntu), the following packages must be installed :
+Singularity is available as an apt package on Ubuntu 16.04 in `neurodebian repositories <http://neuro.debian.net/>`_ and on Ubuntu 18.04 in the main repository, as the ``singularity-container`` package.
+
+Otherwise, to install Singularity on Debian based Linux systems (such as Ubuntu), the following packages must be installed :
 
 .. code-block:: bash
 
   # System dependencies
   sudo apt-get install python build-essential
-  
+
   # Singularity install
   VERSION=2.4.5
   wget https://github.com/singularityware/singularity/releases/download/$VERSION/singularity-$VERSION.tar.gz
@@ -201,7 +206,7 @@ For instance, to use Singularity on Debian based Linux systems (such as Ubuntu),
   ./configure --prefix=/usr/local
   make
   sudo make install
-  
+
 For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
 
 Install latest release
@@ -241,6 +246,7 @@ Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this 
 
 This command specifies to setup a build workflow for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a container system based on Ubuntu 12.04.
 Directories and files will be created accordingly in the repository directory, here ``/home/me/casa`` (default without the ``-r`` option is ``$HOME/casa_distro``).
+The ``-r`` option can be omitted in all ``casa_distro`` commands, if either using the default location, or if the environment variable ``CASA_DEFAULT_REPOSITORY`` is set to an appropriate directory.
 
 * build everything
 
@@ -252,10 +258,46 @@ If distro, branch, or system are not provided, all matching build workflows will
 
 Additional options can be passed to the underlying :bv-cmake:`bv_maker <index.html>` command, which will run inside the container. Typically, the documentation can be built, testing and packaging can be performed.
 
+Update the casa_distro command
+------------------------------
+
+Once a build workflow has been initialized, and at least source code has been updated (using casa_distro bv_maker), most *distributions* actually include the *casa-distro* project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system, so it may be a good idea to use this updated casa_distro command instead of the *casa-distro.zip* file which has been downloaded temporarily to initialize the process. This can be done by "updating" a build-workflow (actually any one which contains casa-distro):
+
+.. code-block:: bash
+
+    python casa-distro.zip -r /home/me/casa update distro=opensource branch=bug_fix system=ubuntu-12.04
+
+Then the run script will use the casa-distro from this source tree.
+You can setup your host environment (``$HOME/.bashrc`` typically) to use it by defaul by setting it first in the ``PATH`` environment variable:
+
+.. code-block:: bash
+
+    export PATH="/home/me/casa/opensource/bug_fix_ubuntu-12.04/bin:$PATH"
+
+Here you should of course replace the path ``/home/me/casa/opensource/bug_fix_ubuntu-12.04`` with the build workflow path listed by the command ``casa_distro -r /home/me/casa list``.
+
+Bash completion
+---------------
+
+Bash completion scripts have been developed for ``casa_distro`` and ``bv_maker``. Inside a casa-distro container, these completions are already setup and should be active as soon as build workflows have been built, and the container is restarted (exit a casa-distro shell and re-run it).
+On the host, it is possible to *source* the bash completion scripts. You can set it in your ``$HOME/.bashrc`` file by adding to it:
+
+.. code-block:: bash
+
+    BUILD_WF=/home/me/casa/opensource/bug_fix_ubuntu-12.04
+    if [ -f "$BUILD_WF/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash" ]; then
+        . "$BUILD_WF/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash"
+    fi
+    if [ -f "$BUILD_WF/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash" ]; then
+        . "$BUILD_WF/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash"
+    fi
+
+This completion will help typing the commands and its options by providing possible options and values by typing ``<tab>`` or ``<tab> <tab>`` when typing the command code, which will significantly speed-up working intensively with casa_distro and bv_maker.
+
 Updating projects
 -----------------
 
-To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running ``python casa-distro.zip bv_maker`` (with corresponding options, if needed).
+To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running ``python casa-distro.zip bv_maker`` or simply ``casa_distro bv_maker`` (with corresponding options, if needed).
 
 Customizing projects
 --------------------
@@ -277,6 +319,9 @@ It's possible to do so:
 ``brainvisa`` could be replaced by any other command (``anatomist``, ``AimsSomething``, ``morphologist``) with parameters.
 
 Note that graphical software need to run the containers with a graphical "bridge": a X server has to be running on the host system, and OpenGL may or may not work. The option ``gui=yes`` of casa_distro tries to handle common cases (at least on Linux hosts), possibly using Nvidia proprietary OpenGL implementation and drivers from the host system.
+Note that the option ``gui=yes`` is now the default, thus it is not needed.
+
+For OpenGL rendering problems may differ between docker and singularity. We tried to handle some of them in the options passed to containers by casa_distro with gui active, but some additional options / tweaking may be helpful. See the :ref:`OpenGL troubleshooting <opengl_troubleshooting>` section for details.
 
 .. warning:: BUT...
 

@@ -414,3 +414,71 @@ In other words, the ``+x`` flag has to be set for "other" users on the directory
 
   chmod o+x ~
   chmod o+x ~/.ssh
+
+
+.. _opengl_troubleshooting:
+
+OpenGL is not working, or is slow
+---------------------------------
+
+with docker
++++++++++++
+
+Several options are needed. Very briefly (this text has to be improved):
+
+.. code-block:: bash
+
+    casa_distro run container_options='-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 --privileged -e DISPLAY=$DISPLAY -v /usr/share/X11/locale:/usr/share/X11/locale:ro' glxinfo
+
+and for nvidia drivers, devices also have to be imported in the container:
+
+.. code-block:: bash
+
+    casa_distro run container_options='-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 --privileged -e DISPLAY=$DISPLAY -v /usr/share/X11/locale:/usr/share/X11/locale:ro --device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl -v $NV_DIR:/usr/lib/nvidia-drv:ro -e LD_LIBRARY_PATH=/usr/lib/nvidia-drv' glxinfo
+
+with singularity
+++++++++++++++++
+
+By default OpenGL runs using a software Mesa library. It should work in "most" cases, but in a slow manner. On machines with nvidia graphics cards and nvidia proprietary drivers, docker has an option ``"--nv"`` to handle it. Casa-distro does not use it by default since we don't know hjow it behaves on systems not equiped with nvidia hardware. To try it you can add an option ``container_options=--nv`` to ``run``, ``shell`` and other subcommands:
+
+.. code-block:: bash
+
+    casa_distro run container_options=--nv glxinfo
+
+If it is OK, you can set this option in the buils workflow ``casa_distro.json`` config, under the ``"container_gui_env"`` key::
+
+    {
+        "container_env": {
+        # ...
+        },
+        "system": "ubuntu-16.04",
+        "distro_source": "brainvisa",
+        "container_gui_env": {
+            "DISPLAY": "${DISPLAY}"
+        },
+        "container_volumes": {
+        # ...
+        },
+        # ...
+        "container_options": [
+            "--pwd",
+            "/casa/home"
+        ],
+        "container_gui_env": [
+            "--nv"
+        ],
+        # ...
+    }
+
+Via a ssh connection:
+    same host, different user:
+        ``xhost +`` must have been used on the host system. Works (as long as
+        the ``XAUTHORITY`` env variable points to the ``.Xauthority`` file from
+        the host user home directory).
+    different host:
+        I personally could not make it work using the ``--nv`` option. But
+        actually outside of casa-distro or any container, it doesn't work
+        either. Remote GLX rendering has always been a very delicate thing...
+
+        I works for me using the software Mesa rendering (slow). So at this point, using casa_distro actually makes it possible to render OpenGL when the host system cannot (or not directly)...
+

@@ -76,6 +76,9 @@ function _complete_casa_distro_option_()
     build_workflows_repository)
         COMPREPLY=($(compgen -d -- "${word}"))
         ;;
+    command)
+        COMPREPLY=($(compgen -c -W "host workflow" -- "${word}"))
+        ;;
     esac
 }
 
@@ -220,7 +223,7 @@ function _complete_casa_distro_()
             COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= gui= interactive= tmp_container= container_image= cwd= env= container_options= verbose= conf=" -- "${word}"))
             ;;
         update)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= verbose= command=" -- "${word}"))
             ;;
         update_image)
             COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= verbose=" -- "${word}"))
