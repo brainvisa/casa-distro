@@ -439,7 +439,7 @@ and for nvidia drivers, devices also have to be imported in the container:
 with singularity
 ++++++++++++++++
 
-By default OpenGL runs using a software Mesa library. It should work in "most" cases, but in a slow manner. On machines with nvidia graphics cards and nvidia proprietary drivers, docker has an option ``"--nv"`` to handle it. Casa-distro does not use it by default since we don't know hjow it behaves on systems not equiped with nvidia hardware. To try it you can add an option ``container_options=--nv`` to ``run``, ``shell`` and other subcommands:
+By default OpenGL runs using a software Mesa library. It should work in "most" cases, but in a slow manner. On machines with nvidia graphics cards and nvidia proprietary drivers, singularity has an option ``"--nv"`` to handle it. Casa-distro does not use it by default since we don't know hjow it behaves on systems not equiped with nvidia hardware. To try it you can add an option ``container_options=--nv`` to ``run``, ``shell`` and other subcommands:
 
 .. code-block:: bash
 
