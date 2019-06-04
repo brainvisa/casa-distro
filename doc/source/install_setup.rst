@@ -424,28 +424,26 @@ OpenGL is not working, or is slow
 with docker
 +++++++++++
 
-Several options are needed. Very briefly (this text has to be improved):
+Several options are needed to enable display and OpenGL. Normally casa_distro tries to set them up and should do the best it can.
 
-.. code-block:: bash
+On machines with nvidia graphics cards and nvidia proprietary drivers, casa_distro will add options to mount the host system drivers and OpenGL libraries into the container in order to have hardware 3D rendering.
 
-    casa_distro run container_options='-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 --privileged -e DISPLAY=$DISPLAY -v /usr/share/X11/locale:/usr/share/X11/locale:ro' glxinfo
+Options are setup in the ``casa_distro.json`` file so you can check and edit them. Therefore, the detection of nvidia drivers is done on the host machine at the time of build workflow creation: if the build workflow is shared accross several machines on a network, this config may not suit all machines running the container.
 
-and for nvidia drivers, devices also have to be imported in the container:
-
-.. code-block:: bash
-
-    casa_distro run container_options='-v /tmp/.X11-unix:/tmp/.X11-unix -e QT_X11_NO_MITSHM=1 --privileged -e DISPLAY=$DISPLAY -v /usr/share/X11/locale:/usr/share/X11/locale:ro --device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl -v $NV_DIR:/usr/lib/nvidia-drv:ro -e LD_LIBRARY_PATH=/usr/lib/nvidia-drv' glxinfo
+However it does not seem to work when ssh connections and remote display are involved.
 
 with singularity
 ++++++++++++++++
 
-By default OpenGL runs using a software Mesa library. It should work in "most" cases, but in a slow manner. On machines with nvidia graphics cards and nvidia proprietary drivers, singularity has an option ``"--nv"`` to handle it. Casa-distro does not use it by default since we don't know hjow it behaves on systems not equiped with nvidia hardware. To try it you can add an option ``container_options=--nv`` to ``run``, ``shell`` and other subcommands:
+By default OpenGL runs using a software Mesa library. It should work in "most" cases, but in a slow manner. On machines with nvidia graphics cards and nvidia proprietary drivers, singularity has an option ``"--nv"`` to handle it. Casa-distro will try to detect nvidia drivers, and if they are found, will set this option. Contrarily to the docker case above, this detection is done each time a container is started, and the option is hard-coded in options passed by casa_distro to singularity (not editable in the config file).
+
+There are cases where adding the nvidia option makes things worse (see ssh connections below). If you ever need to disable the nvidia option, you can add an option ``container_options=--no-nv`` to ``run``, ``shell`` and other subcommands:
 
 .. code-block:: bash
 
-    casa_distro run container_options=--nv glxinfo
+    casa_distro run container_options=--no-nv glxinfo
 
-If it is OK, you can set this option in the buils workflow ``casa_distro.json`` config, under the ``"container_gui_env"`` key::
+If it is OK, you can set this option in the build workflow ``casa_distro.json`` config, under the ``"container_gui_env"`` key::
 
     {
         "container_env": {
@@ -465,7 +463,7 @@ If it is OK, you can set this option in the buils workflow ``casa_distro.json`` 
             "/casa/home"
         ],
         "container_gui_env": [
-            "--nv"
+            "--no-nv"
         ],
         # ...
     }
@@ -480,5 +478,5 @@ Via a ssh connection:
         actually outside of casa-distro or any container, it doesn't work
         either. Remote GLX rendering has always been a very delicate thing...
 
-        I works for me using the software Mesa rendering (slow). So at this point, using casa_distro actually makes it possible to render OpenGL when the host system cannot (or not directly)...
+        It works for me using the software Mesa rendering (slow). So at this point, using casa_distro actually makes it possible to render OpenGL when the host system cannot (or not directly)...
 

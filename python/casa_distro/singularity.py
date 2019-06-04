@@ -238,10 +238,6 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     singularity = ['singularity', 'run', '--cleanenv']
     if cwd:
         singularity += ['--pwd', cwd]
-    if gui:
-        gui_options = casa_distro.get('container_gui_options')
-        if gui_options:
-            singularity += [osp.expandvars(i) for i in gui_options]
     for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
         source = source % casa_distro
         source = osp.expandvars(source)
@@ -268,8 +264,21 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
             if opt == '--pwd':
                 conf_options = conf_options[:i] + conf_options[i+2:]
                 break
-    singularity += conf_options
-    singularity += container_options
+    options = list(conf_options)
+    options += container_options
+    if gui:
+        gui_options = casa_distro.get('container_gui_options', [])
+        if gui_options:
+            options += [osp.expandvars(i) for i in gui_options
+                        if i != '--no-nv']
+        # handle --nv option, if a nvidia device is found
+        if '--nv' not in options and os.path.exists('/dev/nvidiactl') \
+                and '--no-nv' not in options:
+            options.append('--nv')
+        # remove --no-nv which is not a singularity option
+        if '--no-nv' in options:
+            options.remove('--no-nv')
+    singularity += options
     if container_image is None:
         container_image = casa_distro.get('container_image')
         if container_image is None:
