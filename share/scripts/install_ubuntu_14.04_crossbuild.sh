@@ -8145,8 +8145,8 @@ EOF
     fi
 fi
 
-PYTHON_LARKPARSER_VERSION=0.6.5
-PYTHON_LARKPARSER_SOURCE_URL=https://files.pythonhosted.org/packages/05/45/76b301c40337863a710239a5c3db5c55bc59eabc6c5cd839344652483273/lark-parser-${PYTHON_LARKPARSER_VERSION}.tar.gz
+PYTHON_LARKPARSER_VERSION=0.7.1
+PYTHON_LARKPARSER_SOURCE_URL=https://files.pythonhosted.org/packages/8a/ed/711314ebe868a2d0a2f57fcd3d51fda4be03ed8de1069d54ef2e5f4298c3/lark-parser-${PYTHON_LARKPARSER_VERSION}.tar.gz
 if [ "${PYTHON_LARKPARSER}" == "1" ]; then
     echo "================================ PYTHON_LARKPARSER ================================"
     if [ "${__download}" == "1" ]; then

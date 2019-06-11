@@ -45,7 +45,6 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     libxml2-devel \
     python-sphinx \
     python-sqlalchemy \
-    python-lark-parser \
     java-1.7.0-openjdk \
     libtool-ltdl-devel \
     ncurses-devel \
@@ -210,7 +209,7 @@ RUN pip install -U pyparsing
 RUN pip install -U pydot
 RUN pip install mpi4py
 
-RUN pip install -U 'lark-parser<0.7'
+RUN pip install -U 'lark-parser>=0.7,<0.8'
 RUN pip install -U xlrd
 RUN pip install -U xlwt
 

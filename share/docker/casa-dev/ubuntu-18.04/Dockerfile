@@ -497,7 +497,7 @@ RUN pip3 install 'sphinx-gallery<0.4'
 RUN pip3 install 'dipy<0.15'
 RUN pip3 install -U 'nibabel<2.5'
 RUN pip3 install 'scikit-learn<0.21'
-RUN pip3 install -U 'lark-parser<0.7'
+RUN pip3 install -U 'lark-parser>=0.7,<0.8'
 RUN pip3 install -U 'xlrd<1.3'
 RUN pip3 install -U 'xlwt<1.4'
 
@@ -530,7 +530,7 @@ RUN pip install 'scikit-learn<0.21'
 RUN pip install -U 'pyparsing<2.4'
 RUN pip install -U 'pydot<1.3'
 RUN pip install "python_jenkins==0.4.16"
-RUN pip install -U 'lark-parser<0.7'
+RUN pip install -U 'lark-parser>=0.7,<0.8'
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...
 RUN pip3 install -U backports.functools_lru_cache
