@@ -41,7 +41,7 @@ function _complete_casa_distro_option_()
         COMPREPLY=($(compgen -W "$images" -- "${word}"))
         ;;
     image_names)
-        if [ "$cmd" = "publish_singularity" ] | [ "$cmd" = "clean_images" ]; then
+        if [ "$cmd" = "publish_singularity" ] || [ "$cmd" = "clean_images" ]; then
             # take existing singularity images
             local images=$CASA_DEFAULT_REPOSITORY/*.simg
         fi
