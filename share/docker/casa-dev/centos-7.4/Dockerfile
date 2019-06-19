@@ -2,6 +2,9 @@
 
 FROM cati/casa-test:centos-7.4 
 
+# Add variable to be able search for openslide using pkg-config
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
 # Install system dependencies
 RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
  && rpm -ivh epel-release-latest-7.noarch.rpm \
