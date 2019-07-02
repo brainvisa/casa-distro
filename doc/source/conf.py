@@ -14,6 +14,7 @@
 from __future__ import print_function
 
 import sys, os, shutil, platform
+import datetime
 
 from distutils.version import LooseVersion
 import sphinx
@@ -79,7 +80,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'CASA-DISTRO'
-copyright = u'2017, %(AUTHOR)s <%(AUTHOR_EMAIL)s>' % release_info
+copyright = u'2017-%d' % datetime.date.today().year + u', %(AUTHOR)s <%(AUTHOR_EMAIL)s>' % release_info
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
