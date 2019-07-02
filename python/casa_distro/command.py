@@ -147,6 +147,9 @@ def main():
 
     if options.repository:
         kwargs['build_workflows_repository'] = options.repository
+        from casa_distro import defaults
+        # change the global repository dir
+        defaults.default_build_workflow_repository = options.repository
         
     if options.verbose and 'verbose' in cargs.args:
         kwargs['verbose'] = sys.stdout

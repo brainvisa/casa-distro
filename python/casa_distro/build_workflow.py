@@ -11,7 +11,7 @@ import json
 import copy
 import six
 
-from casa_distro import log, share_directory, linux_os_ids
+from casa_distro import log, share_directories, linux_os_ids
 from casa_distro.docker import run_docker, update_docker_image
 from casa_distro.singularity import (download_singularity_image,
                                      run_singularity,
@@ -262,20 +262,17 @@ def create_build_workflow_directory(build_workflow_directory,
     * Typically created by bv_maker but may be extended in the future.
 
     '''
-    # It is important to get the actual value of share_directory from
-    # casa_distro module at the time of the function call because, in 
-    # the context of a distribution in Zip format, the share_directory
-    # is modified after import.
-    import casa_distro as casa_distro_module
     verbose = log.getLogFile(verbose)
 
-    distro_source_dir = osp.join(casa_distro_module.share_directory,
-                                 'distro', distro_source)
-    if not osp.isdir(distro_source_dir):
+    for share_directory in share_directories():
+        distro_source_dir = osp.join(share_directory, 'distro', distro_source)
+        if osp.isdir(distro_source_dir):
+            break
+    else:
         distro_source_dir = distro_source
         if not osp.isdir(distro_source_dir):
             raise ValueError('distro_source value %s is not a predefined '
-                             'value nor a valid directory' % distro_source)
+                            'value nor a valid directory' % distro_source)
     if distro_name is None:
         distro_name = osp.basename(distro_source_dir)
         

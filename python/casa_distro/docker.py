@@ -16,7 +16,7 @@ import re
 
 from casa_distro import log, six
 import casa_distro.info
-from casa_distro import share_directory, linux_os_ids
+from casa_distro import share_directories, linux_os_ids
 
 
 
@@ -36,45 +36,52 @@ def find_docker_image_files():
     The result is sorted according to the depencies declared in the files.
     '''
     import yaml
-    
-    base_directory = osp.join(share_directory, 'docker')
+
     result = []
     dependencies = {}
-    base_directory = osp.abspath(osp.normpath(base_directory))
-    for root, dirnames, filenames in os.walk(base_directory):
-        if 'casa_distro_docker.yaml' in filenames:
-            yaml_filename = osp.normpath(osp.join(root, 'casa_distro_docker.yaml'))
-            images_dict = yaml.load(open(yaml_filename))
-            images_dict['filename'] = yaml_filename
-            deps = images_dict.get('dependencies')
-            if deps:
-                for dependency in deps:
-                    for r, d, f in os.walk(osp.join(root, dependency)):
-                        if 'casa_distro_docker.yaml' in f:
-                            dependencies.setdefault(yaml_filename, set()).add(osp.normpath(osp.join(r, 'casa_distro_docker.yaml')))
-            result.append(images_dict)
 
-    propagate_dependencies = True
-    while propagate_dependencies:
-        propagate_dependencies = False
-        for i, d in dependencies.items():
-            for j in tuple(d):
-                for k in dependencies.get(j,()):
-                    i_deps = dependencies.setdefault(i, set())
-                    if k not in i_deps:
-                        i_deps.add(k)
-                        propagate_dependencies = True
-                        
-    def compare_with_dependencies(a,b):
-        if a['filename'] == b['filename']:
-            return 0
-        elif a['filename'] in dependencies.get(b['filename'],()):
-            return -1
-        elif b['filename'] in dependencies.get(a['filename'],()):
-            return 1
-        else:
-            return cmp(a['filename'], b['filename'])
-    
+    for share_directory in share_directories():
+        base_directory = osp.join(share_directory, 'docker')
+        base_directory = osp.abspath(osp.normpath(base_directory))
+        for root, dirnames, filenames in os.walk(base_directory):
+            if 'casa_distro_docker.yaml' in filenames:
+                yaml_filename = osp.normpath(
+                    osp.join(root, 'casa_distro_docker.yaml'))
+                images_dict = yaml.load(open(yaml_filename))
+                images_dict['filename'] = yaml_filename
+                deps = images_dict.get('dependencies')
+                if deps:
+                    for dependency in deps:
+                        for r, d, f in os.walk(osp.join(root, dependency)):
+                            if 'casa_distro_docker.yaml' in f:
+                                dependencies.setdefault(
+                                    yaml_filename,
+                                    set()).add(osp.normpath(
+                                        osp.join(r,
+                                                 'casa_distro_docker.yaml')))
+                result.append(images_dict)
+
+        propagate_dependencies = True
+        while propagate_dependencies:
+            propagate_dependencies = False
+            for i, d in dependencies.items():
+                for j in tuple(d):
+                    for k in dependencies.get(j,()):
+                        i_deps = dependencies.setdefault(i, set())
+                        if k not in i_deps:
+                            i_deps.add(k)
+                            propagate_dependencies = True
+
+        def compare_with_dependencies(a,b):
+            if a['filename'] == b['filename']:
+                return 0
+            elif a['filename'] in dependencies.get(b['filename'],()):
+                return -1
+            elif b['filename'] in dependencies.get(a['filename'],()):
+                return 1
+            else:
+                return cmp(a['filename'], b['filename'])
+
     return sorted(result, compare_with_dependencies)
 
 

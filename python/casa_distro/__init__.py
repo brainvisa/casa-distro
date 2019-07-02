@@ -20,3 +20,23 @@ if not osp.exists(share_directory):
             del brainvisa_home
 linux_os_ids = ['ubuntu-12.04', 'ubuntu-14.04', 'ubuntu-16.04', 'ubuntu-18.04']
 casa_branches = ['latest_release', 'bug_fix', 'trunk']
+
+def share_directories():
+    ''' Get a list of "share" directories, including personal paths
+    ($CASA_DISTRO/share, $HOME/.config/casa_distro, $HOME/.casa_distro) and the
+    builtin casa-distro share directory, when they exist.
+    '''
+    # use other personal locations for share directories
+
+    share_directories = []
+    from casa_distro.defaults import default_build_workflow_repository
+    if default_build_workflow_repository is not None:
+        share_directories.append(osp.join(default_build_workflow_repository,
+                                          'share'))
+    share_directories =+ [osp.join(osp.expanduser('~'), '.casa-distro'),
+                          osp.join(osp.expanduser('~'), '.config',
+                                  'casa-distro')]
+    share_directories = [d for d in share_directories if os.path.isdir(d)] \
+        + [share_directory]
+    return share_directories
+

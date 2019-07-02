@@ -23,15 +23,42 @@ function _complete_casa_distro_option_()
         local CASA_DEFAULT_REPOSITORY="$HOME/casa_distro"
     fi
 
+    local SHARE=$(realpath $(realpath $(dirname $(realpath $(which casa_distro))))/../share)
+    if [ -d "$SHARE"/casa-distro-* ]; then
+        SHARE="$SHARE"/casa-distro-*
+    fi
+    local SHARE_DIRS="${SHARE} ${CASA_DEFAULT_REPOSITORY}/share ${HOME}/.config/casa-distro ${HOME}/.casa-distro"
+
     case "$opt" in
     distro|distro_name|distro_source)
-        COMPREPLY=($(compgen -W "brainvisa opensource" -- "${word}"))
+        local distro
+        if [ ! -d "$SHARE" ]; then
+            # no share dir (zip distrib): use builtin list
+            distro="brainvisa opensource cati_platform"
+        fi
+        for d in ${SHARE_DIRS}; do
+            if [ -d "$d/distro" ]; then
+                for d2 in $d/distro/*/; do
+                    distro="$distro $(basename $d2)"
+                done
+            fi
+        done
+        COMPREPLY=($(compgen -W "$distro" -- "${word}"))
         ;;
     branch)
         COMPREPLY=($(compgen -W "bug_fix trunk" -- "${word}"))
         ;;
     system)
-        COMPREPLY=($(compgen -W "ubuntu-16.04 ubuntu-18.04 ubuntu-14.04 ubuntu-12.04 centos-7.4 windows-7-32 windows-7-64" -- "${word}"))
+        local sys
+        if [ ! -d "$SHARE" ]; then
+            # no share dir (zip distrib): use builtin list
+            sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 windows-7-32 windows-7-64"
+        else
+            for system in "$SHARE/docker/casa-dev"/*/; do
+                sys="$sys $(basename $system)"
+            done
+        fi
+        COMPREPLY=($(compgen -W "$sys" -- "${word}"))
         ;;
     container_type)
         COMPREPLY=($(compgen -W "singularity docker virtualbox" -- "${word}"))
@@ -46,8 +73,18 @@ function _complete_casa_distro_option_()
             local images=$CASA_DEFAULT_REPOSITORY/*.simg
         fi
         if [ "$cmd" = "create_docker" ]; then
-            # use prefedined image names
-            local nimages="cati/casa-test: cati/casa-dev: cati/cati_platform:"
+            local nimages
+            if [ ! -d "$SHARE" ]; then
+                # no share dir (zip distrib): use builtin list
+                nimages="cati/casa-test: cati/casa-dev: cati/cati_platform:"
+            fi
+            for d in ${SHARE_DIRS}; do
+                if [ -d "$d/docker" ]; then
+                    for d2 in $d/docker/*/; do
+                        nimages="${nimages} cati/$(basename $d2):"
+                    done
+                fi
+            done
         fi
         for f in $images
         do
@@ -130,7 +167,36 @@ function _complete_casa_distro_image_names_tag_()
         fi
     fi
     if [ "$cmd" = "create_docker" ]; then
-        local nimages="${image}:ubuntu-12.04 ${image}:ubuntu-14.04 ${image}:ubuntu-16.04 ${image}:ubuntu-18.04 ${image}:centos-7.4 ${image}:windows-7-32 ${image}:windows-7-64"
+        local SHARE=$(realpath $(realpath $(dirname $(realpath $(which casa_distro))))/../share)
+        if [ -d "$SHARE"/casa-distro-* ]; then
+            SHARE="$SHARE"/casa-distro-*
+        fi
+        local SHARE_DIRS="${SHARE} ${CASA_DEFAULT_REPOSITORY}/share ${HOME}/.config/casa-distro ${HOME}/.casa-distro"
+
+        local nimages
+        local image_dir=$(basename ${image})
+        for d in ${SHARE_DIRS}; do
+            if [ -d "$d/docker/${image_dir}" ]; then
+                for d2 in ${d}/docker/${image_dir}/*/; do
+                    nimages="${nimages} ${image}:$(basename $d2)"
+                done
+            fi
+        done
+        if [ -z "${nimages}" ]; then
+            local sys
+            if [ ! -d "$SHARE" ]; then
+                # no share dir (zip distrib): use builtin list
+                sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 windows-7-32 windows-7-64"
+            else
+                for system in "$SHARE/docker/casa-dev"/*/; do
+                    sys="$sys $(basename $system)"
+                done
+            fi
+            local nimages
+            for system in $sys; do
+              nimages="${nimages} ${image}:${system}"
+            done
+        fi
     fi
 
     local matching=($(compgen -W "$nimages" -- "${image}:${word}"))
