@@ -152,7 +152,12 @@ def create(distro_source=default_distro,
         Either the name of a predefined distro (on of the directory
         located in share/distro) or a directory containing the distro
         source.
-    
+        A predefinied distro definition may be one of the buitin ones found in
+        casa-distro (brainvisa, opensource, cati_platform), or one user-defined
+        which will be looked for in $HOME/.config/casa-distro/distro,
+        $HOME/.casa-distro/distro, or in the share/distro subdirectory inside
+        the main repository directory.
+
     distro_name:
         Name of the distro that will be created. If omited, the name
         of the distro source (or distro source directory) is used.

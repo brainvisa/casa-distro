@@ -195,7 +195,18 @@ def create_latest_release(build_workflows_repository=default_build_workflow_repo
         
 @command
 def create_docker(image_names = '*', verbose=None):
-    '''create or update all casa-test and casa-dev docker images'''
+    '''create or update all casa-test and casa-dev docker images
+
+      image_names:
+          filter for images which should be rebuilt. May be a coma-separated list, wildcards are allowed. Default: *
+
+          Image names have generally the shape "cati/<type>:<system>". Image
+          types and systems may be one of the buitin ones found in
+          casa-distro (casa-test, casa-dev, cati_platform), or one user-defined
+          which will be looked for in $HOME/.config/casa-distro/docker,
+          $HOME/.casa-distro/docker, or in the share/docker subdirectory inside
+          the main repository directory.
+    '''
     from casa_distro.docker import create_docker_images
     
     image_name_filters = image_names.split(',')
