@@ -274,6 +274,8 @@ def publish_singularity(image_names = 'cati/*',
         tmp = tempfile.NamedTemporaryFile()
         url = '%s/%s' % (server_url, hash_file)
         try:
+            if verbose:
+                print('check image:', url)
             urlretrieve(url, tmp.name)
             remote_hash = open(tmp.name).read()
             if remote_hash == local_hash:

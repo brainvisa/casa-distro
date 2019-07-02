@@ -42,6 +42,17 @@ publish_docker
 create_singularity
 ------------------
 
+*create_singularity* converts a docker image into a singularity image. To do so it needs to unpack the docker image into a temporary directory, and re-pack it in a different way. It requires
+
+* sudo / root privileges: the user has to be allowed to run sodo commands, the password will be asked when needed.
+* lots of temporary disk space. It may be needed to setup the following environment variables while running ``casa_distro_admin create_singularity``:
+    * ``TMPDIR``
+    * ``SINGULARITY_TMPDIR``
+    * ``SINGULARITY_CACHEDIR``
+
+And *create_docker* needs to have run before, or the docker image should have been pulled. Thus docker is required at this point in the current way things have been impemented (this may change in the future).
+
+
 publish_singularity
 -------------------
 
