@@ -2,6 +2,9 @@
 
 FROM ubuntu:12.04
 
+# Use a minimal UTF-8-aware locale.
+ENV LANG=C.UTF-8
+
 # Install system dependencies
 # WARNING: it is necessary to call apt-get install for each packages to 
 # avoid the 101th package issue
