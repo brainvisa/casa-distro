@@ -2,6 +2,9 @@
 
 FROM ubuntu:14.04
 
+# Use a minimal UTF-8-aware locale.
+ENV LANG=C.UTF-8
+
 ENV WINECMD=wine
 ENV WINEARCH=win32
 ENV WINEPREFIX=/casa/wine32

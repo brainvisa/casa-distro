@@ -2,6 +2,9 @@
 
 FROM centos:7.4.1708
 
+# Use a UTF-8-aware locale (C.UTF-8 is not available on CentOS).
+ENV LANG=en_GB.utf8
+
 # Install system dependencies
 RUN yum -y update --security && \
     yum -y install \
