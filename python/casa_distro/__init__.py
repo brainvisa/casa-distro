@@ -33,10 +33,6 @@ def share_directories():
     if default_build_workflow_repository is not None:
         share_directories.append(osp.join(default_build_workflow_repository,
                                           'share'))
-    print('share_directories:', repr(share_directories))
-    print('+', repr([osp.join(osp.expanduser('~'), '.casa-distro'),
-                          osp.join(osp.expanduser('~'), '.config',
-                                  'casa-distro')]))
     share_directories += [osp.join(osp.expanduser('~'), '.casa-distro'),
                           osp.join(osp.expanduser('~'), '.config',
                                   'casa-distro')]
