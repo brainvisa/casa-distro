@@ -40,25 +40,35 @@ def find_docker_image_files():
     result = []
     dependencies = {}
 
-    for share_directory in share_directories():
-        base_directory = osp.join(share_directory, 'docker')
-        base_directory = osp.abspath(osp.normpath(base_directory))
+    share_dirs = share_directories()
+    base_dirs = [osp.abspath(osp.normpath(osp.join(share_directory, 'docker')))
+                 for share_directory in share_dirs]
+
+    for sh_id, share_directory in enumerate(share_dirs):
+        base_directory = base_dirs[sh_id]
         for root, dirnames, filenames in os.walk(base_directory):
             if 'casa_distro_docker.yaml' in filenames:
                 yaml_filename = osp.normpath(
                     osp.join(root, 'casa_distro_docker.yaml'))
+                rel_root = osp.relpath(root, base_directory)
                 images_dict = yaml.load(open(yaml_filename))
                 images_dict['filename'] = yaml_filename
                 deps = images_dict.get('dependencies')
                 if deps:
                     for dependency in deps:
-                        for r, d, f in os.walk(osp.join(root, dependency)):
-                            if 'casa_distro_docker.yaml' in f:
-                                dependencies.setdefault(
-                                    yaml_filename,
-                                    set()).add(osp.normpath(
-                                        osp.join(r,
-                                                 'casa_distro_docker.yaml')))
+                        # look for files in all docker base dirs
+                        for test_basedir in base_dirs:
+                            test_root = osp.join(test_basedir, rel_root)
+                            for r, d, f in os.walk(
+                                    osp.normpath(osp.join(test_root,
+                                                          dependency))):
+                                if 'casa_distro_docker.yaml' in f:
+                                    dependencies.setdefault(
+                                        yaml_filename,
+                                        set()).add(osp.normpath(
+                                            osp.join(
+                                                r,
+                                                'casa_distro_docker.yaml')))
                 result.append(images_dict)
 
         propagate_dependencies = True
@@ -80,9 +90,33 @@ def find_docker_image_files():
             elif b['filename'] in dependencies.get(a['filename'],()):
                 return 1
             else:
-                return cmp(a['filename'], b['filename'])
+                if a['filename'] == b['filename']:
+                    return 0
+                elif a['filename'] < b['filename']:
+                    return -1
+                else:
+                    return 1
+                #return cmp(a['filename'], b['filename'])
+        def cmp_to_key(mycmp):
+            'Convert a cmp= function into a key= function'
+            class K(object):
+                def __init__(self, obj, *args):
+                    self.obj = obj
+                def __lt__(self, other):
+                    return mycmp(self.obj, other.obj) < 0
+                def __gt__(self, other):
+                    return mycmp(self.obj, other.obj) > 0
+                def __eq__(self, other):
+                    return mycmp(self.obj, other.obj) == 0
+                def __le__(self, other):
+                    return mycmp(self.obj, other.obj) <= 0
+                def __ge__(self, other):
+                    return mycmp(self.obj, other.obj) >= 0
+                def __ne__(self, other):
+                    return mycmp(self.obj, other.obj) != 0
+            return K
 
-    return sorted(result, compare_with_dependencies)
+    return sorted(result, key=cmp_to_key(compare_with_dependencies))
 
 
 def apply_template_parameters(template, template_parameters):
@@ -199,6 +233,7 @@ def create_docker_images(image_name_filters = ['*']):
     error = False
     to_clean = []
     try:
+        sorted_images = []
         for images_dict in find_docker_image_files():
             base_directory = tempfile.mkdtemp()
             try:
@@ -239,8 +274,8 @@ def create_docker_images(image_name_filters = ['*']):
                     old_base_id = None
                     deps = images_dict.get('dependencies', [])
                     if len(deps) == 0:
-                        base_image = get_base_image(os.path.join(target_directory,
-                                                                'Dockerfile'))
+                        base_image = get_base_image(
+                            os.path.join(target_directory, 'Dockerfile'))
                         if base_image:
                             old_base_id = pull_image(base_image)
 
