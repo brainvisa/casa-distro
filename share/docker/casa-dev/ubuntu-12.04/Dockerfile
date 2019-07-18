@@ -145,14 +145,14 @@ RUN apt-get update \
 
 # remove a few packages that will be reinstalled via pip as newer versions
 RUN apt-get remove -y ipython
-RUN apt-get remove -y python-zmq
 RUN apt-get remove -y python-scipy
 RUN apt-get remove -y python-chardet
 RUN apt-get remove -y python-docutils
 RUN apt-get remove -y python-simplejson
 
-RUN pip install -U 'setuptools==40.8.0'
-RUN pip install -U 'pip<19.1'
+# we must specify pypi URL because it has changed (was http://pypi.python.org)
+RUN pip install -U -i https://pypi.org/simple 'setuptools==41.0.1'
+RUN pip install -U -i https://pypi.org/simple 'pip<19.2'
 RUN hash pip
 RUN pip install -U 'pkgconfig<1.6'
 RUN pip install -U 'cython<0.30'
