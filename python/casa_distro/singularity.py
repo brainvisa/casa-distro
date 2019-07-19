@@ -63,9 +63,12 @@ def create_singularity_images(bwf_dir, image_name_filters=['cati/*'],
         docker_img_config = image_info[0]['Config']
         env = dict(i.split('=', 1) for i in docker_img_config.get('Env',[]))
         env_path = {}
+        env_lang = ''
         for v in env.keys():
             if v.endswith('PATH'):
                 env_path[v] = env.pop(v)
+            elif v == 'LANG':
+                env_lang = '    if [ -z "${LANG}" -o "${LANG}" = "C" ]; then export LANG=%s; fi' % env.pop(v)
             
         entry_point = docker_img_config.get('Entrypoint')
         cmd = docker_img_config.get('Cmd')
@@ -99,6 +102,7 @@ From: %s
 %s
 %s
 %s
+%s
 
 %%runscript
 %s''' % (docker_files,
@@ -115,9 +119,11 @@ From: %s
         '\n'.join('    if [ -n "${%(var)s_APPEND}" ];'\
                   'then export %(var)s="${%(var)s}:${%(var)s_APPEND}";fi' \
                   % {'var': n} for n in env_path.keys()),
-        '\n'.join('. ' + ' '.join(["'%s'" % i for i in r]) for r in runscript)),        
+        env_lang,
+        '\n'.join('. ' + ' '.join(["'%s'" % i for i in r]) for r in runscript)),
                     file=out)
                     out.close()
+                    shutil.copy2(recipe, '/tmp/recipe')
                     subprocess.check_call(['sudo', '-E', 'singularity',
                                            'build', singularity_image, recipe])
                     image_hash = file_hash(singularity_image)
