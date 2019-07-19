@@ -1,7 +1,0 @@
-dependencies:
-    - ../../casa-test
-image_sources:
-  - name: casa-dev
-    tags:
-      - windows-7-32
-    visibility: public
