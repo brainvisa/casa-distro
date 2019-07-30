@@ -11,14 +11,14 @@ We need a kind of minimal desktop image to start with. The next chapter of this 
 II - How to create a base system image
 ======================================
 
-In this chapter we will use Ubuntu 16.04 as a base system in VirtualBox but it can be easily adapted to another system.
+In this chapter we will use Ubuntu 18.04 as a base system in VirtualBox but it can be easily adapted to another system.
 
 1) Install VirtualBox
 2) cd in directory containing this README file
 3) create the "vbox" directory that will contain all the VirtualBox image files
-4) Download ubuntu-16.04.6-desktop-amd64.iso in the current directory
-5) launch the script create_ubuntu-16.04_vm.sh to create an empty VirtualBox image with appropriate base settings
-6) Perform Ubuntu installation with an autologin account named "brainvisa" and with password "brainvisa"
+4) Download ubuntu-18.04.2-desktop-amd64.iso in the current directory
+5) launch the script create_ubuntu-18.04_vm.sh to create an empty VirtualBox image with appropriate base settings
+6) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
 7) Perform system updates
 8) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
 9) Reboot the VM
@@ -29,9 +29,9 @@ In this chapter we will use Ubuntu 16.04 as a base system in VirtualBox but it c
 III - Create and install a BrainVISA image
 ==========================================
 
-To create an image, it is necessary to have a casa_distro build workflow using the same system as the target image (in our case Ubuntu 16.04). From this build workflow, the content of the /casa/install directory will be copied to the VirtualBox image. Therefore, one must have previously installed all what is to be included in the image. For instance, launch:
+To create an image, it is necessary to have a casa_distro build workflow using the same system as the target image (in our case Ubuntu 18.04). From this build workflow, the content of the /casa/install directory will be copied to the VirtualBox image. Therefore, one must have previously installed all what is to be included in the image. For instance, launch:
 
-  casa_distro run distro=brainvisa system=ubuntu-16.04 make BRAINVISA_INSTALL_PREFIX=/casa/install install-runtime
+  casa_distro run distro=brainvisa system=ubuntu-18.04 make BRAINVISA_INSTALL_PREFIX=/casa/install install-runtime
 
 We use Vagrant to create a VirtualBox image. In Vagrant, base images used to create virtual machines are called boxes. It is necessary to include brainvisa/ubuntu-16.04 box in Vagrant. To check if such a box is already present, use the following command:
 
