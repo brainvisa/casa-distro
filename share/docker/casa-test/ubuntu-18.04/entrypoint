@@ -2,6 +2,9 @@
 
 # use software mesa
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib
+if [ -f "/casa/environment.sh" ]; then
+    . /casa/environment.sh
+fi
 
 # This script runs the command passed as arguments in a different process.
 # This is needed to allow it to receive signals.
