@@ -22,8 +22,9 @@ In this chapter we will use Ubuntu 18.04 as a base system in VirtualBox but it c
 7) Perform system updates
 8) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
 9) Reboot the VM
-10) Download and install VirtualBox guest additions
-11) Reboot the VM
+10) Install compilation packages : sudo apt install build-essential 
+11) Download and install VirtualBox guest additions
+12) Reboot the VM
 
 ==========================================
 III - Create and install a BrainVISA image
