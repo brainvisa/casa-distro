@@ -5,33 +5,70 @@ DST_IMAGE=brainvisa-dev
 ROOT_PASSWORD=brainvisa
 USER=brainvisa
 USER_PASSWORD=brainvisa
+tmp=`tempfile`
+
+run_root() 
+{
+    VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- /bin/sh -c 'umask 0022 && '"$@"
+}
+
+run_user() 
+{
+    VBoxManage guestcontrol --username "$USER" --password "$USER_PASSWORD" $DST_IMAGE run -- /bin/sh -c "$@"
+}
+
+copyto_root()
+{
+    
+    VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory "$tmp" "$1"
+    f=`basename $1`
+    run_root 'cp --no-preserve=mode '"$tmp/$f"' '"$2/$f"' && rm '"$tmp/$f"
+}
+
+copyto_user()
+{
+    VBoxManage guestcontrol --username "$USER" --password "$USER_PASSWORD" $DST_IMAGE copyto --target-directory "$2" "$1"
+}
+
 
 VBoxManage clonevm $SRC_IMAGE --name $DST_IMAGE --register
 VBoxManage startvm $DST_IMAGE
 
 # TODO Wait for the VM to be started
 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE mkdir /casa
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- /bin/chown $USER:$USER /casa
+run_root 'mkdir '"$tmp"
+run_root 'mkdir /casa && /bin/chown '$USER:$USER' /casa'
 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /usr/local/bin ../scripts/askpass-bioproj.sh
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /usr/local/bin ../scripts/svn
+copyto_root ../scripts/askpass-bioproj.sh /usr/local/bin
+copyto_root ../scripts/svn /usr/local/bin
 
-VBoxManage guestcontrol --username "$USER" --password "$USER_PASSWORD" $DST_IMAGE copyto --target-directory /casa ../docker/casa-dev/$OS/environment.sh
+copyto_user ../docker/casa-dev/$OS/environment.sh /casa
 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /tmp ../../share/docker/casa-test/$OS/install.sh 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- /bin/sh /tmp/install.sh
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE rm /tmp/install.sh 
+copyto_root ../../share/docker/casa-test/$OS/install.sh /tmp
+copyto_root ../../share/docker/casa-test/$OS/entrypoint /usr/local/bin 
+run_root '/bin/sh /tmp/install.sh && rm /tmp/install.sh'
 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /tmp ../docker/casa-dev/$OS/install_1.sh 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- /bin/sh /tmp/install_1.sh
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE rm /tmp/install_1.sh 
+copyto_root ../docker/casa-dev/$OS/install_1.sh /tmp
+run_root '/bin/sh /tmp/install_1.sh && rm /tmp/install_1.sh'
 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /tmp ../docker/casa-dev/$OS/build_netcdf.sh
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE copyto --target-directory /tmp ../docker/casa-dev/$OS/install_2.sh 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- /bin/sh /tmp/install_2.sh
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE rm /tmp/install_2.sh 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE rm /tmp/build_netcdf.sh
+copyto_root ../docker/casa-dev/$OS/build_netcdf.sh /tmp
+copyto_root ../docker/casa-dev/$OS/build_sip_pyqt.sh /tmp
+copyto_root ../docker/casa-dev/$OS/install_2.sh  /tmp
+run_root '/bin/sh /tmp/install_2.sh && rm /tmp/install_2.sh /tmp/build_netcdf.sh /tmp/build_sip_pyqt.sh'
 
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- apt update
-VBoxManage guestcontrol --username root --password "$ROOT_PASSWORD" $DST_IMAGE run -- apt install ssh-server
+here=$PWD
+cd $HOME/casa_distro/brainvisa/bug_fix_$OS
+tar cf /tmp/build.tar build
+tar cf /tmp/src.tar src
+cd $here
+copyto_user /tmp/build.tar /tmp
+run_root '/bin/rm -R /casa/build'
+run_user 'cd /casa && tar xf /tmp/build.tar && rm /tmp/build.tar'
+rm /tmp/build.tar
+copyto_user /tmp/src.tar /tmp
+run_root '/bin/rm -R /casa/src'
+run_user 'cd /casa && tar xf /tmp/src.tar && rm /tmp/src.tar'
+rm /tmp/src.tar
+
+# run_root apt update
+# run_root apt install ssh-server

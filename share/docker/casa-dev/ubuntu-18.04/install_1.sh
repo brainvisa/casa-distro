@@ -1,4 +1,4 @@
-# Install system dependencies for image cati/casa-dev:ubuntu-16.04
+# Install system dependencies for image cati/casa-dev:ubuntu-18.04
 
 set -e # stop the script on error
 
@@ -512,62 +512,63 @@ $SUDO pip3 install -U xlwt
 # using the system easy_install (python2)
 $SUDO pip3 install -U 'setuptools==40.8.0'
 $SUDO pip3 install -U 'pip<19.1'
-$SUDO hash pip3
-$SUDO pip3 install -U 'pkgconfig<1.6'
-$SUDO pip3 install -U 'cython<0.30'
-$SUDO pip3 install -U 'numpy<1.17'
+PIP3=/usr/local/bin/pip3
+$SUDO $PIP3 install -U 'pkgconfig<1.6'
+$SUDO $PIP3 install -U 'cython<0.30'
+$SUDO $PIP3 install -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py 'h5py<2.10'
+CPPFLAGS='-I/usr/include/mpi' $SUDO $PIP3 install --no-binary=h5py 'h5py<2.10'
 
-$SUDO pip3 install -U 'scipy<1.3'
-$SUDO pip3 install 'nipype<1.2'
-$SUDO pip3 install -U 'pyzmq<18.1'
-$SUDO pip3 install -U 'ipython<8'
-$SUDO pip3 install jupyter
-$SUDO pip3 install 'qtconsole<4.5'
-$SUDO pip3 install -U 'nbsphinx<0.5'
-$SUDO pip3 install 'sphinx-gallery<0.4'
-$SUDO pip3 install 'dipy<0.15'
-$SUDO pip3 install -U 'nibabel<2.5'
-$SUDO pip3 install 'scikit-learn<0.21'
-$SUDO pip3 install -U 'lark-parser>=0.7,<0.8'
-$SUDO pip3 install -U 'xlrd<1.3'
-$SUDO pip3 install -U 'xlwt<1.4'
+$SUDO $PIP3 install -U 'scipy<1.3'
+$SUDO $PIP3 install 'nipype<1.2'
+$SUDO $PIP3 install -U 'pyzmq<18.1'
+$SUDO $PIP3 install -U 'ipython<8'
+$SUDO $PIP3 install jupyter
+$SUDO $PIP3 install 'qtconsole<4.5'
+$SUDO $PIP3 install -U 'nbsphinx<0.5'
+$SUDO $PIP3 install 'sphinx-gallery<0.4'
+$SUDO $PIP3 install 'dipy<0.15'
+$SUDO $PIP3 install -U 'nibabel<2.5'
+$SUDO $PIP3 install 'scikit-learn<0.21'
+$SUDO $PIP3 install -U 'lark-parser>=0.7,<0.8'
+$SUDO $PIP3 install -U 'xlrd<1.3'
+$SUDO $PIP3 install -U 'xlwt<1.4'
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
 $SUDO python -m pip install -U 'setuptools==40.8.0'
 $SUDO python -m pip install -U 'pip<19.1'
-$SUDO hash pip
-$SUDO pip install -U 'pkgconfig<1.6'
-$SUDO pip install --ignore-installed -U 'cython<0.30'
-$SUDO pip install -U 'numpy<1.17'
+PIP2=/usr/local/bin/pip2
+$SUDO $PIP2 install -U 'pkgconfig<1.6'
+$SUDO $PIP2 install --ignore-installed -U 'cython<0.30'
+$SUDO $PIP2 install -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-CPPFLAGS='-I/usr/include/mpi' $SUDO pip install --no-binary=h5py 'h5py<2.10'
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip2 install --no-binary=h5py 'h5py<2.10'
 
 # ipython / jupyter
-$SUDO pip install -U 'pyzmq<18.1'
-$SUDO pip install -U 'ipython<6.0'
-$SUDO pip install jupyter
-$SUDO pip install 'qtconsole<4.5'
-$SUDO pip install -U 'scipy<1.3'
-$SUDO pip install -U 'nbsphinx<0.5'
+$SUDO $PIP2 install -U 'pyzmq<18.1'
+$SUDO $PIP2 install -U 'ipython<6.0'
+$SUDO $PIP2 install jupyter
+$SUDO $PIP2 install 'qtconsole<4.5'
+$SUDO $PIP2 install -U 'scipy<1.3'
+$SUDO $PIP2 install -U 'nbsphinx<0.5'
 # sphinx 1.7 has bugs
-$SUDO pip install -U "sphinx<1.7"
-$SUDO pip install 'sphinx-gallery<0.4'
+$SUDO $PIP2 install -U "sphinx<1.7"
+$SUDO $PIP2 install 'sphinx-gallery<0.4'
 
-$SUDO pip install 'nipype<1.2'
-$SUDO pip install 'dipy<0.15'
-$SUDO pip install -U 'nibabel<2.5'
-$SUDO pip install 'scikit-learn<0.21'
-$SUDO pip install -U 'pyparsing<2.4'
-$SUDO pip install -U 'pydot<1.3'
-$SUDO pip install "python_jenkins==0.4.16"
-$SUDO pip install -U 'lark-parser>=0.7,<0.8'
+$SUDO $PIP2 install 'nipype<1.2'
+$SUDO $PIP2 install 'dipy<0.15'
+$SUDO $PIP2 install -U 'nibabel<2.5'
+$SUDO $PIP2 install 'scikit-learn<0.21'
+$SUDO $PIP2 install -U 'pyparsing<2.4'
+$SUDO $PIP2 install -U 'pydot<1.3'
+$SUDO $PIP2 install "python_jenkins==0.4.16"
+$SUDO $PIP2 install -U 'lark-parser>=0.7,<0.8'
+$SUDO $PIP2 install -U 'xlrd<1.3'
+$SUDO $PIP2 install -U 'xlwt<1.4'
+
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...
-$SUDO pip3 install -U backports.functools_lru_cache
-$SUDO pip install -U backports.functools_lru_cache
-$SUDO pip install -U 'xlrd<1.3'
-$SUDO pip install -U 'xlwt<1.4'
+$SUDO $PIP3 install -U backports.functools_lru_cache
+$SUDO $PIP2 install -U backports.functools_lru_cache

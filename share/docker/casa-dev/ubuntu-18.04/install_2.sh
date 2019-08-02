@@ -59,7 +59,6 @@ $SUDO rm -R openslide
 
 # install a version of netcdf with fewer dependencies
 $SUDO bash /tmp/build_netcdf.sh
-rm /tmp/build_netcdf.sh
 
 # install libXp, used by some external software (SPM...)
 cd /tmp
@@ -84,16 +83,16 @@ $SUDO bash /tmp/build_sip_pyqt.sh
 
 # create casa directories for singularity compatibility  
 mkdir -p $CASA_CONF \
-             $CASA_SRC \
-             $CASA_CUSTOM_SRC \
-             $CASA_BUILD \
-             $CASA_CUSTOM_BUILD
+         $CASA_SRC \
+         $CASA_CUSTOM_SRC \
+         $CASA_BUILD \
+         $CASA_CUSTOM_BUILD
 
 chmod 777 $CASA_CONF \
-              $CASA_SRC \
-              $CASA_CUSTOM_SRC \
-              $CASA_BUILD \
-              $CASA_CUSTOM_BUILD
+          $CASA_SRC \
+          $CASA_CUSTOM_SRC \
+          $CASA_BUILD \
+          $CASA_CUSTOM_BUILD
               
 $SUDO chmod +x /usr/local/bin/svn
 $SUDO chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
