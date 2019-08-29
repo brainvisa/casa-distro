@@ -5,9 +5,14 @@ Casa-Distro
 Download Casa-Distro
 ====================
 
-Just click here:
+The best way is to get it from github::
 
-  `casa-distro.zip <casa-distro.zip>`_
+    git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
+
+if git is installed on the host system.
+Alternatively it can be downoloaded as a `.zip file <https://github.com/brainvisa/casa-distro/archive/master.zip>`_
+
+You can get to the :ref:`install <install>` section directly then.
 
 
 I - Overview
@@ -172,6 +177,8 @@ The hardware representation of a build workflow is a set of directories
   generated, in this directory, by test commands.
 
 
+.. _install:
+
 III - casa_distro installation and setup
 ========================================
 
@@ -186,6 +193,7 @@ the following characteristics:
   on the building system. These container technologies only runs 
   on reasonably recent Linux systems, recent Mac systems, and Windows. 
 * Python >= 2.7 is necessary  run the ``casa_distro`` command.
+* Git may be used to download casa-distro *the first time you use it* (see later, `Install latest release`_)
 
 The rest takes place inside containers, so are normally not restricted by the building system, (as long as it has enough memory and disk space).
 
@@ -209,16 +217,26 @@ Otherwise, to install Singularity on Debian based Linux systems (such as Ubuntu)
 
 For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
 
+
 Install latest release
 ----------------------
 
-This is the simplest and the only recommended way to use casa_distro. Simply download the latest release with the following link : `casa-distro.zip <casa-distro.zip>`_.
-
-Then, provided that Python is installed on your system, you can use casa-distro.zip directly. For instance, to get the help of the command, do:
+This is the simplest and the only recommended way to use casa_distro. Simply download the latest release from https://github.com/brainvisa/casa-distro, either using git:
 
 .. code-block:: bash
 
-  python casa-distro.zip --help
+    git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
+
+or by downloading a .zip from the github site using the download button or `clicking this link <https://github.com/brainvisa/casa-distro/archive/master.zip>`_.
+
+Once downladed, no "install step" is required, you can use the casa_distro command directly:
+
+.. code-block:: bash
+
+    /tmp/casa-distro/bin/casa_distro help
+
+Note that this "initial" install of casa-distro can be temporary, since once a build workflow is setup, it is possible to use the casa-distro reinstalled in the build-workflow, which will be easier to update and maintain (see the `Update the casa_distro command`_ section to set it up).
+
 
 Install with brainvisa-cmake
 ----------------------------
@@ -236,13 +254,13 @@ Building CASA projects
 First time
 ----------
 
-Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this situation, once casa_distro has been downloaded or installed (it can be the .zip file), a user has to:
+Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this situation, once casa_distro has been downloaded or installed, a user has to:
 
 * create a build workflow, which will contain the sources repository for BrainVisa projects, a build directory, etc.
 
 .. code-block:: bash
 
-    python casa-distro.zip -r /home/me/casa create distro_source=opensource branch=bug_fix system=ubuntu-12.04
+    python /tmp/casa-distro/bin/casa_distro -r /home/me/casa create distro_source=opensource branch=bug_fix system=ubuntu-12.04
 
 This command specifies to setup a build workflow for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a container system based on Ubuntu 12.04.
 Directories and files will be created accordingly in the repository directory, here ``/home/me/casa`` (default without the ``-r`` option is ``$HOME/casa_distro``).
@@ -252,7 +270,7 @@ The ``-r`` option can be omitted in all ``casa_distro`` commands, if either usin
 
 .. code-block:: bash
 
-    python casa-distro.zip -r /home/me/casa bv_maker distro=opensource branch=bug_fix system=ubuntu-12.04
+    python /tmp/casa-distro/bin/casa_distro -r /home/me/casa bv_maker distro=opensource branch=bug_fix system=ubuntu-12.04
 
 If distro, branch, or system are not provided, all matching build workflows will be processed.
 
@@ -261,11 +279,11 @@ Additional options can be passed to the underlying :bv-cmake:`bv_maker <index.ht
 Update the casa_distro command
 ------------------------------
 
-Once a build workflow has been initialized, and at least source code has been updated (using casa_distro bv_maker), most *distributions* actually include the *casa-distro* project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system, so it may be a good idea to use this updated casa_distro command instead of the *casa-distro.zip* file which has been downloaded temporarily to initialize the process. This can be done by "updating" a build-workflow (actually any one which contains casa-distro):
+Once a build workflow has been initialized, and at least source code has been updated (using casa_distro bv_maker), most *distributions* actually include the *casa-distro* project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system, so it may be a good idea to use this updated ``casa_distro`` command instead of */tmp/casa-distro/bin/casa_distro* which has been downloaded temporarily to initialize the process. This can be done by "updating" a build-workflow (actually any one which contains casa-distro):
 
 .. code-block:: bash
 
-    python casa-distro.zip -r /home/me/casa update distro=opensource branch=bug_fix system=ubuntu-12.04
+    python /tmp/casa-distro/bin/casa_distro -r /home/me/casa update distro=opensource branch=bug_fix system=ubuntu-12.04
 
 Then the run script will use the casa-distro from this source tree.
 You can setup your host environment (``$HOME/.bashrc`` typically) to use it by defaul by setting it first in the ``PATH`` environment variable:
@@ -297,7 +315,7 @@ This completion will help typing the commands and its options by providing possi
 Updating projects
 -----------------
 
-To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running ``python casa-distro.zip bv_maker`` or simply ``casa_distro bv_maker`` (with corresponding options, if needed).
+To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running ``casa_distro bv_maker`` (with corresponding options, if needed).
 
 Customizing projects
 --------------------
