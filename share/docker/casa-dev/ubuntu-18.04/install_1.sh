@@ -534,6 +534,8 @@ $SUDO $PIP3 install 'scikit-learn<0.21'
 $SUDO $PIP3 install -U 'lark-parser>=0.7,<0.8'
 $SUDO $PIP3 install -U 'xlrd<1.3'
 $SUDO $PIP3 install -U 'xlwt<1.4'
+$SUDO $PIP3 install 'torch'
+$SUDO $PIP3 install 'torch-vision'
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
 $SUDO python -m pip install -U 'setuptools==40.8.0'
@@ -567,6 +569,8 @@ $SUDO $PIP2 install "python_jenkins==0.4.16"
 $SUDO $PIP2 install -U 'lark-parser>=0.7,<0.8'
 $SUDO $PIP2 install -U 'xlrd<1.3'
 $SUDO $PIP2 install -U 'xlwt<1.4'
+$SUDO $PIP2 install 'torch'
+$SUDO $PIP2 install 'torch-vision'
 
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...
