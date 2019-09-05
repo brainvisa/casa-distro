@@ -492,20 +492,6 @@ $SUDO apt-get remove -y python-zmq
 # (/usr/local/bin/jupyter* for instance) will be replaced by python2
 # equivalents when installed by pip2. jupyter modules especially handle
 # these conflicts very badly.
-$SUDO pip3 install -U numpy
-$SUDO pip3 install -U scipy
-$SUDO pip3 install nipype
-$SUDO pip3 install jupyter
-$SUDO pip3 install nbsphinx
-$SUDO pip3 install cython
-$SUDO pip3 install dipy
-$SUDO pip3 install -U nibabel
-$SUDO pip3 install sklearn
-$SUDO pip3 install -U 'ipython>=5.0,<6.0'
-$SUDO pip3 install -U pandas
-$SUDO pip3 install -U lark-parser
-$SUDO pip3 install -U xlrd
-$SUDO pip3 install -U xlwt
 
 # WARNING: easy_install gets installed in /usr/local/bin/easy_install
 # for python 3! Same for pip, we have to force installing pip for python2
@@ -513,6 +499,7 @@ $SUDO pip3 install -U xlwt
 $SUDO pip3 install -U 'setuptools==40.8.0'
 $SUDO pip3 install -U 'pip<19.1'
 PIP3=/usr/local/bin/pip3
+$SUDO hash pip3
 $SUDO $PIP3 install -U 'pkgconfig<1.6'
 $SUDO $PIP3 install -U 'cython<0.30'
 $SUDO $PIP3 install -U 'numpy<1.17'
@@ -536,11 +523,13 @@ $SUDO $PIP3 install -U 'xlrd<1.3'
 $SUDO $PIP3 install -U 'xlwt<1.4'
 $SUDO $PIP3 install 'torch'
 $SUDO $PIP3 install 'torch-vision'
+$SUDO $PIP3 install 'dicom'  # pydicom 0.9 API
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
 $SUDO python -m pip install -U 'setuptools==40.8.0'
 $SUDO python -m pip install -U 'pip<19.1'
 PIP2=/usr/local/bin/pip2
+$SUDO hash pip
 $SUDO $PIP2 install -U 'pkgconfig<1.6'
 $SUDO $PIP2 install --ignore-installed -U 'cython<0.30'
 $SUDO $PIP2 install -U 'numpy<1.17'
@@ -569,8 +558,10 @@ $SUDO $PIP2 install "python_jenkins==0.4.16"
 $SUDO $PIP2 install -U 'lark-parser>=0.7,<0.8'
 $SUDO $PIP2 install -U 'xlrd<1.3'
 $SUDO $PIP2 install -U 'xlwt<1.4'
+$SUDO $PIP2 install -U 'pandas<0.25'
 $SUDO $PIP2 install 'torch'
 $SUDO $PIP2 install 'torch-vision'
+$SUDO $PIP2 install 'dicom'  # pydicom 0.9 API
 
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...
