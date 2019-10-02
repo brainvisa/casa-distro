@@ -25,6 +25,9 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y 
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y wget
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y x11-utils
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y mesa-utils
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y tcsh
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y dc
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install --no-install-recommends -y bc
 $SUDO apt-get clean
 $SUDO rm -rf /var/lib/apt/lists/*
 # delete all the apt list files since they're big and get stale quickly

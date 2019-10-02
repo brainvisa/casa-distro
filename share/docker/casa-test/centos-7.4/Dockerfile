@@ -20,6 +20,8 @@ RUN yum -y update --security && \
     libXi \
     wget \
     which \
+    tcsh \
+    bc \
   && yum clean all
 # delete all the yum list files since they're big and get stale quickly
 
