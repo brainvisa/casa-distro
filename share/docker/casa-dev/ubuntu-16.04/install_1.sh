@@ -12,7 +12,7 @@ fi
 . /casa/environment.sh
 
 # add neurodebian repositories and install a few packages
-$SUDO wget -O- http://neuro.debian.net/lists/xenial.de-m.full | $SUDO tee /etc/apt/sources.list.d/neurodebian.sources.list
+$SUDO wget -O- http://neuro.debian.net/lists/xenial.de-md.full | $SUDO tee /etc/apt/sources.list.d/neurodebian.sources.list
 $SUDO apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
 
 # WARNING: it is necessary to call apt-get install for each package to
