@@ -1,0 +1,7 @@
+dependencies:
+    - ../../casa-test
+image_sources:
+  - name: casa-dev
+    tags:
+      - p3q5
+    visibility: public
