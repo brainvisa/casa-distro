@@ -63,6 +63,38 @@ create
 
 Initialize a new build workflow directory. This creates a conf subdirectory with casa_distro.json, bv_maker.cfg and svn.secret files that can be edited before compilation.
 
+distro_source:
+    Either the name of a predefined distro (on of the directory located in
+    share/distro) or a directory containing the distro source. A predefinied
+    distro definition may be one of the buitin ones found in casa-distro
+    (brainvisa, opensource, cati_platform), or one user-defined which will be
+    looked for in $HOME/.config/casa-distro/distro, $HOME/.casa-distro/distro,
+    or in the share/distro subdirectory inside the main repository directory.
+
+distro_name:
+    Name of the distro that will be created. If omited, the name of the distro
+    source (or distro source directory) is used.
+
+container_type: type of container thechnology to use. It can be either
+    'singularity', 'docker' or None (the default). If it is None, it first try
+    to see if Singularity is installed or try to see if Docker is installed.
+
+container_image: image to use for the compilation container. If no
+    value is given, uses the one defined in the distro.
+
+container_test_image: image to use for the package tests container. If no
+    value is given, uses the one defined in the distro.
+
+branch:
+    bv_maker branch to use (latest_release, bug_fix or trunk)
+
+system:
+    Name of the target system.
+
+not_override:
+    a coma separated list of file name that must not be overriden if they
+    already exist.
+
 create_writable_image
 ---------------------
 
