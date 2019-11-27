@@ -28,7 +28,7 @@ $SUDO apt-get clean
 $SUDO rm -rf /var/lib/apt/lists/*
 $SUDO pip install apt-mirror-updater
 # setup best mirror in /etc/apt/sources.list
-$SUDO apt-mirror-updater -a
+$SUDO apt-mirror-updater -a || $SUDO apt update && echo 'Ignoring error in apt-mirror-updater' 1>&2
 
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gnupg2
 
