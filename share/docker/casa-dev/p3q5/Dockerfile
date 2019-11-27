@@ -1,6 +1,6 @@
 # Dockerfile for image cati/casa-dev:p3q5
 
-FROM cati/casa-test:ubuntu-18.04
+FROM cati/casa-test:p3q5
 
 COPY environment.sh /casa/environment.sh
 
