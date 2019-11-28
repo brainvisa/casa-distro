@@ -37,7 +37,6 @@ $SUDO wget -O- http://neuro.debian.net/lists/bionic.de-m.full | $SUDO tee /etc/a
 DEBIAN_FRONTEND=noninteractive $SUDO apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
 
 
-
 # WARNING: it is necessary to call apt-get install for each package to
 # avoid the 101th package issue
 $SUDO apt-get update
@@ -47,7 +46,6 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y cmake
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y cmake-curses-gui
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y subversion
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y git
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-sip-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libsigc++-2.0-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y zlib1g-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y sqlite3
@@ -66,13 +64,9 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libminc-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libdcmtk2-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y doxygen
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y pyro
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-paramiko
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libxml2-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gfortran
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libsvm-dev
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-epydoc
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-sphinx
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-matplotlib
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y openjdk-8-jdk
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libltdl7-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libncurses5-dev
@@ -87,8 +81,6 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libgdk-pixbuf2.0-0
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libgdk-pixbuf2.0-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y automake
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y texlive-fonts-recommended
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-dicom
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-traits
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y lftp
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y apt-utils
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libblas-dev
@@ -103,37 +95,22 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libicu-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gdb
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y mesa-utils
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y x11proto-gl-dev
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-setuptools
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y kdesdk-scripts
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y net-tools
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y liblapack-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libbz2-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libzmq3-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libgsl-dev
-#DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libjasper-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y locate
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libaudio-dev
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-yaml
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y pandoc
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gadfly
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5.qtmultimedia
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5.qtopengl
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5.qtsvg
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5.qtwebkit
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5.qtsql
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5.qtwebsockets
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyqt5.qtxmlpatterns
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-mysqldb
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-requests
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-sqlalchemy
-#DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-jenkins
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-matplotlib
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtmultimedia
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtopengl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtsvg
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtwebkit
+# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtwebkit
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtwebengine
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtsql
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtwebsockets
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtxmlpatterns
@@ -145,7 +122,6 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sip-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sphinx
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sphinx-paramlinks
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pandas
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-xmltodict
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-xmltodict
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-fastcluster
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sqlalchemy
@@ -174,7 +150,7 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-requests
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-jenkins
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-opengl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libnifti-dev
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y x11proto-print-dev
+# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y x11proto-print-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y bash-completion
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y unzip
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libopenjp2-7-dev
@@ -205,12 +181,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libxcb-image0-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libxcb-icccm4-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libxcb-render-util0-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libxcb-xinerama0-dev
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-dbg
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y wkhtmltopdf
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-opengl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-opengl
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-joblib
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-tqdm
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-joblib
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-tqdm
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-dicom
@@ -220,15 +192,15 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y i965-va-driver
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y ibverbs-providers
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libaacs0
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libarmadillo-dev
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libarmadillo8
+# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libarmadillo8
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libarpack2
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libarpack2-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavcodec-dev
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavcodec57
+# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavcodec57
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavformat-dev
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavformat57
+# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavformat57
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavutil-dev
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavutil55
+# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libavutil55
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libbdplus0
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libbluray2
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-atomic-dev
@@ -247,10 +219,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-locale-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-log-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-math-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-mpi-dev
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-mpi-python-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-numpy-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-program-options-dev
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-python-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-random-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-regex-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libboost-serialization-dev
@@ -389,9 +359,7 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libvpx5
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libvtk6-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libvtk6-java
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libvtk6-jni
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libvtk6-qt-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libvtk6.3
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libvtk6.3-qt
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libwavpack1
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libx264-152
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libx265-146
@@ -412,34 +380,6 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y openmpi-common
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y openni-utils
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y proj-bin
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y proj-data
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-autobahn
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-automat
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-cbor
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-click
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-colorama
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-concurrent.futures
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-constantly
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-hyperlink
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-incremental
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-mpi4py
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-nacl
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pam
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-pyasn1-modules
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-qrcode
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-serial
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-service-identity
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-snappy
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-trie
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-trollius
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-twisted
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-twisted-bin
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-twisted-core
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-txaio
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-u-msgpack
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-ubjson
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-vtk6
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-wsaccel
-# DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-zope.interface
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y qttools5-private-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y tcl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y tcl-dev
@@ -509,8 +449,6 @@ rm -rf 1.0.1.zip blitz-1.0.1
 
 # remove a few packages that will be reinstalled via pip as newer versions
 $SUDO apt-get remove -y python3-scipy
-# $SUDO apt-get remove -y python-scipy
-# $SUDO apt-get remove -y python-zmq
 
 # pip3 modules should be installed first, then some commands
 # (/usr/local/bin/jupyter* for instance) will be replaced by python2
@@ -549,45 +487,6 @@ $SUDO $PIP3 install 'torch'
 $SUDO $PIP3 install 'torch-vision'
 $SUDO $PIP3 install 'dicom'  # pydicom 0.9 API
 
-# pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
-# $SUDO python -m pip install -U 'setuptools==40.8.0'
-# $SUDO python -m pip install -U 'pip<19.1'
-# PIP2=/usr/local/bin/pip2
-# $SUDO hash pip
-# $SUDO $PIP2 install -U 'pkgconfig<1.6'
-# $SUDO $PIP2 install --ignore-installed -U 'cython<0.30'
-# $SUDO $PIP2 install -U 'numpy<1.17'
-# # install h5py from sources to force using the system libhdf5,
-# # otherwise it will install an incompatible binary
-# CPPFLAGS='-I/usr/include/mpi' $SUDO pip2 install --no-binary=h5py 'h5py<2.10'
-
-# ipython / jupyter
-# $SUDO $PIP2 install -U 'pyzmq<18.1'
-# $SUDO $PIP2 install -U 'ipython<6.0'
-# $SUDO $PIP2 install jupyter
-# $SUDO $PIP2 install 'qtconsole<4.5'
-# $SUDO $PIP2 install -U 'scipy<1.3'
-# $SUDO $PIP2 install -U 'nbsphinx<0.5'
-# # sphinx 1.7 has bugs
-# $SUDO $PIP2 install -U "sphinx<1.7"
-# $SUDO $PIP2 install 'sphinx-gallery<0.4'
-# 
-# $SUDO $PIP2 install 'nipype<1.2'
-# $SUDO $PIP2 install 'dipy<0.15'
-# $SUDO $PIP2 install -U 'nibabel<2.5'
-# $SUDO $PIP2 install 'scikit-learn<0.21'
-# $SUDO $PIP2 install -U 'pyparsing<2.4'
-# $SUDO $PIP2 install -U 'pydot<1.3'
-# $SUDO $PIP2 install "python_jenkins==0.4.16"
-# $SUDO $PIP2 install -U 'lark-parser>=0.7,<0.8'
-# $SUDO $PIP2 install -U 'xlrd<1.3'
-# $SUDO $PIP2 install -U 'xlwt<1.4'
-# $SUDO $PIP2 install -U 'pandas<0.25'
-# $SUDO $PIP2 install 'torch'
-# $SUDO $PIP2 install 'torch-vision'
-# $SUDO $PIP2 install 'dicom'  # pydicom 0.9 API
-
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...
 $SUDO $PIP3 install -U backports.functools_lru_cache
-# $SUDO $PIP2 install -U backports.functools_lru_cache
