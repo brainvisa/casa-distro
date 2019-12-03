@@ -65,6 +65,7 @@ RUN apt-get update && apt-get install -y \
     libx11-dev:i386 \
     libxext-dev:i386 \
     bash-completion \
+  && pip install subprocess32 \
   && CROSSBUILD_INSTALL_PREFIX=${CASA_DEPS} \
      CROSSBUILD_UPDATE_REGISTRY_PATH=0 \
      CROSSBUILD_ARCH=x86_64 \
