@@ -335,14 +335,15 @@ pushd "${__build_dir}" 2>&1>/dev/null
 # ------------------------------------------------------------------------------
 # Package variables
 # ------------------------------------------------------------------------------
-__sys_packages=(apt-utils autoconf automake autopoint bash bison bzip2 cmake 
-                doxygen flex gettext git g++ gperf graphviz graphviz-dev 
-                intltool libffi-dev libglib2.0-dev libtool libltdl-dev 
-                libssl-dev libxml-parser-perl libxml2-utils libxslt-dev make 
-                openssl patch perl pkg-config python python-dev python-mako 
-                python-dateutil python-setuptools python-sphinx 
-                python-virtualenv ruby scons sed subversion unzip wget xvfb 
-                xdot xz-utils yasm dos2unix texinfo curl)
+__sys_packages=(apt-utils autoconf automake autopoint bash bison bzip2
+                cmake doxygen flex gettext git g++ gperf graphviz
+                graphviz-dev intltool libffi-dev libglib2.0-dev libtool
+                libltdl-dev libssl-dev libxml-parser-perl libxml2-utils
+                libxslt-dev make openssl patch perl pkg-config python
+                python-dev python-mako python-dateutil python-setuptools
+                python-sphinx python-subprocess32 python-virtualenv ruby
+                scons sed subversion unzip wget xvfb xdot xz-utils yasm
+                dos2unix texinfo curl)
 
 __build_packages=(wine mingw64 python)
 
