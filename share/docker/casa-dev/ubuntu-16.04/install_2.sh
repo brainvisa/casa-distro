@@ -44,6 +44,7 @@ $SUDO pip3 install -U 'xlrd<1.3'
 $SUDO pip3 install -U 'xlwt<1.4'
 $SUDO pip3 install torch
 $SUDO pip3 install torch-vision
+$SUDO pip3 install python-pcl
 
 # remove python-pip since it can cause conflicts with upgraded versions:
 # strangely, /usr/lib/python2.7/dist-packages is *before*
@@ -89,3 +90,4 @@ $SUDO pip install --ignore-installed -U 'xlwt<1.4'
 
 $SUDO pip install torch
 $SUDO pip install torch-vision
+$SUDO pip install python-pcl
