@@ -525,6 +525,7 @@ $SUDO $PIP3 install 'torch'
 $SUDO $PIP3 install 'torch-vision'
 $SUDO $PIP3 install 'dicom'  # pydicom 0.9 API
 $SUDO $PIP3 install python-pcl
+$SUDO $PIP3 install fastcluster
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
 $SUDO python -m pip install -U 'setuptools==40.8.0'
@@ -564,6 +565,7 @@ $SUDO $PIP2 install 'torch'
 $SUDO $PIP2 install 'torch-vision'
 $SUDO $PIP2 install 'dicom'  # pydicom 0.9 API
 $SUDO $PIP2 install python-pcl
+$SUDO $PIP2 install fastcluster
 
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...
