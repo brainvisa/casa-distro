@@ -11,10 +11,12 @@
 # NETCDF_VERSION=4.4.1.1
 # OLD=
 NETCDF_VERSION=4.1.1
-OLD=old/
+OLD=
+# netcdf 4.1.1 is not available any longer on the official ftp
+URL=ftp://ftp.cea.fr/pub/dsv/anatomist/devinstaller/packages/
 
 cd /tmp
-wget ftp://ftp.unidata.ucar.edu/pub/netcdf/${OLD}netcdf-$NETCDF_VERSION.tar.gz
+wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 # build usinf configure
 cd netcdf-$NETCDF_VERSION

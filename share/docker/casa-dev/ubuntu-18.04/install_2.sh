@@ -18,6 +18,9 @@ tar xfz Pycluster-1.52.tar.gz
 cd Pycluster-1.52
 python setup.py build
 $SUDO python setup.py install
+# install in python3
+python3 setup.py build
+$SUDO python3 setup.py install
 cd ..
 rm -r Pycluster-1.52 Pycluster-1.52.tar.gz
 

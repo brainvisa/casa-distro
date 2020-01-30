@@ -12,13 +12,15 @@ NETCDF_VERSION=4.4.1.1
 OLD=
 # NETCDF_VERSION=4.1.1
 # OLD=old/
-
+# URL=ftp://ftp.unidata.ucar.edu/pub/netcdf
+# netcdf 4.4.1.1 is not available any longer on the official ftp
+URL=ftp://ftp.cea.fr/pub/dsv/anatomist/devinstaller/packages/
 cd /tmp
-wget ftp://ftp.unidata.ucar.edu/pub/netcdf/${OLD}netcdf-$NETCDF_VERSION.tar.gz
+wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 mkdir netcdf_build
 cd netcdf_build
-cmake ../netcdf-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETCDF_VERSION -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF
+cmake ../netcdf-c-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETCDF_VERSION -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF
 make -j4
 make -j4 install
 cd ..
