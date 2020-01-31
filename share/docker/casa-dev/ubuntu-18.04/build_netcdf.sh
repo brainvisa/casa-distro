@@ -16,7 +16,7 @@ OLD=
 URL=ftp://ftp.cea.fr/pub/dsv/anatomist/devinstaller/packages/
 
 cd /tmp
-wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz
+wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz || exit 1
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 mkdir netcdf_build
 cd netcdf_build
@@ -24,7 +24,7 @@ cmake ../netcdf-c-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETC
 make -j4
 make -j4 install
 cd ..
-rm -Rf netcdf_build netcdf-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz
+rm -Rf netcdf_build netcdf-c-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz
 ln -s netcdf-$NETCDF_VERSION /usr/local/netcdf
 cd /usr/local/lib
 ln -s ../netcdf/lib/*.so* .

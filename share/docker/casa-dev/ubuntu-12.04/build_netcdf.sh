@@ -16,7 +16,7 @@ OLD=
 URL=ftp://ftp.cea.fr/pub/dsv/anatomist/devinstaller/packages/
 
 cd /tmp
-wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz
+wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz || exit 1
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 # build usinf configure
 cd netcdf-$NETCDF_VERSION

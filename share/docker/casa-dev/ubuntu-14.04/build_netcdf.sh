@@ -16,7 +16,7 @@ OLD=
 URL=ftp://ftp.cea.fr/pub/dsv/anatomist/devinstaller/packages/
 
 cd /tmp
-wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz
+wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz || exit 1
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 # build usinf configure
 cd netcdf-$NETCDF_VERSION
@@ -24,7 +24,7 @@ CPPFLAGS=-I/usr/include/mpi ./configure --prefix=/usr/local/netcdf-$NETCDF_VERSI
 make -j4
 make -j4 install
 cd ..
-rm -Rf netcdf-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz
+rm -Rf netcdf-c-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz
 ln -s netcdf-$NETCDF_VERSION /usr/local/netcdf
 cd /usr/local/lib
 ln -s ../netcdf/lib/*.so* .
