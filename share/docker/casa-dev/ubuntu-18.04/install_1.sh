@@ -467,6 +467,7 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitg
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitk
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y spyder
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y curl
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y software-properties-common
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | $SUDO bash
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y git-lfs
 $SUDO apt-get clean
@@ -524,7 +525,7 @@ $SUDO $PIP3 install -U 'xlwt<1.4'
 $SUDO $PIP3 install 'torch'
 $SUDO $PIP3 install 'torch-vision'
 $SUDO $PIP3 install 'dicom'  # pydicom 0.9 API
-$SUDO $PIP3 install python-pcl
+# $SUDO $PIP3 install python-pcl
 $SUDO $PIP3 install fastcluster
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
@@ -564,7 +565,7 @@ $SUDO $PIP2 install -U 'pandas<0.25'
 $SUDO $PIP2 install 'torch'
 $SUDO $PIP2 install 'torch-vision'
 $SUDO $PIP2 install 'dicom'  # pydicom 0.9 API
-$SUDO $PIP2 install python-pcl
+# $SUDO $PIP2 install python-pcl  # linked against wrong version of libpcl
 $SUDO $PIP2 install fastcluster
 
 # this one needs reinstalling in pip since the whole module backports has
