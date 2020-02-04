@@ -56,7 +56,8 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
     try:
         # Copy files in temporary directory
         os.mkdir(osp.join(tmp,'brainvisa'))
-        open(osp.join(tmp, 'brainvisa', '__init__.py'), 'w')
+        with open(osp.join(tmp, 'brainvisa', '__init__.py'), 'w'):
+            pass  # create an empty file
         shutil.copy(osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'bin','casa_distro'), osp.join(tmp, '__main__.py'))
         for srcdir, dstdir_filter in dirs.items():
             dstdir, filter = dstdir_filter
@@ -72,8 +73,10 @@ def package_casa_distro(build_workflows_repository=default_build_workflow_reposi
         
         # Replace import six in brainvisa_projects.py
         brainvisa_projects = osp.join(tmp, 'brainvisa', 'maker', 'brainvisa_projects.py')
-        content = open(brainvisa_projects).read().replace('import six', 'from casa_distro import six')
-        open(brainvisa_projects, 'w').write(content)
+        with open(brainvisa_projects) as f:
+            content = f.read().replace('import six', 'from casa_distro import six')
+        with open(brainvisa_projects, 'w') as f:
+            f.write(content)
         
         # Create zip archive of temporary directory
         with zipfile.ZipFile(osp.join(build_workflows_repository, 'casa-distro-%s.zip' % casa_distro_version), mode='w') as zip:
@@ -111,7 +114,8 @@ def publish_casa_distro(build_workflows_repository=default_build_workflow_reposi
     if verbose:
         print('Running', *cmd, file=verbose)
         print('-' * 10, lftp_script.name, '-'*10, file=verbose)
-        print(open(lftp_script.name).read(), file=verbose)
+        with open(lftp_script.name) as f:
+            print(f.read(), file=verbose)
         print('-'*40, file=verbose)
     check_call(cmd)
     
@@ -281,14 +285,16 @@ def publish_singularity(image_names = 'cati/*',
     for image_file in image_files:
         hash_path = image_file + '.md5'
         hash_file = os.path.basename(hash_path)
-        local_hash = open(hash_path).read()
+        with open(hash_path) as f:
+            local_hash = f.read()
         tmp = tempfile.NamedTemporaryFile()
         url = '%s/%s' % (server_url, hash_file)
         try:
             if verbose:
                 print('check image:', url)
             urlretrieve(url, tmp.name)
-            remote_hash = open(tmp.name).read()
+            with open(tmp.name) as f:
+                remote_hash = f.read()
             if remote_hash == local_hash:
                 valid_files.append(image_file)
                 if verbose:
@@ -320,7 +326,8 @@ def publish_singularity(image_names = 'cati/*',
     if verbose:
         print('Running', *cmd, file=verbose)
         print('-' * 10, lftp_script.name, '-'*10, file=verbose)
-        print(open(lftp_script.name).read(), file=verbose)
+        with open(lftp_script.name) as f:
+            print(f.read(), file=verbose)
         print('-'*40, file=verbose)
     check_call(cmd)
 
@@ -355,7 +362,8 @@ def publish_build_workflows(distro='*', branch='*', system='*',
     if verbose:
         print('Running', *cmd, file=verbose)
         print('-' * 10, lftp_script.name, '-'*10, file=verbose)
-        print(open(lftp_script.name).read(), file=verbose)
+        with open(lftp_script.name) as f:
+            print(f.read(), file=verbose)
         print('-'*40, file=verbose)
     check_call(cmd)
 
