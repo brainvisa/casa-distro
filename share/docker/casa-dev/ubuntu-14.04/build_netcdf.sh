@@ -19,7 +19,7 @@ cd /tmp
 wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz || exit 1
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 # build usinf configure
-cd netcdf-$NETCDF_VERSION
+cd netcdf-c-$NETCDF_VERSION
 CPPFLAGS=-I/usr/include/mpi ./configure --prefix=/usr/local/netcdf-$NETCDF_VERSION --enable-shared --enable-netcdf4 --disable-pnetcdf --disable-cxx-4 --disable-dap --disable-fortran --disable-cxx --disable-static --disable-utilities
 make -j4
 make -j4 install
