@@ -168,6 +168,7 @@ RUN pip install -U 'lark-parser>=0.7,<0.8'
 RUN pip install -U 'sqlalchemy<1.4'
 RUN pip install -U 'xlrd<1.3'
 RUN pip install -U 'xlwt<1.4'
+RUN pip install fastcluster
 
 # install Pycluster
 RUN cd /tmp \

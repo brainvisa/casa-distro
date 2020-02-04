@@ -1,4 +1,4 @@
-# Install system dependencies for image cati/casa-dev:ubuntu-16.04
+# Install system dependencies for image cati/casa-dev:ubuntu-18.04
 
 set -e # stop the script on error
 
@@ -11,117 +11,102 @@ fi
 
 . /casa/environment.sh
 
-# install Pycluster
-cd /tmp
-wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz
-tar xfz Pycluster-1.52.tar.gz
-cd Pycluster-1.52
-python setup.py build
-$SUDO python setup.py install
-cd ..
-rm -r Pycluster-1.52 Pycluster-1.52.tar.gz
-
-# Install Qt Installer Framework (prebuilt on Mandriva 2008)
-cd /tmp
-wget http://brainvisa.info/static/qt_installer-1.6.tar.gz
-cd /usr/local
-$SUDO tar xfz /tmp/qt_installer-1.6.tar.gz
-$SUDO ln -s qt_installer-1.6 qt_installer
-cd /usr/local/bin
-$SUDO ln -s ../qt_installer/bin/* .
-rm /tmp/qt_installer-1.6.tar.gz
 
 cd /tmp
-wget https://codeplexarchive.blob.core.windows.net/archive/projects/jxrlib/jxrlib.zip
-mkdir jxrlib
-cd jxrlib
-# Unzip returns 1 in case of warning : temporarily disable stop on error
-set +e
-unzip ../jxrlib.zip
-set -e
-cd sourceCode/jxrlib
-DIR_INSTALL=/usr/local SHARED=1 $SUDO make -j4 install
-cd /tmp
-rm -R jxrlib jxrlib.zip
-
-cd /tmp
-git clone https://github.com/MIRCen/openslide.git
-cd openslide
-$SUDO libtoolize --force
-$SUDO aclocal 
-$SUDO autoheader
-$SUDO automake --force-missing --add-missing
-$SUDO autoconf
-$SUDO ./configure
-$SUDO make -j4 install
-cd /tmp
-$SUDO rm -R openslide
-
-# install a version of netcdf with fewer dependencies
-$SUDO bash /tmp/build_netcdf.sh
-
-# install libXp, used by some external software (SPM...)
-cd /tmp
-wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz
-tar xf libxp_1.0.2.orig.tar.gz
-cd libXp-1.0.2
+wget --no-check-certificate https://github.com/blitzpp/blitz/archive/1.0.1.zip
+unzip 1.0.1.zip
+cd blitz-1.0.1
 ./configure
 make -j4
 $SUDO make -j4 install
-cd /tmp
-rm -R libxp_1.0.2.orig.tar.gz libXp-1.0.2
-
-# cmake does not work with clang whenever Qt5 is invoked.
-# workaround here:
-# https://stackoverflow.com/questions/38027292/configure-a-qt5-5-7-application-for-android-with-cmake/40256862#40256862
-sed 's/^\(set_property.*INTERFACE_COMPILE_FEATURES.*\)$/#\ \1/' < /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake > /tmp/Qt5CoreConfigExtras.cmake
-$SUDO cp -f /tmp/Qt5CoreConfigExtras.cmake /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
-
-# reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
-# and virtual C++ inheritance
-$SUDO bash /tmp/build_sip_pyqt.sh
-
-# create casa directories for singularity compatibility  
-mkdir -p $CASA_CONF \
-         $CASA_SRC \
-         $CASA_CUSTOM_SRC \
-         $CASA_BUILD \
-         $CASA_CUSTOM_BUILD
-
-chmod 777 $CASA_CONF \
-          $CASA_SRC \
-          $CASA_CUSTOM_SRC \
-          $CASA_BUILD \
-          $CASA_CUSTOM_BUILD
-              
-$SUDO chmod +x /usr/local/bin/svn
-$SUDO chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
-$SUDO git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
-
-# allow attach gdb to a process
-echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
-
-# Install a version of brainvisa-cmake
-/usr/bin/git clone https://github.com/brainvisa/brainvisa-cmake.git $CASA_SRC/development/brainvisa-cmake/master
-mkdir /tmp/brainvisa-cmake
-cd /tmp/brainvisa-cmake
-cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/master
-make install
 cd ..
-rm -r /tmp/brainvisa-cmake
+rm -rf 1.0.1.zip blitz-1.0.1
 
-# Set casa environement variables initialization
-$SUDO echo \
-'export PATH=${PATH}:/casa/brainvisa-cmake/bin\n'\
-'if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then\n'\
-'    OLD_CWD=$(pwd)\n'\
-'    cd ${CASA_BUILD}/bin\n'\
-'    PATH=.:"$PATH"\n'\
-'    . ./bv_env.sh\n'\
-'    cd ${OLD_CWD}\n'\
-'    unset OLD_CWD\n'\
-'fi' > /usr/local/bin/init-casa-env
+# remove a few packages that will be reinstalled via pip as newer versions
+$SUDO apt-get remove -y python3-scipy
+$SUDO apt-get remove -y python-scipy
+$SUDO apt-get remove -y python-zmq
 
-$SUDO sed -i 's%"$@"%. /usr/local/bin/init-casa-env\n"$@"%g' /usr/local/bin/entrypoint
+# pip3 modules should be installed first, then some commands
+# (/usr/local/bin/jupyter* for instance) will be replaced by python2
+# equivalents when installed by pip2. jupyter modules especially handle
+# these conflicts very badly.
 
-ldconfig
+# WARNING: easy_install gets installed in /usr/local/bin/easy_install
+# for python 3! Same for pip, we have to force installing pip for python2
+# using the system easy_install (python2)
+$SUDO pip3 install -U 'setuptools==40.8.0'
+$SUDO pip3 install -U 'pip<19.1'
+PIP3=/usr/local/bin/pip3
+$SUDO hash pip3
+$SUDO $PIP3 install -U 'pkgconfig<1.6'
+$SUDO $PIP3 install -U 'cython<0.30'
+$SUDO $PIP3 install -U 'numpy<1.17'
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+CPPFLAGS='-I/usr/include/mpi' $SUDO $PIP3 install --no-binary=h5py 'h5py<2.10'
+
+$SUDO $PIP3 install -U 'scipy<1.3'
+$SUDO $PIP3 install 'nipype<1.2'
+$SUDO $PIP3 install -U 'pyzmq<18.1'
+$SUDO $PIP3 install -U 'ipython<8'
+$SUDO $PIP3 install jupyter
+$SUDO $PIP3 install 'qtconsole<4.5'
+$SUDO $PIP3 install -U 'nbsphinx<0.5'
+$SUDO $PIP3 install 'sphinx-gallery<0.4'
+$SUDO $PIP3 install 'dipy<0.15'
+$SUDO $PIP3 install -U 'nibabel<2.5'
+$SUDO $PIP3 install 'scikit-learn<0.21'
+$SUDO $PIP3 install -U 'lark-parser>=0.7,<0.8'
+$SUDO $PIP3 install -U 'xlrd<1.3'
+$SUDO $PIP3 install -U 'xlwt<1.4'
+$SUDO $PIP3 install 'torch'
+$SUDO $PIP3 install 'torch-vision'
+$SUDO $PIP3 install 'dicom'  # pydicom 0.9 API
+# $SUDO $PIP3 install python-pcl
+$SUDO $PIP3 install fastcluster
+
+# pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
+$SUDO python -m pip install -U 'setuptools==40.8.0'
+$SUDO python -m pip install -U 'pip<19.1'
+PIP2=/usr/local/bin/pip2
+$SUDO hash pip
+$SUDO $PIP2 install -U 'pkgconfig<1.6'
+$SUDO $PIP2 install --ignore-installed -U 'cython<0.30'
+$SUDO $PIP2 install -U 'numpy<1.17'
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+CPPFLAGS='-I/usr/include/mpi' $SUDO pip2 install --no-binary=h5py 'h5py<2.10'
+
+# ipython / jupyter
+$SUDO $PIP2 install -U 'pyzmq<18.1'
+$SUDO $PIP2 install -U 'ipython<6.0'
+$SUDO $PIP2 install jupyter
+$SUDO $PIP2 install 'qtconsole<4.5'
+$SUDO $PIP2 install -U 'scipy<1.3'
+$SUDO $PIP2 install -U 'nbsphinx<0.5'
+# sphinx 1.7 has bugs
+$SUDO $PIP2 install -U "sphinx<1.7"
+$SUDO $PIP2 install 'sphinx-gallery<0.4'
+
+$SUDO $PIP2 install 'nipype<1.2'
+$SUDO $PIP2 install 'dipy<0.15'
+$SUDO $PIP2 install -U 'nibabel<2.5'
+$SUDO $PIP2 install 'scikit-learn<0.21'
+$SUDO $PIP2 install -U 'pyparsing<2.4'
+$SUDO $PIP2 install -U 'pydot<1.3'
+$SUDO $PIP2 install "python_jenkins==0.4.16"
+$SUDO $PIP2 install -U 'lark-parser>=0.7,<0.8'
+$SUDO $PIP2 install -U 'xlrd<1.3'
+$SUDO $PIP2 install -U 'xlwt<1.4'
+$SUDO $PIP2 install -U 'pandas<0.25'
+$SUDO $PIP2 install 'torch'
+$SUDO $PIP2 install 'torch-vision'
+$SUDO $PIP2 install 'dicom'  # pydicom 0.9 API
+# $SUDO $PIP2 install python-pcl  # linked against wrong version of libpcl
+$SUDO $PIP2 install fastcluster
+
+# this one needs reinstalling in pip since the whole module backports has
+# changed location... pip is a mess, I tell you...
+$SUDO $PIP3 install -U backports.functools_lru_cache
+$SUDO $PIP2 install -U backports.functools_lru_cache

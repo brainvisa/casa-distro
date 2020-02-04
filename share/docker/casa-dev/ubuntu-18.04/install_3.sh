@@ -11,14 +11,6 @@ fi
 
 . /casa/environment.sh
 
-# fix python command used in jupyter kernel
-# note: the "official" way is to run: ipython3 kernel install, but here
-# in docker it runs an interactive shell for an unknown reason.
-# So we go back to manual patching
-sed -e 's/  "python",/  "python3",/' < /usr/local/share/jupyter/kernels/python3/kernel.json > /tmp/kernel3.json
-$SUDO cp /tmp/kernel3.json /usr/local/share/jupyter/kernels/python3/kernel.json
-
-
 # install Pycluster
 cd /tmp
 wget http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.52.tar.gz
@@ -70,7 +62,6 @@ $SUDO rm -R openslide
 
 # install a version of netcdf with fewer dependencies
 $SUDO bash /tmp/build_netcdf.sh
-rm /tmp/build_netcdf.sh
 
 # install libXp, used by some external software (SPM...)
 cd /tmp
@@ -83,20 +74,51 @@ $SUDO make -j4 install
 cd /tmp
 rm -R libxp_1.0.2.orig.tar.gz libXp-1.0.2
 
+# python-pcl with patch https://github.com/strawlab/python-pcl/commit/71b84758f522c4a11c352389b6c7112fd56f598b
+cd /tmp
+wget https://github.com/strawlab/python-pcl/archive/v0.3.0rc1.zip
+unzip v0.3.0rc1.zip
+cd python-pcl-0.3.0rc1
+cat > pcl.patch << EOF
+512c512
+< cdef extern from "pcl/pcl_base.h" namespace "pcl":
+---
+> cdef extern from "pcl/pcl_base.h" namespace "pcl" nogil:
+EOF
+patch -p0 pcl/pcl_defs.pxd < pcl.patch
+python3 setup.py build
+python3 setup.py install
+python setup.py build
+python setup.py install
+cd ..
+rm -rf python-pcl-0.3.0rc1 v0.3.0rc1.zip
+
+# cmake does not work with clang whenever Qt5 is invoked.
+# workaround here:
+# https://stackoverflow.com/questions/38027292/configure-a-qt5-5-7-application-for-android-with-cmake/40256862#40256862
+sed 's/^\(set_property.*INTERFACE_COMPILE_FEATURES.*\)$/#\ \1/' < /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake > /tmp/Qt5CoreConfigExtras.cmake
+$SUDO cp -f /tmp/Qt5CoreConfigExtras.cmake /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
+
+# reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
+# and virtual C++ inheritance
+$SUDO bash /tmp/build_sip_pyqt.sh
+
 # create casa directories for singularity compatibility  
 mkdir -p $CASA_CONF \
-             $CASA_SRC \
-             $CASA_CUSTOM_SRC \
-             $CASA_BUILD \
-             $CASA_CUSTOM_BUILD
+         $CASA_SRC \
+         $CASA_CUSTOM_SRC \
+         $CASA_BUILD \
+         $CASA_CUSTOM_BUILD
 
 chmod 777 $CASA_CONF \
-              $CASA_SRC \
-              $CASA_CUSTOM_SRC \
-              $CASA_BUILD \
-              $CASA_CUSTOM_BUILD
+          $CASA_SRC \
+          $CASA_CUSTOM_SRC \
+          $CASA_BUILD \
+          $CASA_CUSTOM_BUILD
               
 $SUDO chmod +x /usr/local/bin/svn
+$SUDO chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
+$SUDO git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
 
 # allow attach gdb to a process
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
@@ -122,7 +144,6 @@ $SUDO echo \
 '    unset OLD_CWD\n'\
 'fi' > /usr/local/bin/init-casa-env
 
-$SUDO chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
-$SUDO git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
+$SUDO sed -i 's%"$@"%. /usr/local/bin/init-casa-env\n"$@"%g' /usr/local/bin/entrypoint
 
 ldconfig

@@ -12,17 +12,19 @@ NETCDF_VERSION=4.6.1
 OLD=
 # NETCDF_VERSION=4.1.1
 # OLD=old/
+# netcdf 4.6.1 is not available any longer on the official ftp
+URL=ftp://ftp.cea.fr/pub/dsv/anatomist/devinstaller/packages/
 
 cd /tmp
-wget ftp://ftp.unidata.ucar.edu/pub/netcdf/${OLD}netcdf-$NETCDF_VERSION.tar.gz
+wget $URL/${OLD}netcdf-$NETCDF_VERSION.tar.gz || exit 1
 tar xvf netcdf-$NETCDF_VERSION.tar.gz
 mkdir netcdf_build
 cd netcdf_build
-cmake ../netcdf-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETCDF_VERSION -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DHAVE_HDF5_H=/usr/include/hdf5/serial
+cmake ../netcdf-c-$NETCDF_VERSION -DCMAKE_INSTALL_PREFIX=/usr/local/netcdf-$NETCDF_VERSION -DBUILD_TESTING=OFF -DBUILD_TESTSETS=OFF -DBUILD_UTILITIES=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DAP=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DHAVE_HDF5_H=/usr/include/hdf5/serial
 make -j4
 make -j4 install
 cd ..
-rm -Rf netcdf_build netcdf-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz
+rm -Rf netcdf_build netcdf-c-$NETCDF_VERSION netcdf-$NETCDF_VERSION.tar.gz
 ln -s netcdf-$NETCDF_VERSION /usr/local/netcdf
 cd /usr/local/lib
 ln -s ../netcdf/lib/*.so* .
