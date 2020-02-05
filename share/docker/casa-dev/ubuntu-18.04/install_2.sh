@@ -82,6 +82,7 @@ CPPFLAGS='-I/usr/include/mpi' $SUDO pip2 install --no-binary=h5py 'h5py<2.10'
 $SUDO $PIP2 install -U 'pyzmq<18.1'
 $SUDO $PIP2 install -U 'ipython<6.0'
 $SUDO $PIP2 install jupyter
+$SUDO $PIP2 install jupyter_client
 $SUDO $PIP2 install 'qtconsole<4.5'
 $SUDO $PIP2 install -U 'scipy<1.3'
 $SUDO $PIP2 install -U 'nbsphinx<0.5'
