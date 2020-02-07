@@ -75,23 +75,36 @@ cd /tmp
 rm -R libxp_1.0.2.orig.tar.gz libXp-1.0.2
 
 # python-pcl with patch https://github.com/strawlab/python-pcl/commit/71b84758f522c4a11c352389b6c7112fd56f598b
+# cd /tmp
+# wget https://github.com/strawlab/python-pcl/archive/v0.3.0rc1.zip
+# unzip v0.3.0rc1.zip
+# cd python-pcl-0.3.0rc1
+# cat > pcl.patch << EOF
+# 512c512
+# < cdef extern from "pcl/pcl_base.h" namespace "pcl":
+# ---
+# > cdef extern from "pcl/pcl_base.h" namespace "pcl" nogil:
+# EOF
+# patch -p0 pcl/pcl_defs.pxd < pcl.patch
+
 cd /tmp
-wget https://github.com/strawlab/python-pcl/archive/v0.3.0rc1.zip
-unzip v0.3.0rc1.zip
-cd python-pcl-0.3.0rc1
-cat > pcl.patch << EOF
-512c512
-< cdef extern from "pcl/pcl_base.h" namespace "pcl":
+wget https://github.com/strawlab/python-pcl/archive/v0.2.0.zip
+unzip v0.2.0.zip
+cd python-pcl-0.2.0
+cat > setup.patch << EOF
+16c16
+< PCL_SUPPORTED = ["-1.7", "-1.6", ""]    # in order of preference
 ---
-> cdef extern from "pcl/pcl_base.h" namespace "pcl" nogil:
+> PCL_SUPPORTED = ["-1.8", "-1.7", "-1.6", ""]    # in order of preference
 EOF
-patch -p0 pcl/pcl_defs.pxd < pcl.patch
+patch -p0 setup.py < setup.patch
 python3 setup.py build
 python3 setup.py install
 python setup.py build
 python setup.py install
 cd ..
-rm -rf python-pcl-0.3.0rc1 v0.3.0rc1.zip
+rm -rf python-pcl-0.2.0 v0.2.0.zip
+# rm -rf python-pcl-0.3.0rc1 v0.3.0rc1.zip
 
 # cmake does not work with clang whenever Qt5 is invoked.
 # workaround here:
