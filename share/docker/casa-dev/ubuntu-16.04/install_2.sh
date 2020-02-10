@@ -28,9 +28,10 @@ CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py 'h5py<2.9'
 
 $SUDO pip3 install --ignore-installed -U 'scipy<1.3'
 $SUDO pip3 install 'nipype<1.2'
-$SUDO pip3 install --ignore-installed -U 'pyzmq<18.1'
+$SUDO pip3 install --ignore-installed -U 'pyzmq<18'
 $SUDO pip3 install --ignore-installed -U 'ipython<8'
 $SUDO pip3 install 'jupyter==1.0.0'
+$SUDO pip3 install --ignore-installed -U 'ipykernel<5' 'tornado<4.5'
 $SUDO pip3 install 'nbsphinx<0.4'
 # sphinx 1.7 has bugs
 $SUDO pip3 install -U "sphinx<1.7"

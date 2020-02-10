@@ -48,9 +48,10 @@ CPPFLAGS='-I/usr/include/mpi' $SUDO $PIP3 install --no-binary=h5py 'h5py<2.10'
 
 $SUDO $PIP3 install -U 'scipy<1.3'
 $SUDO $PIP3 install 'nipype<1.2'
-$SUDO $PIP3 install -U 'pyzmq<18.1'
+$SUDO $PIP3 install 'pyzmq<18'
 $SUDO $PIP3 install -U 'ipython<8'
 $SUDO $PIP3 install jupyter
+$SUDO $PIP3 install --ignore-installed -U 'ipykernel<5' 'tornado<4.5'
 $SUDO $PIP3 install 'qtconsole<4.5'
 $SUDO $PIP3 install -U 'nbsphinx<0.5'
 $SUDO $PIP3 install 'sphinx-gallery<0.4'
