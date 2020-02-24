@@ -1,6 +1,6 @@
-# coding: utf-8 
+# -*- coding: utf-8 -*-
 
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os.path as osp
 import re
@@ -26,24 +26,6 @@ def git_get_changeset(url, branch):
     if result:
         return result.split()[0]
 
-cmake_set_regexp = re.compile(r'set\(\s*([^\s]+)\s+(.*)\s*\)')
-def parse_cmake_variables(filename):
-    result = {}
-    for line in open(osp.join(build_dir, 'bv_maker.cmake')):
-        match = cmake_set_regexp.search(line)
-        if match:
-            var = match.group(1)
-            value = match.group(2)
-            try:
-                i = value.index(' CACHE ')
-                value = value[:i]
-            except ValueError:
-                pass
-            value = value.strip()
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-            result[var] = value
-    return result
 
 def convert_github_url_to_svn(url):
     if url.startswith('git'):
