@@ -1,8 +1,0 @@
-#!/bin/sh
-set -x
-set -e
-service ssh start
-service slapd start
-service postgresql restart
-service publication-server start
-exec tail -f /var/log/dmesg
