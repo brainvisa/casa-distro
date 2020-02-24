@@ -20,6 +20,7 @@ fi
 # otherwise it will install an incompatible binary
 $SUDO pip3 install -U 'pkgconfig<1.6'
 $SUDO pip3 install -U 'cython<0.30'
+$SUDO pip3 install -U 'six>=1.12'
 $SUDO pip3 install -U 'numpy<1.17'
 $SUDO pip3 install -U 'setuptools==40.8.0'
 $SUDO pip3 install -U 'pip<19.1'
@@ -61,6 +62,7 @@ $SUDO /usr/bin/easy_install pip
 # otherwise it will install an incompatible binary
 $SUDO pip install -U 'pkgconfig<1.6'
 $SUDO pip install -U 'cython<0.30'
+$SUDO pip install -U 'six>=1.12'
 $SUDO pip install -U 'numpy<1.16'
 $SUDO pip install -U 'setuptools==40.8.0'
 $SUDO pip install -U 'pip<19.1'
