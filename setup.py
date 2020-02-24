@@ -39,5 +39,5 @@ setup(
     packages=packages,
     data_files=data_files,
     scripts=scripts,
-    install_requires=['six'],
+    install_requires=[],  # we do not want casa-distro to have dependencies
 )
