@@ -48,6 +48,8 @@ $SUDO pip3 install torch
 $SUDO pip3 install torch-vision
 $SUDO pip3 install python-pcl
 $SUDO pip3 install fastcluster
+$SUDO pip3 install modernize
+$SUDO pip3 install pre-commit
 
 # remove python-pip since it can cause conflicts with upgraded versions:
 # strangely, /usr/lib/python2.7/dist-packages is *before*
