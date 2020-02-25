@@ -440,6 +440,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y va-driver-all
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y vtk6
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y x11proto-scrnsaver-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libpcl-dev
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y flake8
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-autopep8
 # graphical tools
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gedit
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y kwrite
