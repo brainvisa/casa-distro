@@ -1,1 +1,0 @@
-../../../scripts/install_ubuntu_14.04_crossbuild.sh

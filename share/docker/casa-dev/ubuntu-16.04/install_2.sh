@@ -20,6 +20,7 @@ fi
 # otherwise it will install an incompatible binary
 $SUDO pip3 install -U 'pkgconfig<1.6'
 $SUDO pip3 install -U 'cython<0.30'
+$SUDO pip3 install -U 'six>=1.12'
 $SUDO pip3 install -U 'numpy<1.17'
 $SUDO pip3 install -U 'setuptools==40.8.0'
 $SUDO pip3 install -U 'pip<19.1'
@@ -28,9 +29,10 @@ CPPFLAGS='-I/usr/include/mpi' $SUDO pip3 install --no-binary=h5py 'h5py<2.9'
 
 $SUDO pip3 install --ignore-installed -U 'scipy<1.3'
 $SUDO pip3 install 'nipype<1.2'
-$SUDO pip3 install --ignore-installed -U 'pyzmq<18.1'
+$SUDO pip3 install --ignore-installed -U 'pyzmq<18'
 $SUDO pip3 install --ignore-installed -U 'ipython<8'
 $SUDO pip3 install 'jupyter==1.0.0'
+$SUDO pip3 install --ignore-installed -U 'ipykernel<5' 'tornado<4.5'
 $SUDO pip3 install 'nbsphinx<0.4'
 # sphinx 1.7 has bugs
 $SUDO pip3 install -U "sphinx<1.7"
@@ -60,6 +62,7 @@ $SUDO /usr/bin/easy_install pip
 # otherwise it will install an incompatible binary
 $SUDO pip install -U 'pkgconfig<1.6'
 $SUDO pip install -U 'cython<0.30'
+$SUDO pip install -U 'six>=1.12'
 $SUDO pip install -U 'numpy<1.16'
 $SUDO pip install -U 'setuptools==40.8.0'
 $SUDO pip install -U 'pip<19.1'

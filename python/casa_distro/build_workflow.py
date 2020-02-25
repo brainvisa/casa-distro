@@ -514,7 +514,7 @@ def update_build_workflow(build_workflow_directory, verbose=None,
         with open(script_file, 'w') as f:
             f.write('''#!/bin/bash
 exec %s %s "$@"''' % (sys.executable, casa_distro_path))
-    os.chmod(script_file, 0775)
+    os.chmod(script_file, 0o775)
     if verbose:
         print('created run script:', script_file)
 
@@ -530,7 +530,7 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
 
     bashrc = os.path.join(build_workflow_directory, 'home', '.bashrc')
     if not os.path.exists(bashrc):
-        open(bashrc, 'w').write('''
+        open(bashrc, 'w').write(r'''
 if [ -f /etc/profile ]; then
     . /etc/profile
 fi
@@ -545,7 +545,7 @@ if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
 fi
 
 # colored prompt to show we are in a casa-distro shell
-export PS1='\[\\033[33m\]\u@\h \$\[\\033[0m\] '
+export PS1='\[\033[33m\]\u@\h \$\[\033[0m\] '
 # convenient aliases
 alias ls='ls -F --color'
 alias ll='ls -als'
