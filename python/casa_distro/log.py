@@ -1,8 +1,16 @@
-# coding: utf-8 
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
+import ast
+import io
+import types
+import sys
+
+from casa_distro import six
+
 
 def getLogFile(verbose, openmode='w+'):
-    import ast, types, sys, six, io
-
     if isinstance(verbose, six.string_types):
         try:
             # Try to interpret string as boolean or integer values

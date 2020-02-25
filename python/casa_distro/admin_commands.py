@@ -1,4 +1,5 @@
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
 
 from getpass import getpass
 import sys
@@ -22,18 +23,8 @@ try:
     # Try Python 3 only import
     from urllib.request import urlretrieve
 except ImportError:
-    # Provide a Python 2 implementation of urlretrieve
-    import urllib2
-    def urlretrieve(url, filename):
-        buffer_size = 1024 * 4
-        input = urllib2.urlopen(url)
-        with open(filename,'wb') as output:
-            while True:
-                buffer = input.read(buffer_size)
-                if buffer:
-                    output.write(buffer)
-                if len(buffer) < buffer_size:
-                    break
+    from urllib import urlretrieve
+
 
 @command
 def package_casa_distro(build_workflows_repository=default_build_workflow_repository):
@@ -159,7 +150,7 @@ def create_latest_release(build_workflows_repository=default_build_workflow_repo
     from casa_distro.bv_maker import apply_latest_release_todo
     
     try:
-        if type(dry) in (types.StringType, types.UnicodeType):
+        if isinstance(dry, (bytes, str)):
             dry = bool(strtobool(dry))
 
         else:
@@ -170,7 +161,7 @@ def create_latest_release(build_workflows_repository=default_build_workflow_repo
         sys.exit(1)
 
     try:
-        if type(ignore_warning) in (types.StringType, types.UnicodeType):
+        if isinstance(ignore_warning, (bytes, str)):
             ignore_warning = bool(strtobool(ignore_warning))
 
         else:
@@ -302,7 +293,7 @@ def publish_singularity(image_names = 'cati/*',
                           file=verbose)
         except Exception as e:
             pass # not on server
-    image_files = [f for f in image_files if f not in valid_files]
+    image_files = [f2 for f2 in image_files if f2 not in valid_files]
     if len(image_files) == 0:
         # nothing to do
         if verbose:

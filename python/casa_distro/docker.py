@@ -1,4 +1,4 @@
-# coding: utf-8 
+# -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -414,7 +414,6 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
 
 
 if __name__ == '__main__':
-    import sys
     import casa_distro.docker
 
     function = getattr(casa_distro.docker, sys.argv[1])

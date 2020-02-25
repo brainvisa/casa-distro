@@ -1,4 +1,5 @@
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -38,5 +39,5 @@ setup(
     packages=packages,
     data_files=data_files,
     scripts=scripts,
-    install_requires=['six'],
+    install_requires=[],  # we do not want casa-distro to have dependencies
 )
