@@ -218,7 +218,8 @@ def rm_images(images):
         except:
             pass
 
-def create_docker_images(image_name_filters = ['*']):
+def create_docker_images(image_name_filters = ['*'],
+                         no_host_network=False):
     '''
     Creates all docker images that are declared in 
     find_docker_image_files().
@@ -286,7 +287,7 @@ def create_docker_images(image_name_filters = ['*']):
                     # /etc/resolv.conf uses 127.0.0.1 Unfortunately it is not
                     # available in older releases of docker, including
                     # those shipped in Ubuntu 16.04 (which is 1.12).
-                    if docker_ver >= [1, 13]:
+                    if not no_host_network and docker_ver >= [1, 13]:
                         cmd = ['docker', 'build', '--network=host']
                     else:
                         cmd = ['docker', 'build']
