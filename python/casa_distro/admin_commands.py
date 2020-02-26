@@ -189,7 +189,7 @@ def create_latest_release(build_workflows_repository=default_build_workflow_repo
         raise
         
 @command
-def create_docker(image_names = '*', verbose=None):
+def create_docker(image_names = '*', verbose=None, no_host_network=False):
     '''create or update all casa-test and casa-dev docker images
 
       image_names:
@@ -206,7 +206,8 @@ def create_docker(image_names = '*', verbose=None):
     
     image_name_filters = image_names.split(',')
     count = create_docker_images(
-        image_name_filters = image_name_filters)
+        image_name_filters = image_name_filters,
+        no_host_network=bool(no_host_network))
     if count == 0:
         print('No image match filter "%s"' % image_names, file=sys.stderr)
         return 1
