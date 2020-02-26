@@ -1,6 +1,8 @@
-sudo: false
+version: ~> 1.0
+os: linux
 language: python
-matrix:
+
+jobs:
   include:
     - python: 3.8
       dist: xenial  # required for Python >= 3.7
