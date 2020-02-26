@@ -1,3 +1,6 @@
+[![travis](https://travis-ci.com/brainvisa/casa-distro.svg?branch=master)](https://travis-ci.com/brainvisa/casa-distro)
+[![codecov](https://codecov.io/gh/brainvisa/casa-distro/branch/master/graph/badge.svg)](https://codecov.io/gh/brainvisa/casa-distro)
+
 # casa-distro
 Unified development environment for BrainVISA projects.
 
