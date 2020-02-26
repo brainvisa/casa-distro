@@ -8,6 +8,7 @@ repos:
     -   id: check-merge-conflict
     -   id: check-symlinks
     -   id: check-xml
+    -   id: check-yaml
     -   id: debug-statements
     -   id: fix-encoding-pragma
     -   id: check-added-large-files
@@ -16,7 +17,10 @@ repos:
     rev: 3.7.9
     hooks:
     -   id: flake8
-
-default_language_version:
-    # force all unspecified python hooks to run python2.7
-    python: python2.7
+        name: flake8 under python2
+        language_version: python2
+        exclude: ^doc/source/sphinxext/
+    -   id: flake8
+        name: flake8 under python3
+        language_version: python3
+        exclude: ^doc/source/sphinxext/

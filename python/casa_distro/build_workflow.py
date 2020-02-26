@@ -10,8 +10,8 @@ import glob
 import shutil
 import json
 import copy
-import six
 
+from casa_distro import six
 from casa_distro import log, share_directories, linux_os_ids
 from casa_distro.docker import run_docker, update_docker_image
 from casa_distro.singularity import (download_singularity_image,
