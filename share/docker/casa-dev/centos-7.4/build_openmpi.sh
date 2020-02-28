@@ -27,19 +27,15 @@ if [ "${__install}" == "1" ]; then
     tar xvf ${__download_dir}/openmpi-${OPENMPI_VERSION}.tar.bz2
     pushd ${__build_dir}/openmpi-${OPENMPI_VERSION}
  
-    libtoolize --force \
-    && aclocal \
-    && autoheader \
-    && automake --force-missing --add-missing \
-    && autoconf \
-    && ./configure \
+    ./configure \
             --prefix=${OPENMPI_INSTALL_PREFIX} \
             --enable-shared \
+            --enable-mpi-cxx \
     || exit 1
     make -j${__build_proc_num} install || exit 1
 
     popd
     
     \rm -rf ${__build_dir}/openmpi-${OPENMPI_VERSION} \
-            ${__download_dir}/openmpi-${OPENMPI_VERSION}.tar.gz
+           ${__download_dir}/openmpi-${OPENMPI_VERSION}.tar.gz
 fi
