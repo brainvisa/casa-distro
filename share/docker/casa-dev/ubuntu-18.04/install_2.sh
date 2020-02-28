@@ -70,7 +70,7 @@ $SUDO $PIP3 install modernize
 $SUDO $PIP3 install -U -I 'pyyaml<5.4'
 $SUDO $PIP3 install pre-commit
 $SUDO $PIP3 install tox
-$SUDO $PIP3 install skimage
+$SUDO $PIP3 install scikit-image
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
 $SUDO python -m pip install -U 'setuptools==40.8.0'
