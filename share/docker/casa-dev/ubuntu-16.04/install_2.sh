@@ -51,6 +51,7 @@ $SUDO pip3 install fastcluster
 $SUDO pip3 install modernize
 $SUDO pip3 install pre-commit
 $SUDO pip3 install tox
+$SUDO pip3 install skimage
 
 # remove python-pip since it can cause conflicts with upgraded versions:
 # strangely, /usr/lib/python2.7/dist-packages is *before*
