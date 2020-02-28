@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Capsul current version
 version_major = 2
 version_minor = 1

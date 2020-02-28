@@ -66,6 +66,9 @@ $SUDO $PIP3 install 'torch-vision'
 $SUDO $PIP3 install 'dicom'  # pydicom 0.9 API
 # $SUDO $PIP3 install python-pcl
 $SUDO $PIP3 install fastcluster
+$SUDO $PIP3 install modernize
+$SUDO $PIP3 install -U -I 'pyyaml<5.4'
+$SUDO $PIP3 install pre-commit
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
 $SUDO python -m pip install -U 'setuptools==40.8.0'

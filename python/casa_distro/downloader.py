@@ -1,15 +1,17 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
 
-from __future__ import print_function
-try:
-    # Try Python 3 only import
-    import urllib.request as urllib2
-except ImportError:
-    import urllib2
 import socket
 import time
 import os
 import sys
 import subprocess
+
+try:
+    # Try Python 3 only import
+    from urllib.request import urlopen, Request
+except ImportError:
+    from urllib2 import urlopen, Request
 
 
 def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3):
@@ -54,7 +56,7 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3):
         not be updated)
     '''
     buffer_size = 1024 * 4
-    input = urllib2.urlopen(url, timeout=timeout)
+    input = urlopen(url, timeout=timeout)
     info = input.info()
     size = int(info.get('Content-Length', 0))
     dl_len = 0
@@ -87,8 +89,8 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3):
                 if size == 0:
                     s = 10000000000
                 headers={'Range': 'bytes=%d-%d' % (dl_len, size)}
-                new_url = urllib2.Request(url, headers=headers)
-                input = urllib2.urlopen(new_url, timeout=timeout)
+                new_url = Request(url, headers=headers)
+                input = urlopen(new_url, timeout=timeout)
         if callback:
             callback(base_url, dl_len, size, speed, block, cbk_count)
             print()
