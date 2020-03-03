@@ -5336,7 +5336,7 @@ if [ "${PYTHON_PIP}" == "1" ] || [  "${PYTHON_WHEEL}" == "1" ] ; then
     fi
 fi
 
-PYTHON_SIX_VERSION=1.10.0
+PYTHON_SIX_VERSION=1.14.0
 PYTHON_SIX_SOURCE_URL=https://pypi.python.org/packages/c8/0a/b6723e1bc4c516cb687841499455a8505b44607ab535be01091c0f24f079/six-${PYTHON_SIX_VERSION}-py2.py3-none-any.whl
 if [ "${PYTHON_SIX}" == "1" ]; then
     echo "================================ PYTHON_SIX ================================"
