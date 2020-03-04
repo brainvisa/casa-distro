@@ -208,7 +208,6 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y libxcb-xinerama0-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-dbg
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y wkhtmltopdf
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-opengl
-DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-opengl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-joblib
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-tqdm
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-joblib
