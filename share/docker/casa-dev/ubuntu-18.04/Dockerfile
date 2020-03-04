@@ -20,6 +20,4 @@ RUN sh /casa/install_2.sh
 COPY install_3.sh /casa/install_3.sh
 RUN sh /casa/install_3.sh
 
-RUN rm /casa/install_1.sh
-RUN rm /casa/install_2.sh
-RUN rm /casa/install_3.sh
+RUN rm -f /casa/install_1.sh /casa/install_2.sh /casa/install_3.sh

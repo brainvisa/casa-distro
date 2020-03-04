@@ -6,8 +6,8 @@
 # and also during the creation of the VirtualBox casa-run image. Make sure not
 # to include anything Docker-specific in this file.
 
-set -e
-set -x
+set -e  # stop the script on error
+set -x  # display commands before running them
 
 if [ $(id -u) -eq 0 ]; then
     SUDO=

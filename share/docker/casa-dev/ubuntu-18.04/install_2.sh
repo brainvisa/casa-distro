@@ -1,4 +1,22 @@
 # Install system dependencies for image cati/casa-dev:ubuntu-18.04
+#
+# NOTE: This script is used to create the casa-dev Docker/Singularity image,
+# and also during the creation of the VirtualBox casa-dev image. Make sure not
+# to include anything Docker-specific in this file.
+
+set -e  # stop the script on error
+set -x  # display commands before running them
+
+if [ $(id -u) -eq 0 ]; then
+    SUDO=
+else
+    SUDO=sudo
+fi
+
+
+###############################################################################
+# Install Python packages with pipsystem packages with apt-get
+###############################################################################
 
 set -e # stop the script on error
 
@@ -9,18 +27,16 @@ else
     SUDO=sudo
 fi
 
-. /casa/environment.sh
-
-
 cd /tmp
-wget --no-check-certificate https://github.com/blitzpp/blitz/archive/1.0.1.zip
-unzip 1.0.1.zip
-cd blitz-1.0.1
-./configure
-make -j4
-$SUDO make -j4 install
+wget --no-check-certificate https://github.com/blitzpp/blitz/archive/1.0.2.tar.gz
+tar -zxf 1.0.2.zip
+mkdir blitz-1.0.2/build
+cd blitz-1.0.2/build
+cmake ..
+make -j4 lib
+$SUDO make install
 cd ..
-rm -rf 1.0.1.zip blitz-1.0.1
+rm -rf 1.0.2.tar.gz blitz-1.0.2
 
 # remove a few packages that will be reinstalled via pip as newer versions
 $SUDO apt-get remove -y python3-scipy
