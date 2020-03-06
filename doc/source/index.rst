@@ -2,18 +2,6 @@
 Casa-Distro
 ===========
 
-Download Casa-Distro
-====================
-
-The best way is to get it from github::
-
-    git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
-
-if git is installed on the host system.
-Alternatively it can be downoloaded as a `.zip file <https://github.com/brainvisa/casa-distro/archive/master.zip>`_
-
-You can get to the :ref:`install <install>` section directly then.
-
 
 I - Overview
 ============
@@ -23,14 +11,16 @@ What is CASA ?
 
 CASA = `CATI <http://cati-neuroimaging.com>`_ + `BrainVISA <http://brainvisa.info>`_
 
+When these two projects decided to use the same development and software delivery environment, the name CASA was choosen to name this environment.
+
 What is Casa-Distro ?
 ---------------------
 
-It's a development environment which helps to provide developers with a working development environment for BrainVISA and CATI tools.
+It's a development environment which helps to provide developers with a commont working development environment for BrainVISA and CATI tools. Before casa-distro each developer had its own development environment where all required development software and libraries was installed manually. It was impossible to keep the same version of all software in all environments. It was not unusual to discover difference of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment. 
 
-It provides `Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ images compatible with BrainVISA distributions with all needed setup to build custom toolboxes, package them, and test them, in the same environment.
+Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual applicance to host the compilation system. casa_distro supports two container technologies,`Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ and on virtual machine technoloy : `VirtualBox <https://www.virtualbox.org/>`_.
 
-Casa-distro is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It is a metronome because the distribution procedures, and especially the distribution frequency, is defined in casa-distro documentation (`bioproj wiki <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Casa-distro>`_). It is a swiss knife because it provides a tool for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
+Casa-distro project is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It contains all tools to create and publish the virtual images as well as tools for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
 
 Use cases
 ---------
@@ -47,30 +37,46 @@ What Casa-Distro is **not**
 
   The user will be able to use the build system (:bv-cmake:`bv_maker <bv_maker.html>`), inside Docker, in a way that ensures to build, run, and ship software that is compatible with public distributions of BrainVisa.
 
-* Casa-Distro is not a binary distribution of BrainVisa. Even if it could be used that way. Binary distributions provide binaries that try to work on the wider possible variety of systems. Casa-distro is one (or a small set) of these systems with development, distribution, and run environment.
+* Casa-Distro is not a end-user distribution of BrainVisa. End-user distributions are similar because they are also based on a virtual system (either container or virtual machine) but they are smaller since they contains much less dependencies as the corresponding development environment.
 
 
 II - Background: distributions, versions and build workflows.
 =============================================================
 
-Casa (BrainVISA / CATI) is composed of many versioned software components
+Software distributions managed by casa-distroare composed of many versioned software components
 (more than 50 at the time of this writing). Each one has its own time line for
-development and release. Casa team is not big enough to follow the
+development and release. BrainVISA team is not big enough to follow the
 release of all projects and make sure that good practices are followed
 (for instance make sure that the project version is increased whenever
-the project source are changed between releases). It was therefore
-decided to schedule casa-distro versions at a frequency that is
-independent of project versions. This **distribution frequency** is a
-fundamental element of casa-distro; every first monday of each month, a
-**distribution** is created. The creation of a distribution is a series
-of steps that leads to the creation of **build workflows** and
-**packages**. Build workflows are all the directories used by developers
-who need to create or modify software. Packages are single file archives 
-used to distribute all the component of a distro to end users.
+the project source are changed between releases).
 
 Distributions
 -------------
 
+casa-distro distributions
++++++++++++++++++++++++++
+
+The casa-distro development environment is composed of two virtual images:
+
+-  **run image:** this image is used by end users to execute softwares distributed by BrainVISA and CATI. It is a Linux distribution where all the required system dependencies are already installed. This image is ready to be used with one of the casa-distro software distribution (see below).
+- **dev image:** this image is used be developers to build softwares distributed by BrainVISA and CATI. It is based on the run image and adds all dependencies required for building all projects.
+
+These two images are distributed using three technologies:
+
+- **Docker:** the images are on `Docker Hub <https://hub.docker.com/>`_. They are named `cati/casa-run` and `cati/casa-dev` for the latest release. They are also accessible with their release number. For `instance cati/casa-run:2020.03.06.1`.
+- **Singularity:** the images are on the BrainVISA web site on the following URLs : `<http://brainvisa.info/casa-distro/cati_casa-run.simg>`_ and `<http://brainvisa.info/casa-distro/cati_casa-dev.simg>`_. They are also accessible with their release number. For instance `<http://brainvisa.info/casa-distro/cati_casa-run_2020.03.06.1.simg>`_.
+- **VirtualBox:** the images are on the BrainVISA web site on the following URLs : `<http://brainvisa.info/casa-distro/cati_casa-run.ova>`_ and `<http://brainvisa.info/casa-distro/cati_casa-dev.ova>`_. They are also accessible with their release number. For instance `<http://brainvisa.info/casa-distro/cati_casa-run_2020.03.06.1.ova>`_.
+
+
+For the image version number it has been choosen to use the date of the begining of the image creation process with the pattern ``<year>.<month>.<day>.<count>`` where :
+
+-  **<year>:** is the year as four digits number.
+-  **<month>:** is the month as a two digits number.
+-  **<day>:** is the day as a two digits number.
+-  **<count>:** is a number starting at 1 and incremented whenever
+             it is necessary to publish two releases on the same day.
+
+             
 What is a distribution
 ++++++++++++++++++++++
 
@@ -81,7 +87,6 @@ own software content, targeted audience and license agreement. At the
 time of this writing, the following distros are planned to be technically 
 managed by CASA :
 
--  **opensource**: the open-source subset of projects managed by BrainVISA.
 -  **brainvisa**: the historical BrainVISA distribution. It combines
    open source and close source software. It can be downloaded by anyone
    and used freely for non profit research.
@@ -93,15 +98,7 @@ managed by CASA :
    community. It is installed in several CEA labs : Neurospin, MIRCen
    and SHFJ.
 
-Distribution frequency
-++++++++++++++++++++++
 
-(in the future)
-
-A distribution is created every first monday of each month. Normally,
-any modification done after a distribution must wait for the next
-distribution to be released. However, in case of emergency, it is
-possible to add exceptional distributions.
 
 Distribution versioning
 +++++++++++++++++++++++
@@ -117,7 +114,7 @@ It has been chosen to use a classical version numbering convention :
    incompatibilities.
 -  **<patch>:** is a number that is increased whenever routine
    modifications are done.
-
+   
 Distribution creation
 +++++++++++++++++++++
 
@@ -147,7 +144,7 @@ build workflow is identified by three variables:
 
 | - **distro:** the identifier of the distro (*e.g.* ``opensource``,
   ``brainvisa``, ``cati`` or ``cea``)
-| - **branch:** the name of the virtual branch used to select sofware
+| - **branch:** the name of the virtual branch used to select software
   component sources (``latest_release``, ``bug_fix`` or ``trunk``).
 | - **system:** the operating system the distro is build for (*e.g.*
   ``ubuntu-12.04``, ``ubuntu-16.04``, ``win32`` or ``win64``).
