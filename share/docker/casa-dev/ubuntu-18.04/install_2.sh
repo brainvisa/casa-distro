@@ -15,25 +15,16 @@ fi
 
 
 ###############################################################################
-# Install Python packages with pipsystem packages with apt-get
+# Install Python packages with pip
 ###############################################################################
-
-set -e # stop the script on error
-
-set -x # display command before running them
-if [ `id -u` -eq 0 ]; then
-    SUDO=
-else
-    SUDO=sudo
-fi
 
 cd /tmp
 wget --no-check-certificate https://github.com/blitzpp/blitz/archive/1.0.2.tar.gz
-tar -zxf 1.0.2.zip
+tar -zxf 1.0.2.tar.gz
 mkdir blitz-1.0.2/build
-cd blitz-1.0.2/build
-cmake ..
-make -j4 lib
+cd blitz-1.0.2
+./configure
+make -j4
 $SUDO make install
 cd ..
 rm -rf 1.0.2.tar.gz blitz-1.0.2
@@ -87,6 +78,8 @@ $SUDO $PIP3 install -U -I 'pyyaml<5.4'
 $SUDO $PIP3 install pre-commit
 $SUDO $PIP3 install tox
 $SUDO $PIP3 install scikit-image
+
+# TODO: remove the pip2 installs once this image is based on casa-run
 
 # pip3 upgrade has overwritten pip, we must reinstall it, not using pip exe
 $SUDO python -m pip install -U 'setuptools==40.8.0'

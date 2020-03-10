@@ -116,6 +116,11 @@ $SUDO cp -f /tmp/Qt5CoreConfigExtras.cmake /usr/lib/x86_64-linux-gnu/cmake/Qt5Co
 # and virtual C++ inheritance
 $SUDO bash /tmp/build_sip_pyqt.sh
 
+# -----------------------------------------------------------------------------
+# TODO: remove the python2-specific from the previous parts once this image is
+# based on casa-run
+# -----------------------------------------------------------------------------
+
 # create casa directories for singularity compatibility  
 mkdir -p $CASA_CONF \
          $CASA_SRC \
@@ -159,4 +164,4 @@ $SUDO echo \
 
 $SUDO sed -i 's%"$@"%. /usr/local/bin/init-casa-env\n"$@"%g' /usr/local/bin/entrypoint
 
-ldconfig
+$SUDO ldconfig

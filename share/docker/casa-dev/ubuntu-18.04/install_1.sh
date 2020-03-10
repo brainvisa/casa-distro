@@ -298,7 +298,7 @@ $APT_GET_INSTALL libdouble-conversion-dev
 $APT_GET_INSTALL libgraphite2-dev
 $APT_GET_INSTALL libharfbuzz-dev
 $APT_GET_INSTALL libhyphen-dev
-## TODO(ylep): here
+## TODO(ylep): dev packages after this mark have not been reviewed and their corresponding runtime package added to casa-run
 $APT_GET_INSTALL libwebp-dev
 $APT_GET_INSTALL libwoff-dev
 $APT_GET_INSTALL libxcb-keysyms1-dev

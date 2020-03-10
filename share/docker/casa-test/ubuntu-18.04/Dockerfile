@@ -2,6 +2,9 @@
 
 FROM ubuntu:18.04
 
+# Use a minimal UTF-8-aware locale.
+ENV LANG=C.UTF-8
+
 # Copy a software-only mesa libGL into /usr/local/lib. We copy this library
 # manually because there seems to be no system package that provides a libGL
 # which *only* does software rendering. We need such a lib to be used as a
