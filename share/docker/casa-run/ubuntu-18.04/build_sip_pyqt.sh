@@ -5,8 +5,6 @@ set -x
 
 SIP_VERSION=4.19.15
 PYQT_VERSION=5.12.1
-PRE_4_19=
-PRE_4_18=
 PREFIX=/usr/local/sip-$SIP_VERSION
 BUILD=/tmp/sipbuild
 PATCH_FILE=ftp://ftp.cea.fr/pub/dsv/anatomist/3rdparty/1.0.0/sources/pyqt_patch
@@ -17,20 +15,11 @@ QMAKE=/usr/lib/qt5/bin/qmake
 
 mkdir "$BUILD"
 cd "$BUILD"
-if [ -z "$PRE_4_19" ]; then
-    DL_URL_SIP="https://www.riverbankcomputing.com/static/Downloads/sip/${SIP_VERSION}/sip-${SIP_VERSION}.tar.gz"
-    PYQT=PyQt5_gpl-${PYQT_VERSION}
-    DL_URL_PYQT="https://www.riverbankcomputing.com/static/Downloads/PyQt5/${PYQT_VERSION}/${PYQT}.tar.gz"
-    PYQT_WEBENGINE=PyQtWebEngine_gpl-${PYQT_VERSION}
-    DL_URL_PYQT_WEBENGINE="https://www.riverbankcomputing.com/static/Downloads/PyQtWebEngine/${PYQT_VERSION}/PyQtWebEngine_gpl-${PYQT_VERSION}.tar.gz"
-else
-    DL_URL_SIP="https://sourceforge.net/projects/pyqt/files/sip/${SIP_VERSION}/sip-${SIP_VERSION}.tar.gz"
-    PYQT=PyQt-gpl-${PYQT_VERSION}
-    DL_URL_PYQT="https://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-${PYQT_VERSION}/${PYQT}.tar.gz"
-    if [ -n "$PRE_4_18" ]; then
-        wget $PATCH_FILE
-    fi
-fi
+DL_URL_SIP="https://www.riverbankcomputing.com/static/Downloads/sip/${SIP_VERSION}/sip-${SIP_VERSION}.tar.gz"
+PYQT=PyQt5_gpl-${PYQT_VERSION}
+DL_URL_PYQT="https://www.riverbankcomputing.com/static/Downloads/PyQt5/${PYQT_VERSION}/${PYQT}.tar.gz"
+PYQT_WEBENGINE=PyQtWebEngine_gpl-${PYQT_VERSION}
+DL_URL_PYQT_WEBENGINE="https://www.riverbankcomputing.com/static/Downloads/PyQtWebEngine/${PYQT_VERSION}/PyQtWebEngine_gpl-${PYQT_VERSION}.tar.gz"
 
 # download sources
 
@@ -46,10 +35,7 @@ tar xf sip-${SIP_VERSION}.tar.gz
 cd sip-${SIP_VERSION}
 SIP_OPTS=
 PYQT_OPTS=
-if [ -z "$PRE_4_19" ]; then
-    SIP_OPTS="--sip-module PyQt5.sip"
-#     PYQT_OPTS="--sip-module PyQt5.sip"
-fi
+SIP_OPTS="--sip-module PyQt5.sip"
 
 if [ -n "$DO_PYTHON2" ]; then
     python configure.py -b "$PREFIX/bin" -d "$PREFIX/lib/python2.7/dist-packages" -e "$PREFIX/include/python2.7" -v "$PREFIX/share/sip" ${SIP_OPTS}
@@ -74,9 +60,6 @@ hash sip
 
 tar xf "${PYQT}.tar.gz"
 cd "$PYQT"
-if [ -n "$PRE_4_18" ]; then
-    patch -p1 < ../pyqt_patch
-fi
 
 if [ -n "$DO_PYTHON2" ]; then
     python configure.py --confirm-license --sip-incdir="$PREFIX/include/python2.7" -b "$PREFIX/bin" -d "$PREFIX/lib/python2.7/dist-packages" --designer-plugindir="$PREFIX/lib/qt5/plugins/designer" --qml-plugindir="$PREFIX/lib/qt5/plugins/PyQt5" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" ${PYQT_OPTS}
