@@ -47,17 +47,6 @@ cd /tmp
 rm -R libxp_1.0.2.orig.tar.gz libXp-1.0.2
 
 
-# Install Qt Installer Framework (prebuilt on Mandriva 2008)
-cd /tmp
-wget http://brainvisa.info/static/qt_installer-1.6.tar.gz
-cd /usr/local
-sudo tar xfz /tmp/qt_installer-1.6.tar.gz
-sudo ln -s qt_installer-1.6 qt_installer
-cd /usr/local/bin
-sudo ln -s ../qt_installer/bin/* .
-rm /tmp/qt_installer-1.6.tar.gz
-
-
 # MIRCen's fork of openslide with support for CZI format
 cd /tmp
 git clone --depth=1 https://github.com/MIRCen/openslide.git
@@ -98,7 +87,7 @@ sudo cp -f /tmp/Qt5CoreConfigExtras.cmake /usr/lib/x86_64-linux-gnu/cmake/Qt5Cor
 
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
 # and virtual C++ inheritance
-sudo DO_PYTHON2=1 DO_PYTHON3= /tmp/build_sip_pyqt.sh
+PY=2.7 PY_S=2.7 /tmp/build_sip_pyqt.sh
 
 
 ###############################################################################

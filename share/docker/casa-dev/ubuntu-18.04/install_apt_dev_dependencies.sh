@@ -1,3 +1,4 @@
+#! /bin/sh
 # Install system dependencies for image cati/casa-dev:ubuntu-18.04
 #
 # NOTE: This script is used to create the casa-dev Docker/Singularity image,
@@ -7,14 +8,7 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
-if [ $(id -u) -eq 0 ]; then
-    SUDO=
-    APT_GET=apt-get
-else
-    SUDO=sudo
-    APT_GET="sudo apt-get"
-fi
-
+APT_GET="sudo apt-get -o Acquire::Retries=3"
 
 ###############################################################################
 # Install system packages with apt-get
@@ -23,23 +17,9 @@ fi
 export DEBIAN_FRONTEND=noninteractive
 APT_GET_INSTALL="$APT_GET install --no-install-recommends -y"
 
-# install python and pip to get apt-mirror-updater
-# in order to select an efficient debian mirror.
-# (try installing up to 5 times if the default server sometimes disconnects)
-for trial in 1 2 3 4 5; do
-    $APT_GET update && break
-done
-for trial in 1 2 3 4 5; do
-    $APT_GET_INSTALL python-pip && break
-done
-$SUDO pip install apt-mirror-updater
 # setup best mirror in /etc/apt/sources.list
-$SUDO apt-mirror-updater -a
-
-# Add neurodebian repositories (TODO: remove once this image is based on casa-run)
-$APT_GET_INSTALL gnupg  # needed by apt-key (below)
-$SUDO wget -O /etc/apt/sources.list.d/neurodebian.sources.list http://neuro.debian.net/lists/bionic.de-m.full
-$SUDO apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
+# sudo python2 -m pip --no-cache-dir install apt-mirror-updater
+# sudo apt-mirror-updater -a
 
 $APT_GET update
 
@@ -117,8 +97,11 @@ $APT_GET_INSTALL clang
 $APT_GET_INSTALL cmake
 $APT_GET_INSTALL cmake-curses-gui
 $APT_GET_INSTALL gfortran
-$APT_GET_INSTALL python-sip-dev
-$APT_GET_INSTALL python3-sip-dev
+# Compiled and installed in install_compiled_dev_dependencies.sh because of a
+# bug in the SIP version supplied in APT.
+#
+# $APT_GET_INSTALL python-sip-dev
+# $APT_GET_INSTALL python3-sip-dev
 
 # Development tools and convenience utilities
 $APT_GET_INSTALL bash-completion
@@ -152,74 +135,27 @@ $APT_GET_INSTALL texlive-fonts-recommended
 $APT_GET_INSTALL wkhtmltopdf
 
 # Framework-specific tools
-$APT_GET_INSTALL pyqt5-dev
-$APT_GET_INSTALL pyqt5-dev-tools
 $APT_GET_INSTALL qt5-default
 $APT_GET_INSTALL qttools5-dev-tools
 $APT_GET_INSTALL qttools5-private-dev
 
 
-# Python 2 packages (TODO: to be moved to casa-run)
-$APT_GET_INSTALL python-paramiko
-$APT_GET_INSTALL python-matplotlib
-$APT_GET_INSTALL python-dicom
-$APT_GET_INSTALL python-traits
-$APT_GET_INSTALL python-yaml
-$APT_GET_INSTALL python-pyqt5
-$APT_GET_INSTALL python-pyqt5.qtmultimedia
-$APT_GET_INSTALL python-pyqt5.qtopengl
-$APT_GET_INSTALL python-pyqt5.qtsvg
-$APT_GET_INSTALL python-pyqt5.qtwebkit
-$APT_GET_INSTALL python-pyqt5.qtsql
-$APT_GET_INSTALL python-pyqt5.qtwebsockets
-$APT_GET_INSTALL python-pyqt5.qtxmlpatterns
-$APT_GET_INSTALL python-mysqldb
-$APT_GET_INSTALL python-requests
-$APT_GET_INSTALL python-sqlalchemy
-$APT_GET_INSTALL python-xmltodict
-## TODO(ylep): here
-$APT_GET_INSTALL python-opengl
-$APT_GET_INSTALL python-joblib
-$APT_GET_INSTALL python-tqdm
-$APT_GET_INSTALL python-autobahn
-$APT_GET_INSTALL python-automat
-$APT_GET_INSTALL python-cbor
-$APT_GET_INSTALL python-click
-$APT_GET_INSTALL python-colorama
-$APT_GET_INSTALL python-concurrent.futures
-$APT_GET_INSTALL python-constantly
-$APT_GET_INSTALL python-hyperlink
-$APT_GET_INSTALL python-incremental
-$APT_GET_INSTALL python-mpi4py
-$APT_GET_INSTALL python-nacl
-$APT_GET_INSTALL python-pam
-$APT_GET_INSTALL python-pyasn1-modules
-$APT_GET_INSTALL python-qrcode
-$APT_GET_INSTALL python-serial
-$APT_GET_INSTALL python-service-identity
-$APT_GET_INSTALL python-snappy
-$APT_GET_INSTALL python-trie
-$APT_GET_INSTALL python-trollius
-$APT_GET_INSTALL python-twisted
-$APT_GET_INSTALL python-twisted-bin
-$APT_GET_INSTALL python-twisted-core
-$APT_GET_INSTALL python-txaio
-$APT_GET_INSTALL python-u-msgpack
-$APT_GET_INSTALL python-ubjson
-$APT_GET_INSTALL python-vtk6
-$APT_GET_INSTALL python-wsaccel
-$APT_GET_INSTALL python-zope.interface
-
 # Python 3 packages
 $APT_GET_INSTALL python3-matplotlib
-$APT_GET_INSTALL python3-pyqt5
-$APT_GET_INSTALL python3-pyqt5.qtmultimedia
-$APT_GET_INSTALL python3-pyqt5.qtopengl
-$APT_GET_INSTALL python3-pyqt5.qtsvg
-$APT_GET_INSTALL python3-pyqt5.qtwebkit
-$APT_GET_INSTALL python3-pyqt5.qtsql
-$APT_GET_INSTALL python3-pyqt5.qtwebsockets
-$APT_GET_INSTALL python3-pyqt5.qtxmlpatterns
+# Compiled and installed in install_compiled_dev_dependencies.sh because of a
+# bug in the SIP version supplied in APT.
+#
+# $APT_GET_INSTALL pyqt5-dev
+# $APT_GET_INSTALL pyqt5-dev-tools
+# $APT_GET_INSTALL python3-pyqt5
+# $APT_GET_INSTALL python3-pyqt5.qtmultimedia
+# $APT_GET_INSTALL python3-pyqt5.qtopengl
+# $APT_GET_INSTALL python3-pyqt5.qtsvg
+# $APT_GET_INSTALL python3-pyqt5.qtwebkit
+# $APT_GET_INSTALL python3-pyqt5.qtsql
+# $APT_GET_INSTALL python3-pyqt5.qtwebsockets
+# $APT_GET_INSTALL python3-pyqt5.qtxmlpatterns
+# $APT_GET_INSTALL python3-pyqt5.qtx11extras
 $APT_GET_INSTALL python3-traits
 $APT_GET_INSTALL python3-pip
 $APT_GET_INSTALL python3-pydot
@@ -231,20 +167,46 @@ $APT_GET_INSTALL python3-xmltodict
 $APT_GET_INSTALL python3-fastcluster
 $APT_GET_INSTALL python3-sqlalchemy
 $APT_GET_INSTALL python3-mysqldb
-$APT_GET_INSTALL python3-pyqt5.qtx11extras
 $APT_GET_INSTALL python3-ipython-genutils
-$APT_GET_INSTALL python3-yaml
+# PyYAML is installed with pip because pre-commit requires a more recent
+# version. If we install it here, pip complains that it cannot reliably
+# uninstall it.
+#
+# $APT_GET_INSTALL python3-yaml
 $APT_GET_INSTALL python3-requests
 $APT_GET_INSTALL python3-jenkins
 $APT_GET_INSTALL python3-opengl
 $APT_GET_INSTALL python3-joblib
 $APT_GET_INSTALL python3-tqdm
 $APT_GET_INSTALL python3-dicom
+# TODO: The following packages used to be installed with pip, check that the APT versions work correctly
+$APT_GET_INSTALL cython3
+$APT_GET_INSTALL python3-numpy
+$APT_GET_INSTALL python3-zmq
+$APT_GET_INSTALL python3-ipython
+$APT_GET_INSTALL python3-jupyter-client
+$APT_GET_INSTALL python3-qtconsole
+$APT_GET_INSTALL python3-scipy
+$APT_GET_INSTALL python3-nbsphinx
+$APT_GET_INSTALL python3-sphinx-gallery
+$APT_GET_INSTALL python3-nibabel
+$APT_GET_INSTALL python3-skimage
+$APT_GET_INSTALL python3-sklearn
+$APT_GET_INSTALL python3-pyparsing
+$APT_GET_INSTALL python3-pydot
+$APT_GET_INSTALL python3-pydicom
+$APT_GET_INSTALL python3-fastcluster
 
-# Development packages of compiled libraries (C/C++/Fortran)
+
+
+# Development packages of compiled libraries (C/C++/Fortran) that are used by components of BrainVISA (these components are packaged 
+$APT_GET_INSTALL libdcmtk-dev
+$APT_GET_INSTALL zlib1g-dev
+
+# 
+
 # TODO: clean up this list of its indirect dependencies
 $APT_GET_INSTALL libsigc++-2.0-dev
-$APT_GET_INSTALL zlib1g-dev
 $APT_GET_INSTALL libsqlite3-dev
 $APT_GET_INSTALL libnetcdf-dev
 $APT_GET_INSTALL libreadline-dev
@@ -254,7 +216,6 @@ $APT_GET_INSTALL libjpeg-dev
 $APT_GET_INSTALL libpng-dev
 $APT_GET_INSTALL libmng-dev
 $APT_GET_INSTALL libminc-dev
-$APT_GET_INSTALL libdcmtk-dev
 $APT_GET_INSTALL libxml2-dev
 $APT_GET_INSTALL libsvm-dev
 $APT_GET_INSTALL libltdl7-dev
@@ -372,4 +333,4 @@ $APT_GET_INSTALL x11proto-scrnsaver-dev
 
 $APT_GET clean
 # delete all the apt list files since they're big and get stale quickly
-$SUDO rm -rf /var/lib/apt/lists/*
+sudo rm -rf /var/lib/apt/lists/*
