@@ -41,6 +41,7 @@ PIP3=/usr/local/bin/pip3
 $SUDO hash pip3
 $SUDO $PIP3 install -U 'pkgconfig<1.6'
 $SUDO $PIP3 install -U 'cython<0.30'
+$SUDO $PIP3 install -U 'six>=1.12'
 $SUDO $PIP3 install -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
@@ -79,6 +80,7 @@ PIP2=/usr/local/bin/pip2
 $SUDO hash pip
 $SUDO $PIP2 install -U 'pkgconfig<1.6'
 $SUDO $PIP2 install --ignore-installed -U 'cython<0.30'
+$SUDO $PIP2 install -U 'six>=1.12'
 $SUDO $PIP2 install -U 'numpy<1.17'
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
