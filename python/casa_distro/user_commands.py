@@ -110,7 +110,7 @@ def parse_string(msg):
     return out_msg
 
 
-class ExecutionStatus:
+class ExecutionStatus(object):
     status_map = {'not run': '',
                   'succeeded': 'OK         ',
                   'failed': 'FAILED     ',
