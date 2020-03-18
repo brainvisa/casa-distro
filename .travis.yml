@@ -20,7 +20,7 @@ jobs:
 
 install:
     - pip install tox-travis
-    - if [[  "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PYTHON_VERSION" == "3.8" ]]; then pip install -U sphinx && sphinx-build -b html doc/source doc/build_html && touch doc/build_html/.nojekyll; fi
+    - if [[  "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PYTHON_VERSION" == "3.8" ]]; then pip install -U sphinx && python setup.py install && sphinx-build -b html doc/source doc/build_html && touch doc/build_html/.nojekyll; fi
     - if [[ -n "$GITHUB_TOKEN" ]]; then export PUSH_DOC_TO_GH_PAGES=yes; fi
 
 script: tox
