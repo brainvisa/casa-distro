@@ -280,6 +280,8 @@ def find_executable(name, path=None):
 casa_distro_cmd = find_executable('casa_distro_admin')
 #print('casa distro command', casa_distro_cmd)
 # print('command', ' '.join(['python', casa_distro_cmd, '-r', out_dir, 'package_casa_distro']))
+if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
 subprocess.call(['python', casa_distro_cmd, 
                  '-r', out_dir, 
                  'package_casa_distro'])
