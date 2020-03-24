@@ -1,10 +1,29 @@
-===================================
-Using the casa_distro_admin command
-===================================
+===============================================
+Creation and publication of casa-distro release
+===============================================
 
-``casa_distro_admin`` command is the part of casa-distro which is not needed for regular users / developers: it allows to create docker and singularity system images, push them on a server to be downloadable by regular users, and to manage brainisa distributions release plans.
+A casa-distro release is done by a member of the BrainVISA team using the ``casa_distro_admin`` command. This document contains all the steps that are necessary to build and publish all versions of casa-distro images.
 
-The admin part has been separated from the other ``casa_distro`` command, both for sake of clarity, and because the admin part is bigger since it contains everything needed to build system images, including some precompiled software for various operating systems, some libraries source code, etc. All this makes the casa-distro complete packages more than 100MB large, whereas the user part is only 300 or 400 KB zipped.
+Creation a base VirtualBox image
+================================
+
+The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an *.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL `<http://brainvisa.info/casa-distro/casa-<iso_name>.ova>`_ where `<iso name>̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso`, the uploaded image name would be `casa-ubuntu-18.04.4-desktop-amd64.ova`.
+
+1) Install VirtualBox version 6 or greater
+2) Download an Ubuntu iso file from internet (any Debain based distro may work but only recent Ubuntu LTS are tested).
+3) Run `casa_distro create_virtualbox` to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)
+4) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
+5) Perform system updates and install kernel module creation packages :
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install gcc make perl
+6) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
+7) Reboot the VM
+8) Download and install VirtualBox guest additions
+9) Shut down the VM
+10) Configure the VM in VirualBox (especially 3D acceleration, processors and memory)
+
+
 
 Subcommands
 ===========
