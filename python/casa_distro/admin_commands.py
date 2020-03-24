@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+import datetime
 from getpass import getpass
+import glob
+import json
+import os
+import os.path as osp
+from subprocess import check_call
 import sys
 import tempfile
-import os.path as osp
-import glob
-import os
-from subprocess import check_call
 
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
@@ -374,6 +376,18 @@ def vbox_create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
 
     image_name = image_name.format(iso=osp.splitext(osp.basename(iso))[0])
     output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name)
+
+
+    metadata_output = output + '.json'
+    print('Create metadata in', metadata_output)
+    metadata = {
+        'image_name': image_name,
+        'creation_time': datetime.datetime.now().isoformat(),
+        'iso': osp.basename(iso),
+        'iso_time': datetime.datetime.fromtimestamp(os.stat(iso).st_mtime).isoformat(),
+    }
+    json.dump(metadata, open(metadata_output, 'w'), indent=4)
+    
     print('Create Linux 64 bits virtual machine')
     check_call(['VBoxManage', 'createvm', 
                 '--name', image_name, 
@@ -411,6 +425,21 @@ def vbox_create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
     ## VBoxManage modifyvm $IMAGE --natpf1 "ssh,tcp,,3022,,22"
     print('Start the new virtual machine')
     check_call(['VBoxManage', 'startvm', image_name])
+
+
+def vbox_publish_system(system='~/casa_distro/casa-ubuntu-*.vdi'):
+    '''Upload an image on brainvisa.info web site'''
+    
+    if not osp.exists(system):
+        systems = glob.glob(osp.expandvars(osp.expanduser(system)))
+        if len(systems) == 0:
+            # Raise appropriate error for non existing file
+            open(system)
+        elif len(systems) > 1:
+            raise ValueError('Several system files found : {0}'.format(', '.join(systems)))
+        system = systems[0]
+    raise NotImplementedError()
+
 
 @command
 def vbox_create_run(system='~/casa_distro/casa-ubuntu-*.vdi',
