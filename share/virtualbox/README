@@ -4,12 +4,21 @@ I - Introduction
 
 To create a VirtualBox image for BrainVISA, VirtualBox with at least version 6 must be installed.
 
-We need a kind of minimal desktop image to start with. The next chapter of this document explain how to create such a base system from scratch. Then, the following chapter explain how to install BrainVISA starting from this base system.
+To start the custom installation and building process, we need a system base image which is a minimal desktop image, updated at the time of its creation and with a configured brainvisa account as well as VirtualBox guest additions installed. The next chapter of this document explain how to create such a base system from scratch. Then, the following chapter explain how to install BrainVISA starting from this base system.
 
-======================================
-II - How to create a base system image
-======================================
+===========================================
+II - How to create a base casa system image
+===========================================
 
+The base casa system image is a minimal configuration of a system image downloaded from internet as an *.iso file. It serves as starting point for the building of user images and developer images. The BrainVISA team will support only two base system images at one time :
+
+  1) The release image that is used whenever a stable distribution is created.
+  2) The release candidate image that is used to build unstable distributions that are not supported and must be used only for testing purpose.
+
+The base casa system image is part of the casa release plan. Whenever a release is done, it is decided if the release candidate image becomes the new release image. If yes, the release candidate image replaces the release image and the previous release image may be destroyed.
+
+
+officially published at the time of a casa release. Whene
 In this chapter we will use Ubuntu 18.04 as a base system in VirtualBox but it can be easily adapted to another system.
 
 1) Install VirtualBox
