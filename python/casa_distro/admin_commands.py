@@ -7,6 +7,7 @@ import tempfile
 import os.path as osp
 import glob
 import os
+from subprocess import check_call
 
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
@@ -85,8 +86,7 @@ def publish_casa_distro(build_workflows_repository=default_build_workflow_reposi
                         repository_server_directory=default_repository_server_directory,
                         login=default_repository_login, verbose=None):
     '''Publish casa_distro.zip file previously created with package_casa_distro to the sftp server'''
-    from subprocess import check_call
-    
+
     verbose = log.getLogFile(verbose)
     
     lftp_script = tempfile.NamedTemporaryFile()
@@ -259,7 +259,6 @@ def publish_singularity(image_names = 'cati/*',
                         repository_server_directory=default_repository_server_directory,
                         login=default_repository_login, verbose=None):
     '''Publish singularity images to the sftp server'''
-    from subprocess import check_call
     verbose = log.getLogFile(verbose)
     
     image_name_filters = [i.replace('/', '_').replace(':', '_') for i in image_names.split(',')]
@@ -331,7 +330,6 @@ def publish_build_workflows(distro='*', branch='*', system='*',
                             login=default_repository_login, verbose=None):
     '''Upload a build workflow to sftp server (require lftp command to be installed).'''
     
-    from subprocess import check_call
     from casa_distro import iter_build_workflow
     
     verbose = log.getLogFile(verbose)
@@ -359,3 +357,107 @@ def publish_build_workflows(distro='*', branch='*', system='*',
         print('-'*40, file=verbose)
     check_call(cmd)
 
+
+@command
+def vbox_create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
+                       output='~/casa_distro/{image_name}.vdi'):
+    '''First step for the creation of base system VirtualBox image'''
+    
+    if not osp.exists(iso):
+        isos = glob.glob(osp.expandvars(osp.expanduser(iso)))
+        if len(isos) == 0:
+            # Raise appropriate error for non existing file
+            open(iso)
+        elif len(isos) > 1:
+            raise ValueError('Several iso files found : {0}'.format(', '.join(isos)))
+        iso = isos[0]
+
+    image_name = image_name.format(iso=osp.splitext(osp.basename(iso))[0])
+    output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name)
+    print('Create Linux 64 bits virtual machine')
+    check_call(['VBoxManage', 'createvm', 
+                '--name', image_name, 
+                '--ostype', 'Ubuntu_64',
+                '--register'])
+    print('Set memory to 8 GiB and allow booting on DVD')
+    check_call(['VBoxManage', 'modifyvm', image_name,
+                '--memory', '8192',
+                '--vram', '64',
+                '--boot1', 'dvd',
+                '--nic1', 'nat'])
+    print('Create a 128 GiB system disk in', output)
+    check_call(['VBoxManage', 'createmedium',
+                '--filename', output,
+                '--size', '131072',
+                '--format', 'VDI',
+                '--variant', 'Standard'])
+    print('Create a SATA controller in the VM')
+    check_call(['VBoxManage', 'storagectl', image_name,
+                '--name', '%s_SATA' % image_name,
+                '--add', 'sata'])
+    print('Attach the system disk to the machine')
+    check_call(['VBoxManage', 'storageattach', image_name,
+                '--storagectl', '%s_SATA' % image_name,
+                '--medium', output,
+                '--port', '1',
+                '--type', 'hdd'])
+    print('Attach', iso, 'to the DVD')
+    check_call(['VBoxManage', 'storageattach', image_name,
+                '--storagectl', '%s_SATA' % image_name,
+                '--port', '0',
+                '--type', 'dvddrive',
+                '--medium', iso])
+    ## Forward VM port 22 (ssh) to host port 3022
+    ## VBoxManage modifyvm $IMAGE --natpf1 "ssh,tcp,,3022,,22"
+    print('Start the new virtual machine')
+    check_call(['VBoxManage', 'startvm', image_name])
+
+@command
+def vbox_create_run(system='~/casa_distro/casa-ubuntu-*.vdi',
+                    output='~/casa_distro/casa-run.vdi'):
+    '''Creation of a run VirtualBox image'''
+    
+    if not osp.exists(system):
+        systems = glob.glob(osp.expandvars(osp.expanduser(system)))
+        if len(systems) == 0:
+            # Raise appropriate error for non existing file
+            open(system)
+        elif len(systems) > 1:
+            raise ValueError('Several system files found : {0}'.format(', '.join(systems)))
+        system = systems[0]
+    output = osp.expandvars(osp.expanduser(output))
+    
+    image_name = osp.splitext(osp.basename(output))[0]
+    print('Create Linux 64 bits virtual machine')
+    check_call(['VBoxManage', 'createvm', 
+                '--name', image_name, 
+                '--ostype', 'Ubuntu_64',
+                '--register'])
+    print('Set memory to 8 GiB and allow booting on DVD')
+    check_call(['VBoxManage', 'modifyvm', image_name,
+                '--memory', '8192',
+                '--vram', '64',
+                '--boot1', 'dvd',
+                '--nic1', 'nat'])
+    print('Create a 128 GiB system disk in', output)
+    check_call(['VBoxManage', 'createmedium',
+                '--filename', output,
+                '--size', '131072',
+                '--format', 'VDI',
+                '--variant', 'Standard'])
+    print('Copy system disk to', output)
+    check_call(['VBoxManage', 'clonemedium', 'disk',
+                system, output, '--existing'])
+    print('Create a SATA controller in the VM')
+    check_call(['VBoxManage', 'storagectl', image_name,
+                '--name', '%s_SATA' % image_name,
+                '--add', 'sata'])
+    print('Attach the system disk to the machine')
+    check_call(['VBoxManage', 'storageattach', image_name,
+                '--storagectl', '%s_SATA' % image_name,
+                '--medium', output,
+                '--port', '1',
+                '--type', 'hdd'])
+    print('Start the new virtual machine')
+    check_call(['VBoxManage', 'startvm', image_name])
+    
