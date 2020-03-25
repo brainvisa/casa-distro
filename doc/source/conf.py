@@ -260,49 +260,5 @@ extlinks = {
                  'brainvisa cmake '),
 }
 
-# Hack to build casa_distro.zip
-out_dir = sys.argv[-1]
-import subprocess
 
-def find_executable(name, path=None):
-    # Ugly hack to allow find_executable to search other files than .exe files 
-    # on windows platform
-    import distutils.spawn
-    
-    pf = sys.platform
-    sys.platform = ''
-    found_cmd = distutils.spawn.find_executable(name, path=path)
-    sys.platform = pf
-    
-    return found_cmd
 
-#out_dir = os.path.normpath(os.path.abspath(out_dir))
-casa_distro_cmd = find_executable('casa_distro_admin')
-if not casa_distro_cmd:
-    d = os.path.dirname
-    casa_distro_cmd = os.path.join(
-        d(d(d(__file__))),
-        'bin', 'casa_distro_admin')
-    del d
-#print('casa distro command', casa_distro_cmd)
-# print('command', ' '.join(['python', casa_distro_cmd, '-r', out_dir, 'package_casa_distro']))
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
-subprocess.call(['python', casa_distro_cmd, 
-                 '-r', out_dir, 
-                 'package_casa_distro'])
-zipfile = os.path.join(out_dir,
-                       'casa-distro-%d.%d.%d.zip'
-                       % (release_info['version_major'],
-                          release_info['version_minor'],
-                          release_info['version_micro']))
-ziplink = os.path.join(out_dir, 'casa-distro.zip')
-#print('zip file', zipfile)
-#print('zip link', ziplink)
-
-if os.path.exists(ziplink) or os.path.islink(ziplink):
-    os.unlink(ziplink)
-if not platform.system().lower().startswith('win'):
-    os.symlink(os.path.basename(zipfile), ziplink)
-else:
-    shutil.copy(zipfile, ziplink)
