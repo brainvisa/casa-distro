@@ -20,6 +20,9 @@ set -x  # display commands before running them
 PIP2="sudo python2 -m pip --no-cache-dir"
 $PIP2 install -U pip
 
+# APT only ships six 1.11.0 under Ubuntu 18.04
+$PIP2 install 'six~=1.13'
+
 # Runtime dependencies of populse-db
 $PIP2 install 'lark-parser>=0.7'
 

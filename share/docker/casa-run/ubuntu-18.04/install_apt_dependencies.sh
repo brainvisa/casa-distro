@@ -78,7 +78,7 @@ $APT_GET_INSTALL python-mysqldb
 $APT_GET_INSTALL python-paramiko
 $APT_GET_INSTALL python-requests
 $APT_GET_INSTALL python-setuptools
-$APT_GET_INSTALL python-six
+# $APT_GET_INSTALL python-six  # Ubuntu 18.04 ships 1.11.0, we need >= 1.13
 $APT_GET_INSTALL python-sqlalchemy
 $APT_GET_INSTALL python-traits
 $APT_GET_INSTALL python-xmltodict

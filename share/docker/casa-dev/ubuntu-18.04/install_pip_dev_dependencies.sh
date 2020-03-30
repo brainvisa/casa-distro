@@ -22,6 +22,9 @@ set -x  # display commands before running them
 PIP3="sudo python3 -m pip --no-cache-dir"
 $PIP3 install -U pip
 
+# APT only ships six 1.11.0 under Ubuntu 18.04
+$PIP3 install 'six~=1.13'
+
 # Python 3 packages that do not exist as APT packages
 $PIP3 install dipy
 $PIP3 install nipype
