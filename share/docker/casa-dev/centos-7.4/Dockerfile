@@ -190,13 +190,13 @@ RUN pip install jupyter
 RUN pip install -U zmq
 RUN pip install -U 'scipy<1.3'
 #RUN pip install -U docutils
-RUN pip install -U nbsphinx
+RUN pip install -U 'nbsphinx<0.5'
 RUN pip install -U traits
 RUN pip install -U dicom
 RUN pip install -U pydicom
 RUN pip install -U pyro
 # sphinx 1.7 has bugs
-RUN pip install -U "sphinx>=1.8"
+RUN pip install -U "sphinx==1.8.5"
 RUN pip install "sphinx-gallery<0.4"
 RUN pip install jupyter_client
 RUN pip install 'matplotlib<3.1'
@@ -299,9 +299,14 @@ RUN git clone https://github.com/brainvisa/brainvisa-cmake.git $CASA_SRC/develop
     cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/master && \
     make install && cd .. && rm -r /tmp/brainvisa-cmake
 
+# Add symbolic link for development purpose in /usr/local/lib64. 
+# It fixes linker issues for developments that need the libGL library
+RUN /usr/bin/ln -s /usr/local/lib/libGL.so.1 /usr/local/lib64/libGL.so
+
 # Set casa environement variables initialization
 RUN echo -e \
 'export PATH=${PATH}:/casa/brainvisa-cmake/bin\n'\
+'export LIBRARY_PATH=/usr/local/lib:${LIBRARY_PATH}\n'\
 'if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then\n'\
 '    . ${CASA_BUILD}/bin/bv_env.sh ${CASA_BUILD}\n'\
 'fi' > /usr/local/bin/init-casa-env
