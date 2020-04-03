@@ -14,9 +14,13 @@ The base VirtualBox image is a minimal configuration of a system image downloade
 3) Run `casa_distro create_virtualbox` to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)
 4) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
 5) Perform system updates and install kernel module creation packages :
+
+.. code::
+
     sudo apt update
     sudo apt upgrade
     sudo apt install gcc make perl
+
 6) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
 7) Reboot the VM
 8) Download and install VirtualBox guest additions
