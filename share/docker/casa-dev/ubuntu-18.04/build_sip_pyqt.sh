@@ -95,6 +95,7 @@ if [ -n "$PYQT_WEBENGINE" ]; then
     ${SUDO} make install
 
     make clean
+    export PYTHONPATH="$PREFIX/lib/python${PY3_S}/dist-packages:$PYTHONPATH"
     python3 configure.py --sip-incdir="$PREFIX/include/python$PY3" -d "$PREFIX/lib/python${PY3_S}/dist-packages/PyQt5" --sip="$PREFIX/bin/sip" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" -a "$PREFIX/share/pyqt5/data/qsci" --pyqt-sipdir="$PREFIX/share/sip/PyQt5"
     make -j$NCPU
     ${SUDO} make install
