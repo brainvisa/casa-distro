@@ -455,6 +455,7 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitg
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitk
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y spyder
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y curl
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-crypto
 
 # add repository for git-lfs
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | $SUDO bash
