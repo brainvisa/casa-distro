@@ -11,7 +11,7 @@ The base VirtualBox image is a minimal configuration of a system image downloade
 
 1) Install VirtualBox version 6 or greater
 2) Download an Ubuntu iso file from internet (any Debain based distro may work but only recent Ubuntu LTS are tested).
-3) Run `casa_distro create_virtualbox` to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)
+3) Run `casa_distro_admin create_system` to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)
 4) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
 5) Perform system updates and install kernel module creation packages :
 

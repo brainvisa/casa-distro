@@ -241,9 +241,9 @@ def create_build_workflow_directory(build_workflow_directory,
         Name of the distro that will be created. If omited, the name
         of the distro source (or distro source directory) is used.
     container_type: type of container thechnology to use. It can be either 
-        'singularity', 'docker' or None (the default). If it is None,
-        it first try to see if Singularity is installed or try to see if
-        Docker is installed.
+        'singularity', 'vbox', 'docker' or None (the default). If it is None,
+        it tries to see if Singularity, VirtualBox or Docker is 
+        installed (in that order).
     container_image: image to use for the compilation container. If no
         value is given, uses the one defined in the distro. The name
         of the image can contain the following substring are replaced:
@@ -285,11 +285,14 @@ def create_build_workflow_directory(build_workflow_directory,
     if not container_type:
         if find_in_path('singularity'):
             container_type = 'singularity'
+        if find_in_path('VBoxManage'):
+            container_type = 'vbox'
         elif find_in_path('docker'):
             container_type = 'docker'
         else:
             raise ValueError('Cannot guess container_type according to '
-                             'Singularity or Docker command research')
+                             'Singularity, VirtualBox or Docker command '
+                             'research')
     
     if casa_branch not in ('bug_fix', 'trunk', 'latest_release',
                            'release_candidate'):
@@ -403,7 +406,9 @@ def create_build_workflow_directory(build_workflow_directory,
         container_gui_env = {'DISPLAY': '${DISPLAY}',
                              'XAUTHORITY': '${HOME}/.Xauthority'}
         casa_distro['container_gui_env'] = container_gui_env
-        
+    elif container_type == 'vbox':
+        # Nothing to set for VirtualBox
+        pass
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
     if container_options:

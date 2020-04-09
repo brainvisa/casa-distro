@@ -8,8 +8,8 @@ import json
 import os
 import os.path as osp
 from subprocess import check_call
-import sys
 import tempfile
+import sys
 
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
@@ -22,96 +22,15 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_login)
 from casa_distro.defaults import default_download_url
 
+from casa_distro.vbox import vbox_create_system
+from casa_distro.hash import file_hash
+
 try:
     # Try Python 3 only import
     from urllib.request import urlretrieve
 except ImportError:
     from urllib import urlretrieve
 
-
-@command
-def package_casa_distro(build_workflows_repository=default_build_workflow_repository):
-    '''Create a casa_distro.zip containing a usable version of casa_distro'''
-    import casa_distro
-    import brainvisa.maker
-    import tempfile
-    import shutil
-    import zipfile
-    import os
-    import os.path as osp
-    from fnmatch import fnmatch
-    
-    dirs = {
-        osp.dirname(casa_distro.__file__): ('casa_distro', '*.py'),
-        osp.dirname(brainvisa.maker.__file__): ('brainvisa/maker', '*.py'),
-        osp.join(casa_distro.share_directory, 'distro'): ('share/distro', None),
-    }
-    tmp = tempfile.mkdtemp()
-    try:
-        # Copy files in temporary directory
-        os.mkdir(osp.join(tmp,'brainvisa'))
-        with open(osp.join(tmp, 'brainvisa', '__init__.py'), 'w'):
-            pass  # create an empty file
-        shutil.copy(osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'bin','casa_distro'), osp.join(tmp, '__main__.py'))
-        for srcdir, dstdir_filter in dirs.items():
-            dstdir, filter = dstdir_filter
-            os.makedirs(osp.join(tmp, dstdir))
-            len_srcdir = len(srcdir) + 1
-            for dirpath, dirnames, filenames in os.walk(srcdir):
-                zipdir = osp.join(dstdir, dirpath[len_srcdir:])
-                for i in dirnames:
-                    os.mkdir(osp.join(tmp, zipdir, i))
-                for i in filenames:
-                    if not filter or fnmatch(i, filter):
-                        shutil.copy(osp.join(dirpath, i), osp.join(tmp, zipdir, i))
-        
-        # Replace import six in brainvisa_projects.py
-        brainvisa_projects = osp.join(tmp, 'brainvisa', 'maker', 'brainvisa_projects.py')
-        with open(brainvisa_projects) as f:
-            content = f.read().replace('import six', 'from casa_distro import six')
-        with open(brainvisa_projects, 'w') as f:
-            f.write(content)
-        
-        # Create zip archive of temporary directory
-        with zipfile.ZipFile(osp.join(build_workflows_repository, 'casa-distro-%s.zip' % casa_distro_version), mode='w') as zip:
-            len_tmp = len(tmp)+1
-            for dirpath, dirnames, filenames in os.walk(tmp):
-                zipdir = dirpath[len_tmp:]
-                for i in filenames:
-                    f = zip.write(osp.join(dirpath,i), osp.join(zipdir,i))
-    finally:
-        shutil.rmtree(tmp)
-
-@command
-def publish_casa_distro(build_workflows_repository=default_build_workflow_repository, 
-                        repository_server=default_repository_server, 
-                        repository_server_directory=default_repository_server_directory,
-                        login=default_repository_login, verbose=None):
-    '''Publish casa_distro.zip file previously created with package_casa_distro to the sftp server'''
-
-    verbose = log.getLogFile(verbose)
-    
-    lftp_script = tempfile.NamedTemporaryFile()
-    if login:
-        remote = 'sftp://%s@%s' % (login, repository_server)
-    else:
-        remote = 'sftp://%s' % repository_server
-    print('connect', remote, file=lftp_script)
-    print('cd', repository_server_directory, file=lftp_script)
-            
-    print('put %s/casa-distro-%s.zip' % (build_workflows_repository, casa_distro_version), file=lftp_script)
-    print('rm -f casa-distro.zip', file=lftp_script)
-    print('ln -s casa-distro-%s.zip casa-distro.zip' % casa_distro_version, file=lftp_script)
-    lftp_script.flush()
-    cmd = ['lftp', '-f', lftp_script.name]
-    if verbose:
-        print('Running', *cmd, file=verbose)
-        print('-' * 10, lftp_script.name, '-'*10, file=verbose)
-        with open(lftp_script.name) as f:
-            print(f.read(), file=verbose)
-        print('-'*40, file=verbose)
-    check_call(cmd)
-    
 
 @command
 def create_release_plan(components=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
@@ -361,9 +280,13 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 
 
 @command
-def vbox_create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
-                       output='~/casa_distro/{image_name}.vdi'):
+def create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
+                  output='~/casa_distro/{image_name}.vdi',
+                  container_type='vbox'):
     '''First step for the creation of base system VirtualBox image'''
+    
+    if container_type != 'vbox':
+        raise ValueError('Only "vbox" container type requires to create a system image')
     
     if not osp.exists(iso):
         isos = glob.glob(osp.expandvars(osp.expanduser(iso)))
@@ -382,53 +305,42 @@ def vbox_create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
     print('Create metadata in', metadata_output)
     metadata = {
         'image_name': image_name,
+        'container_type': 'vbox',
         'creation_time': datetime.datetime.now().isoformat(),
         'iso': osp.basename(iso),
         'iso_time': datetime.datetime.fromtimestamp(os.stat(iso).st_mtime).isoformat(),
     }
     json.dump(metadata, open(metadata_output, 'w'), indent=4)
     
-    print('Create Linux 64 bits virtual machine')
-    check_call(['VBoxManage', 'createvm', 
-                '--name', image_name, 
-                '--ostype', 'Ubuntu_64',
-                '--register'])
-    print('Set memory to 8 GiB and allow booting on DVD')
-    check_call(['VBoxManage', 'modifyvm', image_name,
-                '--memory', '8192',
-                '--vram', '64',
-                '--boot1', 'dvd',
-                '--nic1', 'nat'])
-    print('Create a 128 GiB system disk in', output)
-    check_call(['VBoxManage', 'createmedium',
-                '--filename', output,
-                '--size', '131072',
-                '--format', 'VDI',
-                '--variant', 'Standard'])
-    print('Create a SATA controller in the VM')
-    check_call(['VBoxManage', 'storagectl', image_name,
-                '--name', '%s_SATA' % image_name,
-                '--add', 'sata'])
-    print('Attach the system disk to the machine')
-    check_call(['VBoxManage', 'storageattach', image_name,
-                '--storagectl', '%s_SATA' % image_name,
-                '--medium', output,
-                '--port', '1',
-                '--type', 'hdd'])
-    print('Attach', iso, 'to the DVD')
-    check_call(['VBoxManage', 'storageattach', image_name,
-                '--storagectl', '%s_SATA' % image_name,
-                '--port', '0',
-                '--type', 'dvddrive',
-                '--medium', iso])
-    ## Forward VM port 22 (ssh) to host port 3022
-    ## VBoxManage modifyvm $IMAGE --natpf1 "ssh,tcp,,3022,,22"
-    print('Start the new virtual machine')
-    check_call(['VBoxManage', 'startvm', image_name])
+    vbox_create_system(image_name=image_name, 
+                       iso=iso,
+                       output=output,
+                       verbose=sys.stdout)
+    
+    print('''4) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
+5) Perform system updates and install kernel module creation packages :
+
+.. code::
+
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install gcc make perl
+
+6) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
+7) Reboot the VM
+8) Download and install VirtualBox guest additions
+9) Shut down the VM
+10) Configure the VM in VirualBox (especially 3D acceleration, processors and memory)
+''')
+    
 
 
-def vbox_publish_system(system='~/casa_distro/casa-ubuntu-*.vdi'):
-    '''Upload an image on brainvisa.info web site'''
+def publish_system(system='~/casa_distro/casa-ubuntu-*.vdi',
+                   container_type='vbox'):
+    '''Upload a system image on brainvisa.info web site'''
+    
+    if container_type != 'vbox':
+        raise ValueError('Only "vbox" container type requires to create a system image')
     
     if not osp.exists(system):
         systems = glob.glob(osp.expandvars(osp.expanduser(system)))
@@ -438,6 +350,13 @@ def vbox_publish_system(system='~/casa_distro/casa-ubuntu-*.vdi'):
         elif len(systems) > 1:
             raise ValueError('Several system files found : {0}'.format(', '.join(systems)))
         system = systems[0]
+    
+    # Add system file md5 hash to JSON metadata file
+    metadata_file = system + '.json'
+    metadata = json.load(open(metadata_file))
+    metadata['md5'] = file_hash(system)
+    json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    
     raise NotImplementedError()
 
 
