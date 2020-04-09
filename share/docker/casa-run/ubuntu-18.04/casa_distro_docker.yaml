@@ -1,7 +1,5 @@
-dependencies:
-    - ../../casa-run
 image_sources:
-  - name: casa-dev
+  - name: casa-run
     tags:
       - ubuntu-18.04
     visibility: public
