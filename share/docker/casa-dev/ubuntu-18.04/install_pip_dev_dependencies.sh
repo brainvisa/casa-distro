@@ -41,11 +41,3 @@ $PIP3 install tox
 # with the Python 3 version).
 PIP2="sudo python2 -m pip --no-cache-dir"
 $PIP2 install -U --force-reinstall pip
-
-
-# TODO: check if this fix is still needed
-#
-# this one needs reinstalling in pip since the whole module backports has
-# changed location... pip is a mess, I tell you...
-$PIP3 install -U backports.functools_lru_cache
-$PIP2 install -U backports.functools_lru_cache
