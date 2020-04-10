@@ -87,7 +87,7 @@ sudo cp -f /tmp/Qt5CoreConfigExtras.cmake /usr/lib/x86_64-linux-gnu/cmake/Qt5Cor
 
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
 # and virtual C++ inheritance
-PY=2.7 PY_S=2.7 /tmp/build_sip_pyqt.sh
+PY=2.7 PY_S=2.7 sh /tmp/build_sip_pyqt.sh
 
 
 ###############################################################################
