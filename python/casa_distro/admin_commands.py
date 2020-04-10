@@ -22,7 +22,9 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_login)
 from casa_distro.defaults import default_download_url
 
-from casa_distro.vbox import vbox_create_system
+from casa_distro.vbox import (vbox_create_system,
+                              vbox_create_casa_dev)
+
 from casa_distro.hash import file_hash
 
 try:
@@ -317,20 +319,32 @@ def create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
                        output=output,
                        verbose=sys.stdout)
     
-    print('''4) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
-5) Perform system updates and install kernel module creation packages :
+    print('''VirtualBox machine created. Now, perform the following steps:
+    1) Perform Ubuntu minimal installation with an autologin account named 
+       "brainvisa" and with password "brainvisa"
+    
+    2) Perform system updates and install packages required for kernel 
+       module creation :
+            
+            sudo apt update
+            sudo apt upgrade
+            sudo apt install gcc make perl
 
-.. code::
+    3) Disable automatic software update in "Update" tab of Software & Updates
+       properties. Otherwise installation may fail because installation
+       database is locked.
 
-    sudo apt update
-    sudo apt upgrade
-    sudo apt install gcc make perl
+    4) Set root password to "brainvisa" (this is necessary to automatically
+       connect to the VM to perform post-install)
+    
+    5) Reboot the VM
 
-6) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
-7) Reboot the VM
-8) Download and install VirtualBox guest additions
-9) Shut down the VM
-10) Configure the VM in VirualBox (especially 3D acceleration, processors and memory)
+    6) Download and install VirtualBox guest additions
+
+    7) Shut down the VM
+
+    8) Configure the VM in VirualBox (especially 3D acceleration, processors
+       and memory)
 ''')
     
 
@@ -358,54 +372,3 @@ def publish_system(system='~/casa_distro/casa-ubuntu-*.vdi',
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
     raise NotImplementedError()
-
-
-@command
-def vbox_create_run(system='~/casa_distro/casa-ubuntu-*.vdi',
-                    output='~/casa_distro/casa-run.vdi'):
-    '''Creation of a run VirtualBox image'''
-    
-    if not osp.exists(system):
-        systems = glob.glob(osp.expandvars(osp.expanduser(system)))
-        if len(systems) == 0:
-            # Raise appropriate error for non existing file
-            open(system)
-        elif len(systems) > 1:
-            raise ValueError('Several system files found : {0}'.format(', '.join(systems)))
-        system = systems[0]
-    output = osp.expandvars(osp.expanduser(output))
-    
-    image_name = osp.splitext(osp.basename(output))[0]
-    print('Create Linux 64 bits virtual machine')
-    check_call(['VBoxManage', 'createvm', 
-                '--name', image_name, 
-                '--ostype', 'Ubuntu_64',
-                '--register'])
-    print('Set memory to 8 GiB and allow booting on DVD')
-    check_call(['VBoxManage', 'modifyvm', image_name,
-                '--memory', '8192',
-                '--vram', '64',
-                '--boot1', 'dvd',
-                '--nic1', 'nat'])
-    print('Create a 128 GiB system disk in', output)
-    check_call(['VBoxManage', 'createmedium',
-                '--filename', output,
-                '--size', '131072',
-                '--format', 'VDI',
-                '--variant', 'Standard'])
-    print('Copy system disk to', output)
-    check_call(['VBoxManage', 'clonemedium', 'disk',
-                system, output, '--existing'])
-    print('Create a SATA controller in the VM')
-    check_call(['VBoxManage', 'storagectl', image_name,
-                '--name', '%s_SATA' % image_name,
-                '--add', 'sata'])
-    print('Attach the system disk to the machine')
-    check_call(['VBoxManage', 'storageattach', image_name,
-                '--storagectl', '%s_SATA' % image_name,
-                '--medium', output,
-                '--port', '1',
-                '--type', 'hdd'])
-    print('Start the new virtual machine')
-    check_call(['VBoxManage', 'startvm', image_name])
-    
