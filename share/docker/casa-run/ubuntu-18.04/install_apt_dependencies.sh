@@ -14,10 +14,10 @@ set -x  # display commands before running them
 
 if [ $(id -u) -eq 0 ]; then
     SUDO=
-    APT_GET='apt-get -o Acquire::Retries=3'
+    APT_GET='DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3'
 else
     SUDO=sudo
-    APT_GET="sudo apt-get -o Acquire::Retries=3"
+    APT_GET="DEBIAN_FRONTEND=noninteractive sudo apt-get -o Acquire::Retries=3"
 fi
 
 ###############################################################################
