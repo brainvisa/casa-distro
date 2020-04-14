@@ -105,7 +105,7 @@ class VBoxMachine:
     def start(self):
         subprocess.check_call(['VBoxManage', 'startvm', self.vm])
 
-    def start_and_wait(self, wait=5, attempts=10, verbose=None):
+    def start_and_wait(self, wait=5, attempts=20, verbose=None):
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
@@ -184,24 +184,25 @@ class VBoxMachine:
         self.copy_root(osp.join(casa_run_docker, 'entrypoint'),
                                 '/usr/local/bin/')
         self.run_root('chmod a+rx /usr/local/bin/entrypoint')
+        self.run_root('chmod +x /tmp/*.sh')
 
         if verbose:
             six.print_('Running install_apt_dependencies.sh',
                     file=verbose, flush=True)
-        self.run_root('sh /tmp/install_apt_dependencies.sh')
+        self.run_root('/tmp/install_apt_dependencies.sh')
         if verbose:
             six.print_('Running install_pip_dependencies.sh',
                     file=verbose, flush=True)
-        self.run_root('sh /tmp/install_pip_dependencies.sh')
+        self.run_root('/tmp/install_pip_dependencies.sh')
         if verbose:
             six.print_('Running install_compiled_dependencies.sh',
                     file=verbose, flush=True)
-        self.run_root('sh /tmp/install_compiled_dependencies.sh')
+        self.run_root('/tmp/install_compiled_dependencies.sh')
 
         if verbose:
             six.print_('Running cleanup_build_dependencies.sh',
                     file=verbose, flush=True)
-        self.run_root('sh /tmp/cleanup_build_dependencies.sh')
+        self.run_root('/tmp/cleanup_build_dependencies.sh')
 
 
         if verbose:
@@ -216,7 +217,76 @@ class VBoxMachine:
                     '/tmp/build_sip_pyqt.sh '
                     '/tmp/cleanup_build_dependencies.sh')
 
-def vbox_clone_system(system_image, vbox_machine, output,
+
+    def install_dev(self, system='ubuntu-18.04', verbose=None):
+        """
+        Install dependencies of casa-dev image
+        See file share/docker/casa-dev/{system}/Dockerfile
+        """
+        
+        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'share')
+        casa_dev_docker = osp.join(share_dir, 'docker', 'casa-dev', system)
+        
+        self.start_and_wait(verbose=verbose)
+        self.run_root('if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
+
+        if verbose:
+            six.print_('Copying files in', self.vm,
+                       file=verbose, flush=True)
+        for f in ('install_apt_dev_dependencies.sh',
+                  'install_pip_dev_dependencies.sh',
+                  'install_compiled_dev_dependencies.sh',
+                  'build_sip_pyqt.sh',
+                  'install_casa_dev_components.sh'):
+            self.copy_root(osp.realpath(osp.join(casa_dev_docker, f)), '/tmp')
+        self.run_root('chmod +x /tmp/*.sh')
+
+        self.copy_user(osp.join(casa_dev_docker, 'environment.sh'),
+                       '/casa')
+        self.run_user('chmod a+rx /casa/environment.sh')
+
+        self.copy_user(osp.realpath(osp.join(casa_dev_docker, 'svn.secret')),
+                       '/casa/conf')
+        self.copy_root(osp.realpath(osp.join(casa_dev_docker, 'svn')),
+                       '/usr/local/bin')
+        self.run_root('chmod a+rx /usr/local/bin/svn')
+        self.copy_root(osp.realpath(osp.join(casa_dev_docker, 'askpass-bioproj.sh')),
+                       '/usr/local/bin')
+        self.run_root('chmod a+rx /usr/local/bin/askpass-bioproj.sh')
+
+        self.copy_user(osp.realpath(osp.join(casa_dev_docker, 'list-shared-libs-paths.sh')),
+                       '/casa/')
+        self.run_user('chmod a+rx /casa/list-shared-libs-paths.sh')
+
+        if verbose:
+            six.print_('Running install_apt_dev_dependencies.sh',
+                    file=verbose, flush=True)
+        self.run_root('/tmp/install_apt_dev_dependencies.sh')
+        if verbose:
+            six.print_('Running install_pip_dev_dependencies.sh',
+                    file=verbose, flush=True)
+        self.run_root('/tmp/install_pip_dev_dependencies.sh')
+        if verbose:
+            six.print_('Running install_compiled_dev_dependencies.sh',
+                    file=verbose, flush=True)
+        self.run_root('/tmp/install_compiled_dev_dependencies.sh')
+
+        if verbose:
+            six.print_('Running install_casa_dev_components.sh',
+                    file=verbose, flush=True)
+        self.run_root('/tmp/install_casa_dev_components.sh')
+
+
+        if verbose:
+            six.print_('Cleanup files in', self.vm,
+                    file=verbose, flush=True)
+        self.run_root('rm -f /casa/install_apt_dev_dependencies.sh '
+                      '/casa/build_sip_pyqt.sh '
+                      '/casa/install_pip_dev_dependencies.sh '
+                      '/casa/install_compiled_dev_dependencies.sh '
+                      '/casa/install_casa_dev_components.sh')
+
+def vbox_import_image(system_image, vbox_machine, output,
                       verbose=None,
                       memory='8192',
                       disk_size='131072'):
@@ -265,13 +335,14 @@ def vbox_clone_system(system_image, vbox_machine, output,
 
 
 def vbox_create_casa_run(system_image, vbox_machine, output,
+        
                          verbose=None,
                          memory='8192',
                          disk_size='131072'):
-    vbox_clone_system(system_image, vbox_machine, output,
-                      verbose=verbose,
-                      memory=memory,
-                      disk_size=disk_size)
+    #vbox_clone_system(system_image, vbox_machine, output,
+                      #verbose=verbose,
+                      #memory=memory,
+                      #disk_size=disk_size)
     vbox = VBoxMachine(vbox_machine)
     vbox.install_run()
 
@@ -281,6 +352,6 @@ if __name__ == '__main__':
     
     
     vbox_create_casa_run(system_image='/home/yc176684/casa_distro/casa-ubuntu-18.04.4-desktop-amd64.vdi',
-                         vbox_machine='casa-dev',
-                         output='/home/yc176684/casa_distro/casa-dev.vdi',
+                         vbox_machine='casa-run',
+                         output='/home/yc176684/casa_distro/casa-run.vdi',
                          verbose=sys.stdout)

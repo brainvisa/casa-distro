@@ -33,7 +33,7 @@ $PIP3 install jenkinsapi
 # Development tools are most useful if installed in a recent version by pip,
 # even if they are available as APT packages
 $PIP3 install modernize
-$PIP3 install pre-commit
+$PIP3 install --ignore-installed PyYAML pre-commit
 $PIP3 install tox
 
 

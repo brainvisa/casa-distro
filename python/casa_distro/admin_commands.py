@@ -23,7 +23,8 @@ from casa_distro.defaults import (default_build_workflow_repository,
 from casa_distro.defaults import default_download_url
 
 from casa_distro.vbox import (vbox_create_system,
-                              vbox_create_casa_dev)
+                              vbox_import_image,
+                              VBoxMachine)
 
 from casa_distro.hash import file_hash
 
@@ -349,6 +350,7 @@ def create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
     
 
 
+@command
 def publish_system(system='~/casa_distro/casa-ubuntu-*.vdi',
                    container_type='vbox'):
     '''Upload a system image on brainvisa.info web site'''
@@ -372,3 +374,85 @@ def publish_system(system='~/casa_distro/casa-ubuntu-*.vdi',
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
     raise NotImplementedError()
+
+
+@command
+def create_casa_run(system_image='~/casa_distro/casa-ubuntu-*.vdi',
+                    vbox_machine='casa-run', 
+                    output='~/casa_distro/{vbox_machine}.vdi',
+                    container_type='vbox',
+                    memory='8192',
+                    disk_size='131072'):
+    '''Create a casa-run image'''
+    
+    if container_type != 'vbox':
+        raise NotImplementedError('Only "vbox" container type is implemented')
+
+    if system_image:
+        if not osp.exists(system_image):
+            systems = glob.glob(osp.expandvars(osp.expanduser(system_image)))
+            if len(systems) == 0:
+                # Raise appropriate error for non existing file
+                open(system_image)
+            elif len(systems) > 1:
+                raise ValueError('Several system images found : {0}'.format(', '.join(systems)))
+            system_image = systems[0]
+        output = osp.expandvars(osp.expanduser(output)).format(vbox_machine=vbox_machine)
+        vbox_import_image(system_image, vbox_machine, output,
+                          verbose=sys.stdout,
+                          memory=memory,
+                          disk_size=disk_size)
+    vbox = VBoxMachine(vbox_machine)
+    vbox.install_run(verbose=sys.stdout)
+
+
+@command
+def create_casa_dev(system_image='~/casa_distro/casa-ubuntu-*.vdi',
+                    casa_run_image='~/casa_distro/casa-run.vdi',
+                    vbox_machine='casa-dev', 
+                    output='~/casa_distro/{vbox_machine}.vdi',
+                    container_type='vbox',
+                    memory='8192',
+                    disk_size='131072'):
+    '''Create a casa-dev image'''
+    
+    if container_type != 'vbox':
+        raise NotImplementedError('Only "vbox" container type is implemented')
+    
+    if system_image:
+        if not osp.exists(system_image):
+            systems = glob.glob(osp.expandvars(osp.expanduser(system_image)))
+            if len(systems) == 0:
+                system_image = ''
+            elif len(systems) > 1:
+                raise ValueError('Several system images found : {0}'.format(', '.join(systems)))
+            system_image = systems[0]
+
+    if casa_run_image:
+        if not osp.exists(casa_run_image):
+            casa_runs = glob.glob(osp.expandvars(osp.expanduser(casa_run_image)))
+            if len(casa_run_image) == 0:
+                casa_run_image = ''
+            elif len(casa_runs) > 1:
+                raise ValueError('Several casa-run images found : '
+                    '{0}'.format(', '.join(systems)))
+            casa_run_image = casa_runs[0]
+
+    if system_image and casa_run_image:
+        raise ValueError('Cannot chose base image between system image (%s) '
+                         'and casa-run image (%s)' % (system_image, 
+                                                      casa_run_image))
+    
+    base_image = system_image or casa_run_image
+    if base_image:
+        output = osp.expandvars(osp.expanduser(output)).format(vbox_machine=vbox_machine)
+        vbox_import_image(base_image, vbox_machine, output,
+                          verbose=sys.stdout,
+                          memory=memory,
+                          disk_size=disk_size)
+    vbox = VBoxMachine(vbox_machine)
+
+    if system_image:
+        vbox.install_run(verbose=sys.stdout)
+
+    vbox.install_dev(verbose=sys.stdout)

@@ -13,6 +13,7 @@ set -e  # stop the script on error
 set -x  # display commands before running them
 
 APT_GET="sudo apt-get"
+export DEBIAN_FRONTEND=noninteractive
 
 ###############################################################################
 # Clean up build dependencies that were required for

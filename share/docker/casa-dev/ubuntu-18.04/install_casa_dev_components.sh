@@ -14,17 +14,17 @@ set -x  # display commands before running them
 ###############################################################################
 
 # create casa directories for singularity compatibility
-mkdir -p $CASA_CONF \
+for d in $CASA_CONF \
          $CASA_SRC \
          $CASA_CUSTOM_SRC \
          $CASA_BUILD \
-         $CASA_CUSTOM_BUILD
+         $CASA_CUSTOM_BUILD; do
+    if [ ! -e $d ]; then
+        mkdir -p $d
+        chmod 777 $d
+    fi
+done
 
-chmod 777 $CASA_CONF \
-          $CASA_SRC \
-          $CASA_CUSTOM_SRC \
-          $CASA_BUILD \
-          $CASA_CUSTOM_BUILD
 
 sudo chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
 sudo git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
