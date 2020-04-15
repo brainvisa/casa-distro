@@ -373,7 +373,7 @@ def publish_system(system='~/casa_distro/casa-ubuntu-*.vdi',
     metadata['md5'] = file_hash(system)
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
-    raise NotImplementedError()
+    check_call(['rsync', '-P',  metadata_file, system, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
 
 
 @command
