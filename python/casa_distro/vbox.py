@@ -101,17 +101,20 @@ class VBoxMachine:
                 result[key] = value
         return result
 
+    def start(self, gui=False):
+        if gui:
+            type = 'gui'
+        else:
+            type = 'headless'
+        subprocess.check_call(['VBoxManage', 'startvm', self.vm, '--type', type])
 
-    def start(self):
-        subprocess.check_call(['VBoxManage', 'startvm', self.vm])
-
-    def start_and_wait(self, wait=5, attempts=20, verbose=None):
+    def start_and_wait(self, wait=5, attempts=20, verbose=None, gui=False):
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
                 six.print_('Starting', self.vm, 'and waiting for it to be ready',
                            file=verbose, flush=True)
-            self.start()
+            self.start(gui=gui)
             command = self._run_user_command('echo')
             for i in range(attempts):
                 time.sleep(wait)
@@ -125,7 +128,6 @@ class VBoxMachine:
     
     def run_user(self, command):
         subprocess.check_call(self._run_user_command(command))
-
 
 
     def run_root(self, command):
@@ -147,8 +149,7 @@ class VBoxMachine:
     def copy_user(self, source_file, dest_dir):
         subprocess.check_call(['VBoxManage', 'guestcontrol', '--username', self.user, '--password', self.user_password, self.vm, 'copyto', '--target-directory', dest_dir, source_file])
 
-
-    def install_run(self, system='ubuntu-18.04', verbose=None):
+    def install_run(self, system='ubuntu-18.04', verbose=None, gui=False):
         """
         Install dependencies of casa-run image
         See file share/docker/casa-run/{system}/Dockerfile
@@ -157,7 +158,7 @@ class VBoxMachine:
         share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'share')
         casa_run_docker = osp.join(share_dir, 'docker', 'casa-run', system)
 
-        self.start_and_wait(verbose=verbose)
+        self.start_and_wait(verbose=verbose, gui=gui)
 
         if verbose:
             six.print_('Creating /casa and', self.tmp_dir, 'in', self.vm,
@@ -217,8 +218,7 @@ class VBoxMachine:
                     '/tmp/build_sip_pyqt.sh '
                     '/tmp/cleanup_build_dependencies.sh')
 
-
-    def install_dev(self, system='ubuntu-18.04', verbose=None):
+    def install_dev(self, system='ubuntu-18.04', verbose=None, gui=False):
         """
         Install dependencies of casa-dev image
         See file share/docker/casa-dev/{system}/Dockerfile
@@ -227,7 +227,7 @@ class VBoxMachine:
         share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'share')
         casa_dev_docker = osp.join(share_dir, 'docker', 'casa-dev', system)
         
-        self.start_and_wait(verbose=verbose)
+        self.start_and_wait(verbose=verbose, gui=gui)
         self.run_root('if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
 
         if verbose:

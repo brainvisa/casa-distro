@@ -7,9 +7,10 @@ import glob
 import json
 import os
 import os.path as osp
+import re
 from subprocess import check_call
-import tempfile
 import sys
+import tempfile
 
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
@@ -34,6 +35,15 @@ try:
 except ImportError:
     from urllib import urlretrieve
 
+
+_true_str = re.compile('^(?:yes|true|y|1)$', re.I)
+_false_str = re.compile('^(?:no|false|n|0|none)$', re.I)
+def str_to_bool(string):
+    if _false_str.match(string):
+        return False
+    if _true_str.match(string):
+        return True
+    raise ValueError('Invalid value for boolean: ' + repr(string))
 
 @command
 def create_release_plan(components=None, build_workflows_repository=default_build_workflow_repository, verbose=None):
@@ -382,7 +392,8 @@ def create_casa_run(system_image='~/casa_distro/casa-ubuntu-*.vdi',
                     output='~/casa_distro/{vbox_machine}.vdi',
                     container_type='vbox',
                     memory='8192',
-                    disk_size='131072'):
+                    disk_size='131072',
+                    gui='no'):
     '''Create a casa-run image'''
     
     if container_type != 'vbox':
@@ -403,7 +414,8 @@ def create_casa_run(system_image='~/casa_distro/casa-ubuntu-*.vdi',
                           memory=memory,
                           disk_size=disk_size)
     vbox = VBoxMachine(vbox_machine)
-    vbox.install_run(verbose=sys.stdout)
+    vbox.install_run(verbose=sys.stdout,
+                     gui=str_to_bool(gui))
 
 
 @command
@@ -413,7 +425,8 @@ def create_casa_dev(system_image='~/casa_distro/casa-ubuntu-*.vdi',
                     output='~/casa_distro/{vbox_machine}.vdi',
                     container_type='vbox',
                     memory='8192',
-                    disk_size='131072'):
+                    disk_size='131072',
+                    gui='no'):
     '''Create a casa-dev image'''
     
     if container_type != 'vbox':
@@ -453,6 +466,8 @@ def create_casa_dev(system_image='~/casa_distro/casa-ubuntu-*.vdi',
     vbox = VBoxMachine(vbox_machine)
 
     if system_image:
-        vbox.install_run(verbose=sys.stdout)
+        vbox.install_run(verbose=sys.stdout,
+                         gui=str_to_bool(gui))
 
-    vbox.install_dev(verbose=sys.stdout)
+    vbox.install_dev(verbose=sys.stdout,
+                     gui=str_to_bool(gui))
