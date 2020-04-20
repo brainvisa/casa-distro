@@ -12,7 +12,8 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
-APT_GET="sudo apt-get"
+# -E option allow to pass environment variables through sudo
+APT_GET="sudo -E apt-get"
 export DEBIAN_FRONTEND=noninteractive
 
 ###############################################################################
