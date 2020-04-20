@@ -2,6 +2,7 @@
 from __future__ import absolute_import, print_function
 
 import datetime
+from fnmatch import fnmatchcase
 from getpass import getpass
 import glob
 import json
@@ -28,12 +29,7 @@ from casa_distro.vbox import (vbox_create_system,
                               VBoxMachine)
 
 from casa_distro.hash import file_hash
-
-try:
-    # Try Python 3 only import
-    from urllib.request import urlretrieve
-except ImportError:
-    from urllib import urlretrieve
+from casa_distro.web import url_listdir, urlretrieve, urlopen
 
 
 _true_str = re.compile('^(?:yes|true|y|1)$', re.I)
@@ -361,13 +357,14 @@ def create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
 
 
 @command
-def publish_system(system='~/casa_distro/casa-ubuntu-*.vdi',
+def publish_system(system='~/casa_distro/casa-ubuntu-*',
                    container_type='vbox'):
     '''Upload a system image on brainvisa.info web site'''
     
     if container_type != 'vbox':
         raise ValueError('Only "vbox" container type requires to create a system image')
     
+    system = system + '.vdi'
     if not osp.exists(system):
         systems = glob.glob(osp.expandvars(osp.expanduser(system)))
         if len(systems) == 0:
@@ -384,6 +381,53 @@ def publish_system(system='~/casa_distro/casa-ubuntu-*.vdi',
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
     check_call(['rsync', '-P',  metadata_file, system, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
+
+
+@command
+def download_system(system='casa-ubuntu-*',
+                    url='http://brainvisa.info/casa-distro/vbox',
+                    output='~/casa_distro/{system}',
+                    container_type='vbox'):
+    '''Download a system image from brainvisa.info web site'''
+    
+    if container_type != 'vbox':
+        raise ValueError('Only "vbox" container type requires to create a system image')
+    
+    system = system + '.vdi'
+    systems = [i for i in url_listdir(url) 
+               if fnmatchcase(i, system)]
+    if len(systems) == 0:
+        raise ValueError('Cannot find file corresponding to pattern {0} in {1}'.format(system, url))
+    elif len(systems) > 1:
+        raise ValueError('Several system files found in {1}: {0}'.format(', '.join(systems), url))
+    system = systems[0]
+    output = output.format(system=system)
+    output = osp.expandvars(osp.expanduser(output))
+    
+    system_dict = json.loads(urlopen(url + '/%s.json' % system).read())
+    json_output = output + '.json'
+    download_all = True
+    if osp.exists(json_output):
+        output_dict = json.load(open(json_output))
+        if output_dict['md5'] == system_dict['md5']:
+            download_all = False
+    
+    json.dump(system_dict, open(json_output, 'w'))
+    if download_all:
+        check_call(['wget', 
+                    '{url}/{system}'.format(url=url, system=system),
+                    '-O', output])
+    else:
+        check_call(['wget', '--continue', 
+                    '{url}/{system}'.format(url=url, system=system),
+                    '-O', output])
+    ## Add system file md5 hash to JSON metadata file
+    #metadata_file = system + '.json'
+    #metadata = json.load(open(metadata_file))
+    #metadata['md5'] = file_hash(system)
+    #json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    
+    #check_call(['rsync', '-P',  metadata_file, system, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
 
 
 @command
