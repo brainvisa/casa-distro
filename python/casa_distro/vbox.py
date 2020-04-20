@@ -108,7 +108,7 @@ class VBoxMachine:
             type = 'headless'
         subprocess.check_call(['VBoxManage', 'startvm', self.vm, '--type', type])
 
-    def start_and_wait(self, wait=5, attempts=20, verbose=None, gui=False):
+    def start_and_wait(self, wait=5, attempts=40, verbose=None, gui=False):
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
