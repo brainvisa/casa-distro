@@ -289,8 +289,9 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 
 
 @command
-def create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
-                  output='~/casa_distro/{image_name}.vdi',
+def create_system(iso=osp.join(default_build_workflow_repository, 'ubuntu-*.iso'), 
+                  image_name='casa-{iso}',
+                  output=osp.join(default_build_workflow_repository, '{image_name}.vdi'),
                   container_type='vbox'):
     '''First step for the creation of base system VirtualBox image'''
     
@@ -357,7 +358,7 @@ def create_system(iso='~/Downloads/ubuntu-*.iso', image_name='casa-{iso}',
 
 
 @command
-def publish_system(system='~/casa_distro/casa-ubuntu-*',
+def publish_system(system=osp.join(default_build_workflow_repository, 'casa-ubuntu-*'),
                    container_type='vbox'):
     '''Upload a system image on brainvisa.info web site'''
     
@@ -377,8 +378,9 @@ def publish_system(system='~/casa_distro/casa-ubuntu-*',
     # Add system file md5 hash to JSON metadata file
     metadata_file = system + '.json'
     metadata = json.load(open(metadata_file))
-    metadata['md5'] = file_hash(system)
-    json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    if 'md5' not in metadata:
+        metadata['md5'] = file_hash(system)
+        json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
     check_call(['rsync', '-P',  metadata_file, system, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
 
@@ -386,7 +388,7 @@ def publish_system(system='~/casa_distro/casa-ubuntu-*',
 @command
 def download_system(system='casa-ubuntu-*',
                     url='http://brainvisa.info/casa-distro/vbox',
-                    output='~/casa_distro/{system}',
+                    output=osp.join(default_build_workflow_repository, '{system}'),
                     container_type='vbox'):
     '''Download a system image from brainvisa.info web site'''
     
@@ -431,9 +433,9 @@ def download_system(system='casa-ubuntu-*',
 
 
 @command
-def create_casa_run(system_image='~/casa_distro/casa-ubuntu-*.vdi',
+def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'casa-ubuntu-*.vdi'),
                     vbox_machine='casa-run', 
-                    output='~/casa_distro/{vbox_machine}.vdi',
+                    output=osp.join(default_build_workflow_repository, '{vbox_machine}.vdi'),
                     container_type='vbox',
                     memory='8192',
                     disk_size='131072',
@@ -457,16 +459,26 @@ def create_casa_run(system_image='~/casa_distro/casa-ubuntu-*.vdi',
                           verbose=sys.stdout,
                           memory=memory,
                           disk_size=disk_size)
+    
+    image_name = osp.splitext(osp.basename(output))[0]
+    metadata_output = output + '.json'
+    metadata = {
+        'image_name': image_name,
+        'container_type': container_type,
+        'creation_time': datetime.datetime.now().isoformat(),
+    }
+    json.dump(metadata, open(metadata_output, 'w'), indent=4)
+
     vbox = VBoxMachine(vbox_machine)
     vbox.install_run(verbose=sys.stdout,
                      gui=str_to_bool(gui))
 
 
 @command
-def create_casa_dev(system_image='~/casa_distro/casa-ubuntu-*.vdi',
-                    casa_run_image='~/casa_distro/casa-run.vdi',
+def create_casa_dev(system_image=osp.join(default_build_workflow_repository, 'casa-ubuntu-*.vdi'),
+                    casa_run_image=osp.join(default_build_workflow_repository, 'casa-run.vdi'),
                     vbox_machine='casa-dev', 
-                    output='~/casa_distro/{vbox_machine}.vdi',
+                    output=osp.join(default_build_workflow_repository, '{vbox_machine}.vdi'),
                     container_type='vbox',
                     memory='8192',
                     disk_size='131072',
@@ -503,10 +515,21 @@ def create_casa_dev(system_image='~/casa_distro/casa-ubuntu-*.vdi',
     base_image = system_image or casa_run_image
     if base_image:
         output = osp.expandvars(osp.expanduser(output)).format(vbox_machine=vbox_machine)
+        
+        image_name = osp.splitext(osp.basename(output))[0]
+        metadata_output = output + '.json'
+        metadata = {
+            'image_name': image_name,
+            'container_type': container_type,
+            'creation_time': datetime.datetime.now().isoformat(),
+        }
+        json.dump(metadata, open(metadata_output, 'w'), indent=4)
+        
         vbox_import_image(base_image, vbox_machine, output,
                           verbose=sys.stdout,
                           memory=memory,
                           disk_size=disk_size)
+
     vbox = VBoxMachine(vbox_machine)
 
     if system_image:
@@ -515,3 +538,34 @@ def create_casa_dev(system_image='~/casa_distro/casa-ubuntu-*.vdi',
 
     vbox.install_dev(verbose=sys.stdout,
                      gui=str_to_bool(gui))
+
+
+@command
+def publish_image(image=osp.join(default_build_workflow_repository, 'casa-{image_type}{extension}'),
+                  image_type='run',
+                  container_type='vbox'):
+    '''Upload a casa_run image on brainvisa.info web site'''
+    
+    if container_type != 'vbox':
+        raise ValueError('Only "vbox" container type is supported for upload')
+    
+    extension = '.vdi'
+    image = image.format(image_type=image_type,
+                         extension=extension)
+    if not osp.exists(image):
+        images = glob.glob(osp.expandvars(osp.expanduser(image)))
+        if len(images) == 0:
+            # Raise appropriate error for non existing file
+            open(image)
+        elif len(images) > 1:
+            raise ValueError('Several image files found : {0}'.format(', '.join(images)))
+        image = images[0]
+    
+    # Add image file md5 hash to JSON metadata file
+    metadata_file = image + '.json'
+    metadata = json.load(open(metadata_file))
+    if 'md5' not in metadata:
+        metadata['md5'] = file_hash(image)
+        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    
+    check_call(['rsync', '-P',  metadata_file, image, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
