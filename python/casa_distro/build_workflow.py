@@ -285,7 +285,7 @@ def create_build_workflow_directory(build_workflow_directory,
     if not container_type:
         if find_in_path('singularity'):
             container_type = 'singularity'
-        if find_in_path('VBoxManage'):
+        elif find_in_path('VBoxManage'):
             container_type = 'vbox'
         elif find_in_path('docker'):
             container_type = 'docker'
@@ -408,7 +408,7 @@ def create_build_workflow_directory(build_workflow_directory,
         casa_distro['container_gui_env'] = container_gui_env
     elif container_type == 'vbox':
         # Nothing to set for VirtualBox
-        pass
+        container_options = []
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
     if container_options:
