@@ -13,6 +13,7 @@ from subprocess import check_call
 import sys
 import tempfile
 
+from casa_distro.build_workflow import iter_build_workflow
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
 
@@ -259,33 +260,23 @@ def publish_build_workflows(distro='*', branch='*', system='*',
                             repository_server_directory=default_repository_server_directory,
                             login=default_repository_login, verbose=None):
     '''Upload a build workflow to sftp server (require lftp command to be installed).'''
-    
-    from casa_distro import iter_build_workflow
-    
+        
     verbose = log.getLogFile(verbose)
-    lftp_script = tempfile.NamedTemporaryFile()
     if login:
-        remote = 'sftp://%s@%s' % (login, repository_server)
+        remote = '%s@%s:' % (login, repository_server)
     else:
-        remote = 'sftp://%s' % repository_server
-    print('connect', remote, file=lftp_script)
-    print('cd', repository_server_directory, file=lftp_script)
+        remote = '%s:' % repository_server
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
         relative_bwf_dir = bwf_dir[len(build_workflows_repository)+1:]
         
-        cmd = ['mirror', '-R', '--delete', bwf_dir, relative_bwf_dir]
+        cmd = ['rsync', '-rR', '--delete',
+               '--inplace', '--partial', '--links', '--times', '--perms',
+               osp.join(build_workflows_repository, '.', relative_bwf_dir) + '/', 
+               remote + repository_server_directory + '/']
         if verbose:
-            cmd.insert(2, '-v')
-        print(*cmd, file=lftp_script)
-    lftp_script.flush()
-    cmd = ['lftp', '-f', lftp_script.name]
-    if verbose:
-        print('Running', *cmd, file=verbose)
-        print('-' * 10, lftp_script.name, '-'*10, file=verbose)
-        with open(lftp_script.name) as f:
-            print(f.read(), file=verbose)
-        print('-'*40, file=verbose)
-    check_call(cmd)
+            print('Publish', bwf_dir, file=verbose)
+            cmd.append('--progress')
+        check_call(cmd)
 
 
 @command
@@ -375,19 +366,21 @@ def publish_system(system=osp.join(default_build_workflow_repository, 'casa-ubun
             raise ValueError('Several system files found : {0}'.format(', '.join(systems)))
         system = systems[0]
     
-    # Add system file md5 hash to JSON metadata file
+    # Add system file size and md5 hash to JSON metadata file
     metadata_file = system + '.json'
     metadata = json.load(open(metadata_file))
-    if 'md5' not in metadata:
-        metadata['md5'] = file_hash(system)
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    metadata['size'] = os.stat(system).st_size
+    metadata['md5'] = file_hash(system)
+    json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
-    check_call(['rsync', '-P',  metadata_file, system, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
+    check_call(['rsync', '-P', '--progress',
+                metadata_file, system, 
+                'brainvisa@brainvisa.info:prod/www/casa-distro/vbox/'])
 
 
 @command
 def download_system(system='casa-ubuntu-*',
-                    url='http://brainvisa.info/casa-distro/vbox',
+                    url= default_download_url + '/vbox',
                     output=osp.join(default_build_workflow_repository, '{system}'),
                     container_type='vbox'):
     '''Download a system image from brainvisa.info web site'''
@@ -564,8 +557,10 @@ def publish_image(image=osp.join(default_build_workflow_repository, 'casa-{image
     # Add image file md5 hash to JSON metadata file
     metadata_file = image + '.json'
     metadata = json.load(open(metadata_file))
-    if 'md5' not in metadata:
-        metadata['md5'] = file_hash(image)
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    metadata['size'] = os.stat(image).st_size
+    metadata['md5'] = file_hash(image)
+    json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
-    check_call(['rsync', '-P',  metadata_file, image, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
+    check_call(['rsync', '-P', '--progress',
+                metadata_file, image, 
+                'brainvisa@brainvisa.info:prod/www/casa-distro/vbox/'])
