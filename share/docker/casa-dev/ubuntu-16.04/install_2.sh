@@ -44,7 +44,6 @@ $SUDO pip3 install -U 'pandas<0.25'
 $SUDO pip3 install -U 'lark-parser>=0.7,<0.8'
 $SUDO pip3 install -U 'xlrd<1.3'
 $SUDO pip3 install -U 'xlwt<1.4'
-$SUDO pip3 install -U 'openpyxl<3.0'
 $SUDO pip3 install torch
 $SUDO pip3 install torch-vision
 $SUDO pip3 install python-pcl
