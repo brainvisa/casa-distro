@@ -109,7 +109,7 @@ $SUDO $PIP2 install "python_jenkins==0.4.16"
 $SUDO $PIP2 install -U 'lark-parser>=0.7,<0.8'
 $SUDO $PIP2 install -U 'xlrd<1.3'
 $SUDO $PIP2 install -U 'xlwt<1.4'
-$SUDO $PIP2 isntall -U 'openpyxl<3.0'
+$SUDO $PIP2 install -U 'openpyxl<3.0'
 $SUDO $PIP2 install -U 'pandas<0.25'
 $SUDO $PIP2 install 'torch'
 $SUDO $PIP2 install 'torch-vision'
