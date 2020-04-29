@@ -108,6 +108,7 @@ brainvisa_python_runtime_dependencies=(
     python-dicom
     python-matplotlib
     python-mysqldb
+    python-openpyxl
     python-paramiko
     python-requests
     python-setuptools
@@ -203,6 +204,11 @@ brainvisa_misc_runtime_dependencies=(
     xbitmaps
 )
 
+# Dependencies that are needed for running BrainVISA tests in casa-run
+brainvisa_test_dependencies=(
+    cmake  # BrainVISA tests are driven by ctest
+)
+
 
 # Dubious packages (TODO: check if they are really needed)
 # libbdplus0
@@ -273,7 +279,7 @@ brainvisa_misc_runtime_dependencies=(
 
 build_dependencies=(
     # General build dependencies (notably useful for pip-compiled packages)
-    cmake
+    # cmake  # required in brainvisa_test_dependencies
     g++
     gcc
     git
@@ -317,6 +323,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${generally_useful_packages[@]} \
     ${headless_anatomist_dependencies[@]} \
     ${brainvisa_misc_runtime_dependencies[@]} \
+    ${brainvisa_test_dependencies[@]} \
     ${brainvisa_python_runtime_dependencies[@]} \
     ${brainvisa_shared_library_dependencies[@]} \
     ${build_dependencies[@]}
