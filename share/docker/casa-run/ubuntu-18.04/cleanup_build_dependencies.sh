@@ -21,7 +21,7 @@ APT_GET="sudo apt-get"
 
 # These are the packages that are installed at the end of
 # install_apt_dependencies.sh.
-$APT_GET purge -y autoconf automake cmake g++ gcc git libc-dev
+$APT_GET purge -y autoconf automake g++ gcc git libc-dev
 $APT_GET purge -y libhdf5-dev libjxr-dev libopenjp2-7-dev libpython2.7-dev
 $APT_GET purge -y libtiff-dev
 $APT_GET purge -y libtool make patch pkg-config
