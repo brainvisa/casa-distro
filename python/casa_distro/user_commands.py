@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+from fnmatch import fnmatchcase
 import sys
 import tempfile
+import os
 import os.path as osp
 import time
 import subprocess
@@ -17,7 +19,8 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server_directory,
                                   default_repository_login,
                                   default_distro,
-                                  default_branch)
+                                  default_branch,
+                                  default_download_url)
 from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         create_build_workflow_directory,
                                         update_container_image, merge_config,
@@ -26,7 +29,8 @@ from casa_distro.build_workflow import (iter_build_workflow, run_container,
 from casa_distro.singularity import (create_writable_singularity_image,
                                      singularity_root_shell,
                                      clean_singularity_images)
-
+from casa_distro.vbox import vbox_import_image
+from casa_distro.web import url_listdir, urlopen
 
 def verbose_bool(verbose):
     verbose_b = False
@@ -696,3 +700,69 @@ def clean_images(build_workflows_repository=default_build_workflow_repository,
 
     clean_singularity_images(build_workflows_repository, image_names,
                              images_to_keep, verbose, interactive)
+
+@command
+def setup(environment_type,
+          container_type='vbox',
+          source_image=None,
+          output=osp.join(default_build_workflow_repository, '{vm_name}.vdi'),
+          vm_name='{image_name}', 
+          vm_memory='8192',
+          vm_disk_size='131072'):
+    '''Create a new run or dev environment'''
+    
+    if container_type != 'vbox':
+        raise NotImplementedError('Only "vbox" container type is implemented for this command')
+
+    if source_image is None:
+        image_name = 'casa-{environment_type}'.format(environment_type=environment_type)
+        image_file_name = image_name + '.vdi'
+        source_image = osp.join(default_build_workflow_repository,
+                                image_file_name)
+    else:
+        source_image = osp.expanduser(osp.expandvars(source_image))
+        image_file_name = osp.basename(source_image)
+        image_name = osp.splitext(image_file_name)[0]
+    
+    url= default_download_url + '/vbox'
+    metadata_file = source_image + '.json'
+    if not osp.exists(source_image):
+        downloadable_images = [i for i in url_listdir(url) 
+                               if fnmatchcase(i, image_file_name)]
+        if not downloadable_images:
+            raise ValueError('Cannot find a image to download in {url} correponding to {pattern}'.format(
+                url=url, pattern=image_file_name))
+        elif len(downloadable_images) > 1:
+            raise ValueError('Found several images in {url} correponding to {pattern}: {images}'.format(
+                url=url, pattern=image_file_name, images=', '.join(downloadable_images)))
+        image_file_name = downloadable_images[0]
+        image_name = osp.splitext(image_file_name)[0]
+        source_image = osp.join(default_build_workflow_repository,
+                                image_file_name)
+        
+        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
+        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+        
+        subprocess.check_call([
+            'wget', 
+            '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+            '-O', source_image])
+    else:
+        metadata = json.load(open(metadata_file))
+        if os.stat(source_image).st_size < metadata['size']:
+            subprocess.check_call([
+                'wget', '--continue',
+                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+                '-O', source_image])
+    
+    if output:
+        vm_name = vm_name.format(image_name=image_name)
+        output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
+        if os.path.exists(output):
+            raise ValueError('File %s already exists, please remove it and retry' % output)
+        vbox_import_image(image=source_image,
+                           vbox_machine=vm_name,
+                           output=output,
+                           memory=vm_memory,
+                           disk_size=vm_disk_size)
+        #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount

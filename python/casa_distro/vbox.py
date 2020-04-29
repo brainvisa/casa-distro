@@ -286,12 +286,12 @@ class VBoxMachine:
                       '/casa/install_compiled_dev_dependencies.sh '
                       '/casa/install_casa_dev_components.sh')
 
-def vbox_import_image(system_image, vbox_machine, output,
+def vbox_import_image(image, vbox_machine, output,
                       verbose=None,
                       memory='8192',
                       disk_size='131072'):
     if verbose:
-        six.print_('Copying', system_image, 'to', output,
+        six.print_('Copying', image, 'to', output,
               file=verbose, flush=True)
     parent = osp.dirname(output)
     if not osp.exists(parent):
@@ -299,7 +299,7 @@ def vbox_import_image(system_image, vbox_machine, output,
     if osp.exists(output):
         os.remove(output)
     subprocess.check_call(['VBoxManage', 'clonemedium',
-                           system_image, output,
+                           image, output,
                            '--format', 'VDI',
                            '--variant', 'Standard'])
     

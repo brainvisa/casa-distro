@@ -369,12 +369,15 @@ def publish_system(system=osp.join(default_build_workflow_repository, 'casa-ubun
     # Add system file size and md5 hash to JSON metadata file
     metadata_file = system + '.json'
     metadata = json.load(open(metadata_file))
+    linux_distro, linux_release = osp.basename(metadata['image_name']).split('-')[1:3]
+    linux_release = '.'.join(linux_release.split('.')[:2])
     metadata['size'] = os.stat(system).st_size
     metadata['md5'] = file_hash(system)
+    metadata['system'] = '%s-%s' % (linux_distro, linux_release)
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
-    check_call(['rsync', '-P', '--progress',
-                metadata_file, system, 
+    check_call(['rsync', '--partial', '--inplace', '--progress',
+                system, metadata_file,
                 'brainvisa@brainvisa.info:prod/www/casa-distro/vbox/'])
 
 
@@ -416,13 +419,6 @@ def download_system(system='casa-ubuntu-*',
         check_call(['wget', '--continue', 
                     '{url}/{system}'.format(url=url, system=system),
                     '-O', output])
-    ## Add system file md5 hash to JSON metadata file
-    #metadata_file = system + '.json'
-    #metadata = json.load(open(metadata_file))
-    #metadata['md5'] = file_hash(system)
-    #json.dump(metadata, open(metadata_file, 'w'), indent=4)
-    
-    #check_call(['rsync', '-P',  metadata_file, system, 'brainvisa@brainvisa.info:prod/www/casa-distro/'])
 
 
 @command
@@ -452,6 +448,11 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
                           verbose=sys.stdout,
                           memory=memory,
                           disk_size=disk_size)
+        parent_metadata = json.load(open(system_image + '.json'))
+    else:
+        # system_image was forced to empty in order to reuse an existing VBox VM
+        # therefore no metadata can be found.
+        parent_metadata = {}
     
     image_name = osp.splitext(osp.basename(output))[0]
     metadata_output = output + '.json'
@@ -460,6 +461,10 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
     }
+    for key in ('iso', 'system'):
+        value = parent_metadata.get(key)
+        if value is not None:
+            metadata[key] = value
     json.dump(metadata, open(metadata_output, 'w'), indent=4)
 
     vbox = VBoxMachine(vbox_machine)
@@ -510,12 +515,17 @@ def create_casa_dev(system_image=osp.join(default_build_workflow_repository, 'ca
         output = osp.expandvars(osp.expanduser(output)).format(vbox_machine=vbox_machine)
         
         image_name = osp.splitext(osp.basename(output))[0]
+        parent_metadata = json.load(open(base_image + '.json'))
         metadata_output = output + '.json'
         metadata = {
             'image_name': image_name,
             'container_type': container_type,
             'creation_time': datetime.datetime.now().isoformat(),
         }
+        for key in ('iso', 'system'):
+            value = parent_metadata.get(key)
+            if value is not None:
+                metadata[key] = value
         json.dump(metadata, open(metadata_output, 'w'), indent=4)
         
         vbox_import_image(base_image, vbox_machine, output,
