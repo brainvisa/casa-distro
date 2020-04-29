@@ -202,6 +202,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-tqdm
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-joblib
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-tqdm
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-dicom
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-openpyxl
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-openpyxl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y comerr-dev
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y i965-va-driver
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y krb5-multidev
@@ -455,6 +457,7 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitg
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitk
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y spyder
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y curl
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-crypto
 
 # add repository for git-lfs
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | $SUDO bash

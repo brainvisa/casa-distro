@@ -98,6 +98,7 @@ $APT_GET_INSTALL qt5-default
 
 # Python 3 packages
 $APT_GET_INSTALL python3-matplotlib
+$APT_GET_INSTALL python3-openpyxl
 # Compiled and installed in install_compiled_dev_dependencies.sh because of a
 # bug in the SIP version supplied in APT.
 #

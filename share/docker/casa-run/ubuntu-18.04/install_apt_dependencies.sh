@@ -108,6 +108,7 @@ brainvisa_python_runtime_dependencies=(
     python-dicom
     python-matplotlib
     python-mysqldb
+    python-openpyxl
     python-paramiko
     python-requests
     python-setuptools
