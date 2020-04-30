@@ -14,20 +14,17 @@ set -x  # display commands before running them
 
 if [ $(id -u) -eq 0 ]; then
     SUDO=
-    APT_GET='apt-get -o Acquire::Retries=3'
 else
     SUDO=sudo
-    APT_GET="sudo apt-get -o Acquire::Retries=3"
 fi
 
 ###############################################################################
-# Install runtime dependencies with apt-get
+# Install dependencies of this script and configure repositories
 ###############################################################################
 
 export DEBIAN_FRONTEND=noninteractive
-APT_GET_INSTALL="$APT_GET install --no-install-recommends -y"
 
-$APT_GET update
+$SUDO apt-get -o Acquire::Retries=3 update
 
 # Packages that are needed later by this script
 early_dependencies=(
@@ -52,7 +49,12 @@ $SUDO cp /tmp/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
 $SUDO apt-key add /tmp/neurodebian-key.gpg
 
-$APT_GET update
+
+###############################################################################
+# Install runtime dependencies with apt-get
+###############################################################################
+
+$SUDO apt-get -o Acquire::Retries=3 update
 
 
 # Runtime dependencies of FSL
@@ -333,7 +335,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
 # Free disk space by removing APT caches
 ###############################################################################
 
-$APT_GET clean
+$SUDO apt-get clean
 
 if [ -z "$APT_NO_LIST_CLEANUP" ]; then
     # delete all the apt list files since they're big and get stale quickly
