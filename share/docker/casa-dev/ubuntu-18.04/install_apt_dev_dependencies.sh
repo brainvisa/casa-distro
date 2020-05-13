@@ -98,11 +98,14 @@ version_control_packages=(
 # Configure/build toolchain
 toolchain_packages=(
     automake
-    build-essential
     clang
     cmake
     cmake-curses-gui
+    g++
+    gcc
     gfortran
+    libc-dev
+    make
     pkg-config
     qt5-default
     # Compiled and installed in install_compiled_dev_dependencies.sh because of a
