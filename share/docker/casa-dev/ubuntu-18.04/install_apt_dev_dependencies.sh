@@ -33,9 +33,63 @@ $SUDO apt-get -o Acquire::Retries=3 update
 # openjdk-8-jdk  # was used for Docbook docs
 # pyro  # obsolete since soma-workflow 3
 
+# A selection of packages that were in cati/casa-dev:ubuntu-18.04 before Yann's
+# rewrite of the install scripts (in the runtime_image branch). TODO: check if
+# these packages should be installed here, or maybe in the casa-run image.
+packages_to_review=(
+    # fakeroot
+    # fonts-liberation  # graphviz recommends it but works without
+    # gsfonts
+    # libcairo2-dev
+    # libdouble-conversion-dev
+    # libgraphviz-dev
+    # libgstreamer-plugins-good1.0-0
+    # libgtk2.0-dev
+    libmpich-dev
+    # libncurses5-dev
+    # libqt5sensors5-dev
+    # libqt5svg5-dev
+    # libqt5waylandclient5-dev
+    # libqt5websockets5-dev
+    # libqt5webview5-dev
+    # libqt5xmlpatterns5-dev
+    # libxcb-icccm4-dev
+    # libxcb-image0-dev
+    # libxcb-keysyms1-dev
+    # libxcb-render-util0-dev
+    # libxcb-shm0-dev
+    # libxcb-util-dev
+    # libxcb-xinerama0-dev
+    # libxcb-xkb-dev
+    # libxcomposite-dev
+    # libxcursor-dev
+    # libxi-dev
+    # libxinerama-dev
+    # libxrandr-dev
+    # libzmq3-dev
+    # lmodern  # recommended by texlive-base
+    mpich
+    python-crypto
+    # python-pytest
+    # python-sqlalchemy-ext
+    python3-crypto
+    # python3-numexpr
+    # python3-pytest
+    # python3-simplejson
+    # python3-tables
+    # qttranslations5-l10n
+    # tex-gyre  # recommended by texlive-fonts-recommended
+    # x11-xserver-utils
+    # x11proto-composite-dev
+    # x11proto-gl-dev
+    # x11proto-input-dev
+    # x11proto-randr-dev
+    # x11proto-xinerama-dev
+)
+
+
 # Source version control
 version_control_packages=(
-    kdesdk-scripts  # for the colorsvn script
     git
     git-lfs
     subversion
@@ -63,10 +117,12 @@ development_tools=(
     bash-completion
     flake8
     gdb
+    gdbserver
     gedit
     gitg
     gitk
     kate
+    kdesdk-scripts  # contains the 'colorsvn' script (is it really worth it? the dependencies of kdesdk-scripts are huge...)
     kdiff3
     kompare
     kwrite
@@ -78,6 +134,12 @@ development_tools=(
     spyder
     vim
     xterm
+)
+
+# TODO: review and add -dbg packages that contain the debug symbols
+# corresponding to installed -dev packages.
+debug_symbol_packages=(
+    libc6-dbg  # recommended by gdb
 )
 
 # Documentation building
@@ -223,6 +285,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${version_control_packages[@]} \
     ${toolchain_packages[@]} \
     ${development_tools[@]} \
+    ${debug_symbol_packages[@]} \
     ${documentation_building_packages[@]} \
     ${python3_packages[@]} \
     ${brainvisa_standard_dev_dependencies[@]} \

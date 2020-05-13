@@ -80,6 +80,7 @@ generally_useful_packages=(
     file
     less
     lsb-release
+    ssh-client  # notably useful for Git repositories over SSH
     sudo
     unzip
     wget
