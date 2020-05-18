@@ -28,4 +28,4 @@ set -x  # display commands before running them
 sudo apt-mark auto ${build_dependencies[@]}
 sudo apt-get -o APT::Autoremove::RecommendsImportant=0 \
              -o APT::Autoremove::SuggestsImportant=0 \
-             autoremove -y --purge
+             autoremove --yes
