@@ -4,6 +4,7 @@ FROM ubuntu:18.04
 ENV LANG=C.UTF-8
 
 COPY install_apt_dependencies.sh \
+     build_dependencies.sh \
      neurodebian.sources.list \
      neurodebian-key.gpg \
      /tmp/
@@ -25,6 +26,7 @@ RUN /tmp/cleanup_build_dependencies.sh
 RUN rm -f /tmp/neurodebian-key.gpg \
           /tmp/neurodebian.sources.list \
           /tmp/install_apt_dependencies.sh \
+          /tmp/build_dependencies.sh \
           /tmp/install_pip_dependencies.sh \
           /tmp/install_compiled_dependencies.sh \
           /tmp/build_netcdf.sh \

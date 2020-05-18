@@ -18,6 +18,12 @@ else
     SUDO=sudo
 fi
 
+# Defines the build_dependencies bash array variable, which is used at the
+# bottom of this script (see below). The build_dependencies.sh file is expected
+# to be found in the same directory as this script.
+. "$(dirname -- "$0")"/build_dependencies.sh
+
+
 ###############################################################################
 # Install dependencies of this script and configure repositories
 ###############################################################################
@@ -230,45 +236,10 @@ brainvisa_test_dependencies=(
 # Install build dependencies that are necessary for install_pip_dependencies.sh
 # and install_compiled_dependencies.sh
 ###############################################################################
+
+# The build_dependencies bash array variable is defined in build_dependencies.sh, which is sourced at the top of this script.
 #
-# NOTE: every package that is on this list should be removed in
-# cleanup_build_dependencies.sh
-
-
-build_dependencies=(
-    # General build dependencies (notably useful for pip-compiled packages)
-    # cmake  # required in brainvisa_test_dependencies
-    g++
-    gcc
-    git
-    libc-dev
-    libpython2.7-dev
-    make
-    python-pip
-    python-setuptools
-
-    # Build dependencies of MIRCen's fork of openslide
-    autoconf
-    automake
-    libtool
-    pkg-config  # needed for autoreconf
-    libopenjp2-7-dev
-    libtiff-dev
-    libcairo2-dev
-    libgdk-pixbuf2.0-dev
-    libglib2.0-dev
-    libxml2-dev
-    libjxr-dev
-
-    # Build dependencies of libXp
-    x11proto-print-dev
-
-    # Build dependencies of python-pcl
-    libpcl-dev  # for python-pcl
-
-    # Build dependencies of SIP/PyQt
-    qtwebengine5-dev  # for PyQt
-)
+# . build_dependencies.sh
 
 
 # Hopefully, using a large value for Acquire::Retries can solve the infamous
