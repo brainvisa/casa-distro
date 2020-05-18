@@ -152,7 +152,7 @@ documentation_building_packages=(
     graphviz
     pandoc
     python-epydoc
-    python-sphinx
+    # python-sphinx  # installed with PIP
     texlive-latex-base
     texlive-fonts-recommended
     wkhtmltopdf
@@ -160,17 +160,14 @@ documentation_building_packages=(
 
 # Python 3 packages
 python3_packages=(
-    python3-matplotlib
     python3-openpyxl
     python3-traits
     python3-pip
-    python3-pydot
     python3-configobj
     python3-sphinx
     python3-sphinx-paramlinks
     python3-pandas
     python3-xmltodict
-    python3-fastcluster
     python3-sqlalchemy
     python3-mysqldb
     python3-ipython-genutils
@@ -179,7 +176,48 @@ python3_packages=(
     python3-opengl
     python3-joblib
     python3-tqdm
-    python3-dicom
+
+    # These packages used to be installed with PIP, presumably because they
+    # depend on NumPy, but it seems that they do not depend on a particular ABI
+    # version.
+    python3-nibabel
+    python3-pyparsing
+    python3-pydot
+    python3-dicom  # renamed to python3-pydicom in Ubuntu 20.04
+
+    # These packages used to be installed with PIP, but that was probably a
+    # careless copy/paste from the Ubuntu 16.04 scripts.
+    cython3
+    python3-xlrd
+    python3-xlwt
+
+    # The following dependencies are installed with pip for various reasons,
+    # see install_pip_dev_dependencies.sh.
+    #
+    # TODO: when upgrading the base system (i.e. switching to Ubuntu 20.04),
+    # check that they work when installed with apt.
+    #
+    # python3-nipype
+    # python3-jenkinsapi
+    #
+    # python3-zmq
+    # python3-ipython
+    # python3-jupyter-client
+    # python3-qtconsole
+    # python3-nbsphinx
+    # python3-sphinx-gallery
+    #
+    # python3-numpy
+    # python3-scipy
+    # python3-skimage
+    # python3-sklearn
+    # python3-fastcluster
+
+    # PyYAML is installed with pip because pre-commit requires a more recent
+    # version. If we install it here, pip complains that it cannot reliably
+    # uninstall it.
+    #
+    # python3-yaml
 
     # SIP and PyQT are compiled in install_compiled_dev_dependencies.sh to work
     # around a bug in the APT version of sip 4.19 concerning virtual C++
@@ -196,30 +234,6 @@ python3_packages=(
     # python3-pyqt5.qtwebsockets
     # python3-pyqt5.qtxmlpatterns
     # python3-pyqt5.qtx11extras
-
-    # PyYAML is installed with pip because pre-commit requires a more recent
-    # version. If we install it here, pip complains that it cannot reliably
-    # uninstall it.
-    #
-    # python3-yaml
-
-    # TODO: The following packages used to be installed with pip, check that the APT versions work correctly
-    cython3
-    python3-numpy
-    python3-zmq
-    python3-ipython
-    python3-jupyter-client
-    python3-qtconsole
-    python3-scipy
-    python3-nbsphinx
-    python3-sphinx-gallery
-    python3-nibabel
-    python3-skimage
-    python3-sklearn
-    python3-pyparsing
-    python3-pydot
-    python3-pydicom
-    python3-fastcluster
 )
 
 

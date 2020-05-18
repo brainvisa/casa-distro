@@ -108,41 +108,54 @@ rm -f /tmp/virtualgl_2.6.3_amd64.deb
 
 # Python packages needed at runtime by BrainVISA
 brainvisa_python_runtime_dependencies=(
-    python-dicom
-    python-matplotlib
     python-mysqldb
     python-openpyxl
     python-paramiko
     python-requests
-    python-setuptools
     # python-six  # installed by pip (Ubuntu 18.04 ships 1.11.0, we need >= 1.13)
     python-sqlalchemy
     python-traits
     python-xmltodict
     python-yaml
 
-    # TODO: the following dependencies used to be installed with pip, check that
-    # they work when installed with apt
-    cython
-    python-numpy
-    python-zmq
-    python-ipython
-    python-jupyter-client
-    python-qtconsole
-    python-scipy
-    python-nbsphinx
-    python-sphinx-gallery
+    # These packages used to be installed with PIP, presumably because they
+    # depend on NumPy, but it seems that they do not depend on a particular ABI
+    # version.
     python-nipype
-    python-dipy
     python-nibabel
-    python-skimage
-    python-sklearn
     python-pyparsing
     python-pydot
     python-jenkinsapi
     python-pydicom
-    python-fastcluster
-    python-backports.functools-lru-cache
+
+    # These packages used to be installed with PIP, but that was probably a
+    # careless copy/paste from the Ubuntu 16.04 scripts.
+    cython
+    python-xlrd
+    python-xlwt
+    python-pandas
+
+    # The following dependencies are installed with pip for various reasons,
+    # see install_pip_dependencies.sh.
+    #
+    # TODO: when upgrading the base system (i.e. switching to Ubuntu 20.04),
+    # check that they work when installed with apt.
+    #
+    # python-zmq
+    # python-ipython
+    # python-jupyter-client
+    # python-qtconsole
+    # python-nbsphinx
+    # python-sphinx-gallery
+    #
+    # python-numpy
+    # python-dipy
+    # python-fastcluster
+    # python-h5py
+    # python-matplotlib
+    # python-scipy
+    # python-skimage
+    # python-sklearn
 
     # SIP and PyQT are compiled in install_compiled_dependencies.sh to work
     # around a bug in the APT version of sip 4.19 concerning virtual C++
@@ -211,64 +224,6 @@ brainvisa_misc_runtime_dependencies=(
 brainvisa_test_dependencies=(
     cmake  # BrainVISA tests are driven by ctest
 )
-
-
-# Dubious packages (TODO: check if they are really needed)
-# libbdplus0
-# libbluray2
-# libavcodec57
-# libavformat57
-# libavformat-dev
-# libavutil55
-# libchromaprint1
-# libcrystalhd3
-# libgme0
-# libgsm1
-# libmp3lame0
-# libmpg123-0
-# libnetcdf-c++4
-# libnl-route-3-200
-# libogdi3.2
-# libopenmpt0
-# libopenni0
-# libopenni2-0
-# libopenni-sensor-pointclouds0
-# libpq5
-# libproj12
-# libpsm-infinipath1
-# librdmacm1
-# libshine3
-# libsoxr0
-# libspatialite7
-# libspeex1
-# libsuperlu5
-# libswresample2
-# libswscale4
-# libtwolame0
-# libutempter0
-# libtinyxml2.6.2v5
-# libva-drm2
-# libva-x11-2
-# libva2
-# libvdpau1
-# libvorbisfile3
-# libvpx5
-# libwavpack1
-# libx264-152
-# libx265-146
-# libxvidcore4
-# libzvbi-common
-# libzvbi0
-# mesa-va-drivers
-# mesa-vdpau-drivers
-# odbcinst
-# odbcinst1debian2
-# openni-utils
-# proj-bin
-# proj-data
-# va-driver-all
-# vdpau-driver-all
-# vtk6
 
 
 ###############################################################################
