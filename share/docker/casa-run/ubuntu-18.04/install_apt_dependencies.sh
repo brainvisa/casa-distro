@@ -86,6 +86,8 @@ generally_useful_packages=(
     file
     less
     lsb-release
+    python-pip
+    python-setuptools  # needed for most source installs with python-pip
     ssh-client  # notably useful for Git repositories over SSH
     sudo
     unzip

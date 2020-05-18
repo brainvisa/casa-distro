@@ -14,8 +14,6 @@ build_dependencies=(
     make
     patch
     pkg-config
-    python-pip
-    python-setuptools
 
     # cmake is a build dependency but it should not be removed after
     # compilations,  because it is needed for running ctest tests.
