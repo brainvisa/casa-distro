@@ -100,3 +100,4 @@ $SUDO pip install torch
 $SUDO pip install torch-vision
 $SUDO pip install python-pcl
 $SUDO pip install fastcluster
+$SUDO pip install scikit-image

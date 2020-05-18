@@ -114,6 +114,7 @@ $SUDO $PIP2 install 'torch-vision'
 $SUDO $PIP2 install 'dicom'  # pydicom 0.9 API
 # $SUDO $PIP2 install python-pcl  # linked against wrong version of libpcl
 $SUDO $PIP2 install fastcluster
+$SUDO $PIP2 install scikit-image
 
 # this one needs reinstalling in pip since the whole module backports has
 # changed location... pip is a mess, I tell you...

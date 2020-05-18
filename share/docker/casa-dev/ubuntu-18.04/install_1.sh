@@ -475,6 +475,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitk
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y spyder
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y curl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y software-properties-common
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-cryptography
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-cryptography
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | $SUDO bash
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y git-lfs
 $SUDO apt-get clean
