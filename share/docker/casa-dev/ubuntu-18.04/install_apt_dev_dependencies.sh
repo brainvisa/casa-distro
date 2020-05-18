@@ -69,10 +69,8 @@ packages_to_review=(
     # libzmq3-dev
     # lmodern  # recommended by texlive-base
     mpich
-    python-crypto
     # python-pytest
     # python-sqlalchemy-ext
-    python3-crypto
     # python3-numexpr
     # python3-pytest
     # python3-simplejson
@@ -160,6 +158,9 @@ documentation_building_packages=(
 
 # Python 3 packages
 python3_packages=(
+    python3-crypto
+    python3-cryptography
+    python3-html2text
     python3-openpyxl
     python3-traits
     python3-pip

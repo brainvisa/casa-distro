@@ -146,6 +146,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sphinx
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sphinx-paramlinks
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-xmltodict
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-xmltodict
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-html2text
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-html2text
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-fastcluster
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-mysqldb
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-sqlalchemy
@@ -458,6 +460,8 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y gitk
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y spyder
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y curl
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-crypto
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python-cryptography
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-cryptography
 
 # add repository for git-lfs
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | $SUDO bash
