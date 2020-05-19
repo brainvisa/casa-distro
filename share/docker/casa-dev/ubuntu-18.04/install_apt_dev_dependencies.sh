@@ -297,6 +297,7 @@ brainvisa_probable_dev_dependencies=(
     libpcl-dev
     libqt5webkit5-dev
     mpi-default-dev
+    qtwebengine5-dev
 )
 
 $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
