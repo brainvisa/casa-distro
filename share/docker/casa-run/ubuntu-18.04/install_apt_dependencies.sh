@@ -55,6 +55,15 @@ $SUDO cp /tmp/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
 $SUDO apt-key add /tmp/neurodebian-key.gpg
 
+# Prevent installation of python-dicom >= 1 from NeuroDebian (the API has
+# changed and some BrainVISA code relies on the old 0.* version).
+cat <<EOF > /etc/apt/preferences.d/prevent-pydicom-1.pref
+Explanation: Prevent installation of python-dicom >= 1 from NeuroDebian
+Explanation: (the API has changed, BrainVISA currently needs version 0.*).
+Package: python*-dicom
+Pin: version 1.*
+Pin-Priority: -1
+EOF
 
 ###############################################################################
 # Install runtime dependencies with apt-get
@@ -137,7 +146,7 @@ brainvisa_python_runtime_dependencies=(
     python-pyparsing
     python-pydot
     python-jenkinsapi
-    python-pydicom
+    python-dicom  # version 0.9.9 from Ubuntu, NOT python-pydicom (see above)
 
     # These packages used to be installed with PIP, but that was probably a
     # careless copy/paste from the Ubuntu 16.04 scripts.

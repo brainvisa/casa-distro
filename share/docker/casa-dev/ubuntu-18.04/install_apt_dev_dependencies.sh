@@ -184,7 +184,7 @@ python3_packages=(
     python3-nibabel
     python3-pyparsing
     python3-pydot
-    python3-dicom  # renamed to python3-pydicom in Ubuntu 20.04
+    python3-dicom  # version 0.9.9 from Ubuntu, NOT python-pydicom
 
     # These packages used to be installed with PIP, but that was probably a
     # careless copy/paste from the Ubuntu 16.04 scripts.
