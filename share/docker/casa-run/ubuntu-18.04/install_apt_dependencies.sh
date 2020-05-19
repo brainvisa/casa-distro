@@ -273,6 +273,14 @@ brainvisa_misc_runtime_dependencies=(
     xbitmaps
 )
 
+# Other dependencies of BrainVISA (please indicate the installation reason for
+# each dependency).
+brainvisa_other_dependencies=(
+    # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
+    # displayed at the start of each executable.
+    libqt5sql5-sqlite
+)
+
 # Dependencies that are needed for running BrainVISA tests in casa-run
 brainvisa_test_dependencies=(
     cmake  # BrainVISA tests are driven by ctest
@@ -299,6 +307,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${generally_useful_packages[@]} \
     ${headless_anatomist_dependencies[@]} \
     ${brainvisa_misc_runtime_dependencies[@]} \
+    ${brainvisa_other_dependencies[@]} \
     ${brainvisa_test_dependencies[@]} \
     ${brainvisa_python_runtime_dependencies[@]} \
     ${brainvisa_shared_library_dependencies[@]} \
