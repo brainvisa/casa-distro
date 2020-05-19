@@ -117,7 +117,7 @@ rm -f /tmp/virtualgl_2.6.3_amd64.deb
 # Python packages needed at runtime by BrainVISA
 brainvisa_python_runtime_dependencies=(
     python-crypto
-    python-cryptography
+    python-cryptography  # needed by populse_mia
     python-html2text
     python-mysqldb
     python-openpyxl
