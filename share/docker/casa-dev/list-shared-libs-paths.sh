@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Usage:
-# $ find /casa/build -type f -execdir sh -c - 'if file -b "$1"|grep ^ELF >/dev/null 2>&1; then ~/list-shared-libs-paths.sh "$1"; fi' - {} \; | tee ~/all-shared-libs-paths.txt
-# $ sort -u < ~/all-shared-libs-paths.txt | while read path; do dpkg -S "$path" 2>/dev/null; done | sed -e 's/\([^:]*\):.*$/\1/' | sort -u
+# This is a helper script used by list-shared-lib-packages.sh.
 #
 # This script creates a list of the full paths to all shared libraries that are
 # direct dependencies of the executable passed as the first parameter.
@@ -19,6 +17,7 @@ in_list() {
     return 1  # FALSE
 }
 
+echo -n "Listing dependencies of $1..." >&2
 
 direct_deps=$(objdump -p "$1" \
                   | sed -ne '/^\s*NEEDED.*/ { s/^\s*NEEDED\s*\(.*\)$/\1/; p }')
@@ -32,3 +31,5 @@ ldd "$1" | while read line; do
         echo "$lib_path"
     fi
 done
+
+echo ' done' >&2

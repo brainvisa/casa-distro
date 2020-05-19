@@ -187,39 +187,81 @@ brainvisa_python_runtime_dependencies=(
 # Dynamic libraries needed at runtime by BrainVISA
 #
 # This list is generated **automatically** with the list-shared-libs-paths.sh
-# script. In a container where the whole BrainVISA tree has been compiled, run
-# the following commands to generate this list:
+# script. In order to generate this list, run the following command in a
+# casa-dev container where the whole BrainVISA tree has been compiled:
 #
-# $ find /casa/build -type f -execdir sh -c - 'if file -b "$1"|grep ^ELF >/dev/null 2>&1; then /casa/list-shared-libs-paths.sh "$1"; fi' - {} \; | tee ~/all-shared-libs-paths.txt
-# $ sort -u < ~/all-shared-libs-paths.txt | while read path; do dpkg -S "$path" 2>/dev/null; done | sed -e 's/\([^:]*\):.*$/\1/' | sort -u
+# /casa/list-shared-lib-packages.sh /casa/build /usr/local
 #
 # Please DO NOT add other packages to this list, so that it can be wiped and
 # regenerated easily. If other libraries are needed, consider creating a new
 # variable to store them.
 brainvisa_shared_library_dependencies=(
     libc6
+    libcairo2
     libdcmtk12
     libexpat1
+    libflann1.9
+    libfontconfig1
+    libfreetype6
     libgcc1
+    libgdk-pixbuf2.0-0
     libgfortran4
+    libglib2.0-0
     libglu1-mesa
+    libgomp1
+    libhdf5-100
+    libice6
     libjpeg-turbo8
     libminc2-4.0.0
     libopenjp2-7
+    libpcl-common1.8
+    libpcl-features1.8
+    libpcl-filters1.8
+    libpcl-io1.8
+    libpcl-kdtree1.8
+    libpcl-octree1.8
+    libpcl-search1.8
+    libpcl-segmentation1.8
+    libpcl-surface1.8
+    libpng16-16
     libpython2.7
+    libpython3.6
     libqt5core5a
+    libqt5dbus5
+    libqt5designer5
     libqt5gui5
+    libqt5help5
     libqt5multimedia5
+    libqt5multimediawidgets5
     libqt5network5
     libqt5opengl5
+    libqt5positioning5
+    libqt5printsupport5
+    libqt5qml5
+    libqt5quick5
+    libqt5quickwidgets5
     libqt5sql5
+    libqt5test5
+    libqt5webchannel5
+    libqt5webengine5
+    libqt5webenginecore5
+    libqt5webenginewidgets5
+    libqt5webkit5
     libqt5widgets5
+    libqt5x11extras5
+    libqt5xml5
     libqwt-qt5-6
     libsigc++-2.0-0v5
+    libsm6
+    libsqlite3-0
     libstdc++6
     libsvm3
     libtiff5
+    libx11-6
+    libxau6
+    libxext6
     libxml2
+    libxrender1
     zlib1g
 )
 
