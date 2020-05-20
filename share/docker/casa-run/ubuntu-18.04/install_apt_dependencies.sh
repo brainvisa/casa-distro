@@ -155,6 +155,10 @@ brainvisa_python_runtime_dependencies=(
     python-xlwt
     python-pandas
 
+    # This package is a dependency of matplotlib but does not work when
+    # installed with PIP.
+    python-backports.functools-lru-cache
+
     # The following dependencies are installed with pip for various reasons,
     # see install_pip_dependencies.sh.
     #

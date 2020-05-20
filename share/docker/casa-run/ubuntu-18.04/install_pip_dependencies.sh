@@ -93,7 +93,3 @@ $PIP2 install -U 'nbsphinx<0.5'
 # sphinx 1.7 has bugs
 $PIP2 install -U "sphinx<1.7"
 $PIP2 install 'sphinx-gallery<0.4'
-
-# This one needs to be re-installed with pip since a package above installs a
-# backports sub-package that hides the APT-installed backports package.
-$PIP2 install --force-reinstall backports.functools_lru_cache
