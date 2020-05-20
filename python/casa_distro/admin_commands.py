@@ -369,11 +369,8 @@ def publish_system(system=osp.join(default_build_workflow_repository, 'casa-ubun
     # Add system file size and md5 hash to JSON metadata file
     metadata_file = system + '.json'
     metadata = json.load(open(metadata_file))
-    linux_distro, linux_release = osp.basename(metadata['image_name']).split('-')[1:3]
-    linux_release = '.'.join(linux_release.split('.')[:2])
     metadata['size'] = os.stat(system).st_size
     metadata['md5'] = file_hash(system)
-    metadata['system'] = '%s-%s' % (linux_distro, linux_release)
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
     check_call(['rsync', '--partial', '--inplace', '--progress',
