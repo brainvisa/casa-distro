@@ -131,6 +131,7 @@ brainvisa_python_runtime_dependencies=(
     python-mysqldb
     python-openpyxl
     python-paramiko
+    python-pil  # used in anatomist, morphologist, nuclear_imaging, snapbase
     python-requests
     # python-six  # installed by pip (Ubuntu 18.04 ships 1.11.0, we need >= 1.13)
     python-sqlalchemy
