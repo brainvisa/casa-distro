@@ -22,6 +22,7 @@ RUN /tmp/install_casa_dev_components.sh
 # Used to generate a list of packages to include in the casa-run image (see
 # share/docker/casa-run/.../install_apt_dependencies.sh).
 COPY list-shared-libs-paths.sh /casa/list-shared-libs-paths.sh
+COPY list-shared-lib-packages.sh /casa/list-shared-lib-packages.sh
 
 RUN rm -f /casa/install_apt_dev_dependencies.sh \
           /casa/build_sip_pyqt.sh \

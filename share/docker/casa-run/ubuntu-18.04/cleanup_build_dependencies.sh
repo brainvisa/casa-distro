@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # Install dependencies for image cati/casa-run:ubuntu-18.04. This image must
 # contain all run-time dependencies that are needed to run BrainVISA when
@@ -12,24 +12,21 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
-# -E option allow to pass environment variables through sudo
-APT_GET="sudo -E apt-get"
-export DEBIAN_FRONTEND=noninteractive
-
 ###############################################################################
 # Clean up build dependencies that were required for
 # install_pip_dependencies.sh and install_compiled_dependencies.sh
 ###############################################################################
 
-# These are the packages that are installed at the end of
-# install_apt_dependencies.sh.
-$APT_GET purge -y autoconf automake g++ gcc git libc-dev
-$APT_GET purge -y libhdf5-dev libjxr-dev libopenjp2-7-dev libpython2.7-dev
-$APT_GET purge -y libtiff-dev
-$APT_GET purge -y libtool make patch pkg-config
+# Defines the build_dependencies bash array variable, which is used at the
+# bottom of this script (see below). The build_dependencies.sh file is expected
+# to be found in the same directory as this script.
+. "$(dirname -- "$0")"/build_dependencies.sh
 
-# Remove dependencies of the above packages
-$APT_GET autoremove -y --purge
-$APT_GET -o APT::Autoremove::RecommendsImportant=0 \
-         -o APT::Autoremove::SuggestsImportant=0 \
-         autoremove -y --purge
+# Mark build dependencies as automatically installed, so that 'apt-get
+# autoremove' will remove them.
+export DEBIAN_FRONTEND=noninteractive
+# -E option allow to pass environment variables through sudo
+sudo -E apt-mark auto ${build_dependencies[@]}
+sudo -E apt-get -o APT::Autoremove::RecommendsImportant=0 \
+                -o APT::Autoremove::SuggestsImportant=0 \
+                autoremove --yes

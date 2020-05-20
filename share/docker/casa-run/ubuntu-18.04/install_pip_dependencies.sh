@@ -17,6 +17,12 @@ set -x  # display commands before running them
 # Install Python dependencies with pip
 ###############################################################################
 
+# General note: some packages are prevented from being upgraded by appending
+# the '<x.y.z' version requirement. Unless noted otherwise, this is done solely
+# to prevent accidental breakage during image rebuilds, when new PyPI versions
+# introduce incompatible changes. These version blocks should be revised
+# regularly!
+
 PIP2="sudo python2 -m pip --no-cache-dir"
 $PIP2 install -U pip
 
@@ -24,7 +30,7 @@ $PIP2 install -U pip
 $PIP2 install 'six~=1.13'
 
 # Runtime dependencies of populse-db
-$PIP2 install 'lark-parser>=0.7'
+$PIP2 install 'lark-parser>=0.7,<0.8'
 
 # Runtime dependencies of Morphologist
 $PIP2 install 'torch'
@@ -32,3 +38,62 @@ $PIP2 install 'torch-vision'
 
 # Runtime dependency of datamind and Constellation
 $PIP2 install http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
+
+# These packages used to be installed with PIP instead of APT for an unknown
+# reason (maybe this was a careless copy/paste from the Ubuntu 16.04 script).
+#
+# $PIP2 install -U 'pkgconfig<1.6'
+# $PIP2 install --ignore-installed -U 'cython<0.30'
+# $PIP2 install -U 'xlrd<1.3'
+# $PIP2 install -U 'xlwt<1.4'
+# $PIP2 install -U 'pandas<0.25'
+
+# Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
+# apparently too old for our friends of the MeCA group in Marseille.
+# Unfortunately installing the newer NumPy installed with pip is
+# ABI-incompatible with the system NumPy (ABI version 9 vs ABI version 8), so
+# we need to also install every package that depends on NumPy with pip.
+$PIP2 install -U 'numpy~=1.16,<1.17'
+$PIP2 install 'dipy<0.15'
+$PIP2 install fastcluster
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+sudo CPPFLAGS='-I/usr/include/mpi' python2 -m pip --no-cache-dir install --no-binary=h5py 'h5py<2.10'
+$PIP2 install matplotlib
+$PIP2 install -U 'scipy~=1.2,<1.3'
+$PIP2 install scikit-image
+$PIP2 install 'scikit-learn<0.21'
+
+# These packages used to be installed with PIP, presumably because they depend
+# on NumPy, but it seems that they do not depend on a particular ABI version.
+#
+# $PIP2 install 'nipype<1.2'
+# $PIP2 install -U 'nibabel<2.5'
+# $PIP2 install -U 'pyparsing<2.4'
+# $PIP2 install -U 'pydot<1.3'
+# $PIP2 install "python_jenkins==0.4.16"
+# $PIP2 install 'dicom'  # pydicom 0.9 API
+
+# python-pcl is installed in install_compiled_dependencies, because the pip
+# version is linked against the wrong version of libpcl.
+#
+# $PIP2 install python-pcl
+
+# IPython/Jupyter: only a very specific combination of versions works correctly
+# for our purposes (the APT versions supplied by Ubuntu 18.04 DO NOT work):
+#
+# 1. qtconsole in BrainVISA and Anatomist;
+# 2. notebook-based tests (e.g. pyaims-tests).
+$PIP2 install -U 'pyzmq<18.1'
+$PIP2 install -U 'ipython<6.0'
+$PIP2 install jupyter
+$PIP2 install jupyter_client
+$PIP2 install 'qtconsole<4.5'
+$PIP2 install -U 'nbsphinx<0.5'
+# sphinx 1.7 has bugs
+$PIP2 install -U "sphinx<1.7"
+$PIP2 install 'sphinx-gallery<0.4'
+
+# This one needs to be re-installed with pip since a package above installs a
+# backports sub-package that hides the APT-installed backports package.
+$PIP2 install --force-reinstall backports.functools_lru_cache

@@ -14,20 +14,23 @@ set -x  # display commands before running them
 
 if [ $(id -u) -eq 0 ]; then
     SUDO=
-    APT_GET="apt-get -o Acquire::Retries=3"
 else
     SUDO=sudo
-    APT_GET="sudo apt-get -o Acquire::Retries=3"
 fi
 
+# Defines the build_dependencies bash array variable, which is used at the
+# bottom of this script (see below). The build_dependencies.sh file is expected
+# to be found in the same directory as this script.
+. "$(dirname -- "$0")"/build_dependencies.sh
+
+
 ###############################################################################
-# Install runtime dependencies with apt-get
+# Install dependencies of this script and configure repositories
 ###############################################################################
 
 export DEBIAN_FRONTEND=noninteractive
-APT_GET_INSTALL="$APT_GET install --no-install-recommends -y"
 
-$APT_GET update
+$SUDO apt-get -o Acquire::Retries=3 update
 
 # Packages that are needed later by this script
 early_dependencies=(
@@ -52,7 +55,21 @@ $SUDO cp /tmp/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
 $SUDO apt-key add /tmp/neurodebian-key.gpg
 
-$APT_GET update
+# Prevent installation of python-dicom >= 1 from NeuroDebian (the API has
+# changed and some BrainVISA code relies on the old 0.* version).
+cat <<EOF > /etc/apt/preferences.d/prevent-pydicom-1.pref
+Explanation: Prevent installation of python-dicom >= 1 from NeuroDebian
+Explanation: (the API has changed, BrainVISA currently needs version 0.*).
+Package: python*-dicom
+Pin: version 1.*
+Pin-Priority: -1
+EOF
+
+###############################################################################
+# Install runtime dependencies with apt-get
+###############################################################################
+
+$SUDO apt-get -o Acquire::Retries=3 update
 
 
 # Runtime dependencies of FSL
@@ -78,6 +95,9 @@ generally_useful_packages=(
     file
     less
     lsb-release
+    python-pip
+    python-setuptools  # needed for most source installs with python-pip
+    ssh-client  # notably useful for Git repositories over SSH
     sudo
     unzip
     wget
@@ -105,41 +125,57 @@ rm -f /tmp/virtualgl_2.6.3_amd64.deb
 
 # Python packages needed at runtime by BrainVISA
 brainvisa_python_runtime_dependencies=(
-    python-dicom
-    python-matplotlib
+    python-crypto
+    python-cryptography  # needed by populse_mia
+    python-html2text
     python-mysqldb
     python-openpyxl
     python-paramiko
     python-requests
-    python-setuptools
     # python-six  # installed by pip (Ubuntu 18.04 ships 1.11.0, we need >= 1.13)
     python-sqlalchemy
     python-traits
     python-xmltodict
     python-yaml
 
-    # TODO: the following dependencies used to be installed with pip, check that
-    # they work when installed with apt
-    cython
-    python-numpy
-    python-zmq
-    python-ipython
-    python-jupyter-client
-    python-qtconsole
-    python-scipy
-    python-nbsphinx
-    python-sphinx-gallery
+    # These packages used to be installed with PIP, presumably because they
+    # depend on NumPy, but it seems that they do not depend on a particular ABI
+    # version.
     python-nipype
-    python-dipy
     python-nibabel
-    python-skimage
-    python-sklearn
     python-pyparsing
     python-pydot
     python-jenkinsapi
-    python-pydicom
-    python-fastcluster
-    python-backports.functools-lru-cache
+    python-dicom  # version 0.9.9 from Ubuntu, NOT python-pydicom (see above)
+
+    # These packages used to be installed with PIP, but that was probably a
+    # careless copy/paste from the Ubuntu 16.04 scripts.
+    cython
+    python-xlrd
+    python-xlwt
+    python-pandas
+
+    # The following dependencies are installed with pip for various reasons,
+    # see install_pip_dependencies.sh.
+    #
+    # TODO: when upgrading the base system (i.e. switching to Ubuntu 20.04),
+    # check that they work when installed with apt.
+    #
+    # python-zmq
+    # python-ipython
+    # python-jupyter-client
+    # python-qtconsole
+    # python-nbsphinx
+    # python-sphinx-gallery
+    #
+    # python-numpy
+    # python-dipy
+    # python-fastcluster
+    # python-h5py
+    # python-matplotlib
+    # python-scipy
+    # python-skimage
+    # python-sklearn
 
     # SIP and PyQT are compiled in install_compiled_dependencies.sh to work
     # around a bug in the APT version of sip 4.19 concerning virtual C++
@@ -160,39 +196,81 @@ brainvisa_python_runtime_dependencies=(
 # Dynamic libraries needed at runtime by BrainVISA
 #
 # This list is generated **automatically** with the list-shared-libs-paths.sh
-# script. In a container where the whole BrainVISA tree has been compiled, run
-# the following commands to generate this list:
+# script. In order to generate this list, run the following command in a
+# casa-dev container where the whole BrainVISA tree has been compiled:
 #
-# $ find /casa/build -type f -execdir sh -c - 'if file -b "$1"|grep ^ELF >/dev/null 2>&1; then /casa/list-shared-libs-paths.sh "$1"; fi' - {} \; | tee ~/all-shared-libs-paths.txt
-# $ sort -u < ~/all-shared-libs-paths.txt | while read path; do dpkg -S "$path" 2>/dev/null; done | sed -e 's/\([^:]*\):.*$/\1/' | sort -u
+# /casa/list-shared-lib-packages.sh /casa/build /usr/local
 #
 # Please DO NOT add other packages to this list, so that it can be wiped and
 # regenerated easily. If other libraries are needed, consider creating a new
 # variable to store them.
 brainvisa_shared_library_dependencies=(
     libc6
+    libcairo2
     libdcmtk12
     libexpat1
+    libflann1.9
+    libfontconfig1
+    libfreetype6
     libgcc1
+    libgdk-pixbuf2.0-0
     libgfortran4
+    libglib2.0-0
     libglu1-mesa
+    libgomp1
+    libhdf5-100
+    libice6
     libjpeg-turbo8
     libminc2-4.0.0
     libopenjp2-7
+    libpcl-common1.8
+    libpcl-features1.8
+    libpcl-filters1.8
+    libpcl-io1.8
+    libpcl-kdtree1.8
+    libpcl-octree1.8
+    libpcl-search1.8
+    libpcl-segmentation1.8
+    libpcl-surface1.8
+    libpng16-16
     libpython2.7
+    libpython3.6
     libqt5core5a
+    libqt5dbus5
+    libqt5designer5
     libqt5gui5
+    libqt5help5
     libqt5multimedia5
+    libqt5multimediawidgets5
     libqt5network5
     libqt5opengl5
+    libqt5positioning5
+    libqt5printsupport5
+    libqt5qml5
+    libqt5quick5
+    libqt5quickwidgets5
     libqt5sql5
+    libqt5test5
+    libqt5webchannel5
+    libqt5webengine5
+    libqt5webenginecore5
+    libqt5webenginewidgets5
+    libqt5webkit5
     libqt5widgets5
+    libqt5x11extras5
+    libqt5xml5
     libqwt-qt5-6
     libsigc++-2.0-0v5
+    libsm6
+    libsqlite3-0
     libstdc++6
     libsvm3
     libtiff5
+    libx11-6
+    libxau6
+    libxext6
     libxml2
+    libxrender1
     zlib1g
 )
 
@@ -204,113 +282,28 @@ brainvisa_misc_runtime_dependencies=(
     xbitmaps
 )
 
+# Other dependencies of BrainVISA (please indicate the installation reason for
+# each dependency).
+brainvisa_other_dependencies=(
+    # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
+    # displayed at the start of each executable.
+    libqt5sql5-sqlite
+)
+
 # Dependencies that are needed for running BrainVISA tests in casa-run
 brainvisa_test_dependencies=(
     cmake  # BrainVISA tests are driven by ctest
 )
 
 
-# Dubious packages (TODO: check if they are really needed)
-# libbdplus0
-# libbluray2
-# libavcodec57
-# libavformat57
-# libavformat-dev
-# libavutil55
-# libchromaprint1
-# libcrystalhd3
-# libgme0
-# libgsm1
-# libmp3lame0
-# libmpg123-0
-# libnetcdf-c++4
-# libnl-route-3-200
-# libogdi3.2
-# libopenmpt0
-# libopenni0
-# libopenni2-0
-# libopenni-sensor-pointclouds0
-# libpq5
-# libproj12
-# libpsm-infinipath1
-# librdmacm1
-# libshine3
-# libsoxr0
-# libspatialite7
-# libspeex1
-# libsuperlu5
-# libswresample2
-# libswscale4
-# libtwolame0
-# libutempter0
-# libtinyxml2.6.2v5
-# libva-drm2
-# libva-x11-2
-# libva2
-# libvdpau1
-# libvorbisfile3
-# libvpx5
-# libwavpack1
-# libx264-152
-# libx265-146
-# libxvidcore4
-# libzvbi-common
-# libzvbi0
-# mesa-va-drivers
-# mesa-vdpau-drivers
-# odbcinst
-# odbcinst1debian2
-# openni-utils
-# proj-bin
-# proj-data
-# va-driver-all
-# vdpau-driver-all
-# vtk6
-
-
 ###############################################################################
 # Install build dependencies that are necessary for install_pip_dependencies.sh
 # and install_compiled_dependencies.sh
 ###############################################################################
+
+# The build_dependencies bash array variable is defined in build_dependencies.sh, which is sourced at the top of this script.
 #
-# NOTE: every package that is on this list should be removed in
-# cleanup_build_dependencies.sh
-
-
-build_dependencies=(
-    # General build dependencies (notably useful for pip-compiled packages)
-    # cmake  # required in brainvisa_test_dependencies
-    g++
-    gcc
-    git
-    libc-dev
-    libpython2.7-dev
-    make
-    python-pip
-    python-setuptools
-
-    # Build dependencies of MIRCen's fork of openslide
-    autoconf
-    automake
-    libtool
-    pkg-config  # needed for autoreconf
-    libopenjp2-7-dev
-    libtiff-dev
-    libcairo2-dev
-    libgdk-pixbuf2.0-dev
-    libglib2.0-dev
-    libxml2-dev
-    libjxr-dev
-
-    # Build dependencies of libXp
-    x11proto-print-dev
-
-    # Build dependencies of python-pcl
-    libpcl-dev  # for python-pcl
-
-    # Build dependencies of SIP/PyQt
-    qtwebengine5-dev  # for PyQt
-)
+# . build_dependencies.sh
 
 
 # Hopefully, using a large value for Acquire::Retries can solve the infamous
@@ -323,6 +316,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${generally_useful_packages[@]} \
     ${headless_anatomist_dependencies[@]} \
     ${brainvisa_misc_runtime_dependencies[@]} \
+    ${brainvisa_other_dependencies[@]} \
     ${brainvisa_test_dependencies[@]} \
     ${brainvisa_python_runtime_dependencies[@]} \
     ${brainvisa_shared_library_dependencies[@]} \
@@ -333,7 +327,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
 # Free disk space by removing APT caches
 ###############################################################################
 
-$APT_GET clean
+$SUDO apt-get clean
 
 if [ -z "$APT_NO_LIST_CLEANUP" ]; then
     # delete all the apt list files since they're big and get stale quickly

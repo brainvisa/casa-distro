@@ -8,152 +8,234 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
+if [ $(id -u) -eq 0 ]; then
+    SUDO=
+else
+    SUDO=sudo
+fi
+
 ###############################################################################
-# Install system packages with apt-get
+# Install development packages with apt-get
 ###############################################################################
 
 export DEBIAN_FRONTEND=noninteractive
-APT_GET_INSTALL="sudo apt-get -o Acquire::Retries=3 install --no-install-recommends -y"
 
 # setup best mirror in /etc/apt/sources.list
-# sudo python2 -m pip --no-cache-dir install apt-mirror-updater
-# sudo apt-mirror-updater -a
+# $SUDO python2 -m pip --no-cache-dir install apt-mirror-updater
+# $SUDO apt-mirror-updater -a
 
-sudo apt-get -o Acquire::Retries=3 update
-
-# WARNING: it is necessary to call apt-get install separately for small groups
-# of packages to avoid the mysterious 101st package issue (Download of the
-# 101st package fails randomly in NeuroSpin, maybe due to firewall issues).
-#
-# TODO: as indirect dependencies were removed from this list, it may be that
-# some lines trigger the installation of more than 100 packages. If this is the
-# case, we have to re-introduce indirect dependencies here, but this time we
-# will *explicitly* mark them as such, to avoid ever having to disentangle this
-# mess again...
-#
-# TODO: check that the APT option -o Acquire::Retries fixes the 101st package
-# issue
+$SUDO apt-get -o Acquire::Retries=3 update
 
 # Probably obsolete packages (TODO: remove)
-# $APT_GET_INSTALL apt-utils
-# $APT_GET_INSTALL gadfly  # obsolete dep? (only used in datamind)
-# $APT_GET_INSTALL libgsl-dev  # was used in highres-cortex (only?)
-# $APT_GET_INSTALL openjdk-8-jdk  # was used for Docbook docs
-# $APT_GET_INSTALL pyro  # obsolete since soma-workflow 3
+# apt-utils
+# gadfly  # obsolete dep? (only used in datamind)
+# libgsl-dev  # was used in highres-cortex (only?)
+# openjdk-8-jdk  # was used for Docbook docs
+# pyro  # obsolete since soma-workflow 3
+
+# A selection of packages that were in cati/casa-dev:ubuntu-18.04 before Yann's
+# rewrite of the install scripts (in the runtime_image branch). TODO: check if
+# these packages should be installed here, or maybe in the casa-run image.
+packages_to_review=(
+    # fakeroot
+    # fonts-liberation  # graphviz recommends it but works without
+    # gsfonts
+    # libcairo2-dev
+    # libdouble-conversion-dev
+    # libgraphviz-dev
+    # libgstreamer-plugins-good1.0-0
+    # libgtk2.0-dev
+    libmpich-dev
+    # libncurses5-dev
+    # libqt5sensors5-dev
+    # libqt5svg5-dev
+    # libqt5waylandclient5-dev
+    # libqt5websockets5-dev
+    # libqt5webview5-dev
+    # libqt5xmlpatterns5-dev
+    # libxcb-icccm4-dev
+    # libxcb-image0-dev
+    # libxcb-keysyms1-dev
+    # libxcb-render-util0-dev
+    # libxcb-shm0-dev
+    # libxcb-util-dev
+    # libxcb-xinerama0-dev
+    # libxcb-xkb-dev
+    # libxcomposite-dev
+    # libxcursor-dev
+    # libxi-dev
+    # libxinerama-dev
+    # libxrandr-dev
+    # libzmq3-dev
+    # lmodern  # recommended by texlive-base
+    mpich
+    # python-pytest
+    # python-sqlalchemy-ext
+    # python3-numexpr
+    # python3-pytest
+    # python3-simplejson
+    # python3-tables
+    # qttranslations5-l10n
+    # tex-gyre  # recommended by texlive-fonts-recommended
+    # x11-xserver-utils
+    # x11proto-composite-dev
+    # x11proto-gl-dev
+    # x11proto-input-dev
+    # x11proto-randr-dev
+    # x11proto-xinerama-dev
+)
+
 
 # Source version control
-$APT_GET_INSTALL kdesdk-scripts  # for the colorsvn script
-$APT_GET_INSTALL git
-$APT_GET_INSTALL git-lfs
-$APT_GET_INSTALL subversion
+version_control_packages=(
+    git
+    git-lfs
+    subversion
+)
 
 # Configure/build toolchain
-$APT_GET_INSTALL automake
-$APT_GET_INSTALL build-essential
-$APT_GET_INSTALL clang
-$APT_GET_INSTALL cmake
-$APT_GET_INSTALL cmake-curses-gui
-$APT_GET_INSTALL gfortran
-$APT_GET_INSTALL pkg-config
-# Compiled and installed in install_compiled_dev_dependencies.sh because of a
-# bug in the SIP version supplied in APT.
-#
-# $APT_GET_INSTALL python-sip-dev
-# $APT_GET_INSTALL python3-sip-dev
+toolchain_packages=(
+    automake
+    clang
+    cmake
+    cmake-curses-gui
+    g++
+    gcc
+    gfortran
+    libc-dev
+    make
+    pkg-config
+    qt5-default
+    # Compiled and installed in install_compiled_dev_dependencies.sh because of a
+    # bug in the SIP version supplied in APT.
+    #
+    # python-sip-dev
+    # python3-sip-dev
+)
 
 # Development tools and convenience utilities
-$APT_GET_INSTALL bash-completion
-$APT_GET_INSTALL flake8
-$APT_GET_INSTALL gdb
-$APT_GET_INSTALL gedit
-$APT_GET_INSTALL gitg
-$APT_GET_INSTALL gitk
-$APT_GET_INSTALL kate
-$APT_GET_INSTALL kdiff3
-$APT_GET_INSTALL kompare
-$APT_GET_INSTALL kwrite
-$APT_GET_INSTALL locate
-$APT_GET_INSTALL meld
-$APT_GET_INSTALL nano
-$APT_GET_INSTALL python-autopep8
-$APT_GET_INSTALL python-dbg
-$APT_GET_INSTALL spyder
-$APT_GET_INSTALL vim
-$APT_GET_INSTALL xterm
+development_tools=(
+    bash-completion
+    flake8
+    gdb
+    gdbserver
+    gedit
+    gitg
+    gitk
+    kate
+    kdesdk-scripts  # contains the 'colorsvn' script (is it really worth it? the dependencies of kdesdk-scripts are huge...)
+    kdiff3
+    kompare
+    kwrite
+    locate
+    meld
+    nano
+    python-autopep8
+    python-dbg
+    spyder
+    vim
+    xterm
+)
+
+# TODO: review and add -dbg packages that contain the debug symbols
+# corresponding to installed -dev packages.
+debug_symbol_packages=(
+    libc6-dbg  # recommended by gdb
+)
 
 # Documentation building
-$APT_GET_INSTALL doxygen
-$APT_GET_INSTALL ghostscript
-$APT_GET_INSTALL graphviz
-$APT_GET_INSTALL pandoc
-$APT_GET_INSTALL python-epydoc
-$APT_GET_INSTALL python-sphinx
-$APT_GET_INSTALL texlive-latex-base
-$APT_GET_INSTALL texlive-fonts-recommended
-$APT_GET_INSTALL wkhtmltopdf
-
-# Framework-specific tools
-$APT_GET_INSTALL qt5-default
-
+documentation_building_packages=(
+    doxygen
+    ghostscript
+    graphviz
+    pandoc
+    python-epydoc
+    # python-sphinx  # installed with PIP
+    texlive-latex-base
+    texlive-fonts-recommended
+    wkhtmltopdf
+)
 
 # Python 3 packages
-$APT_GET_INSTALL python3-matplotlib
-$APT_GET_INSTALL python3-openpyxl
-# Compiled and installed in install_compiled_dev_dependencies.sh because of a
-# bug in the SIP version supplied in APT.
-#
-# $APT_GET_INSTALL pyqt5-dev
-# $APT_GET_INSTALL pyqt5-dev-tools
-# $APT_GET_INSTALL python3-pyqt5
-# $APT_GET_INSTALL python3-pyqt5.qtmultimedia
-# $APT_GET_INSTALL python3-pyqt5.qtopengl
-# $APT_GET_INSTALL python3-pyqt5.qtsvg
-# $APT_GET_INSTALL python3-pyqt5.qtwebkit
-# $APT_GET_INSTALL python3-pyqt5.qtsql
-# $APT_GET_INSTALL python3-pyqt5.qtwebsockets
-# $APT_GET_INSTALL python3-pyqt5.qtxmlpatterns
-# $APT_GET_INSTALL python3-pyqt5.qtx11extras
-$APT_GET_INSTALL python3-traits
-$APT_GET_INSTALL python3-pip
-$APT_GET_INSTALL python3-pydot
-$APT_GET_INSTALL python3-configobj
-$APT_GET_INSTALL python3-sphinx
-$APT_GET_INSTALL python3-sphinx-paramlinks
-$APT_GET_INSTALL python3-pandas
-$APT_GET_INSTALL python3-xmltodict
-$APT_GET_INSTALL python3-fastcluster
-$APT_GET_INSTALL python3-sqlalchemy
-$APT_GET_INSTALL python3-mysqldb
-$APT_GET_INSTALL python3-ipython-genutils
-# PyYAML is installed with pip because pre-commit requires a more recent
-# version. If we install it here, pip complains that it cannot reliably
-# uninstall it.
-#
-# $APT_GET_INSTALL python3-yaml
-$APT_GET_INSTALL python3-requests
-$APT_GET_INSTALL python3-jenkins
-$APT_GET_INSTALL python3-opengl
-$APT_GET_INSTALL python3-joblib
-$APT_GET_INSTALL python3-tqdm
-$APT_GET_INSTALL python3-dicom
-# TODO: The following packages used to be installed with pip, check that the APT versions work correctly
-$APT_GET_INSTALL cython3
-$APT_GET_INSTALL python3-numpy
-$APT_GET_INSTALL python3-zmq
-$APT_GET_INSTALL python3-ipython
-$APT_GET_INSTALL python3-jupyter-client
-$APT_GET_INSTALL python3-qtconsole
-$APT_GET_INSTALL python3-scipy
-$APT_GET_INSTALL python3-nbsphinx
-$APT_GET_INSTALL python3-sphinx-gallery
-$APT_GET_INSTALL python3-nibabel
-$APT_GET_INSTALL python3-skimage
-$APT_GET_INSTALL python3-sklearn
-$APT_GET_INSTALL python3-pyparsing
-$APT_GET_INSTALL python3-pydot
-$APT_GET_INSTALL python3-pydicom
-$APT_GET_INSTALL python3-fastcluster
+python3_packages=(
+    python3-crypto
+    python3-cryptography
+    python3-html2text
+    python3-openpyxl
+    python3-traits
+    python3-pip
+    python3-configobj
+    python3-sphinx
+    python3-sphinx-paramlinks
+    python3-pandas
+    python3-xmltodict
+    python3-sqlalchemy
+    python3-mysqldb
+    python3-ipython-genutils
+    python3-requests
+    python3-jenkins
+    python3-opengl
+    python3-joblib
+    python3-tqdm
 
+    # These packages used to be installed with PIP, presumably because they
+    # depend on NumPy, but it seems that they do not depend on a particular ABI
+    # version.
+    python3-nibabel
+    python3-pyparsing
+    python3-pydot
+    python3-dicom  # version 0.9.9 from Ubuntu, NOT python-pydicom
+
+    # These packages used to be installed with PIP, but that was probably a
+    # careless copy/paste from the Ubuntu 16.04 scripts.
+    cython3
+    python3-xlrd
+    python3-xlwt
+
+    # The following dependencies are installed with pip for various reasons,
+    # see install_pip_dev_dependencies.sh.
+    #
+    # TODO: when upgrading the base system (i.e. switching to Ubuntu 20.04),
+    # check that they work when installed with apt.
+    #
+    # python3-nipype
+    # python3-jenkinsapi
+    #
+    # python3-zmq
+    # python3-ipython
+    # python3-jupyter-client
+    # python3-qtconsole
+    # python3-nbsphinx
+    # python3-sphinx-gallery
+    #
+    # python3-numpy
+    # python3-scipy
+    # python3-skimage
+    # python3-sklearn
+    # python3-fastcluster
+
+    # PyYAML is installed with pip because pre-commit requires a more recent
+    # version. If we install it here, pip complains that it cannot reliably
+    # uninstall it.
+    #
+    # python3-yaml
+
+    # SIP and PyQT are compiled in install_compiled_dev_dependencies.sh to work
+    # around a bug in the APT version of sip 4.19 concerning virtual C++
+    # inheritance.
+    #
+    # pyqt5-dev
+    # pyqt5-dev-tools
+    # python3-pyqt5
+    # python3-pyqt5.qtmultimedia
+    # python3-pyqt5.qtopengl
+    # python3-pyqt5.qtsvg
+    # python3-pyqt5.qtwebkit
+    # python3-pyqt5.qtsql
+    # python3-pyqt5.qtwebsockets
+    # python3-pyqt5.qtxmlpatterns
+    # python3-pyqt5.qtx11extras
+)
 
 
 # Development packages of compiled libraries (C/C++/Fortran) that are used by
@@ -215,14 +297,28 @@ brainvisa_probable_dev_dependencies=(
     libpcl-dev
     libqt5webkit5-dev
     mpi-default-dev
+    qtwebengine5-dev
 )
 
-sudo apt-get -o Acquire::Retries=10 install --no-install-recommends -y \
+$SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
+    ${version_control_packages[@]} \
+    ${toolchain_packages[@]} \
+    ${development_tools[@]} \
+    ${debug_symbol_packages[@]} \
+    ${documentation_building_packages[@]} \
+    ${python3_packages[@]} \
     ${brainvisa_standard_dev_dependencies[@]} \
     ${brainvisa_toolboxes_dev_dependencies[@]} \
     ${brainvisa_probable_dev_dependencies[@]}
 
 
-sudo apt-get clean
-# delete all the apt list files since they're big and get stale quickly
-sudo rm -rf /var/lib/apt/lists/*
+###############################################################################
+# Free disk space by removing APT caches
+###############################################################################
+
+$SUDO apt-get clean
+
+if [ -z "$APT_NO_LIST_CLEANUP" ]; then
+    # delete all the apt list files since they're big and get stale quickly
+    $SUDO rm -rf /var/lib/apt/lists/*
+fi
