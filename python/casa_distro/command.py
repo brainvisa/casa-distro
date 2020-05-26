@@ -168,5 +168,9 @@ def main():
         kwargs['args_list'] = args + args_list
         args= []
 
-    result = command(*args, **kwargs)
+    if not kwargs and args == ['-h'] or args == ['--help']:
+        command = commands['help']
+        result = command([options.command[0]])
+    else:
+        result = command(*args, **kwargs)
     sys.exit(result)
