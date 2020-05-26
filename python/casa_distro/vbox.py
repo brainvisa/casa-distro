@@ -158,65 +158,21 @@ class VBoxMachine:
         share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'share')
         casa_run_docker = osp.join(share_dir, 'docker', 'casa-run', system)
 
+        install_file = osp.join(casa_run_docker, 'vbox.py')
+        if not osp.exists(install_file):
+            raise RuntimeError('VirtualBox install file missing: %s' % install_file)
+        
+        v = {}       
+        exec(compile(open(install_file, "rb").read(), install_file, 'exec'), v, v)
+        if 'install' not in v:
+            raise RuntimeError('No install function defined in %s' % install_file)
+        install_function = v['install']
+        
         self.start_and_wait(verbose=verbose, gui=gui)
-
-        if verbose:
-            six.print_('Creating /casa and', self.tmp_dir, 'in', self.vm,
-                    file=verbose, flush=True)
-        self.run_root('if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
-        self.run_root('if [ ! -e /casa ]; then mkdir /casa && /bin/chown {0}:{0} /casa; fi'.format(self.user))
-
-        if verbose:
-            six.print_('Copying files in', self.vm,
-                       file=verbose, flush=True)
-        for f in ('install_apt_dependencies.sh',
-                  'neurodebian.sources.list',
-                  'neurodebian-key.gpg',
-                  'install_pip_dependencies.sh',
-                  'install_compiled_dependencies.sh',
-                  'build_netcdf.sh',
-                  'build_sip_pyqt.sh',
-                  'cleanup_build_dependencies.sh'):
-            self.copy_root(osp.join(casa_run_docker, f), '/tmp')
-
-        if verbose:
-            six.print_('Copying entrypoint in', self.vm,
-                    file=verbose, flush=True)
-        self.copy_root(osp.join(casa_run_docker, 'entrypoint'),
-                                '/usr/local/bin/')
-        self.run_root('chmod a+rx /usr/local/bin/entrypoint')
-        self.run_root('chmod +x /tmp/*.sh')
-
-        if verbose:
-            six.print_('Running install_apt_dependencies.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/install_apt_dependencies.sh')
-        if verbose:
-            six.print_('Running install_pip_dependencies.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/install_pip_dependencies.sh')
-        if verbose:
-            six.print_('Running install_compiled_dependencies.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/install_compiled_dependencies.sh')
-
-        if verbose:
-            six.print_('Running cleanup_build_dependencies.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/cleanup_build_dependencies.sh')
-
-
-        if verbose:
-            six.print_('Cleanup files in', self.vm,
-                    file=verbose, flush=True)
-        self.run_root('rm -f /tmp/neurodebian-key.gpg '
-                    '/tmp/neurodebian.sources.list '
-                    '/tmp/install_apt_dependencies.sh '
-                    '/tmp/install_pip_dependencies.sh '
-                    '/tmp/install_compiled_dependencies.sh '
-                    '/tmp/build_netcdf.sh '
-                    '/tmp/build_sip_pyqt.sh '
-                    '/tmp/cleanup_build_dependencies.sh')
+        install_function(base_dir=casa_run_docker,
+                         vbox=self,
+                         verbose=verbose)
+        
 
     def install_dev(self, system='ubuntu-18.04', verbose=None, gui=False):
         """
@@ -227,64 +183,21 @@ class VBoxMachine:
         share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'share')
         casa_dev_docker = osp.join(share_dir, 'docker', 'casa-dev', system)
         
+        install_file = osp.join(casa_dev_docker, 'vbox.py')
+        if not osp.exists(install_file):
+            raise RuntimeError('VirtualBox install file missing: %s' % install_file)
+        
+        v = {}       
+        exec(compile(open(install_file, "rb").read(), install_file, 'exec'), v, v)
+        if 'install' not in v:
+            raise RuntimeError('No install function defined in %s' % install_file)
+        install_function = v['install']
+        
         self.start_and_wait(verbose=verbose, gui=gui)
-        self.run_root('if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
+        install_function(base_dir=casa_dev_docker,
+                         vbox=self,
+                         verbose=verbose)
 
-        if verbose:
-            six.print_('Copying files in', self.vm,
-                       file=verbose, flush=True)
-        for f in ('install_apt_dev_dependencies.sh',
-                  'install_pip_dev_dependencies.sh',
-                  'install_compiled_dev_dependencies.sh',
-                  'build_sip_pyqt.sh',
-                  'install_casa_dev_components.sh'):
-            self.copy_root(osp.realpath(osp.join(casa_dev_docker, f)), '/tmp')
-        self.run_root('chmod +x /tmp/*.sh')
-
-        self.copy_user(osp.join(casa_dev_docker, 'environment.sh'),
-                       '/casa')
-        self.run_user('chmod a+rx /casa/environment.sh')
-
-        self.copy_user(osp.realpath(osp.join(casa_dev_docker, 'svn.secret')),
-                       '/casa/conf')
-        self.copy_root(osp.realpath(osp.join(casa_dev_docker, 'svn')),
-                       '/usr/local/bin')
-        self.run_root('chmod a+rx /usr/local/bin/svn')
-        self.copy_root(osp.realpath(osp.join(casa_dev_docker, 'askpass-bioproj.sh')),
-                       '/usr/local/bin')
-        self.run_root('chmod a+rx /usr/local/bin/askpass-bioproj.sh')
-
-        self.copy_user(osp.realpath(osp.join(casa_dev_docker, 'list-shared-libs-paths.sh')),
-                       '/casa/')
-        self.run_user('chmod a+rx /casa/list-shared-libs-paths.sh')
-
-        if verbose:
-            six.print_('Running install_apt_dev_dependencies.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/install_apt_dev_dependencies.sh')
-        if verbose:
-            six.print_('Running install_pip_dev_dependencies.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/install_pip_dev_dependencies.sh')
-        if verbose:
-            six.print_('Running install_compiled_dev_dependencies.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/install_compiled_dev_dependencies.sh')
-
-        if verbose:
-            six.print_('Running install_casa_dev_components.sh',
-                    file=verbose, flush=True)
-        self.run_root('/tmp/install_casa_dev_components.sh')
-
-
-        if verbose:
-            six.print_('Cleanup files in', self.vm,
-                    file=verbose, flush=True)
-        self.run_root('rm -f /casa/install_apt_dev_dependencies.sh '
-                      '/casa/build_sip_pyqt.sh '
-                      '/casa/install_pip_dev_dependencies.sh '
-                      '/casa/install_compiled_dev_dependencies.sh '
-                      '/casa/install_casa_dev_components.sh')
 
 def vbox_import_image(image, vbox_machine, output,
                       verbose=None,
