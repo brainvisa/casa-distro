@@ -131,6 +131,7 @@ brainvisa_python_runtime_dependencies=(
     python-mysqldb
     python-openpyxl
     python-paramiko
+    python-pil  # used in anatomist, morphologist, nuclear_imaging, snapbase
     python-requests
     # python-six  # installed by pip (Ubuntu 18.04 ships 1.11.0, we need >= 1.13)
     python-sqlalchemy
@@ -154,6 +155,10 @@ brainvisa_python_runtime_dependencies=(
     python-xlrd
     python-xlwt
     python-pandas
+
+    # This package is a dependency of matplotlib but does not work when
+    # installed with PIP.
+    python-backports.functools-lru-cache
 
     # The following dependencies are installed with pip for various reasons,
     # see install_pip_dependencies.sh.

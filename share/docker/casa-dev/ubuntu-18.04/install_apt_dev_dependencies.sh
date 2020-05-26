@@ -168,6 +168,7 @@ python3_packages=(
     python3-sphinx
     python3-sphinx-paramlinks
     python3-pandas
+    python3-pil  # used in anatomist, morphologist, nuclear_imaging, snapbase
     python3-xmltodict
     python3-sqlalchemy
     python3-mysqldb
