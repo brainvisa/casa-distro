@@ -465,8 +465,8 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
     json.dump(metadata, open(metadata_output, 'w'), indent=4)
 
     vbox = VBoxMachine(vbox_machine)
-    vbox.install_run(verbose=sys.stdout,
-                     gui=str_to_bool(gui))
+    vbox.install('run', verbose=sys.stdout,
+                 gui=str_to_bool(gui))
 
 
 @command
@@ -533,11 +533,11 @@ def create_casa_dev(system_image=osp.join(default_build_workflow_repository, 'ca
     vbox = VBoxMachine(vbox_machine)
 
     if system_image:
-        vbox.install_run(verbose=sys.stdout,
-                         gui=str_to_bool(gui))
-
-    vbox.install_dev(verbose=sys.stdout,
+        vbox.install('run', verbose=sys.stdout,
                      gui=str_to_bool(gui))
+
+    vbox.install('dev', verbose=sys.stdout,
+                 gui=str_to_bool(gui))
 
 
 @command
