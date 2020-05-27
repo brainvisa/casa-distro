@@ -305,27 +305,19 @@ def create_build_workflow_directory(build_workflow_directory,
     else:
         casa_distro = {}
 
-    container_volumes = {'%(build_workflow_dir)s/home': '/casa/home',
-                         '%(build_workflow_dir)s/conf': '/casa/conf',
-                         '%(build_workflow_dir)s/src': '/casa/src',
-                         '%(build_workflow_dir)s/build': '/casa/build',
-                         '%(build_workflow_dir)s/install': '/casa/install',
-                         '%(build_workflow_dir)s/pack': '/casa/pack',
-                         '%(build_workflow_dir)s/tests': '/casa/tests',
-                         '%(build_workflow_dir)s/custom/src': '/casa/custom/src',
-                         '%(build_workflow_dir)s/custom/build': '/casa/custom/build'}
+    container_volumes = {'%(build_workflow_dir)s/host': '/casa/host'}
         
     container_env = {'CASA_DISTRO': '%(distro_name)s',
                      'CASA_BRANCH': '%(casa_branch)s',
                      'CASA_SYSTEM': '%(system)s',
                      'CASA_HOST_DIR': '%(build_workflow_dir)s',
-                     'BRAINVISA_TESTS_DIR': '/casa/tests/test',
-                     'BRAINVISA_TEST_REF_DATA_DIR': '/casa/tests/ref',
-                     'BRAINVISA_TEST_RUN_DATA_DIR':'/casa/tests/test'}
+                     'BRAINVISA_TESTS_DIR': '/casa/host/tests/test',
+                     'BRAINVISA_TEST_REF_DATA_DIR': '/casa/host/tests/ref',
+                     'BRAINVISA_TEST_RUN_DATA_DIR':'/casa/host/tests/test'}
 
     # Set default user home
     if casa_distro.get('container_env', {}).get('HOME') is None:
-        container_env['HOME'] = '/casa/home'
+        container_env['HOME'] = '/casa/host/home'
     
     init_cmd = casa_distro.get('init_workflow_cmd')
     if system.startswith('windows'):
@@ -402,7 +394,7 @@ def create_build_workflow_directory(build_workflow_directory,
                                  '-e', 'LD_LIBRARY_PATH=/usr/lib/nvidia-drv' ]
         casa_distro['container_gui_options'] = gui_options
     elif container_type == 'singularity':
-        container_options = ['--pwd', '/casa/home']
+        container_options = ['--pwd', '/casa/host/home']
         container_gui_env = {'DISPLAY': '${DISPLAY}',
                              'XAUTHORITY': '${HOME}/.Xauthority'}
         casa_distro['container_gui_env'] = container_gui_env
