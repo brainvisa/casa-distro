@@ -19,42 +19,47 @@ from . import downloader
 
 
 
-class RecipeGenerator:
+class SingularityBuilder:
     '''
     Class to interact with an existing VirtualBox machine.
     This machine is suposed to be based on a casa_distro system image.
     '''
-    
-    def __init__(self, filename):
-        self.filename = filename
-
+    def __init__(self, name):
+        self.name = name
+        self.tmpdir = None
+        self.user = None
+        self.sections = {}
+        
     def run_user(self, command):
         '''
         Run a shell command in VM as self.user
         '''
-
+        self.sections.setdefault('post', []).append(command)
 
     def run_root(self, command):
         '''
         Run a shell command in VM as root
         '''
+        self.sections.setdefault('post', []).append(command)
 
 
     def copy_root(self, source_file, dest_dir):
         '''
         Copy a file in VM as root
         '''
+        self.sections.setdefault('files', []).append('%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
 
     def copy_user(self, source_file, dest_dir):
         '''
         Copy a file in VM as self.user
         '''
-
+        self.sections.setdefault('files', []).append('%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
+        
     def write_recipe(self,
                      image_type,
-                     system='ubuntu-18.04', 
-                     verbose=None, 
-                     gui=False):
+                     system,
+                     system_image,
+                     verbose=None):
         """
         Install dependencies of casa-{image_type} image
         This method look for a share/docker/casa-{image_type}/{system}/vbox.py file
@@ -67,7 +72,12 @@ class RecipeGenerator:
             installation process.
         """
         
-        self.file = open(self.filename, 'w')
+        self.recipe = tempfile.NamedTemporaryFile()
+        #self.recipe = open('/tmp/recipe', 'w')
+        
+        self.recipe.write('''Bootstrap: localimage
+From: {system_image}
+'''.format(system_image=system_image))
         
         share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 
                              'share')
@@ -84,25 +94,21 @@ class RecipeGenerator:
         install_function = v['install']
         
         install_function(base_dir=casa_docker,
-                         vbox=self,
+                         builder=self,
                          verbose=verbose)
         
-        self.file.close()
-        del self.file
+        for section, lines in self.sections.items():
+            print('\n%%%s' % section, file=self.recipe)
+            for line in lines:
+                print('   ', line, file=self.recipe)
+        self.recipe.flush()
 
-
-def singularity_create_system(image_name, source, output, verbose):
-    tmp = tempfile.mkdtemp()
-    try:
-        output_dir, output_name = ops.split(output)
-        env = {
-            'SINGULARITY_PULLFOLDER', output_dir,
-            'SINGULARITY_CACHEDIR', tmp,
-        }
-        subprocess.check_call(['singularity', 'pull', '--name', name, 
-                               'docker://%s' % source], env=env)
-    finally:
-        shutil.rmtree(tmp)
+    def build_image(self, output):
+        subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, self.recipe.name])
+    
+    
+def singularity_create_system(image_name, source_image, output, verbose):
+    shutil.copy(source_image, output)
 
 
 def image_name_match(image_name, filters):

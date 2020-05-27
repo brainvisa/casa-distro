@@ -279,7 +279,7 @@ class VBoxMachine:
         
         self.start_and_wait(verbose=verbose, gui=gui)
         install_function(base_dir=casa_docker,
-                         vbox=self,
+                         builder=self,
                          verbose=verbose)
         
 

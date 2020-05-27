@@ -22,9 +22,12 @@ from casa_distro.command import command
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
                                   default_repository_server_directory,
-                                  default_repository_login)
-from casa_distro.defaults import default_download_url
+                                  default_repository_login,
+                                  default_download_url,
+                                  default_system)
 
+from casa_distro.singularity import (singularity_create_system,
+                                     SingularityBuilder)
 from casa_distro.vbox import (vbox_create_system,
                               vbox_import_image,
                               VBoxMachine)
@@ -287,8 +290,8 @@ def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{
     '''First step for the creation of base system VirtualBox image'''
     
     if container_type == 'singularity':
-        source_extension = 'simg'
-        output_extension = 'simg'
+        source_extension = 'sif'
+        output_extension = 'sif'
     elif container_type == 'vbox':
         source_extension = 'iso'
         output_extension = 'vdi'
@@ -305,7 +308,7 @@ def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{
             raise ValueError('Several source files found : {0}'.format(', '.join(sources)))
         source = sources[0]
 
-    image_name = image_name.format(source=osp.splitext(osp.basename(iso))[0])
+    image_name = image_name.format(source=osp.splitext(osp.basename(source))[0])
     output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name,
                                                            extension=output_extension)
 
@@ -314,10 +317,11 @@ def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{
     print('Create metadata in', metadata_output)
     metadata = {
         'image_name': image_name,
+        'system': '-'.join(image_name.split('-')[-2:]),
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
         'source': osp.basename(source),
-        'source_time': datetime.datetime.fromtimestamp(os.stat(iso).st_mtime).isoformat(),
+        'source_time': datetime.datetime.fromtimestamp(os.stat(source).st_mtime).isoformat(),
     }
     json.dump(metadata, open(metadata_output, 'w'), indent=4)
     
@@ -338,14 +342,18 @@ def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{
 
 
 @command
-def publish_system(system=osp.join(default_build_workflow_repository, 'casa-ubuntu-*'),
-                   container_type='vbox'):
+def publish_system(system=osp.join(default_build_workflow_repository, 'casa-ubuntu-*.{extension}'),
+                   container_type='singularity'):
     '''Upload a system image on brainvisa.info web site'''
     
-    if container_type != 'vbox':
-        raise ValueError('Only "vbox" container type requires to create a system image')
+    if container_type == 'singularity':
+        extension = 'sif'
+    elif container_type == 'vbox':
+        extension = 'vdi'
+    else:
+        raise ValueError('Unsupported container type: %s' % container_type)
     
-    system = system + '.vdi'
+    system = system.format(extension=extension)
     if not osp.exists(system):
         systems = glob.glob(osp.expandvars(osp.expanduser(system)))
         if len(systems) == 0:
@@ -364,20 +372,25 @@ def publish_system(system=osp.join(default_build_workflow_repository, 'casa-ubun
     
     check_call(['rsync', '--partial', '--inplace', '--progress',
                 system, metadata_file,
-                'brainvisa@brainvisa.info:prod/www/casa-distro/vbox/'])
+                'brainvisa@brainvisa.info:prod/www/casa-distro/%s/' % container_type])
 
 
 @command
-def download_system(system='casa-ubuntu-*',
-                    url= default_download_url + '/vbox',
+def download_system(system='casa-ubuntu-*.{extension}',
+                    url= default_download_url + '/{container_type}',
                     output=osp.join(default_build_workflow_repository, '{system}'),
-                    container_type='vbox'):
+                    container_type='singularity'):
     '''Download a system image from brainvisa.info web site'''
     
-    if container_type != 'vbox':
-        raise ValueError('Only "vbox" container type requires to create a system image')
+    if container_type == 'singularity':
+        extension = 'sif'
+    elif container_type == 'vbox':
+        extension = 'vdi'
+    else:
+        raise ValueError('Unsupported container type: %s' % container_type)
     
-    system = system + '.vdi'
+    system = system.format(extension=extension)
+    url = url.format(container_type=container_type)
     systems = [i for i in url_listdir(url) 
                if fnmatchcase(i, system)]
     if len(systems) == 0:
@@ -408,19 +421,24 @@ def download_system(system='casa-ubuntu-*',
 
 
 @command
-def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'casa-ubuntu-*.vdi'),
+def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'casa-ubuntu-*.{extension}'),
                     vbox_machine='casa-run', 
-                    output=osp.join(default_build_workflow_repository, '{vbox_machine}.vdi'),
-                    container_type='vbox',
+                    output=osp.join(default_build_workflow_repository, '{vbox_machine}.{extension}'),
+                    container_type='singularity',
                     memory='8192',
                     disk_size='131072',
                     gui='no'):
     '''Create a casa-run image'''
     
-    if container_type not in ('singularity', 'vbox'):
+    if container_type == 'singularity':
+        extension = 'sif'
+    elif container_type == 'vbox':
+        extension = 'vdi'
+    else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
     if system_image:
+        system_image = system_image.format(extension=extension)
         if not osp.exists(system_image):
             systems = glob.glob(osp.expandvars(osp.expanduser(system_image)))
             if len(systems) == 0:
@@ -429,11 +447,13 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
             elif len(systems) > 1:
                 raise ValueError('Several system images found : {0}'.format(', '.join(systems)))
             system_image = systems[0]
-        output = osp.expandvars(osp.expanduser(output)).format(vbox_machine=vbox_machine)
-        vbox_import_image(system_image, vbox_machine, output,
-                          verbose=sys.stdout,
-                          memory=memory,
-                          disk_size=disk_size)
+        output = osp.expandvars(osp.expanduser(output)).format(vbox_machine=vbox_machine,
+                                                               extension=extension)
+        if container_type == 'vbox':
+            vbox_import_image(system_image, vbox_machine, output,
+                            verbose=sys.stdout,
+                            memory=memory,
+                            disk_size=disk_size)
         parent_metadata = json.load(open(system_image + '.json'))
     else:
         # system_image was forced to empty in order to reuse an existing VBox VM
@@ -447,15 +467,23 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
     }
-    for key in ('iso', 'system'):
+    for key in ('source', 'system'):
         value = parent_metadata.get(key)
         if value is not None:
             metadata[key] = value
     json.dump(metadata, open(metadata_output, 'w'), indent=4)
 
-    vbox = VBoxMachine(vbox_machine)
-    vbox.install('run', verbose=sys.stdout,
-                 gui=str_to_bool(gui))
+    if container_type == 'singularity':
+        builder = SingularityBuilder(name=output)
+        builder.write_recipe('run', 
+                             system=metadata.get('system', default_system),
+                             system_image=system_image,
+                             verbose=sys.stdout)
+        builder.build_image(output)
+    elif container_type == 'vbox':
+        vbox = VBoxMachine(vbox_machine)
+        vbox.install('run', verbose=sys.stdout,
+                     gui=str_to_bool(gui))
 
 
 @command
@@ -508,7 +536,7 @@ def create_casa_dev(system_image=osp.join(default_build_workflow_repository, 'ca
             'container_type': container_type,
             'creation_time': datetime.datetime.now().isoformat(),
         }
-        for key in ('iso', 'system'):
+        for key in ('source', 'system'):
             value = parent_metadata.get(key)
             if value is not None:
                 metadata[key] = value
