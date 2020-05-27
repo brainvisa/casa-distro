@@ -280,71 +280,60 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 
 
 @command
-def create_system(iso=osp.join(default_build_workflow_repository, 'ubuntu-*.iso'), 
-                  image_name='casa-{iso}',
-                  output=osp.join(default_build_workflow_repository, '{image_name}.vdi'),
-                  container_type='vbox'):
+def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{extension}'), 
+                  image_name='casa-{source}',
+                  output=osp.join(default_build_workflow_repository, '{image_name}.{extension}'),
+                  container_type='singularity'):
     '''First step for the creation of base system VirtualBox image'''
     
-    if container_type != 'vbox':
-        raise ValueError('Only "vbox" container type requires to create a system image')
-    
-    if not osp.exists(iso):
-        isos = glob.glob(osp.expandvars(osp.expanduser(iso)))
-        if len(isos) == 0:
-            # Raise appropriate error for non existing file
-            open(iso)
-        elif len(isos) > 1:
-            raise ValueError('Several iso files found : {0}'.format(', '.join(isos)))
-        iso = isos[0]
+    if container_type == 'singularity':
+        source_extension = 'simg'
+        output_extension = 'simg'
+    elif container_type == 'vbox':
+        source_extension = 'iso'
+        output_extension = 'vdi'
+    else:
+        raise ValueError('Unsupported container type: %s' % container_type)
 
-    image_name = image_name.format(iso=osp.splitext(osp.basename(iso))[0])
-    output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name)
+    source = source.format(extension=source_extension)
+    if not osp.exists(source):
+        sources = glob.glob(osp.expandvars(osp.expanduser(source)))
+        if len(sources) == 0:
+            # Raise appropriate error for non existing file
+            open(source)
+        elif len(sources) > 1:
+            raise ValueError('Several source files found : {0}'.format(', '.join(sources)))
+        source = sources[0]
+
+    image_name = image_name.format(source=osp.splitext(osp.basename(iso))[0])
+    output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name,
+                                                           extension=output_extension)
 
 
     metadata_output = output + '.json'
     print('Create metadata in', metadata_output)
     metadata = {
         'image_name': image_name,
-        'container_type': 'vbox',
+        'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
-        'iso': osp.basename(iso),
-        'iso_time': datetime.datetime.fromtimestamp(os.stat(iso).st_mtime).isoformat(),
+        'source': osp.basename(source),
+        'source_time': datetime.datetime.fromtimestamp(os.stat(iso).st_mtime).isoformat(),
     }
     json.dump(metadata, open(metadata_output, 'w'), indent=4)
     
-    vbox_create_system(image_name=image_name, 
-                       iso=iso,
-                       output=output,
-                       verbose=sys.stdout)
+    if container_type == 'singularity':
+        message = singularity_create_system(image_name=image_name, 
+                                            source_image=source,
+                                            output=output,
+                                            verbose=sys.stdout)
+    elif container_type == 'vbox':
+        message = vbox_create_system(image_name=image_name, 
+                                    iso=source,
+                                    output=output,
+                                    verbose=sys.stdout)
     
-    print('''VirtualBox machine created. Now, perform the following steps:
-    1) Perform Ubuntu minimal installation with an autologin account named 
-       "brainvisa" and with password "brainvisa"
-    
-    2) Perform system updates and install packages required for kernel 
-       module creation :
-            
-            sudo apt update
-            sudo apt upgrade
-            sudo apt install gcc make perl
-
-    3) Disable automatic software update in "Update" tab of Software & Updates
-       properties. Otherwise installation may fail because installation
-       database is locked.
-
-    4) Set root password to "brainvisa" (this is necessary to automatically
-       connect to the VM to perform post-install)
-    
-    5) Reboot the VM
-
-    6) Download and install VirtualBox guest additions
-
-    7) Shut down the VM
-
-    8) Configure the VM in VirualBox (especially 3D acceleration, processors
-       and memory)
-''')
+    if message:
+        print(message)
     
 
 
@@ -428,8 +417,8 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
                     gui='no'):
     '''Create a casa-run image'''
     
-    if container_type != 'vbox':
-        raise NotImplementedError('Only "vbox" container type is implemented')
+    if container_type not in ('singularity', 'vbox'):
+        raise ValueError('Unsupported container type: %s' % container_type)
 
     if system_image:
         if not osp.exists(system_image):

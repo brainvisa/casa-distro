@@ -18,6 +18,93 @@ from casa_distro.defaults import default_download_url
 from . import downloader
 
 
+
+class RecipeGenerator:
+    '''
+    Class to interact with an existing VirtualBox machine.
+    This machine is suposed to be based on a casa_distro system image.
+    '''
+    
+    def __init__(self, filename):
+        self.filename = filename
+
+    def run_user(self, command):
+        '''
+        Run a shell command in VM as self.user
+        '''
+
+
+    def run_root(self, command):
+        '''
+        Run a shell command in VM as root
+        '''
+
+
+    def copy_root(self, source_file, dest_dir):
+        '''
+        Copy a file in VM as root
+        '''
+
+    def copy_user(self, source_file, dest_dir):
+        '''
+        Copy a file in VM as self.user
+        '''
+
+    def write_recipe(self,
+                     image_type,
+                     system='ubuntu-18.04', 
+                     verbose=None, 
+                     gui=False):
+        """
+        Install dependencies of casa-{image_type} image
+        This method look for a share/docker/casa-{image_type}/{system}/vbox.py file
+        and execute the install(base_dir, vbox, verbose) command that must
+        be defined in this file.
+        
+        base_dir is the directory containing the vbox.py file
+        vbox is the instance of VBoxMachine (i.e. self)
+        verbose is either None or a file where to write information about the
+            installation process.
+        """
+        
+        self.file = open(self.filename, 'w')
+        
+        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 
+                             'share')
+        casa_docker = osp.join(share_dir, 'docker', 'casa-%s' % image_type, system)
+
+        install_file = osp.join(casa_docker, 'vbox.py')
+        if not osp.exists(install_file):
+            raise RuntimeError('VirtualBox install file missing: %s' % install_file)
+        
+        v = {}       
+        exec(compile(open(install_file, "rb").read(), install_file, 'exec'), v, v)
+        if 'install' not in v:
+            raise RuntimeError('No install function defined in %s' % install_file)
+        install_function = v['install']
+        
+        install_function(base_dir=casa_docker,
+                         vbox=self,
+                         verbose=verbose)
+        
+        self.file.close()
+        del self.file
+
+
+def singularity_create_system(image_name, source, output, verbose):
+    tmp = tempfile.mkdtemp()
+    try:
+        output_dir, output_name = ops.split(output)
+        env = {
+            'SINGULARITY_PULLFOLDER', output_dir,
+            'SINGULARITY_CACHEDIR', tmp,
+        }
+        subprocess.check_call(['singularity', 'pull', '--name', name, 
+                               'docker://%s' % source], env=env)
+    finally:
+        shutil.rmtree(tmp)
+
+
 def image_name_match(image_name, filters):
     '''
     Tests if an image name matches one of the filters.
