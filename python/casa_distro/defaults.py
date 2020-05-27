@@ -12,4 +12,4 @@ default_download_url = 'http://%s/casa-distro'  % default_repository_server
 default_repository_login = 'brainvisa'
 default_distro = 'opensource'
 default_branch = 'latest_release'
-default_system = 'ubuntu-12.04'
+default_system = 'ubuntu-18.04'
