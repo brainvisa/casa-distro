@@ -2,10 +2,10 @@
 from __future__ import absolute_import
 import sys
 
-# Capsul current version
-version_major = 2
+# casa-distro version
+version_major = 3
 version_minor = 0
-version_micro = 7
+version_micro = 0
 version_extra = ""
 
 short_version = '{0}.{1}'.format(version_major, version_minor)
@@ -19,8 +19,7 @@ BRAINVISA_BUILD_MODEL='pure_python'
 
 # Project descriptions
 NAME = "casa-distro"
-DESCRIPTION = ('Framework to compile BrainVISA distributions via a Singularity '
-               'container.')
+DESCRIPTION = ('Framework to compile and distribute BrainVISA distributions')
 LONG_DESCRIPTION = '''
 ===========
 casa-distro
