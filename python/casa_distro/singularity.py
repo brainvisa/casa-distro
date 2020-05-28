@@ -29,6 +29,7 @@ class SingularityBuilder:
         self.tmpdir = None
         self.user = None
         self.sections = {}
+        self.recipe = None
         
     def run_user(self, command):
         '''
@@ -71,13 +72,13 @@ class SingularityBuilder:
         verbose is either None or a file where to write information about the
             installation process.
         """
+        if self.recipe is None:
+            self.recipe = tempfile.NamedTemporaryFile()
         
-        self.recipe = tempfile.NamedTemporaryFile()
-        #self.recipe = open('/tmp/recipe', 'w')
-        
-        self.recipe.write('''Bootstrap: localimage
-From: {system_image}
-'''.format(system_image=system_image))
+        if system_image:
+            self.recipe.write('''Bootstrap: localimage
+    From: {system_image}
+    '''.format(system_image=system_image))
         
         share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 
                              'share')

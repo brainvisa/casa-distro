@@ -3,10 +3,8 @@ import six
 import os.path as osp
 
 def install(base_dir, builder, verbose):
-    builder.run_root('if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(builder.tmp_dir))
-
     if verbose:
-        six.print_('Copying files in', builder.vm,
+        six.print_('Copying files in', builder.name,
                     file=verbose, flush=True)
     for f in ('install_apt_dev_dependencies.sh',
                 'install_pip_dev_dependencies.sh',
@@ -53,7 +51,7 @@ def install(base_dir, builder, verbose):
 
 
     if verbose:
-        six.print_('Cleanup files in', builder.vm,
+        six.print_('Cleanup files in', builder.name,
                 file=verbose, flush=True)
     builder.run_root('rm -f /casa/install_apt_dev_dependencies.sh '
                     '/casa/build_sip_pyqt.sh '
