@@ -1,5 +1,0 @@
-image_sources:
-  - name: casa-test
-    tags:
-      - p3q5
-    visibility: public

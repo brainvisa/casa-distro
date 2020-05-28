@@ -1,5 +1,0 @@
-image_sources:
-  - name: casa-test
-    tags:
-      - centos-7.4
-    visibility: public
