@@ -416,8 +416,7 @@ def create_build_workflow_directory(build_workflow_directory,
         os.makedirs(bwf_dir)
     
     os_dir = osp.join(distro_source_dir, system)
-    all_subdirs = ('conf', 'src', 'build', 'install', 'tests', 'pack',
-                   'custom', 'custom/src', 'custom/build', 'home', 'home/tmp')
+    all_subdirs = ('host', 'host/home')
     more_dirs = tuple(i for i in os.listdir(distro_source_dir) if i not in all_subdirs and 
                       osp.isdir(osp.join(distro_source_dir,i)))
     all_subdirs = all_subdirs + more_dirs
@@ -425,7 +424,7 @@ def create_build_workflow_directory(build_workflow_directory,
         all_subdirs += ('sys',)
     
     for subdir in all_subdirs:
-        sub_bwf_dir = osp.join(bwf_dir, 'host', subdir)
+        sub_bwf_dir = osp.join(bwf_dir, subdir)
         if not osp.exists(sub_bwf_dir):
             os.makedirs(sub_bwf_dir)
         sub_distro_dir = osp.join(distro_source_dir, subdir)
@@ -528,6 +527,8 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
                                   '.Xauthority')
         if os.path.exists(casaxhauth):
             os.unlink(casaxhauth)
+        print('!', homexauth)
+        print('!', casaxhauth)
         os.symlink(homexauth, casaxhauth)
 
     bashrc = os.path.join(build_workflow_directory, 'host', 'home', '.bashrc')

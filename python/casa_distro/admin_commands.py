@@ -305,8 +305,6 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
 
     if system_image:
         system_image = system_image.format(extension=extension)
-        parent_metadata = json.load(open(system_image + '.json'))
-        system = parent_metadata.get('system', default_system)
         if not osp.exists(system_image):
             systems = glob.glob(osp.expandvars(osp.expanduser(system_image)))
             if len(systems) == 0:
@@ -315,6 +313,8 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
             elif len(systems) > 1:
                 raise ValueError('Several system images found : {0}'.format(', '.join(systems)))
             system_image = systems[0]
+        parent_metadata = json.load(open(system_image + '.json'))
+        system = parent_metadata.get('system', default_system)
         output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name,
                                                                system=system,
                                                                extension=extension)

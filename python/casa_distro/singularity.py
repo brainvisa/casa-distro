@@ -336,7 +336,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
-    singularity = ['singularity', 'run', '--cleanenv']
+    singularity = ['singularity', 'run', '--cleanenv', '--home', '/casa/host/home']
     if cwd:
         singularity += ['--pwd', cwd]
     for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
