@@ -123,140 +123,6 @@ def create_latest_release(build_workflows_repository=default_build_workflow_repo
         raise
         
 @command
-def create_docker(image_names = '*', verbose=None, no_host_network=False):
-    '''create or update all casa-test and casa-dev docker images
-
-      image_names:
-          filter for images which should be rebuilt. May be a coma-separated list, wildcards are allowed. Default: *
-
-          Image names have generally the shape "cati/<type>:<system>". Image
-          types and systems may be one of the buitin ones found in
-          casa-distro (casa-test, casa-dev, cati_platform), or one user-defined
-          which will be looked for in $HOME/.config/casa-distro/docker,
-          $HOME/.casa-distro/docker, or in the share/docker subdirectory inside
-          the main repository directory.
-    '''
-    from casa_distro.docker import create_docker_images
-    
-    image_name_filters = image_names.split(',')
-    count = create_docker_images(
-        image_name_filters = image_name_filters,
-        no_host_network=bool(no_host_network))
-    if count == 0:
-        print('No image match filter "%s"' % image_names, file=sys.stderr)
-        return 1
-
-@command
-def update_docker(image_names = '*', verbose=None):
-    '''pull all casa-test and casa-dev docker images from DockerHub'''
-    from casa_distro.docker import update_docker_images
-    
-    image_name_filters = image_names.split(',')
-    count = update_docker_images(
-        image_name_filters = image_name_filters)
-    if count == 0:
-        print('No image match filter "%s"' % image_names, file=sys.stderr)
-        return 1
-
-
-@command
-def publish_docker(image_names = '*', verbose=None):
-    '''publish docker images on dockerhub.com for public images or sandbox.brainvisa.info for private images'''
-    from casa_distro.docker import publish_docker_images
-    image_name_filters = image_names.split(',')
-    count = publish_docker_images(
-        image_name_filters = image_name_filters)
-    if count == 0:
-        print('No image match filter "%s"' % image_names, file=sys.stderr)
-        return 1
-
-@command
-def create_singularity(image_names = 'cati/*',
-                       build_workflows_repository=default_build_workflow_repository,
-                       verbose=None):
-    '''create or update all casa-test and casa-dev docker images'''
-    from casa_distro.singularity import create_singularity_images
-    
-    image_name_filters = image_names.split(',')
-    count = create_singularity_images(
-        bwf_dir=build_workflows_repository,
-        image_name_filters = image_name_filters,
-        verbose=verbose)
-    if count == 0:
-        print('No image match filter "%s"' % image_names, file=sys.stderr)
-        return 1
-
-@command
-def publish_singularity(image_names = 'cati/*',
-                        build_workflows_repository=default_build_workflow_repository,
-                        repository_server=default_repository_server, 
-                        repository_server_directory=default_repository_server_directory,
-                        login=default_repository_login, verbose=None):
-    '''Publish singularity images to the sftp server'''
-    verbose = log.getLogFile(verbose)
-    
-    image_name_filters = [i.replace('/', '_').replace(':', '_') for i in image_names.split(',')]
-    image_files = []
-    for filter in image_name_filters:
-        image_files += glob.glob(osp.join(build_workflows_repository, filter + '.simg'))
-    if not image_files:
-        print('No image match filter "%s"' % image_names, file=sys.stderr)
-        return 1
-
-    # check if uploads are needed or if images already habe valid md5 on the
-    # server
-    server_url = default_download_url
-    valid_files = []
-    for image_file in image_files:
-        hash_path = image_file + '.md5'
-        hash_file = os.path.basename(hash_path)
-        with open(hash_path) as f:
-            local_hash = f.read()
-        tmp = tempfile.NamedTemporaryFile()
-        url = '%s/%s' % (server_url, hash_file)
-        try:
-            if verbose:
-                print('check image:', url)
-            urlretrieve(url, tmp.name)
-            with open(tmp.name) as f:
-                remote_hash = f.read()
-            if remote_hash == local_hash:
-                valid_files.append(image_file)
-                if verbose:
-                    print('Not updating', image_file, 'which is up-to-date',
-                          file=verbose)
-        except Exception as e:
-            pass # not on server
-    image_files = [f2 for f2 in image_files if f2 not in valid_files]
-    if len(image_files) == 0:
-        # nothing to do
-        if verbose:
-            print('All images are up-to-date.')
-        return
-
-    lftp_script = tempfile.NamedTemporaryFile()
-    if login:
-        remote = 'sftp://%s@%s' % (login, repository_server)
-    else:
-        remote = 'sftp://%s' % repository_server
-    print('connect', remote, file=lftp_script)
-    print('cd', repository_server_directory, file=lftp_script)
-    for f in image_files:
-        print('put', f, file=lftp_script)
-        print('put', f + '.md5', file=lftp_script)
-        if os.path.exists(f + '.dockerid'):
-            print('put', f + '.dockerid', file=lftp_script)
-    lftp_script.flush()
-    cmd = ['lftp', '-f', lftp_script.name]
-    if verbose:
-        print('Running', *cmd, file=verbose)
-        print('-' * 10, lftp_script.name, '-'*10, file=verbose)
-        with open(lftp_script.name) as f:
-            print(f.read(), file=verbose)
-        print('-'*40, file=verbose)
-    check_call(cmd)
-
-@command
 def publish_build_workflows(distro='*', branch='*', system='*', 
                             build_workflows_repository=default_build_workflow_repository, 
                             repository_server=default_repository_server, 
@@ -583,15 +449,18 @@ def create_casa_dev(system_image=osp.join(default_build_workflow_repository, 'ca
 
 
 @command
-def publish_image(image=osp.join(default_build_workflow_repository, 'casa-{image_type}{extension}'),
+def publish_image(image=osp.join(default_build_workflow_repository, 'casa-{image_type}.{extension}'),
                   image_type='run',
-                  container_type='vbox'):
-    '''Upload a casa_run image on brainvisa.info web site'''
+                  container_type='singularity'):
+    '''Upload a run or dev image on brainvisa.info web site'''
     
-    if container_type != 'vbox':
-        raise ValueError('Only "vbox" container type is supported for upload')
+    if container_type == 'singularity':
+        extension = 'sif'
+    elif container_type == 'vbox':
+        extension = 'vdi'
+    else:
+        raise ValueError('Unsupported container type: %s' % container_type)
     
-    extension = '.vdi'
     image = image.format(image_type=image_type,
                          extension=extension)
     if not osp.exists(image):
@@ -612,4 +481,4 @@ def publish_image(image=osp.join(default_build_workflow_repository, 'casa-{image
     
     check_call(['rsync', '-P', '--progress',
                 metadata_file, image, 
-                'brainvisa@brainvisa.info:prod/www/casa-distro/vbox/'])
+                'brainvisa@brainvisa.info:prod/www/casa-distro/%s/' % container_type])
