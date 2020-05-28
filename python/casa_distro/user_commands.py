@@ -12,7 +12,6 @@ import traceback
 import json
 
 from casa_distro import six
-from casa_distro import linux_os_ids
 from casa_distro.command import command
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
@@ -20,7 +19,8 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_login,
                                   default_distro,
                                   default_branch,
-                                  default_download_url)
+                                  default_download_url,
+                                  default_system)
 from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         create_build_workflow_directory,
                                         update_container_image, merge_config,
@@ -143,7 +143,7 @@ def create(distro_source=default_distro,
            container_image = None,
            container_test_image = None,
            branch=default_branch,
-           system=linux_os_ids[0],
+           system=default_system,
            not_override='bv_maker.cfg,svn.secret',
            build_workflows_repository=default_build_workflow_repository,
            verbose=None):
@@ -167,9 +167,9 @@ def create(distro_source=default_distro,
         of the distro source (or distro source directory) is used.
     
     container_type: type of container thechnology to use. It can be either 
-        'singularity', 'docker' or None (the default). If it is None,
+        'singularity', 'vbox', 'docker' or None (the default). If it is None,
         it first try to see if Singularity is installed or try to see if
-        Docker is installed.
+        VirtualBox is installed and then try to see if Docker is installed.
     
     container_image: image to use for the compilation container. If no
         value is given, uses the one defined in the distro.

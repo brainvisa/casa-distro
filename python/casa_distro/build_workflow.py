@@ -11,8 +11,9 @@ import shutil
 import json
 import copy
 
+from casa_distro.defaults import default_system
 from casa_distro import six
-from casa_distro import log, share_directories, linux_os_ids
+from casa_distro import log, share_directories
 from casa_distro.docker import run_docker, update_docker_image
 from casa_distro.singularity import (download_singularity_image,
                                      run_singularity,
@@ -36,10 +37,10 @@ def update_dict_recursively(dict_to_update, dict_to_read):
 def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
                         system='*'):
     for i in sorted(glob.glob(osp.join(build_workflows_repository, distro,
-                                       '%s_%s' % (branch, system), 'conf'))):
+                                       '%s_%s' % (branch, system), 'host', 'conf'))):
         if not os.path.exists(osp.join(i, 'casa_distro.json')):
             continue # not a casa-distro 2.x directory
-        d, branch_system = osp.split(osp.dirname(i))
+        d, branch_system = osp.split(osp.dirname(osp.dirname(i)))
         the_branch, the_system = branch_system.rsplit('_', 1)
         d, the_distro  = osp.split(d)
         yield (the_distro, the_branch, the_system, osp.dirname(i))
@@ -173,14 +174,14 @@ def check_svn_secret(bwf_dir, warn_type='NOTE'):
     --------
         True if the file is here, False if it is missing
     '''
-    if not os.path.exists(osp.join(bwf_dir, 'conf', 'svn.secret')):
+    if not os.path.exists(osp.join(bwf_dir, 'host', 'conf', 'svn.secret')):
         print('\n------------------------------------------------------------')
         print('**%s:**' % warn_type)
         print('Before using "casa_distro bv_maker" you will have to '
               'create the svn.secret file with your Bioproj login / password '
               'in order to access the BrainVisa repository.')
         print('Place it at the following location:\n')
-        print(osp.join(bwf_dir, 'conf', 'svn.secret'))
+        print(osp.join(bwf_dir, 'host', 'conf', 'svn.secret'))
         print('\nThis file is a shell script that must set the variables '
               'SVN_USERNAME and SVN_PASSWORD. Do not forget to properly quote '
               'the values if they contains special characters.')
@@ -192,7 +193,7 @@ def check_svn_secret(bwf_dir, warn_type='NOTE'):
               '"public" login/password: brainvisa / Soma2009\n')
         print('Remember also that you can edit and customize the projects to '
               'be built, by editing the following file:\n')
-        print(osp.join(bwf_dir, 'conf', 'bv_maker.cfg'))
+        print(osp.join(bwf_dir, 'host', 'conf', 'bv_maker.cfg'))
         print('------------------------------------------------------------')
         print()
         return False
@@ -206,7 +207,7 @@ def create_build_workflow_directory(build_workflow_directory,
                                     container_image = None,
                                     container_test_image = None,
                                     casa_branch='latest_release',
-                                    system=linux_os_ids[0],
+                                    system=default_system,
                                     not_override=[],
                                     verbose=None):
     '''
@@ -247,17 +248,17 @@ def create_build_workflow_directory(build_workflow_directory,
     container_image: image to use for the compilation container. If no
         value is given, uses the one defined in the distro. The name
         of the image can contain the following substring are replaced:
-          %(distro_name): the name of the distro
-          %(distro_source): the name of the distro source template
-          %(casa_branch): the name of the CASA source branch
-          %(sysem): the name of the operating system
+          {distro_name}: the name of the distro
+          {distro_source}: the name of the distro source template
+          {casa_branch}: the name of the CASA source branch
+          {sysem}: the name of the operating system
     container_test_image: image to use for the packages test container. If no
         value is given, uses the one defined in the distro. The name
         of the image can contain the following substring are replaced:
-          %(distro_name): the name of the distro
-          %(distro_source): the name of the distro source template
-          %(casa_branch): the name of the CASA source branch
-          %(sysem): the name of the operating system
+          {distro_name}: the name of the distro
+          {distro_source}: the name of the distro source template
+          {casa_branch}: the name of the CASA source branch
+          {sysem}: the name of the operating system
     casa_branch:
         bv_maker branch to use (latest_release, bug_fix or trunk)
     system:
@@ -298,13 +299,15 @@ def create_build_workflow_directory(build_workflow_directory,
                            'release_candidate'):
         raise ValueError('Invalid value for casa_branch: %s' % repr(casa_branch))
     
-    casa_distro_source_json = osp.join(distro_source_dir, 'conf',
+    casa_distro_source_json = osp.join(distro_source_dir, 'host', 'conf',
                                        'casa_distro.json')
     if os.path.exists(casa_distro_source_json):
         casa_distro = json.load(open(casa_distro_source_json))
     else:
         casa_distro = {}
-
+    if 'system' not in casa_distro:
+        casa_distro['system'] = system
+        
     container_volumes = {'%(build_workflow_dir)s/host': '/casa/host'}
         
     container_env = {'CASA_DISTRO': '%(distro_name)s',
@@ -350,7 +353,7 @@ def create_build_workflow_directory(build_workflow_directory,
         container_image = casa_distro.get('container_image')
         if container_image is None:
             raise ValueError('No container_image found in %s' % casa_distro_source_json)
-    container_image = container_image % casa_distro
+    container_image = container_image.format(**casa_distro)
     if os.path.exists(container_image) and not os.path.isabs(container_image):
         container_image = os.path.abspath(container_image)
     casa_distro['container_image'] = container_image
@@ -422,9 +425,9 @@ def create_build_workflow_directory(build_workflow_directory,
         all_subdirs += ('sys',)
     
     for subdir in all_subdirs:
-        sub_bwf_dir = osp.join(bwf_dir, subdir)
+        sub_bwf_dir = osp.join(bwf_dir, 'host', subdir)
         if not osp.exists(sub_bwf_dir):
-            os.mkdir(sub_bwf_dir)
+            os.makedirs(sub_bwf_dir)
         sub_distro_dir = osp.join(distro_source_dir, subdir)
         if osp.exists(sub_distro_dir):
             for i in os.listdir(sub_distro_dir):
@@ -436,18 +439,19 @@ def create_build_workflow_directory(build_workflow_directory,
                 cp(osp.join(sub_os_dir, i), osp.join(sub_bwf_dir, i),
                    not_override=not_override, verbose=verbose)
     
-    casa_distro_json = osp.join(bwf_dir, 'conf', 'casa_distro.json')
+    casa_distro_json = osp.join(bwf_dir, 'host', 'conf', 'casa_distro.json')
     json.dump(casa_distro, open(casa_distro_json, 'w'), indent=4)
 
     check_svn_secret(bwf_dir)
-    
-    if container_type == 'singularity':
-        update_singularity_image(
-            osp.dirname(osp.dirname(build_workflow_directory)),
-            container_image,
-            verbose=verbose)
 
-    update_build_workflow(build_workflow_directory)
+    # TODO
+    #if container_type == 'singularity':
+        #update_singularity_image(
+            #osp.dirname(osp.dirname(build_workflow_directory)),
+            #container_image,
+            #verbose=verbose)
+
+    update_build_workflow(build_workflow_directory, verbose=verbose)
 
     if init_cmd:
         # Initialize container for current user
@@ -520,13 +524,13 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
     # through ssh ($HOME is mounted in singularity)
     homexauth = os.path.join(os.environ['HOME'], '.Xauthority')
     if os.path.exists(homexauth):
-        casaxhauth = os.path.join(build_workflow_directory, 'home',
+        casaxhauth = os.path.join(build_workflow_directory, 'host', 'home',
                                   '.Xauthority')
         if os.path.exists(casaxhauth):
             os.unlink(casaxhauth)
         os.symlink(homexauth, casaxhauth)
 
-    bashrc = os.path.join(build_workflow_directory, 'home', '.bashrc')
+    bashrc = os.path.join(build_workflow_directory, 'host', 'home', '.bashrc')
     if not os.path.exists(bashrc):
         open(bashrc, 'w').write(r'''
 if [ -f /etc/profile ]; then
@@ -584,7 +588,7 @@ def run_container(bwf_directory, command, gui=False, interactive=False,
                   container_options=[], verbose=False, conf='dev'):
     '''Run any command in the container defined in the build workflow directory
     '''
-    casa_distro_json = osp.join(bwf_directory, 'conf', 'casa_distro.json')
+    casa_distro_json = osp.join(bwf_directory, 'host', 'conf', 'casa_distro.json')
     casa_distro = json.load(open(casa_distro_json))
     casa_distro = merge_config(casa_distro, conf)
     casa_distro['build_workflow_dir'] = bwf_directory

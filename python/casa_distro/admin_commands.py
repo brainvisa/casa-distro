@@ -289,7 +289,7 @@ def download_system(system='casa-ubuntu-*.{extension}',
 @command
 def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'casa-ubuntu-*.{extension}'),
                     image_name='casa-run', 
-                    output=osp.join(default_build_workflow_repository, '{image_name}.{extension}'),
+                    output=osp.join(default_build_workflow_repository, '{image_name}-{system}.{extension}'),
                     container_type='singularity',
                     memory='8192',
                     disk_size='131072',
@@ -305,6 +305,8 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
 
     if system_image:
         system_image = system_image.format(extension=extension)
+        parent_metadata = json.load(open(system_image + '.json'))
+        system = parent_metadata.get('system', default_system)
         if not osp.exists(system_image):
             systems = glob.glob(osp.expandvars(osp.expanduser(system_image)))
             if len(systems) == 0:
@@ -314,17 +316,18 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
                 raise ValueError('Several system images found : {0}'.format(', '.join(systems)))
             system_image = systems[0]
         output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name,
+                                                               system=system,
                                                                extension=extension)
         if container_type == 'vbox':
             vbox_import_image(system_image, image_name, output,
                             verbose=sys.stdout,
                             memory=memory,
                             disk_size=disk_size)
-        parent_metadata = json.load(open(system_image + '.json'))
     else:
         # system_image was forced to empty in order to reuse an existing VBox VM
         # therefore no metadata can be found.
         parent_metadata = {}
+        system = default_system
     
     image_name = osp.splitext(osp.basename(output))[0]
     metadata_output = output + '.json'
@@ -342,7 +345,7 @@ def create_casa_run(system_image=osp.join(default_build_workflow_repository, 'ca
     if container_type == 'singularity':
         builder = SingularityBuilder(name=output)
         builder.write_recipe('run', 
-                             system=metadata.get('system', default_system),
+                             system=system,
                              system_image=system_image,
                              verbose=sys.stdout)
         builder.build_image(output)

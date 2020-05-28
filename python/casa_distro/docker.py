@@ -16,7 +16,7 @@ import re
 
 from casa_distro import log, six
 import casa_distro.info
-from casa_distro import share_directories, linux_os_ids
+from casa_distro import share_directories
 
 
 

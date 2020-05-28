@@ -240,8 +240,8 @@ def get_image_filename(container_image, build_workflows_repository=None):
     image_file = container_image.replace('/', '_').replace(':', '_')
     if not osp.isabs(image_file):
         image_file = osp.join(build_workflows_repository, image_file)
-    if not osp.exists(image_file) and not image_file.endswith('.simg'):
-        image_file += '.simg'
+    if not osp.exists(image_file) and not image_file.endswith('.sif'):
+        image_file += '.sif'
     return image_file
 
 
