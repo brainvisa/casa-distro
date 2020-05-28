@@ -150,7 +150,7 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 
 @command
 def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{extension}'), 
-                  image_name='casa-{source}',
+                  image_name='casa-{system}',
                   output=osp.join(default_build_workflow_repository, '{image_name}.{extension}'),
                   container_type='singularity'):
     '''First step for the creation of base system VirtualBox image'''
@@ -174,7 +174,11 @@ def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{
             raise ValueError('Several source files found : {0}'.format(', '.join(sources)))
         source = sources[0]
 
-    image_name = image_name.format(source=osp.splitext(osp.basename(source))[0])
+    system, system_version = osp.basename(source).split('-')[:2]
+    system_version = '.'.join(system_version.split('.')[:2])
+    system = system + '-' + system_version
+    image_name = image_name.format(system=system,
+                                   source=osp.splitext(osp.basename(source))[0])
     output = osp.expandvars(osp.expanduser(output)).format(image_name=image_name,
                                                            extension=output_extension)
 
@@ -183,7 +187,7 @@ def create_system(source=osp.join(default_build_workflow_repository, 'ubuntu-*.{
     print('Create metadata in', metadata_output)
     metadata = {
         'image_name': image_name,
-        'system': '-'.join(image_name.split('-')[-2:]),
+        'system': system,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
         'origin': osp.basename(source),
