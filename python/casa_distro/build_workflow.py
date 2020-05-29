@@ -13,11 +13,10 @@ import copy
 
 from casa_distro.defaults import default_system
 from casa_distro import six
-from casa_distro import log, share_directories
+from casa_distro import share_directories
+from casa_distro.log import verbose_file
 from casa_distro.docker import run_docker, update_docker_image
-from casa_distro.singularity import (download_singularity_image,
-                                     run_singularity,
-                                     update_singularity_image)
+from casa_distro.singularity import run_singularity
 
 
 def update_dict_recursively(dict_to_update, dict_to_read):
@@ -269,7 +268,7 @@ def create_build_workflow_directory(build_workflow_directory,
     * Typically created by bv_maker but may be extended in the future.
 
     '''
-    verbose = log.getLogFile(verbose)
+    verbose = verbose_file(verbose)
 
     for share_directory in share_directories():
         distro_source_dir = osp.join(share_directory, 'distro', distro_source)
@@ -527,8 +526,6 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
                                   '.Xauthority')
         if os.path.exists(casaxhauth):
             os.unlink(casaxhauth)
-        print('!', homexauth)
-        print('!', casaxhauth)
         os.symlink(homexauth, casaxhauth)
 
     bashrc = os.path.join(build_workflow_directory, 'host', 'home', '.bashrc')

@@ -12,14 +12,15 @@ from subprocess import check_call, check_output
 import glob
 import sys
 
-from casa_distro import log, six
+from casa_distro import six
 from casa_distro.hash import file_hash, check_hash
 from casa_distro.defaults import default_download_url
+from casa_distro.log import verbose_file
 from . import downloader
 
 
 
-class SingularityBuilder:
+class RecipeBuilder:
     '''
     Class to interact with an existing VirtualBox machine.
     This machine is suposed to be based on a casa_distro system image.
@@ -29,7 +30,6 @@ class SingularityBuilder:
         self.tmpdir = None
         self.user = None
         self.sections = {}
-        self.recipe = None
         
     def run_user(self, command):
         '''
@@ -55,284 +55,55 @@ class SingularityBuilder:
         Copy a file in VM as self.user
         '''
         self.sections.setdefault('files', []).append('%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
-        
-    def write_recipe(self,
-                     image_type,
-                     system,
-                     system_image,
-                     verbose=None):
-        """
-        Install dependencies of casa-{image_type} image
-        This method look for a share/docker/casa-{image_type}/{system}/vbox.py file
-        and execute the install(base_dir, vbox, verbose) command that must
-        be defined in this file.
-        
-        base_dir is the directory containing the vbox.py file
-        vbox is the instance of VBoxMachine (i.e. self)
-        verbose is either None or a file where to write information about the
-            installation process.
-        """
-        if self.recipe is None:
-            self.recipe = tempfile.NamedTemporaryFile()
-        
-        if system_image:
-            self.recipe.write('''Bootstrap: localimage
-    From: {system_image}
-    '''.format(system_image=system_image))
-        
-        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 
-                             'share')
-        casa_docker = osp.join(share_dir, 'docker', 'casa-%s' % image_type, system)
+    
+    def write(self, file):
+        for section, lines in self.sections.items():
+            print('\n%%%s' % section, file=file)
+            for line in lines:
+                print('   ', line, file=file)
+        file.flush()
+    
+    
+def create_image(base, base_metadata, 
+                 output, metadata,
+                 build_file,
+                 verbose, **kwargs):
+    type = metadata['type']
+    if type == 'system':
+        shutil.copy(base, output)
+    else:
+        recipe = tempfile.NamedTemporaryFile()
+        recipe.write('''Bootstrap: localimage
+    From: {base}
 
-        install_file = osp.join(casa_docker, 'vbox.py')
-        if not osp.exists(install_file):
-            raise RuntimeError('VirtualBox install file missing: %s' % install_file)
-        
+%runscript
+    . /casa/environment.sh
+    exec $@
+'''.format(base=base))
         v = {}       
-        exec(compile(open(install_file, "rb").read(), install_file, 'exec'), v, v)
+        exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
         if 'install' not in v:
-            raise RuntimeError('No install function defined in %s' % install_file)
+            raise RuntimeError('No install function defined in %s' % build_file)
         install_function = v['install']
         
-        install_function(base_dir=casa_docker,
-                         builder=self,
+        recipe_builder = RecipeBuilder(output)
+        install_function(base_dir=osp.dirname(build_file),
+                         builder=recipe_builder,
                          verbose=verbose)
-        
-        for section, lines in self.sections.items():
-            print('\n%%%s' % section, file=self.recipe)
-            for line in lines:
-                print('   ', line, file=self.recipe)
-        self.recipe.flush()
-
-    def build_image(self, output):
-        subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, self.recipe.name])
-    
-    
-def singularity_create_system(image_name, source_image, output, verbose):
-    shutil.copy(source_image, output)
+        recipe_builder.write(recipe)
+        if verbose:
+            print('---------- Singularity recipe ----------', file=verbose)
+            print(open(recipe.name).read(), file=verbose)
+            print('----------------------------------------', file=verbose)
+            verbose.flush()
+        subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
 
 
-def image_name_match(image_name, filters):
-    '''
-    Tests if an image name matches one of the filters.
-    It uses fnmatch syntax.
-    '''     
-    for f in filters:
-        if fnmatch.fnmatch(image_name, f):
-            return True
-
-def create_singularity_images(bwf_dir, image_name_filters=['cati/*'],
-                              verbose=None):
-    '''
-    Creates singularity images by converting to docker images.
-    Return the number of images processed.
-    '''
-    verbose = log.getLogFile(verbose)
-    output = check_output(['docker', 'images', '--no-trunc'])
-    images_tags = [i.split(None, 3)[:3] for i in output.split('\n')[1:] if i.strip()]
-
-    images = dict([('%s:%s' %(i,t), iid) for i, t, iid in images_tags
-                   if i != '<none>' and t not in ('<none>', 'latest')])
-    images = dict([(i, iid) for i, iid in images.items()
-                   if image_name_match(i, image_name_filters)])
-    for docker_image, iid in images.items():
-        singularity_image = osp.join(
-            bwf_dir,
-            docker_image.replace('/', '_').replace(':','_') + '.simg')
-        docker_id_file = singularity_image + '.dockerid'
-        if os.path.exists(docker_id_file):
-            try:
-                did = open(docker_id_file).read().strip()
-                if did == iid:
-                    print('image', singularity_image, 'is up-to-date.')
-                    continue
-            except:
-                print('could not read latest docker ID for image',
-                      singularity_image, ': recreating it.')
-        print('Creating image', singularity_image, 'from', docker_image,
-              file=verbose)
-        if osp.exists(singularity_image):
-            os.remove(singularity_image)
-        stdout = subprocess.check_output(['docker', 'inspect', docker_image])
-        image_info = json.loads(stdout)
-        docker_img_config = image_info[0]['Config']
-        env = dict(i.split('=', 1) for i in docker_img_config.get('Env',[]))
-        env_path = {}
-        env_lang = ''
-        for v in env.keys():
-            if v.endswith('PATH'):
-                env_path[v] = env.pop(v)
-            elif v == 'LANG':
-                env_lang = '    if [ -z "${LANG}" -o "${LANG}" = "C" ]; then export LANG=%s; fi' % env.pop(v)
-            
-        entry_point = docker_img_config.get('Entrypoint')
-        cmd = docker_img_config.get('Cmd')
-        if entry_point:
-            runscript = [[e] for e in entry_point]
-            if cmd:
-                runscript += [cmd]
-        elif cmd:
-            runscript = [cmd]
-        tmp = tempfile.mkdtemp()
-        try:
-            container = subprocess.check_output(['docker', 'create', docker_image]).strip()
-            try:
-                docker_files = osp.join(tmp, 'docker')
-                if not osp.exists(docker_files):
-                    os.mkdir(docker_files)
-                docker = subprocess.Popen(['docker', 'export', container], stdout=subprocess.PIPE)
-                tar = subprocess.Popen(['sudo', 'tar', 'x'], stdin=docker.stdout, cwd=docker_files)
-                tar.wait()
-                try:
-                    recipe = osp.join(tmp, 'singularity_recipe')
-                    out = open(recipe, 'w')
-                    print('''Bootstrap: localimage
-From: %s
-
-%%help
-    Singularity image created from Docker image %s
-
-%%environment
-%s
-%s
-%s
-%s
-%s
-
-%%runscript
-%s''' % (docker_files,
-             docker_image,
-        '\n'.join('    if [ -z "${%(var)s}" ];then export %(var)s=%(val)s;fi' \
-                  % {'var': n, 'val': v} for n, v in six.iteritems(env)),
-        '\n'.join('    if [ -z "${%(var)s_INIT}" ];'\
-                  'then export %(var)s=%(val)s;' \
-                  'else export %(var)s="${%(var)s_INIT}";fi' \
-                  % {'var': n, 'val': v} for n, v in six.iteritems(env_path)),
-        '\n'.join('    if [ -n "${%(var)s_PREPEND}" ];'\
-                  'then export %(var)s="${%(var)s_PREPEND}:${%(var)s}";fi' \
-                  % {'var': n} for n in env_path.keys()),
-        '\n'.join('    if [ -n "${%(var)s_APPEND}" ];'\
-                  'then export %(var)s="${%(var)s}:${%(var)s_APPEND}";fi' \
-                  % {'var': n} for n in env_path.keys()),
-        env_lang,
-        '\n'.join('. ' + ' '.join(["'%s'" % i for i in r]) for r in runscript)),
-                    file=out)
-                    out.close()
-                    shutil.copy2(recipe, '/tmp/recipe')
-                    subprocess.check_call(['sudo', '-E', 'singularity',
-                                           'build', singularity_image, recipe])
-                    image_hash = file_hash(singularity_image)
-                    open(singularity_image + '.md5', 'w').write(image_hash)
-                    open(docker_id_file, 'w').write(iid)
-                finally:
-                    subprocess.call(['sudo', 'rm', '-Rf', docker_files]) 
-            finally:
-                subprocess.call(['docker', 'rm', container])
-        finally:
-            shutil.rmtree(tmp)
-        do = tempfile.NamedTemporaryFile(suffix='.tar')
-    return len(images)
-
-
-def get_image_filename(container_image, build_workflows_repository=None):
-    if os.path.exists(container_image):
-        return container_image
-    image_file = container_image.replace('/', '_').replace(':', '_')
-    if not osp.isabs(image_file):
-        image_file = osp.join(build_workflows_repository, image_file)
-    if not osp.exists(image_file) and not image_file.endswith('.sif'):
-        image_file += '.sif'
-    return image_file
-
-
-def download_singularity_image(build_workflows_repository, container_image):
-    image_path = get_image_filename(container_image,
-                                    build_workflows_repository)
-    image_file = osp.basename(image_path)
-    url = '%s/%s' % (default_download_url, image_file)
-    print('Downloading', image_path, 'from', url)
-    tmp_path = image_path + '.tmp'
-    try:
-        downloader.download_file(url, tmp_path,
-                                 callback=downloader.stdout_progress)
-    except Exception as e:
-        print('Unable to update singularity image from', 
-              url, 'to', image_path)
-        print(e)
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
-        return False
-    
-    tmp_md5 =  image_path + '.md5.tmp'
-    try:
-        downloader.download_file(url + '.md5', tmp_md5)
-    except Exception as e:
-        print('Unable to update singularity image hash from', 
-              url + '.md5', 'to', image_path + '.md5')
-        print(e)
-        if os.path.exists(tmp_md5):
-            os.unlink(tmp_md5)
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
-        return False
-    if not check_hash(tmp_path, tmp_md5):
-        os.unlink(tmp_md5)
-        os.unlink(tmp_path)
-        raise ValueError('Mismatching md5 hash on file %s' % image_path)
-    if os.path.exists(image_path + '.dockerid'):
-        os.unlink(image_path + '.dockerid')
-    if os.path.exists(image_path):
-        os.unlink(image_path)
-    if os.path.exists(image_path + '.md5'):
-        os.unlink(image_path + '.md5')
-    shutil.move(tmp_path, image_path)
-    shutil.move(tmp_md5, image_path + '.md5')
-    try:
-        downloader.download_file(url + '.dockerid', image_path + '.dockerid')
-    except:
-        pass # no docker id. oh, well...
-
-
-def update_singularity_image(build_workflows_repository, container_image,
-                             verbose=False):
-    verbose = log.getLogFile(verbose)
-    if os.path.exists(container_image):
-        # If the image is actually a local filename, then we don't try to
-        # update.
-        return True
-    image_path = get_image_filename(container_image,
-                                    build_workflows_repository)
-    image_file = osp.basename(image_path)
-    if osp.exists(image_path):
-        hash_file = image_file + '.md5'
-        hash_path = image_path + '.md5'
-        if osp.exists(hash_path):
-            local_hash = open(hash_path).read()
-            tmp = tempfile.NamedTemporaryFile()
-            url = '%s/%s' % (default_download_url, hash_file)
-            try:
-                downloader.download_file(url, tmp.name)
-            except Exception as e:
-                print('Unable to update singularity image from', 
-                      url, 'to', tmp.name)
-                print(e)
-
-            remote_hash = open(tmp.name).read()
-            if remote_hash == local_hash:
-                if verbose:
-                    print('Not updating', image_path, 'which is identical to',
-                          url, file=verbose)
-                    
-                return False
-    download_singularity_image(build_workflows_repository, container_image)
-    return True
-
-    
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None,
                     cwd=None, env=None, container_options=[],
                     verbose=None):
-    verbose = log.getLogFile(verbose)
+    verbose = verbose_file(verbose)
     
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
@@ -408,7 +179,7 @@ def create_writable_singularity_image(image,
                                       build_workflow_directory,
                                       build_workflows_repository,            
                                       verbose):
-    verbose = log.getLogFile(verbose)
+    verbose = verbose_file(verbose)
     if build_workflow_directory:
         casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
         casa_distro = json.load(open(casa_distro_json))
@@ -423,7 +194,7 @@ def singularity_root_shell(image,
                            build_workflow_directory,
                            build_workflows_repository,            
                            verbose):
-    verbose = log.getLogFile(verbose)
+    verbose = verbose_file(verbose)
     if build_workflow_directory:
         casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
         casa_distro = json.load(open(casa_distro_json))
@@ -436,51 +207,4 @@ def singularity_root_shell(image,
             write_image = write_image[:-5]
         write_image = write_image + '.writable'
     check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
-
-def clean_singularity_images(build_workflows_repository, image_names,
-                             images_to_keep, verbose, interactive=True):
-    verbose = log.getLogFile(verbose)
-    image_name_filters = [i.replace('/', '_').replace(':', '_') for i in image_names.split(',')]
-    image_files = []
-    for filter in image_name_filters:
-        image_files += glob.glob(osp.join(build_workflows_repository,
-                                          filter + '.simg')) \
-                       + glob.glob(osp.join(build_workflows_repository,
-                                            filter + '.writable'))
-    images_to_keep = set([get_image_filename(image, build_workflows_repository)
-                          for image in images_to_keep.get('singularity', [])])
-    remove_images = []
-    for image_name in image_files:
-        if image_name in images_to_keep:
-            if verbose:
-                print(image_name, 'is still in use', file=verbose)
-                continue
-        if interactive or verbose:
-            print('to remove:', image_name, file=verbose)
-        remove_images.append(image_name)
-    confirm = ''
-    if interactive and len(remove_images) != 0:
-        print('proceed or confirm individually (i) ? (y/[n]/i): ', end='')
-        sys.stdout.flush()
-        confirm = sys.stdin.readline().strip().lower()
-        if confirm not in ('y', 'yes', 'i', 'ind'):
-            print('abort.')
-            return
-
-    for image_name in image_files:
-        if image_name not in images_to_keep:
-            if confirm in ('i', 'ind'):
-                print('remove', image_name, '? (y/[n]): ', end='')
-                c = sys.stdin.readline().strip().lower()
-            else:
-                c = 'y'
-            if c in ('y', 'yes'):
-                if verbose:
-                    print('removing:', image_name, file=verbose)
-                if os.path.isdir(image_name):
-                    # writable image directory, needs root access
-                    check_call(['sudo', 'rm', '-rf', image_name])
-                else:
-                    os.unlink(image_name)
-
 

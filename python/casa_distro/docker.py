@@ -14,7 +14,8 @@ import tempfile
 import stat
 import re
 
-from casa_distro import log, six
+from casa_distro import six
+from casa_distro.log import verbose_file
 import casa_distro.info
 from casa_distro import share_directories
 
@@ -367,7 +368,7 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
                container_options=[],
                verbose=None):
     
-    verbose = log.getLogFile(verbose)
+    verbose = verbose_file(verbose)
     
     docker = ['docker', 'run']
     if interactive:

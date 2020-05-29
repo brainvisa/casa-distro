@@ -26,22 +26,12 @@ from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         update_container_image, merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
+from casa_distro.log import verbose_file
 from casa_distro.singularity import (create_writable_singularity_image,
                                      singularity_root_shell,
                                      clean_singularity_images)
 from casa_distro.vbox import vbox_import_image
 from casa_distro.web import url_listdir, urlopen
-
-def verbose_bool(verbose):
-    verbose_b = False
-    if verbose in ('True', 'true', '1'):
-        verbose_b = True
-    elif verbose in ('False', 'false', '0'):
-        verbose_b = False
-    elif verbose is not None:
-        verbose_b = bool(int(verbose))
-    return verbose_b
-
 
 def display_summary(status):
     # Display summary
@@ -211,7 +201,7 @@ def list_command(distro='*', branch='*', system='*',
     '''
     List (eventually selected) build workflows created by "create" command.
     '''
-    
+    verbose = verbose_file(verbose)
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
                                                 distro=distro, branch=branch,
                                                 system=system):
@@ -221,8 +211,9 @@ def list_command(distro='*', branch='*', system='*',
               % (wf_conf['distro_name'], wf_conf['casa_branch'],
                  wf_conf['system']))
         print('  directory:', bwf_dir)
-        if verbose_bool(verbose):
-            print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read())
+        if verbose:
+            print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read(),
+                  file=verbose)
 
 @command
 def update(distro='*',
@@ -267,6 +258,7 @@ def update_image(distro='*', branch='*', system='*',
     Update the container images of (eventually selected) build workflows
     created by "create" command.
     '''
+    verbose = verbose_file(verbose)
     images_to_update = {}
     for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
                                                 distro=distro, branch=branch,
@@ -279,8 +271,9 @@ def update_image(distro='*', branch='*', system='*',
             wfconf = merge_config(casa_distro, conf)
             images_to_update.setdefault(wfconf['container_type'], set()).add(
                 wfconf['container_image'].replace('.writable', ''))
-        if verbose_bool(verbose):
-            print('images_to_update:', images_to_update)
+        if verbose:
+            print('images_to_update:', images_to_update,
+                  file=verbose)
     if not images_to_update:
         print('No build workflow match selection criteria', file=sys.stderr)
         return 1
