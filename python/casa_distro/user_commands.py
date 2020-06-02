@@ -28,8 +28,7 @@ from casa_distro.build_workflow import (iter_build_workflow, run_container,
                                         delete_build_workflow)
 from casa_distro.log import verbose_file
 from casa_distro.singularity import (create_writable_singularity_image,
-                                     singularity_root_shell,
-                                     clean_singularity_images)
+                                     singularity_root_shell)
 from casa_distro.vbox import vbox_import_image
 from casa_distro.web import url_listdir, urlopen
 

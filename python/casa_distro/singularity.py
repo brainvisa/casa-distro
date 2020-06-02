@@ -19,6 +19,9 @@ from casa_distro.log import verbose_file
 from . import downloader
 
 
+def get_image_filename(image, build_workflows_repository):
+    return osp.join(build_workflows_repository, image + '.sif')
+
 
 class RecipeBuilder:
     '''
