@@ -113,6 +113,13 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     singularity = ['singularity', 'run', '--cleanenv', '--home', '/casa/host/home']
     if cwd:
         singularity += ['--pwd', cwd]
+    
+    if gui:
+        xauthority = osp.expanduser('~/.Xauthority')
+        if osp.exists(xauthority):
+            shutil.copy(xauthority,
+                        osp.join(casa_distro['build_workflow_dir'], 'host/home/.Xauthority'))
+        
     for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
         source = source % casa_distro
         source = osp.expandvars(source)

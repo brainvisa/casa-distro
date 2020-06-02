@@ -460,8 +460,6 @@ def update_build_workflow(build_workflow_directory, verbose=None,
     '''
     Update an existing build workflow directory. It basically:
     * recreates the casa_distro run script
-    * creates a symlink to the home .Xauthority file, if it exists,
-      in the casa home dir
     * writes a .bashrc in the casa home dir if there is not any yet.
     * runs the command 'git lfs install' if git-lfs is available
 
@@ -517,16 +515,6 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
     os.chmod(script_file, 0o775)
     if verbose:
         print('created run script:', script_file)
-
-    # symlink $HOME/.Xauthority if this file exists, in order to enable display
-    # through ssh ($HOME is mounted in singularity)
-    homexauth = os.path.join(os.environ['HOME'], '.Xauthority')
-    if os.path.exists(homexauth):
-        casaxhauth = os.path.join(build_workflow_directory, 'host', 'home',
-                                  '.Xauthority')
-        if os.path.exists(casaxhauth):
-            os.unlink(casaxhauth)
-        os.symlink(homexauth, casaxhauth)
 
     bashrc = os.path.join(build_workflow_directory, 'host', 'home', '.bashrc')
     if not os.path.exists(bashrc):
