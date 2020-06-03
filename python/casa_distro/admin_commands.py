@@ -14,7 +14,7 @@ from subprocess import check_call
 import sys
 import tempfile
 
-from casa_distro.build_workflow import iter_build_workflow
+from casa_distro.build_workflow import iter_environments
 from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
 

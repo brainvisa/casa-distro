@@ -6,6 +6,7 @@ import sys
 import tempfile
 import os
 import os.path as osp
+from pprint import pprint
 import time
 import subprocess
 import traceback
@@ -21,7 +22,7 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_branch,
                                   default_download_url,
                                   default_system)
-from casa_distro.build_workflow import (iter_build_workflow, run_container,
+from casa_distro.build_workflow import (iter_environments, run_container,
                                         create_build_workflow_directory,
                                         update_container_image, merge_config,
                                         update_build_workflow,
@@ -194,25 +195,24 @@ def create(distro_source=default_distro,
 # command name in the command-line is not the same as the corresponding
 # Python function.
 @command('list')
-def list_command(distro='*', branch='*', system='*', 
-         build_workflows_repository=default_build_workflow_repository,
-         verbose=None):
+def list_command(type='*', distro='*', branch='*', system='*', 
+                 build_workflows_repository=default_build_workflow_repository,
+                 verbose=None):
     '''
-    List (eventually selected) build workflows created by "create" command.
+    List (eventually selected) run or dev environments created by "create" command.
     '''
     verbose = verbose_file(verbose)
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-                                                distro=distro, branch=branch,
-                                                system=system):
-        conf_file = osp.join(bwf_dir, 'conf', 'casa_distro.json')
-        wf_conf = json.load(open(conf_file))
-        print('distro=%s branch=%s system=%s'
-              % (wf_conf['distro_name'], wf_conf['casa_branch'],
-                 wf_conf['system']))
-        print('  directory:', bwf_dir)
+    for env_conf in iter_environments(build_workflows_repository,
+                                         type=type,
+                                         distro=distro, branch=branch,
+                                         system=system):
+        print('type={type} distro={distro_name} branch={casa_branch} system={system}'
+              .format(**env_conf))
+        print('  directory:', env_conf['build_workflow_directory'])
         if verbose:
-            print(open(osp.join(bwf_dir, 'conf', 'casa_distro.json')).read(),
-                  file=verbose)
+            verbose.write('  ')
+            pprint(env_conf, indent=4,
+                   stream=verbose)
 
 @command
 def update(distro='*',
@@ -339,7 +339,7 @@ def shell(distro='*', branch='*', system='*',
 
 
 @command
-def run(distro=None, branch=None, system=None,
+def run(type=None, distro=None, branch=None, system=None,
         build_workflows_repository=default_build_workflow_repository,
         gui=True, interactive=False, tmp_container=True,
         container_image=None,container_options=[], cwd=None, env=None,
@@ -356,34 +356,34 @@ def run(distro=None, branch=None, system=None,
     system image (casa-test images), or options, or mounted directories.
     '''
     default_distro = default_branch = default_system = False
+    if type is None:
+        type = '*'
     if distro is None:
-        default_distro = True
         distro = '*'
     if branch is None:
-        default_branch = True
         branch = '*'
     if system is None:
-        default_system = True
         system = '*'
-    build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                               distro=distro, 
-                                               branch=branch, 
-                                               system=system))
-    if not build_workflows:
-        print('Cannot find requested build workflow.',
-              'You can list existing workflows using:\n'
+    env_confs = list(iter_environments(build_workflows_repository,
+                                       type=type, 
+                                       distro=distro, 
+                                       branch=branch, 
+                                       system=system))
+    if not env_confs:
+        print('Cannot find requested environment.',
+              'You can list existing environments using:\n'
               '    casa_distro list\n'
               'Or create new one using:\n'
               '    casa_distro create ...',
               file=sys.stderr)
         return 1
     
-    if len(build_workflows) > 1:
-        print('Several build workflows found, you must explicitely select one',
-              'giving values for distro, system and branch. You can list '
+    if len(env_confs) > 1:
+        print('Several environments found, you must explicitely select one',
+              'giving values for type, distro, system or branch. You can list '
               'existing workflows using:\n'
               '    casa_distro list\n'
-              'You can run a command on all several workflows using:\n'
+              'You can run a command on all selected environments using:\n'
               '    casa_distro mrun ...',
               file=sys.stderr)
         return 1
@@ -400,11 +400,9 @@ def run(distro=None, branch=None, system=None,
             raise ValueError('env syntax error. Should be in the shape '
                              '"VAR1=value1 VAR2=value2" etc.')
 
-    d, b, s, bwf_dir = build_workflows[0]
+    env_conf = env_confs[0]
     command = args_list
-    bwf_directory = osp.join(build_workflows_repository, '%s' % d,
-                            '%s_%s' % (b, s))
-    run_container(bwf_directory, command=command, gui=gui, 
+    run_container(env_conf['build_workflow_directory'], command=command, gui=gui, 
                 interactive=interactive, tmp_container=tmp_container,
                 container_image=container_image, cwd=cwd, env=env,
                 container_options=container_options, verbose=verbose,

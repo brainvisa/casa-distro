@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import collections
+from fnmatch import fnmatch
 import sys
 import os
 import os.path as osp
@@ -33,16 +34,21 @@ def update_dict_recursively(dict_to_update, dict_to_read):
 
 
 
-def iter_build_workflow(build_workflows_repository, distro='*', branch='*',
-                        system='*'):
+def iter_environments(build_workflows_repository, 
+                     type='*',
+                     distro='*',
+                     branch='*',
+                     system='*'):
     for i in sorted(glob.glob(osp.join(build_workflows_repository, distro,
                                        '%s_%s' % (branch, system), 'host', 'conf'))):
-        if not os.path.exists(osp.join(i, 'casa_distro.json')):
-            continue # not a casa-distro 2.x directory
-        d, branch_system = osp.split(osp.dirname(osp.dirname(i)))
-        the_branch, the_system = branch_system.rsplit('_', 1)
-        d, the_distro  = osp.split(d)
-        yield (the_distro, the_branch, the_system, osp.dirname(i))
+        env_json = osp.join(i, 'casa_distro.json')
+        if os.path.exists(env_json):
+            env_conf = json.load(open(env_json))
+            the_type = env_conf.get('type', 'dev')
+            if fnmatch(the_type, type):
+                env_conf['build_workflow_directory'] = osp.dirname(osp.dirname(osp.dirname(env_json)))
+                env_conf['type'] = the_type
+                yield env_conf
 
 
 def find_in_path(file):

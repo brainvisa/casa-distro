@@ -80,8 +80,7 @@ def create_image(base, base_metadata,
     From: {base}
 
 %runscript
-    . /casa/environment.sh
-    exec $@
+    . /usr/local/bin/entrypoint
 '''.format(base=base))
         v = {}       
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
