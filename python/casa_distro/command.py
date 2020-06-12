@@ -66,7 +66,7 @@ def help(command=None):
     else:
         global_help = '''Casa_distro is the BrainVISA suite distribution swiss knife. 
 It allows to setup a virtual environment and launch BrainVISA software. 
-See http://??? for more information
+See http://brainivsa.info/casa-distro for more information
 
 Version : {version}
 
