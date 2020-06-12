@@ -127,7 +127,11 @@ def main():
     args = []
     kwargs = {}
     
-    command = commands[options.command]
+    if isinstance(options.command, list):
+        command_name = options.command[0]
+    else:
+        command_name = options.command
+    command = commands[command_name]
     
     # Get command argument specification
     cargs = inspect.getargspec(command)
@@ -155,8 +159,8 @@ def main():
         args= []
 
     if not kwargs and args == ['-h'] or args == ['--help']:
-        command = commands['help']
-        result = command([options.command])
+        h = commands['help']
+        result = h(command_name)
     else:
         result = command(*args, **kwargs)
     sys.exit(result)
