@@ -100,6 +100,18 @@ def create_image(base, base_metadata,
             verbose.flush()
         subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
 
+    
+_singularity_major_version = None
+
+def singularity_major_version():
+    global _singularity_major_version
+
+    if _singularity_major_version is None:
+        output = subprocess.check_output(['singularity', '--version'])
+        version = output.split()[-1]
+        _singularity_major_version = int(version.split('.')[0])
+    return _singularity_major_version
+
 
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None,
