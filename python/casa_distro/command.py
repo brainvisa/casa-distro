@@ -28,104 +28,77 @@ def command(f, name=None):
     commands[name] = f
     return f
 
-def get_doc(command, wrap_width=None):
+def get_doc(command, indent=''):
     paragraphs = []
-    lines = command.__doc__.split('\n')
+    cargs = inspect.getargspec(command)
+    defaults = dict((i + '_default', j) for i, j in zip(cargs.args[-len(cargs.defaults or ()):], cargs.defaults or ()))
+    doc = command.__doc__.format(**defaults)
+    
+    
+    lines = doc.split('\n')
     while lines and not lines[0].strip():
         lines = lines[1:]
+    new_lines = []
     if lines:
         space_re = re.compile(r'^[ ]*')
-        base_indent = len(space_re.match(lines[0]).group())
-        last_indent = base_indent
-        current = []
+        begining_spaces = space_re.match(lines[0]).group()
         for line in lines:
-            sline = line.strip()
-            if sline:
-                new_indent = len(space_re.match(line).group())
-                if new_indent == last_indent:
-                    current.append(line.strip())
-                else:
-                    paragraphs.append((last_indent-base_indent, ' '.join(current)))
-                    current = [line.strip()]
-                    last_indent = new_indent
+            if line.strip():
+                if line.startswith(begining_spaces):
+                    line = line[len(begining_spaces):]
+                new_lines.append(indent + line)
             else:
-                paragraphs.append((last_indent-base_indent, ' '.join(current)))
-                paragraphs.append((0, ''))
-                current = []
-                last_indent = base_indent
-        if current:
-            paragraphs.append((last_indent-base_indent, ' '.join(current)))
-        if wrap_width:
-            lines = [(textwrap.fill(t, wrap_width, initial_indent=' '*i, subsequent_indent=' '*i) if t else t) for i, t in paragraphs]
-        else:
-            lines = [t for i, t in paragraphs]
-    return '\n'.join(lines)
+                new_lines.append('\n')
+    return '\n'.join(new_lines)
+
 
 @command
-def help(args_list=['help'], **kwargs):
-    '''print help about a command'''
-    
-    command_set = set(args_list)
-    if 'command' in kwargs:
-        command_set.add(kwargs['command'])
-    
-    if len(command_set) == 0:
-        get_main_parser().print_help()
-        return
-    
-    for command in command_set:
-        command_help = get_doc(commands[command], wrap_width=80)
-
-        #print('{s:{c}^{n}}'.format(s=' %s ' % command, n=80, c='-'))
-        print()
+def help(command=None):
+    """
+    Print global help or help about a command.
+    """
+    if command:
+        command_help = get_doc(commands[command], indent=' '*4)
+        print('-' * len(command))
         print(command)
         print('-' * len(command))
         print(command_help)
-        cargs = inspect.getargspec(commands[command])
-        if cargs.args:
-            print()
-            print('options:')
-            print()
-#            print('---------------------------')
-            for i, arg in enumerate(cargs.args):
-                if cargs.defaults is not None and i >= (len(cargs.args) - len(cargs.defaults)):
-                    print(' ' * 3, arg, '(default=%s)' % cargs.defaults[i - len(cargs.args) + len(cargs.defaults)])
-                else:
-                    print(' ' * 3, arg)
-        print()
+    else:
+        global_help = '''Casa_distro is the BrainVISA suite distribution swiss knife. 
+It allows to setup a virtual environment and launch BrainVISA software. 
+See http://??? for more information
 
-def get_main_parser():
-    class ArgumentLineBreakFormatter(argparse.HelpFormatter):
-        def _split_lines(self, text, width):
-            result = []
-            lines = text.split('\n')
-            for line in lines:
-                if line:
-                    result.extend(super(ArgumentLineBreakFormatter, self)._split_lines(line, width))
-                else:
-                    result.append('')
-            return result
+Version : {version}
 
-    parser = argparse.ArgumentParser(
-        description='Casa distribution creation tool. Version %s'
-        % __version__,
-        formatter_class=ArgumentLineBreakFormatter)
+usage: casa_distro [-r REPOSITORY] [-v] [--version] <command> [<command parameters>...]
 
-    parser.add_argument('-r', '--repository', default=None,
-                        help='Path of the directory containing build '
-                        'workflows (default=%s)\n'
-                        'This base directory may also be specified via an '
-                        'environment variable: CASA_DEFAULT_REPOSITORY' % default_build_workflow_repository)
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help='Display information during processing')
-    parser.add_argument('--version', action='version',
-                        version='casa-distro version: %s' % __version__,
-                        help='Display casa-distro version number and exit')
-    parser.add_argument('command', nargs=1, choices=list(commands.keys()),
-                        help='\n\n'.join('%s\n%s' % ('%s\n%s\n%s' % ('='*len(i), i, '=' * len(i)), get_doc(commands[i])) for i in commands))
-    parser.add_argument('command_options', nargs=argparse.REMAINDER,
-                        help='command specific options (use help <command> to list these options).')
-    return parser
+optional arguments:
+    -r REPOSITORY, --repository REPOSITORY
+                    Path of the directory containing build workflows
+                    (default={default_repository}) This base directory
+                    may also be specified via an environment variable:
+                    CASA_DEFAULT_REPOSITORY
+    -v, --verbose   Display as much information as possible.
+    --version       Display casa-distro version number and exit.
+    -h, --help      Display help message and exit.
+                    If used after command name, display only the help of this command.
+
+Commands:
+'''.format(version=__version__,
+           default_repository=default_build_workflow_repository)
+    
+        commands_summary = [global_help]
+        for command in commands:
+            command_doc = get_doc(commands[command], indent=' ' * 8)
+            # Split the docstring in two to remove parameters documentation
+            # The docstring is supposed to follow the Numpy style docstring
+            # see https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
+            command_doc = re.split('\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
+            commands_summary.append('    ' + '-' * len(command))
+            commands_summary.append('    ' + command)
+            commands_summary.append('    ' + '-' * len(command))
+            commands_summary.append(command_doc)
+        print('\n'.join(commands_summary))
 
 
 def main():
@@ -135,14 +108,26 @@ def main():
         args_list = sys.argv[ind + 1:]
         sys.argv = sys.argv[:ind]
 
-    parser = get_main_parser()
+    parser = argparse.ArgumentParser(add_help=False)
+
+    parser.add_argument('-r', '--repository', default=None)
+    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('--version', action='version',
+                        version='casa-distro version: %s' % __version__)
+    parser.add_argument('-h', '--help', action='store_true')
+    parser.add_argument('command', nargs='?', choices=list(commands.keys()))
+    parser.add_argument('command_options', nargs=argparse.REMAINDER)
     options = parser.parse_args()
 
+    if options.help or not options.command:
+        help()
+        return
+        
     result = None
     args = []
     kwargs = {}
     
-    command = commands[options.command[0]]
+    command = commands[options.command]
     
     # Get command argument specification
     cargs = inspect.getargspec(command)
@@ -171,7 +156,8 @@ def main():
 
     if not kwargs and args == ['-h'] or args == ['--help']:
         command = commands['help']
-        result = command([options.command[0]])
+        result = command([options.command])
     else:
         result = command(*args, **kwargs)
     sys.exit(result)
+

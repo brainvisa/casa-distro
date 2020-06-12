@@ -125,6 +125,121 @@ class ExecutionStatus(object):
     def get_status_mapped(self):
         return self.status_map.get(self.status)
 
+@command
+def distro():
+    """List all available distro and provide information for each one."""
+
+
+@command
+def setup(type,
+          distro=default_distro,
+          branch=default_branch,
+          system=default_system,
+          name='{source}-{type}-{system}',
+          container_type = 'singularity',
+          base_directory=default_build_workflow_repository,
+          image = '{base_directory}/casa-{type}-{system}{extension}',
+          output='{base_directory}/{name}{extension}',
+          vm_memory='8192',
+          vm_disk_size='131072',
+          verbose=None):
+    """
+    Create a new run or dev environment
+
+    Parameters
+    ----------
+    type : str
+        Environment type. Either "run" for users or "dev" for developers
+    distro : str
+        default={distro_default}
+        Distro used to build this environment. This is typically "brainvisa", "opensource" or "cati_platform"
+    branch : str
+        default={branch_default}
+        Name of the source branch to use for dev environments. Either "latest_release", "bug_fix" or "trunk".
+    system : str
+        default={system_default}
+        System to use with this environment.
+    name  : str
+        default={name_default}
+        Name of the environment (no other environment must have the same name).
+    container_type :str
+        default={container_type_default}
+        Type of virtual applianrce to use. Either "singularity", "vbox" or "docker".
+    base_directory :str
+        default={base_directory_default}
+        Directory where images and environments are stored
+    image : str
+        default={image_default}
+        Location of the virtual image for this environement.
+    output : str
+        default={output_default}
+        Directory where the environement will be stored.
+    vm_memory : int
+        default={vm_memory_default}
+        Size in MiB of the memory allocated for running applications (for VirtualBox only).
+    vm_disk_size : int
+        default={vm_disk_size_default}
+        Maximum size in MiB of disk for the virtual machine running applications (for VirtualBox only).
+    verbose : bool, int  or str
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+    """    
+    if container_type != 'vbox':
+        raise NotImplementedError('Only "vbox" container type is implemented for this command')
+
+    if source_image is None:
+        image_name = 'casa-{environment_type}'.format(environment_type=environment_type)
+        image_file_name = image_name + '.vdi'
+        source_image = osp.join(default_build_workflow_repository,
+                                image_file_name)
+    else:
+        source_image = osp.expanduser(osp.expandvars(source_image))
+        image_file_name = osp.basename(source_image)
+        image_name = osp.splitext(image_file_name)[0]
+    
+    url= default_download_url + '/vbox'
+    metadata_file = source_image + '.json'
+    if not osp.exists(source_image):
+        downloadable_images = [i for i in url_listdir(url) 
+                               if fnmatchcase(i, image_file_name)]
+        if not downloadable_images:
+            raise ValueError('Cannot find a image to download in {url} correponding to {pattern}'.format(
+                url=url, pattern=image_file_name))
+        elif len(downloadable_images) > 1:
+            raise ValueError('Found several images in {url} correponding to {pattern}: {images}'.format(
+                url=url, pattern=image_file_name, images=', '.join(downloadable_images)))
+        image_file_name = downloadable_images[0]
+        image_name = osp.splitext(image_file_name)[0]
+        source_image = osp.join(default_build_workflow_repository,
+                                image_file_name)
+        
+        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
+        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+        
+        subprocess.check_call([
+            'wget', 
+            '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+            '-O', source_image])
+    else:
+        metadata = json.load(open(metadata_file))
+        if os.stat(source_image).st_size < metadata['size']:
+            subprocess.check_call([
+                'wget', '--continue',
+                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+                '-O', source_image])
+    
+    if output:
+        vm_name = vm_name.format(image_name=image_name)
+        output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
+        if os.path.exists(output):
+            raise ValueError('File %s already exists, please remove it and retry' % output)
+        vbox_import_image(image=source_image,
+                           vbox_machine=vm_name,
+                           output=output,
+                           memory=vm_memory,
+                           disk_size=vm_disk_size)
+        #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount
+
 
 @command
 def create(distro_source=default_distro,
@@ -138,44 +253,7 @@ def create(distro_source=default_distro,
            build_workflows_repository=default_build_workflow_repository,
            verbose=None):
     '''
-    Initialize a new build workflow directory. This creates a conf
-    subdirectory with casa_distro.json, bv_maker.cfg and svn.secret
-    files that can be edited before compilation.
-
-    distro_source:
-        Either the name of a predefined distro (on of the directory
-        located in share/distro) or a directory containing the distro
-        source.
-        A predefinied distro definition may be one of the buitin ones found in
-        casa-distro (brainvisa, opensource, cati_platform), or one user-defined
-        which will be looked for in $HOME/.config/casa-distro/distro,
-        $HOME/.casa-distro/distro, or in the share/distro subdirectory inside
-        the main repository directory.
-
-    distro_name:
-        Name of the distro that will be created. If omited, the name
-        of the distro source (or distro source directory) is used.
-    
-    container_type: type of container thechnology to use. It can be either 
-        'singularity', 'vbox', 'docker' or None (the default). If it is None,
-        it first try to see if Singularity is installed or try to see if
-        VirtualBox is installed and then try to see if Docker is installed.
-    
-    container_image: image to use for the compilation container. If no
-        value is given, uses the one defined in the distro.
-    
-    container_test_image: image to use for the package tests container. If no
-        value is given, uses the one defined in the distro.
-
-    branch:
-        bv_maker branch to use (latest_release, bug_fix or trunk)
-    
-    system:
-        Name of the target system.
-    
-    not_override:
-        a coma separated list of file name that must not be overriden 
-        if they already exist.
+    This command is obsolete
     '''
     not_override_lst = not_override.split(',')
     bwf_directory = osp.join(build_workflows_repository, '%(distro_name)s',
@@ -292,7 +370,8 @@ def shell(distro='*', branch='*', system='*',
           conf='dev'):
     '''
     Start a bash shell in the configured container with the given repository
-    configuration.'''
+    configuration.
+    '''
     build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                distro=distro, 
                                                branch=branch, 
@@ -691,68 +770,4 @@ def clean_images(build_workflows_repository=default_build_workflow_repository,
     clean_singularity_images(build_workflows_repository, image_names,
                              images_to_keep, verbose, interactive)
 
-@command
-def setup(environment_type,
-          container_type='vbox',
-          source_image=None,
-          output=osp.join(default_build_workflow_repository, '{vm_name}.vdi'),
-          vm_name='{image_name}', 
-          vm_memory='8192',
-          vm_disk_size='131072'):
-    '''Create a new run or dev environment'''
-    
-    if container_type != 'vbox':
-        raise NotImplementedError('Only "vbox" container type is implemented for this command')
 
-    if source_image is None:
-        image_name = 'casa-{environment_type}'.format(environment_type=environment_type)
-        image_file_name = image_name + '.vdi'
-        source_image = osp.join(default_build_workflow_repository,
-                                image_file_name)
-    else:
-        source_image = osp.expanduser(osp.expandvars(source_image))
-        image_file_name = osp.basename(source_image)
-        image_name = osp.splitext(image_file_name)[0]
-    
-    url= default_download_url + '/vbox'
-    metadata_file = source_image + '.json'
-    if not osp.exists(source_image):
-        downloadable_images = [i for i in url_listdir(url) 
-                               if fnmatchcase(i, image_file_name)]
-        if not downloadable_images:
-            raise ValueError('Cannot find a image to download in {url} correponding to {pattern}'.format(
-                url=url, pattern=image_file_name))
-        elif len(downloadable_images) > 1:
-            raise ValueError('Found several images in {url} correponding to {pattern}: {images}'.format(
-                url=url, pattern=image_file_name, images=', '.join(downloadable_images)))
-        image_file_name = downloadable_images[0]
-        image_name = osp.splitext(image_file_name)[0]
-        source_image = osp.join(default_build_workflow_repository,
-                                image_file_name)
-        
-        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
-        
-        subprocess.check_call([
-            'wget', 
-            '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-            '-O', source_image])
-    else:
-        metadata = json.load(open(metadata_file))
-        if os.stat(source_image).st_size < metadata['size']:
-            subprocess.check_call([
-                'wget', '--continue',
-                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-                '-O', source_image])
-    
-    if output:
-        vm_name = vm_name.format(image_name=image_name)
-        output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
-        if os.path.exists(output):
-            raise ValueError('File %s already exists, please remove it and retry' % output)
-        vbox_import_image(image=source_image,
-                           vbox_machine=vm_name,
-                           output=output,
-                           memory=vm_memory,
-                           disk_size=vm_disk_size)
-        #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount
