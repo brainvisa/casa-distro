@@ -10,6 +10,7 @@ default_repository_server = 'brainvisa.info'
 default_repository_server_directory = 'prod/www/casa-distro'
 default_download_url = 'http://%s/casa-distro'  % default_repository_server
 default_repository_login = 'brainvisa'
+default_environment_type = 'run'
 default_distro = 'opensource'
 default_branch = 'latest_release'
 default_system = 'ubuntu-18.04'

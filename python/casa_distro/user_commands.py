@@ -18,10 +18,12 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
                                   default_repository_server_directory,
                                   default_repository_login,
+                                  default_environment_type,
                                   default_distro,
                                   default_branch,
                                   default_download_url,
                                   default_system)
+from casa_distro.environment import iter_distros
 from casa_distro.build_workflow import (iter_environments, run_container,
                                         create_build_workflow_directory,
                                         update_container_image, merge_config,
@@ -127,11 +129,21 @@ class ExecutionStatus(object):
 
 @command
 def distro():
-    """List all available distro and provide information for each one."""
+    """
+    List all available distro and provide information for each one.
+    """
+    for distro in iter_distros():
+        directory = distro['directory']
+        print(distro.get('name', osp.basename(directory)))
+        if 'description' in distro:
+            print('  Description:', distro['description'])
+        if 'systems' in distro:
+            print('  Supported systems:', ', '.join(distro['systems']))
+        print('  Directory:', directory)
 
 
 @command
-def setup(type,
+def setup(type=default_environment_type,
           distro=default_distro,
           branch=default_branch,
           system=default_system,
@@ -148,11 +160,15 @@ def setup(type,
 
     Parameters
     ----------
-    type : str
-        Environment type. Either "run" for users or "dev" for developers
+    type
+        default={type_default}
+            Environment type to setup. Either "run" for users or "dev" for
+        developers
     distro : str
         default={distro_default}
-        Distro used to build this environment. This is typically "brainvisa", "opensource" or "cati_platform"
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro.
     branch : str
         default={branch_default}
         Name of the source branch to use for dev environments. Either "latest_release", "bug_fix" or "trunk".
@@ -183,61 +199,64 @@ def setup(type,
     verbose : bool, int  or str
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
-    """    
+    """
+    if type not in ('run', 'dev'):
+        raise ValueError('Invalid environment type: {0}'.format(type))
+    
     if container_type != 'vbox':
         raise NotImplementedError('Only "vbox" container type is implemented for this command')
 
-    if source_image is None:
-        image_name = 'casa-{environment_type}'.format(environment_type=environment_type)
-        image_file_name = image_name + '.vdi'
-        source_image = osp.join(default_build_workflow_repository,
-                                image_file_name)
-    else:
-        source_image = osp.expanduser(osp.expandvars(source_image))
-        image_file_name = osp.basename(source_image)
-        image_name = osp.splitext(image_file_name)[0]
+    #if source_image is None:
+        #image_name = 'casa-{environment_type}'.format(environment_type=environment_type)
+        #image_file_name = image_name + '.vdi'
+        #source_image = osp.join(default_build_workflow_repository,
+                                #image_file_name)
+    #else:
+        #source_image = osp.expanduser(osp.expandvars(source_image))
+        #image_file_name = osp.basename(source_image)
+        #image_name = osp.splitext(image_file_name)[0]
     
-    url= default_download_url + '/vbox'
-    metadata_file = source_image + '.json'
-    if not osp.exists(source_image):
-        downloadable_images = [i for i in url_listdir(url) 
-                               if fnmatchcase(i, image_file_name)]
-        if not downloadable_images:
-            raise ValueError('Cannot find a image to download in {url} correponding to {pattern}'.format(
-                url=url, pattern=image_file_name))
-        elif len(downloadable_images) > 1:
-            raise ValueError('Found several images in {url} correponding to {pattern}: {images}'.format(
-                url=url, pattern=image_file_name, images=', '.join(downloadable_images)))
-        image_file_name = downloadable_images[0]
-        image_name = osp.splitext(image_file_name)[0]
-        source_image = osp.join(default_build_workflow_repository,
-                                image_file_name)
+    #url= default_download_url + '/vbox'
+    #metadata_file = source_image + '.json'
+    #if not osp.exists(source_image):
+        #downloadable_images = [i for i in url_listdir(url) 
+                               #if fnmatchcase(i, image_file_name)]
+        #if not downloadable_images:
+            #raise ValueError('Cannot find a image to download in {url} correponding to {pattern}'.format(
+                #url=url, pattern=image_file_name))
+        #elif len(downloadable_images) > 1:
+            #raise ValueError('Found several images in {url} correponding to {pattern}: {images}'.format(
+                #url=url, pattern=image_file_name, images=', '.join(downloadable_images)))
+        #image_file_name = downloadable_images[0]
+        #image_name = osp.splitext(image_file_name)[0]
+        #source_image = osp.join(default_build_workflow_repository,
+                                #image_file_name)
         
-        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+        #metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
+        #json.dump(metadata, open(metadata_file, 'w'), indent=4)
         
-        subprocess.check_call([
-            'wget', 
-            '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-            '-O', source_image])
-    else:
-        metadata = json.load(open(metadata_file))
-        if os.stat(source_image).st_size < metadata['size']:
-            subprocess.check_call([
-                'wget', '--continue',
-                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-                '-O', source_image])
+        #subprocess.check_call([
+            #'wget', 
+            #'{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+            #'-O', source_image])
+    #else:
+        #metadata = json.load(open(metadata_file))
+        #if os.stat(source_image).st_size < metadata['size']:
+            #subprocess.check_call([
+                #'wget', '--continue',
+                #'{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+                #'-O', source_image])
     
-    if output:
-        vm_name = vm_name.format(image_name=image_name)
-        output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
-        if os.path.exists(output):
-            raise ValueError('File %s already exists, please remove it and retry' % output)
-        vbox_import_image(image=source_image,
-                           vbox_machine=vm_name,
-                           output=output,
-                           memory=vm_memory,
-                           disk_size=vm_disk_size)
+    #if output:
+        #vm_name = vm_name.format(image_name=image_name)
+        #output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
+        #if os.path.exists(output):
+            #raise ValueError('File %s already exists, please remove it and retry' % output)
+        #vbox_import_image(image=source_image,
+                           #vbox_machine=vm_name,
+                           #output=output,
+                           #memory=vm_memory,
+                           #disk_size=vm_disk_size)
         #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount
 
 
@@ -322,10 +341,10 @@ def update(distro='*',
         the casa_distro command.
     '''
     images_to_update = {}
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-                                                distro=distro, branch=branch,
-                                                system=system):
-        update_build_workflow(bwf_dir, verbose=verbose, command=command)
+    #for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+                                                #distro=distro, branch=branch,
+                                                #system=system):
+        #update_build_workflow(bwf_dir, verbose=verbose, command=command)
 
 @command
 def update_image(distro='*', branch='*', system='*', 
@@ -336,29 +355,29 @@ def update_image(distro='*', branch='*', system='*',
     created by "create" command.
     '''
     verbose = verbose_file(verbose)
-    images_to_update = {}
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-                                                distro=distro, branch=branch,
-                                                system=system):
-        casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
-                                              'casa_distro.json')))
-        confs = set(['dev'])
-        confs.update(casa_distro.get('alt_configs', {}).keys())
-        for conf in confs:
-            wfconf = merge_config(casa_distro, conf)
-            images_to_update.setdefault(wfconf['container_type'], set()).add(
-                wfconf['container_image'].replace('.writable', ''))
-        if verbose:
-            print('images_to_update:', images_to_update,
-                  file=verbose)
-    if not images_to_update:
-        print('No build workflow match selection criteria', file=sys.stderr)
-        return 1
-    for container_type, container_images in six.iteritems(images_to_update):
-        for container_image in container_images:
-            update_container_image(build_workflows_repository,
-                                   container_type, container_image,
-                                   verbose=verbose) 
+    #images_to_update = {}
+    #for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+                                                #distro=distro, branch=branch,
+                                                #system=system):
+        #casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
+                                              #'casa_distro.json')))
+        #confs = set(['dev'])
+        #confs.update(casa_distro.get('alt_configs', {}).keys())
+        #for conf in confs:
+            #wfconf = merge_config(casa_distro, conf)
+            #images_to_update.setdefault(wfconf['container_type'], set()).add(
+                #wfconf['container_image'].replace('.writable', ''))
+        #if verbose:
+            #print('images_to_update:', images_to_update,
+                  #file=verbose)
+    #if not images_to_update:
+        #print('No build workflow match selection criteria', file=sys.stderr)
+        #return 1
+    #for container_type, container_images in six.iteritems(images_to_update):
+        #for container_image in container_images:
+            #update_container_image(build_workflows_repository,
+                                   #container_type, container_image,
+                                   #verbose=verbose) 
 
 
 @command
@@ -372,49 +391,49 @@ def shell(distro='*', branch='*', system='*',
     Start a bash shell in the configured container with the given repository
     configuration.
     '''
-    build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                               distro=distro, 
-                                               branch=branch, 
-                                               system=system))
-    if not build_workflows:
-        print('Cannot find requested build workflow.',
-              'You can list existing workflows using:\n'
-              '    casa_distro list\n'
-              'Or create new one using:\n'
-              '    casa_distro create ...',
-              file=sys.stderr)
-        return 1
+    #build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                               #distro=distro, 
+                                               #branch=branch, 
+                                               #system=system))
+    #if not build_workflows:
+        #print('Cannot find requested build workflow.',
+              #'You can list existing workflows using:\n'
+              #'    casa_distro list\n'
+              #'Or create new one using:\n'
+              #'    casa_distro create ...',
+              #file=sys.stderr)
+        #return 1
     
-    if len(build_workflows) > 1:
-        print('Several build workflows found, you must explicitely select one',
-              'giving values for distro, system and branch. You can list',
-              'existing workflows using:\n'
-              'casa_distro -r %s list' 
-              % build_workflows_repository, 
-              file=sys.stderr)
-        return 1
+    #if len(build_workflows) > 1:
+        #print('Several build workflows found, you must explicitely select one',
+              #'giving values for distro, system and branch. You can list',
+              #'existing workflows using:\n'
+              #'casa_distro -r %s list' 
+              #% build_workflows_repository, 
+              #file=sys.stderr)
+        #return 1
 
-    if isinstance(container_options, six.string_types) \
-            and len(container_options) != 0:
-        container_options = parse_string(container_options)
-    if isinstance(env, six.string_types) \
-            and len(env) != 0:
-        env_list = parse_string(env)
-        try:
-            env = dict(e.split('=') for e in env_list)
-        except:
-            raise ValueError('env syntax error. Should be in the shape '
-                             '"VAR1=value1 VAR2=value2" etc.')
+    #if isinstance(container_options, six.string_types) \
+            #and len(container_options) != 0:
+        #container_options = parse_string(container_options)
+    #if isinstance(env, six.string_types) \
+            #and len(env) != 0:
+        #env_list = parse_string(env)
+        #try:
+            #env = dict(e.split('=') for e in env_list)
+        #except:
+            #raise ValueError('env syntax error. Should be in the shape '
+                             #'"VAR1=value1 VAR2=value2" etc.')
 
-    distro, branch, system, bwf_dir = build_workflows[0]
-    bwf_directory = osp.join(build_workflows_repository, '%s' % distro,
-                             '%s_%s' % (branch, system))
-    command = ['/bin/bash' ] + args_list
-    run_container(bwf_directory, command=command, gui=gui, 
-                  interactive=interactive, tmp_container=tmp_container,
-                  container_image=container_image, cwd=cwd, env=env,
-                  container_options=container_options, verbose=verbose,
-                  conf=conf)
+    #distro, branch, system, bwf_dir = build_workflows[0]
+    #bwf_directory = osp.join(build_workflows_repository, '%s' % distro,
+                             #'%s_%s' % (branch, system))
+    #command = ['/bin/bash' ] + args_list
+    #run_container(bwf_directory, command=command, gui=gui, 
+                  #interactive=interactive, tmp_container=tmp_container,
+                  #container_image=container_image, cwd=cwd, env=env,
+                  #container_options=container_options, verbose=verbose,
+                  #conf=conf)
 
 
 @command
@@ -508,68 +527,68 @@ def mrun(distro='*', branch='*', system='*',
     casa_distro.json config file. Typically, a test config may use a different
     system image (casa-test images), or options, or mounted directories.
     '''
-    build_workflows = list(iter_build_workflow(build_workflows_repository,
-                                               distro=distro, 
-                                               branch=branch, 
-                                               system=system))
-    if not build_workflows:
-        print('Cannot find requested build workflow.',
-              'You can list existing workflows using:\n'
-              '    casa_distro list\n'
-              'Or create new one using:\n'
-              '    casa_distro create ...',
-              file=sys.stderr)
-        return 1
+    #build_workflows = list(iter_build_workflow(build_workflows_repository,
+                                               #distro=distro, 
+                                               #branch=branch, 
+                                               #system=system))
+    #if not build_workflows:
+        #print('Cannot find requested build workflow.',
+              #'You can list existing workflows using:\n'
+              #'    casa_distro list\n'
+              #'Or create new one using:\n'
+              #'    casa_distro create ...',
+              #file=sys.stderr)
+        #return 1
     
 
-    if isinstance(container_options, six.string_types) \
-            and len(container_options) != 0:
-        container_options = parse_string(container_options)
-    if isinstance(env, six.string_types) \
-            and len(env) != 0:
-        env_list = parse_string(env)
-        try:
-            env = dict(e.split('=') for e in env_list)
-        except:
-            raise ValueError('env syntax error. Should be in the shape '
-                             '"VAR1=value1 VAR2=value2" etc.')
+    #if isinstance(container_options, six.string_types) \
+            #and len(container_options) != 0:
+        #container_options = parse_string(container_options)
+    #if isinstance(env, six.string_types) \
+            #and len(env) != 0:
+        #env_list = parse_string(env)
+        #try:
+            #env = dict(e.split('=') for e in env_list)
+        #except:
+            #raise ValueError('env syntax error. Should be in the shape '
+                             #'"VAR1=value1 VAR2=value2" etc.')
 
-    status = {}
-    global_failed = False
+    #status = {}
+    #global_failed = False
 
-    for d, b, s, bwf_dir in build_workflows:
-        es = ExecutionStatus(start_time = time.localtime())
-        status[(d, b, s)] = (es, bwf_dir)
-        try:
-            command = args_list
-            bwf_directory = osp.join(build_workflows_repository, '%s' % d,
-                                    '%s_%s' % (b, s))
-            run_container(bwf_directory, command=command, gui=gui, 
-                        interactive=interactive, tmp_container=tmp_container,
-                        container_image=container_image, cwd=cwd,
-                        env=env,
-                        container_options=container_options, verbose=verbose,
-                        conf=conf)
-            es.stop_time = time.localtime()
-            es.error_code = 0
-            es.status = 'succeeded'
+    #for d, b, s, bwf_dir in build_workflows:
+        #es = ExecutionStatus(start_time = time.localtime())
+        #status[(d, b, s)] = (es, bwf_dir)
+        #try:
+            #command = args_list
+            #bwf_directory = osp.join(build_workflows_repository, '%s' % d,
+                                    #'%s_%s' % (b, s))
+            #run_container(bwf_directory, command=command, gui=gui, 
+                        #interactive=interactive, tmp_container=tmp_container,
+                        #container_image=container_image, cwd=cwd,
+                        #env=env,
+                        #container_options=container_options, verbose=verbose,
+                        #conf=conf)
+            #es.stop_time = time.localtime()
+            #es.error_code = 0
+            #es.status = 'succeeded'
         
-        except subprocess.CalledProcessError:
-            global_failed = True
-            es.stop_time = time.localtime()
-            es.exception = traceback.format_exc()
-            es.error_code = 1
-            es.status = 'failed'
+        #except subprocess.CalledProcessError:
+            #global_failed = True
+            #es.stop_time = time.localtime()
+            #es.exception = traceback.format_exc()
+            #es.error_code = 1
+            #es.status = 'failed'
             
-        except KeyboardInterrupt:
-            global_failed = True
-            es.stop_time = time.localtime()
-            es.error_code = 1
-            es.status = 'interrupted'
-            break
+        #except KeyboardInterrupt:
+            #global_failed = True
+            #es.stop_time = time.localtime()
+            #es.error_code = 1
+            #es.status = 'interrupted'
+            #break
 
-    display_summary(status)
-    return global_failed
+    #display_summary(status)
+    #return global_failed
 
 
 @command
@@ -619,41 +638,41 @@ def create_writable_image(singularity_image=None, distro=None, branch=None, syst
     if (distro or branch or system) and singularity_image:
         raise ValueError('Image selection must be done with either an image '
                         'name or a build workflow selection but not both')
-    if not singularity_image:
-        if not distro:
-            distro = '*'
-        if not branch:
-            branch = '*'
-        if not system:
-            system = '*'
-        build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                                   distro=distro, 
-                                                   branch=branch, 
-                                                   system=system))
-        if not build_workflows:
-            print('Cannot find requested build workflow.',
-                'You can list existing workflows using:\n'
-                '    casa_distro list\n'
-                'Or create new one using:\n'
-                '    casa_distro create ...',
-                file=sys.stderr)
-            return 1
+    #if not singularity_image:
+        #if not distro:
+            #distro = '*'
+        #if not branch:
+            #branch = '*'
+        #if not system:
+            #system = '*'
+        #build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                                   #distro=distro, 
+                                                   #branch=branch, 
+                                                   #system=system))
+        #if not build_workflows:
+            #print('Cannot find requested build workflow.',
+                #'You can list existing workflows using:\n'
+                #'    casa_distro list\n'
+                #'Or create new one using:\n'
+                #'    casa_distro create ...',
+                #file=sys.stderr)
+            #return 1
         
-        if len(build_workflows) > 1:
-            print('Several build workflows found, you must explicitely select one',
-                'giving values for distro, system and branch. You can list '
-                'existing workflows using:\n'
-                '    casa_distro list',
-                file=sys.stderr)
-            return 1
-        d, b, s, bwf_dir = build_workflows[0]
-    else:
-        bwf_dir = None
+        #if len(build_workflows) > 1:
+            #print('Several build workflows found, you must explicitely select one',
+                #'giving values for distro, system and branch. You can list '
+                #'existing workflows using:\n'
+                #'    casa_distro list',
+                #file=sys.stderr)
+            #return 1
+        #d, b, s, bwf_dir = build_workflows[0]
+    #else:
+        #bwf_dir = None
         
-    create_writable_singularity_image(image=singularity_image, 
-                                      build_workflow_directory=bwf_dir,
-                                      build_workflows_repository=build_workflows_repository,
-                                      verbose=None)
+    #create_writable_singularity_image(image=singularity_image, 
+                                      #build_workflow_directory=bwf_dir,
+                                      #build_workflows_repository=build_workflows_repository,
+                                      #verbose=None)
 
 @command
 def root_shell(singularity_image=None, distro=None, branch=None, system=None,
@@ -678,41 +697,41 @@ def root_shell(singularity_image=None, distro=None, branch=None, system=None,
     if (distro or branch or system) and singularity_image:
         raise ValueError('Image selection must be done with either an image '
                          'name or a build workflow selection but not both')
-    if not singularity_image:
-        if not distro:
-            distro = '*'
-        if not branch:
-            branch = '*'
-        if not system:
-            system = '*'
-        build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                                   distro=distro, 
-                                                   branch=branch, 
-                                                   system=system))
-        if not build_workflows:
-            print('Cannot find requested build workflow.',
-                'You can list existing workflows using:\n'
-                '    casa_distro list\n'
-                'Or create new one using:\n'
-                '    casa_distro create ...',
-                file=sys.stderr)
-            return 1
+    #if not singularity_image:
+        #if not distro:
+            #distro = '*'
+        #if not branch:
+            #branch = '*'
+        #if not system:
+            #system = '*'
+        #build_workflows = list(iter_build_workflow(build_workflows_repository, 
+                                                   #distro=distro, 
+                                                   #branch=branch, 
+                                                   #system=system))
+        #if not build_workflows:
+            #print('Cannot find requested build workflow.',
+                #'You can list existing workflows using:\n'
+                #'    casa_distro list\n'
+                #'Or create new one using:\n'
+                #'    casa_distro create ...',
+                #file=sys.stderr)
+            #return 1
         
-        if len(build_workflows) > 1:
-            print('Several build workflows found, you must explicitely select one',
-                'giving values for distro, system and branch. You can list '
-                'existing workflows using:\n'
-                '    casa_distro list',
-                file=sys.stderr)
-            return 1
-        d, b, s, bwf_dir = build_workflows[0]
-    else:
-        bwf_dir = None
+        #if len(build_workflows) > 1:
+            #print('Several build workflows found, you must explicitely select one',
+                #'giving values for distro, system and branch. You can list '
+                #'existing workflows using:\n'
+                #'    casa_distro list',
+                #file=sys.stderr)
+            #return 1
+        #d, b, s, bwf_dir = build_workflows[0]
+    #else:
+        #bwf_dir = None
         
-    singularity_root_shell(image=singularity_image, 
-                           build_workflow_directory=bwf_dir,
-                           build_workflows_repository=build_workflows_repository,
-                           verbose=None)
+    #singularity_root_shell(image=singularity_image, 
+                           #build_workflow_directory=bwf_dir,
+                           #build_workflows_repository=build_workflows_repository,
+                           #verbose=None)
 
 @command
 def delete(distro='*', branch='*', system='*',
@@ -727,25 +746,25 @@ def delete(distro='*', branch='*', system='*',
 
     By default the "interactive" mode is on, and a confirmation will be asked before proceding. If interactive is disabled, then the deletion will be done without confirmation.
     '''
-    build_workflows = [bwf
-                       for bwf in iter_build_workflow(
-                            build_workflows_repository,
-                            distro=distro,
-                            branch=branch,
-                            system=system) if osp.exists(bwf[-1])]
-    print('the following build workflows will be permanently deleted:')
-    print('\n'.join([bwf[-1] for bwf in build_workflows]))
+    #build_workflows = [bwf
+                       #for bwf in iter_build_workflow(
+                            #build_workflows_repository,
+                            #distro=distro,
+                            #branch=branch,
+                            #system=system) if osp.exists(bwf[-1])]
+    #print('the following build workflows will be permanently deleted:')
+    #print('\n'.join([bwf[-1] for bwf in build_workflows]))
 
-    if len(build_workflows) != 0 and interactive:
-        print('delete build worflow(s) ? (y/[n]): ', end='')
-        sys.stdout.flush()
-        confirm = sys.stdin.readline()
-        if confirm.strip().lower() not in ('y', 'yes'):
-            print('abort.')
-            return 0
+    #if len(build_workflows) != 0 and interactive:
+        #print('delete build worflow(s) ? (y/[n]): ', end='')
+        #sys.stdout.flush()
+        #confirm = sys.stdin.readline()
+        #if confirm.strip().lower() not in ('y', 'yes'):
+            #print('abort.')
+            #return 0
 
-    for d, b, s, bwf_directory in build_workflows:
-        delete_build_workflow(bwf_directory)
+    #for d, b, s, bwf_directory in build_workflows:
+        #delete_build_workflow(bwf_directory)
 
 @command
 def clean_images(build_workflows_repository=default_build_workflow_repository,
@@ -755,19 +774,19 @@ def clean_images(build_workflows_repository=default_build_workflow_repository,
     or those listed in image_names.
     '''
     images_to_keep = {}
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-                                                distro='*', branch='*',
-                                                system='*'):
-        casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
-                                              'casa_distro.json')))
-        confs = set(['dev'])
-        confs.update(casa_distro.get('alt_configs', {}).keys())
-        for conf in confs:
-            wfconf = merge_config(casa_distro, conf)
-            images_to_keep.setdefault(wfconf['container_type'], set()).add(
-                wfconf['container_image'])
+    #for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+                                                #distro='*', branch='*',
+                                                #system='*'):
+        #casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
+                                              #'casa_distro.json')))
+        #confs = set(['dev'])
+        #confs.update(casa_distro.get('alt_configs', {}).keys())
+        #for conf in confs:
+            #wfconf = merge_config(casa_distro, conf)
+            #images_to_keep.setdefault(wfconf['container_type'], set()).add(
+                #wfconf['container_image'])
 
-    clean_singularity_images(build_workflows_repository, image_names,
-                             images_to_keep, verbose, interactive)
+    #clean_singularity_images(build_workflows_repository, image_names,
+                             #images_to_keep, verbose, interactive)
 
 
