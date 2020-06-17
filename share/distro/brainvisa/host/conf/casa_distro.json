@@ -1,6 +1,6 @@
 {
     "casa_distro_compatibility": "3.0",
-    "name": "opensource",
+    "name": "brainvisa",
     "description": "BrainVISA suite software distribtion.",
     "systems": ["ubuntu-18.04"],
     "container_image": "casa-dev-{system}",

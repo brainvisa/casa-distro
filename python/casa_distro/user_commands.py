@@ -6,13 +6,13 @@ import sys
 import tempfile
 import os
 import os.path as osp
-from pprint import pprint
 import time
 import subprocess
 import traceback
 import json
 
-from casa_distro import six
+from casa_distro import (environment,
+                         six)
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
@@ -22,18 +22,18 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_distro,
                                   default_branch,
                                   default_download_url)
-from casa_distro.environment import (iter_distros,
+from casa_distro.environment import (find_in_path,
+                                     iter_distros,
+                                     iter_environments,
                                      casa_distro_directory,
                                      select_distro)
-from casa_distro.build_workflow import (iter_environments, run_container,
-                                        create_build_workflow_directory,
+from casa_distro.build_workflow import (run_container,
                                         update_container_image, merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
 from casa_distro.log import verbose_file
 from casa_distro.singularity import (create_writable_singularity_image,
                                      singularity_root_shell)
-from casa_distro import singularity, vbox
 from casa_distro.web import url_listdir, urlopen
 
 def display_summary(status):
@@ -135,7 +135,7 @@ def distro():
     """
     for distro in iter_distros():
         directory = distro['directory']
-        print(distro.get('name', osp.basename(directory)))
+        print(distro['name'])
         if 'description' in distro:
             print('  Description:', distro['description'])
         if 'systems' in distro:
@@ -149,11 +149,11 @@ def setup(type=default_environment_type,
           branch=default_branch,
           system=None,
           name='{distro}-{type}-{system}',
-          container_type = 'singularity',
+          container_type = None,
           base_directory=casa_distro_directory(),
           image = '{base_directory}/casa-{type}-{system}{extension}',
           url=default_download_url + '/{container_type}',
-          output='{base_directory}/{name}{extension}',
+          output='{base_directory}/{name}',
           vm_memory='8192',
           vm_disk_size='131072',
           verbose=True,
@@ -185,6 +185,8 @@ def setup(type=default_environment_type,
     container_type
         default={container_type_default}
         Type of virtual applianrce to use. Either "singularity", "vbox" or "docker".
+        If not given try to gues according to installed container software in the
+        following order : Singularity, VirtualBox and Docker.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -219,12 +221,22 @@ def setup(type=default_environment_type,
         print('Type:', type,
               file=verbose)
     
+    if not container_type:
+        if find_in_path('singularity'):
+            container_type = 'singularity'
+        elif find_in_path('VBoxManage'):
+            container_type = 'vbox'
+        elif find_in_path('docker'):
+            container_type = 'docker'
+        else:
+            raise ValueError('Cannot guess container_type according to '
+                             'Singularity, VirtualBox or Docker command '
+                             'research')
+
     if container_type == 'singularity':
         extension = '.sif'
-        container_module = singularity
     elif container_type == 'vbox':
         extension = '.vdi'
-        container_module = vbox
     elif container_type == 'docker':
         raise NotImplementedError('docker container type is not yet supported by this command')
     else:
@@ -236,6 +248,8 @@ def setup(type=default_environment_type,
     distro = select_distro(distro)
     if verbose:
         print('Distro:', distro['name'],
+              file=verbose)
+        print('Distro directory:', distro['directory'],
               file=verbose)
     
     if branch not in ('latest_release', 'master', 'integration'):
@@ -325,11 +339,12 @@ def setup(type=default_environment_type,
                 '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
                 '-O', image])
     
-    container_module.setup(type=type,
+    environment.setup(type=type,
           distro=distro,
           branch=branch,
           system=system,
           name=name,
+          container_type=container_type,
           base_directory=base_directory,
           image=image,
           output=output,
@@ -337,17 +352,6 @@ def setup(type=default_environment_type,
           vm_disk_size=vm_disk_size,
           verbose=verbose,
           force=force)
-    #if output:
-        #vm_name = vm_name.format(image_name=image_name)
-        #output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
-        #if os.path.exists(output):
-            #raise ValueError('File %s already exists, please remove it and retry' % output)
-        #vbox_import_image(image=source_image,
-                           #vbox_machine=vm_name,
-                           #output=output,
-                           #memory=vm_memory,
-                           #disk_size=vm_disk_size)
-        #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount
 
 
 
@@ -356,23 +360,21 @@ def setup(type=default_environment_type,
 # Python function.
 @command('list')
 def list_command(type='*', distro='*', branch='*', system='*', 
-                 build_workflows_repository=default_build_workflow_repository,
+                 base_directory=casa_distro_directory(),
                  verbose=None):
     '''
-    List (eventually selected) run or dev environments created by "create" command.
+    List (eventually selected) run or dev environments created by "setup" command.
     '''
     verbose = verbose_file(verbose)
-    for env_conf in iter_environments(build_workflows_repository,
-                                         type=type,
-                                         distro=distro, branch=branch,
-                                         system=system):
-        print('type={type} distro={distro_name} branch={casa_branch} system={system}'
-              .format(**env_conf))
-        print('  directory:', env_conf['build_workflow_directory'])
+    for env_conf in iter_environments(base_directory):
+        print(env_conf['name'])
+        for i in ('type', 'distro', 'branch', 'system'):
+            print('  %s:' % i, env_conf[i])
+        print('  directory:', env_conf['directory'])
         if verbose:
-            verbose.write('  ')
-            pprint(env_conf, indent=4,
-                   stream=verbose)
+            print('  full environment:')
+            for line in json.dumps(env_conf, indent=2).split('\n'):
+                print('   ', line)
 
 @command
 def update(distro='*',
