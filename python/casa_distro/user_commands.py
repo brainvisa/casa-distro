@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-from fnmatch import fnmatchcase
 import sys
 import tempfile
 import os
@@ -26,9 +25,10 @@ from casa_distro.environment import (find_in_path,
                                      iter_distros,
                                      iter_environments,
                                      casa_distro_directory,
-                                     select_distro)
+                                     select_distro,
+                                     select_environment)
 from casa_distro.build_workflow import (run_container,
-                                        update_container_image, merge_config,
+                                        merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
 from casa_distro.log import verbose_file
@@ -359,14 +359,18 @@ def setup(type=default_environment_type,
 # command name in the command-line is not the same as the corresponding
 # Python function.
 @command('list')
-def list_command(type='*', distro='*', branch='*', system='*', 
+def list_command(type=None, distro=None, branch=None, system=None, 
                  base_directory=casa_distro_directory(),
                  verbose=None):
     '''
     List (eventually selected) run or dev environments created by "setup" command.
     '''
     verbose = verbose_file(verbose)
-    for env_conf in iter_environments(base_directory):
+    for env_conf in iter_environments(base_directory,
+                                      type=type,
+                                      distro=distro,
+                                      branch=branch,
+                                      system=system):
         print(env_conf['name'])
         for i in ('type', 'distro', 'branch', 'system'):
             print('  %s:' % i, env_conf[i])
@@ -375,6 +379,44 @@ def list_command(type='*', distro='*', branch='*', system='*',
             print('  full environment:')
             for line in json.dumps(env_conf, indent=2).split('\n'):
                 print('   ', line)
+
+@command
+def run(type=None, distro=None, branch=None, system=None,
+        base_directroy=casa_distro_directory(),
+        gui=True, interactive=False, tmp_container=True,
+        container_image=None,container_options=[], cwd=None, env=None,
+        args_list=[], verbose=None):
+    """
+    Start any command in a selected run or dev environment
+
+    example:
+        casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+    """
+    verbose = verbose_file(verbose)
+    env_conf = select_environment(base_directroy,
+                                  type=type,
+                                  distro=distro,
+                                  branch=branch,
+                                  system=system)
+    #if isinstance(container_options, six.string_types) \
+            #and len(container_options) != 0:
+        #container_options = parse_string(container_options)
+    #if isinstance(env, six.string_types) \
+            #and len(env) != 0:
+        #env_list = parse_string(env)
+        #try:
+            #env = dict(e.split('=') for e in env_list)
+        #except:
+            #raise ValueError('env syntax error. Should be in the shape '
+                             #'"VAR1=value1 VAR2=value2" etc.')
+
+    #env_conf = env_confs[0]
+    #command = args_list
+    #run_container(env_conf['build_workflow_directory'], command=command, gui=gui, 
+                #interactive=interactive, tmp_container=tmp_container,
+                #container_image=container_image, cwd=cwd, env=env,
+                #container_options=container_options, verbose=verbose,
+                #conf=conf)
 
 @command
 def update(distro='*',
@@ -501,75 +543,6 @@ def shell(distro='*', branch='*', system='*',
                   #conf=conf)
 
 
-@command
-def run(type=None, distro=None, branch=None, system=None,
-        build_workflows_repository=default_build_workflow_repository,
-        gui=True, interactive=False, tmp_container=True,
-        container_image=None,container_options=[], cwd=None, env=None,
-        args_list=[], verbose=None, conf='dev'):
-    '''
-    Start any command in the configured container (Docker or Singularity) with
-    the given repository configuration.
-
-    example:
-        casa_distro -r /home/casa run branch=bug_fix ls -als /casa
-
-    The "conf" parameter may address an additional config dictionary within the
-    casa_distro.json config file. Typically, a test config may use a different
-    system image (casa-test images), or options, or mounted directories.
-    '''
-    default_distro = default_branch = default_system = False
-    if type is None:
-        type = '*'
-    if distro is None:
-        distro = '*'
-    if branch is None:
-        branch = '*'
-    if system is None:
-        system = '*'
-    env_confs = list(iter_environments(build_workflows_repository,
-                                       type=type, 
-                                       distro=distro, 
-                                       branch=branch, 
-                                       system=system))
-    if not env_confs:
-        print('Cannot find requested environment.',
-              'You can list existing environments using:\n'
-              '    casa_distro list\n'
-              'Or create new one using:\n'
-              '    casa_distro create ...',
-              file=sys.stderr)
-        return 1
-    
-    if len(env_confs) > 1:
-        print('Several environments found, you must explicitely select one',
-              'giving values for type, distro, system or branch. You can list '
-              'existing workflows using:\n'
-              '    casa_distro list\n'
-              'You can run a command on all selected environments using:\n'
-              '    casa_distro mrun ...',
-              file=sys.stderr)
-        return 1
-
-    if isinstance(container_options, six.string_types) \
-            and len(container_options) != 0:
-        container_options = parse_string(container_options)
-    if isinstance(env, six.string_types) \
-            and len(env) != 0:
-        env_list = parse_string(env)
-        try:
-            env = dict(e.split('=') for e in env_list)
-        except:
-            raise ValueError('env syntax error. Should be in the shape '
-                             '"VAR1=value1 VAR2=value2" etc.')
-
-    env_conf = env_confs[0]
-    command = args_list
-    run_container(env_conf['build_workflow_directory'], command=command, gui=gui, 
-                interactive=interactive, tmp_container=tmp_container,
-                container_image=container_image, cwd=cwd, env=env,
-                container_options=container_options, verbose=verbose,
-                conf=conf)
 
 
 @command

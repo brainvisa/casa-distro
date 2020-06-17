@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from fnmatch import fnmatchcase
 from glob import glob
 import json
 import os
@@ -118,17 +119,6 @@ def iter_distros():
                 distro['directory'] = osp.dirname(osp.dirname(root))
                 yield distro
 
-def iter_environments(base_directory):
-    """
-    Iterate over environments created with "setup" command in the given
-    base directory. For each one, yield a dictionary corrasponding to the
-    casa_distro.json file with the "directory" item added.
-    """
-    for i in sorted(glob(osp.join(base_directory, '*', 'host', 'conf', 
-                                  'casa_distro.json'))):
-        env_conf = json.load(open(i))
-        env_conf['directory'] = osp.dirname(osp.dirname(osp.dirname(i)))
-        yield env_conf
 
 def select_distro(distro):
     """
@@ -162,6 +152,41 @@ def casa_distro_directory():
         if not _casa_distro_directory:
             _casa_distro_directory = osp.expanduser('~/casa_distro')
     return _casa_distro_directory
+
+
+def iter_environments(base_directory, **kwargs):
+    """
+    Iterate over environments created with "setup" command in the given
+    base directory. For each one, yield a dictionary corrasponding to the
+    casa_distro.json file with the "directory" item added.
+    """
+    for i in sorted(glob(osp.join(base_directory, '*', 'host', 'conf', 
+                                  'casa_distro.json'))):
+        env_conf = json.load(open(i))
+        env_conf['directory'] = osp.dirname(osp.dirname(osp.dirname(i)))
+        match = False
+        for k, p in kwargs.items():
+            if p is None:
+                continue
+            v = env_conf.get(k)
+            if v is None or v != p:
+                break
+        else:
+            match = True
+        if match:
+            yield env_conf
+
+
+def select_environment(base_directory, **kwargs):
+    """
+    Select a single distro given its name or an existing distro directory.
+    """
+    l = list(iter_environments(base_directory, **kwargs))
+    if len(l) == 1:
+        return l[0]
+    if len(l) > 1:
+        raise ValueError('Several distros found, use a more selective criteria: {0}'.format(', '.join(i['name'] for i in l)))
+    raise ValueError('Cannot find any distro to perform requested action')
 
 
 def setup(type, distro, branch, system, name, container_type, base_directory,
