@@ -229,3 +229,9 @@ def singularity_root_shell(image,
         write_image = write_image + '.writable'
     check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
 
+def setup(type, distro, branch, system, name, base_directory, image,
+          output, vm_memory, vm_disk_size, verbose, force):
+    """
+    Singularity specific part of setup command
+    """
+    raise NotImplementedError('setup is not implemented for Singularity')

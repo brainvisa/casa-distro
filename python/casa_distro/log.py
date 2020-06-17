@@ -10,25 +10,26 @@ import sys
 from casa_distro import six
 
 
-def verbose_bool(verbose_string):
+def boolean_value(value):
     '''
-    Return True or False if verbose can be interpreted as a boolean
+    Return True or False if value can be interpreted as a boolean
     or None in other cases. Booleans are recognized from bool, int
-    and strings '0', '1', 'true', 'false' (case insensitive)
+    and strings '0', '1', 'true', 'false', 'yes' and 'no' (case 
+    insensitive)
     '''
-    if isinstance(verbose_string, (int, bool)):
-        return bool(verbose_string)
-    elif isinstance(verbose_string, six.string_types):
-        try:
-            # Try to interpret string as boolean or integer values
-            return bool(ast.literal_eval(verbose_string))
-        except:
-            pass
+    if isinstance(value, (int, bool)):
+        return bool(value)
+    elif isinstance(value, six.string_types):
+        value = value.lower()
+        if value in ('true', 'yes', '1'):
+            return True
+        if value in ('false', 'no', '0'):
+            return False
     return None
 
 
 def verbose_file(verbose, openmode='w+'):
-    verbose = verbose_bool(verbose)
+    verbose = boolean_value(verbose)
     if verbose is not None:
         return (sys.stdout if verbose else None)
     if isinstance(verbose, six.string_types):

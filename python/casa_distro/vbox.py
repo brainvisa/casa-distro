@@ -328,3 +328,22 @@ def vbox_import_image(image, vbox_machine, output,
                  '--medium', output,
                  '--port', '1',
                  '--type', 'hdd'])
+
+
+def setup(type, distro, branch, system, name, base_directory, image,
+          output, vm_memory, vm_disk_size, verbose, force):
+    """
+    VirtualBox specific part of setup command
+    """
+    raise NotImplementedError('setup is not implemented for VirtualBox')
+    #if output:
+        #vm_name = vm_name.format(image_name=image_name)
+        #output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
+        #if os.path.exists(output):
+            #raise ValueError('File %s already exists, please remove it and retry' % output)
+        #vbox_import_image(image=source_image,
+                           #vbox_machine=vm_name,
+                           #output=output,
+                           #memory=vm_memory,
+                           #disk_size=vm_disk_size)
+        #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount

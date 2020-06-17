@@ -6,6 +6,7 @@ import sys
 import zipfile
 import tempfile
 import shutil
+import os
 import os.path as osp
 import inspect
 from collections import OrderedDict
@@ -13,9 +14,16 @@ import textwrap
 import re
 from functools import partial
 
-from casa_distro import six
-from casa_distro.info import __version__
 from casa_distro.defaults import default_build_workflow_repository
+from casa_distro.info import __version__
+from casa_distro.log import boolean_value
+from casa_distro import six
+
+def check_boolean(name, value):
+    result = boolean_value(value)
+    if result is None:
+        raise ValueError('Invalid boolean value for {0}: {1}'.format(name, value))
+    return result
 
 commands = OrderedDict()
 def command(f, name=None):
@@ -158,10 +166,14 @@ def main():
         kwargs['args_list'] = args + args_list
         args= []
 
-    if not kwargs and args == ['-h'] or args == ['--help']:
-        h = commands['help']
-        result = h(command_name)
-    else:
-        result = command(*args, **kwargs)
+    try:
+        if not kwargs and args == ['-h'] or args == ['--help']:
+            h = commands['help']
+            result = h(command_name)
+        else:
+            result = command(*args, **kwargs)
+    except (ValueError, RuntimeError, NotImplementedError) as e:
+        print('ERROR:', e)
+        result = os.EX_USAGE
     sys.exit(result)
 

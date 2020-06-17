@@ -13,7 +13,7 @@ import traceback
 import json
 
 from casa_distro import six
-from casa_distro.command import command
+from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
                                   default_repository_server_directory,
@@ -21,9 +21,10 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_environment_type,
                                   default_distro,
                                   default_branch,
-                                  default_download_url,
-                                  default_system)
-from casa_distro.environment import iter_distros
+                                  default_download_url)
+from casa_distro.environment import (iter_distros,
+                                     casa_distro_directory,
+                                     select_distro)
 from casa_distro.build_workflow import (iter_environments, run_container,
                                         create_build_workflow_directory,
                                         update_container_image, merge_config,
@@ -32,7 +33,7 @@ from casa_distro.build_workflow import (iter_environments, run_container,
 from casa_distro.log import verbose_file
 from casa_distro.singularity import (create_writable_singularity_image,
                                      singularity_root_shell)
-from casa_distro.vbox import vbox_import_image
+from casa_distro import singularity, vbox
 from casa_distro.web import url_listdir, urlopen
 
 def display_summary(status):
@@ -146,15 +147,17 @@ def distro():
 def setup(type=default_environment_type,
           distro=default_distro,
           branch=default_branch,
-          system=default_system,
-          name='{source}-{type}-{system}',
+          system=None,
+          name='{distro}-{type}-{system}',
           container_type = 'singularity',
-          base_directory=default_build_workflow_repository,
+          base_directory=casa_distro_directory(),
           image = '{base_directory}/casa-{type}-{system}{extension}',
+          url=default_download_url + '/{container_type}',
           output='{base_directory}/{name}{extension}',
           vm_memory='8192',
           vm_disk_size='131072',
-          verbose=None):
+          verbose=True,
+          force=False):
     """
     Create a new run or dev environment
 
@@ -162,91 +165,178 @@ def setup(type=default_environment_type,
     ----------
     type
         default={type_default}
-            Environment type to setup. Either "run" for users or "dev" for
+        Environment type to setup. Either "run" for users or "dev" for
         developers
-    distro : str
+    distro
         default={distro_default}
         Distro used to build this environment. This is typically "brainvisa",
         "opensource" or "cati_platform". Use "casa_distro distro" to list all
         currently available distro.
-    branch : str
+    branch
         default={branch_default}
-        Name of the source branch to use for dev environments. Either "latest_release", "bug_fix" or "trunk".
-    system : str
-        default={system_default}
-        System to use with this environment.
-    name  : str
+        Name of the source branch to use for dev environments. Either "latest_release",
+        "master" or "integration".
+    system
+        System to use with this environment. By default, it uses the first supported
+        system of the selected distro.
+    name
         default={name_default}
         Name of the environment (no other environment must have the same name).
-    container_type :str
+    container_type
         default={container_type_default}
         Type of virtual applianrce to use. Either "singularity", "vbox" or "docker".
-    base_directory :str
+    base_directory
         default={base_directory_default}
         Directory where images and environments are stored
-    image : str
+    image
         default={image_default}
         Location of the virtual image for this environement.
-    output : str
+    url
+        default={url_default}
+        URL where to download image if it is not found.
+    output
         default={output_default}
         Directory where the environement will be stored.
-    vm_memory : int
+    vm_memory
         default={vm_memory_default}
         Size in MiB of the memory allocated for running applications (for VirtualBox only).
-    vm_disk_size : int
+    vm_disk_size
         default={vm_disk_size_default}
         Maximum size in MiB of disk for the virtual machine running applications (for VirtualBox only).
-    verbose : bool, int  or str
+    verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
+    force
+        default={force_default}
+        Allow to perform setup with unsuported configuration.
     """
+    verbose = verbose_file(verbose)
+    force = check_boolean('force', force)
+    
     if type not in ('run', 'dev'):
         raise ValueError('Invalid environment type: {0}'.format(type))
+    if verbose:
+        print('Type:', type,
+              file=verbose)
     
-    if container_type != 'vbox':
-        raise NotImplementedError('Only "vbox" container type is implemented for this command')
+    if container_type == 'singularity':
+        extension = '.sif'
+        container_module = singularity
+    elif container_type == 'vbox':
+        extension = '.vdi'
+        container_module = vbox
+    elif container_type == 'docker':
+        raise NotImplementedError('docker container type is not yet supported by this command')
+    else:
+        raise ValueError('Invalid container type: {0}'.format(container_type))
+    if verbose:
+        print('Container type:', container_type,
+              file=verbose)
 
-    #if source_image is None:
-        #image_name = 'casa-{environment_type}'.format(environment_type=environment_type)
-        #image_file_name = image_name + '.vdi'
-        #source_image = osp.join(default_build_workflow_repository,
-                                #image_file_name)
-    #else:
-        #source_image = osp.expanduser(osp.expandvars(source_image))
-        #image_file_name = osp.basename(source_image)
-        #image_name = osp.splitext(image_file_name)[0]
+    distro = select_distro(distro)
+    if verbose:
+        print('Distro:', distro['name'],
+              file=verbose)
     
-    #url= default_download_url + '/vbox'
-    #metadata_file = source_image + '.json'
-    #if not osp.exists(source_image):
-        #downloadable_images = [i for i in url_listdir(url) 
-                               #if fnmatchcase(i, image_file_name)]
-        #if not downloadable_images:
-            #raise ValueError('Cannot find a image to download in {url} correponding to {pattern}'.format(
-                #url=url, pattern=image_file_name))
-        #elif len(downloadable_images) > 1:
-            #raise ValueError('Found several images in {url} correponding to {pattern}: {images}'.format(
-                #url=url, pattern=image_file_name, images=', '.join(downloadable_images)))
-        #image_file_name = downloadable_images[0]
-        #image_name = osp.splitext(image_file_name)[0]
-        #source_image = osp.join(default_build_workflow_repository,
-                                #image_file_name)
-        
-        #metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
-        #json.dump(metadata, open(metadata_file, 'w'), indent=4)
-        
-        #subprocess.check_call([
-            #'wget', 
-            #'{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-            #'-O', source_image])
-    #else:
-        #metadata = json.load(open(metadata_file))
-        #if os.stat(source_image).st_size < metadata['size']:
-            #subprocess.check_call([
-                #'wget', '--continue',
-                #'{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-                #'-O', source_image])
+    if branch not in ('latest_release', 'master', 'integration'):
+        raise ValueError('Invalid branch : {0}'.format(branch))
+    if verbose:
+        print('Branch:', branch,
+              file=verbose)
+
+    if system is None:
+        system = distro['systems'][0]
     
+    if system not in distro['systems'] and not force:
+        raise ValueError('The system {0} is not supported by the distro {1}. Use force=true or select one of the following systems: {2}'.format(system, distro['name'], ', '.join(distro['systems'])))
+    if verbose:
+        print('System:', system,
+              file=verbose)
+    
+    name = name.format(type=type,
+                       distro=distro['name'],
+                       branch=branch,
+                       system=system)
+    if verbose:
+        print('name:', name,
+              file=verbose)
+    
+    if not osp.isdir(base_directory):
+        raise ValueError('No such directory: {0}'.format(base_directory))
+    if verbose:
+        print('base directory:', base_directory,
+              file=verbose)
+    
+    image = image.format(type=type,
+                         distro=distro['name'],
+                         branch=branch,
+                         system=system,
+                         base_directory=base_directory,
+                         container_type=container_type,
+                         extension=extension)
+    if verbose:
+        print('image:', image,
+              file=verbose)
+
+    url = url.format(type=type,
+                     distro=distro['name'],
+                     branch=branch,
+                     system=system,
+                     base_directory=base_directory,
+                     container_type=container_type,
+                     extension=extension)
+    if verbose:
+        print('download image url:', url,
+              file=verbose)
+
+    output = output.format(type=type,
+                           distro=distro['name'],
+                           branch=branch,
+                           system=system,
+                           base_directory=base_directory,
+                           name=name,
+                           extension=extension)
+    if verbose:
+        print('output:', output,
+              file=verbose)
+
+    metadata_file = image + '.json'
+    image_file_name = osp.basename(image)
+    if not osp.exists(image):
+        if image_file_name not in url_listdir(url): 
+            raise ValueError('File {image} does not exist and cannot be '
+                             'downloaded from {url}/{image_file_name}'.format(
+                                 image=image, 
+                                 url=url, 
+                                 image_file_name=image_file_name))
+        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
+        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+        
+        subprocess.check_call([
+            'wget', 
+            '{url}/{image_file_name}'.format(url=url,
+                                             image_file_name=image_file_name),
+            '-O', image])
+    else:
+        metadata = json.load(open(metadata_file))
+        if os.stat(image).st_size < metadata['size']:
+            subprocess.check_call([
+                'wget', '--continue',
+                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+                '-O', image])
+    
+    container_module.setup(type=type,
+          distro=distro,
+          branch=branch,
+          system=system,
+          name=name,
+          base_directory=base_directory,
+          image=image,
+          output=output,
+          vm_memory=vm_memory,
+          vm_disk_size=vm_disk_size,
+          verbose=verbose,
+          force=force)
     #if output:
         #vm_name = vm_name.format(image_name=image_name)
         #output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
@@ -260,33 +350,6 @@ def setup(type=default_environment_type,
         #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount
 
 
-@command
-def create(distro_source=default_distro,
-           distro_name=None,
-           container_type = None,
-           container_image = None,
-           container_test_image = None,
-           branch=default_branch,
-           system=default_system,
-           not_override='bv_maker.cfg,svn.secret',
-           build_workflows_repository=default_build_workflow_repository,
-           verbose=None):
-    '''
-    This command is obsolete
-    '''
-    not_override_lst = not_override.split(',')
-    bwf_directory = osp.join(build_workflows_repository, '%(distro_name)s',
-                             '%(casa_branch)s_%(system)s')
-    create_build_workflow_directory(build_workflow_directory=bwf_directory,
-                                    distro_source=distro_source,
-                                    distro_name=distro_name,
-                                    container_type=container_type,
-                                    container_image=container_image,
-                                    container_test_image=container_test_image,
-                                    casa_branch=branch,
-                                    system=system,
-                                    not_override=not_override_lst,
-                                    verbose=verbose)
 
 # "list" cannot be used as a function name in Python. Therefore, the
 # command name in the command-line is not the same as the corresponding
