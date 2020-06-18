@@ -162,15 +162,14 @@ def main():
             args.append(i)
             allows_kwargs = False
     
-    if 'args_list' in cargs.args:
-        kwargs['args_list'] = args + args_list
-        args= []
-
     try:
         if not kwargs and args == ['-h'] or args == ['--help']:
             h = commands['help']
             result = h(command_name)
         else:
+            if 'args_list' in cargs.args:
+                kwargs['args_list'] = args + args_list
+                args= []
             result = command(*args, **kwargs)
     except (ValueError, RuntimeError, NotImplementedError) as e:
         print('ERROR:', e)

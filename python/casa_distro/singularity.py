@@ -19,10 +19,6 @@ from casa_distro.log import verbose_file
 from . import downloader
 
 
-def get_image_filename(image, build_workflows_repository):
-    return osp.join(build_workflows_repository, image + '.sif')
-
-
 class RecipeBuilder:
     '''
     Class to interact with an existing VirtualBox machine.
@@ -113,75 +109,72 @@ def singularity_major_version():
     return _singularity_major_version
 
 
-def run_singularity(casa_distro, command, gui=False, interactive=False,
-                    tmp_container=True, container_image=None,
-                    cwd=None, env=None, container_options=[],
-                    verbose=None):
-    verbose = verbose_file(verbose)
-    
+def run(environment, command, gui, cwd, env, image, container_options,
+        base_directory, verbose):    
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
     singularity = ['singularity', 'run', '--cleanenv', '--home', '/casa/host/home']
     if cwd:
         singularity += ['--pwd', cwd]
     
+    
+    config = environment['configs']['default']
+
     if gui:
         xauthority = osp.expanduser('~/.Xauthority')
         if osp.exists(xauthority):
             shutil.copy(xauthority,
-                        osp.join(casa_distro['build_workflow_dir'], 'host/home/.Xauthority'))
-        
-    for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
-        source = source % casa_distro
+                        osp.join(environment['directory'], 'host/home/.Xauthority'))
+    
+    for source, dest in config.get('volumes',{}).items():
+        source = source.format(**environment)
         source = osp.expandvars(source)
-        dest = dest % casa_distro
+        dest = dest.format(**environment)
         dest = osp.expandvars(dest)
         singularity += ['--bind', '%s:%s' % (source, dest)]
         
-    container_env = os.environ.copy()
-    tmp_env = dict(casa_distro.get('container_env', {}))
+    tmp_env = dict(config.get('env', {}))
     if gui:
-        tmp_env.update(casa_distro.get('container_gui_env', {}))
+        tmp_env.update(config.get('gui_env', {}))
     if env is not None:
         tmp_env.update(env)
     
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
-    for name, value in six.iteritems(tmp_env):
-        value = value % casa_distro
+    container_env = os.environ.copy()
+    for name, value in tmp_env.items():
+        value = value.format(**environment)
         value = osp.expandvars(value)
         container_env['SINGULARITYENV_' + name] = value
-    conf_options = casa_distro.get('container_options', [])
+        
+    container_options = config.get('container_options', []) + (container_options or [])
     if cwd:
-        for i, opt in enumerate(conf_options):
+        for i, opt in enumerate(container_options):
             if opt == '--pwd':
-                conf_options = conf_options[:i] + conf_options[i+2:]
+                container_options = container_options[:i] + container_options[i+2:]
                 break
-    options = list(conf_options)
-    options += container_options
     if gui:
-        gui_options = casa_distro.get('container_gui_options', [])
+        gui_options = config.get('container_gui_options', [])
         if gui_options:
-            options += [osp.expandvars(i) for i in gui_options
-                        if i != '--no-nv']
+            container_options += [osp.expandvars(i) for i in gui_options
+                                  if i != '--no-nv']
         # handle --nv option, if a nvidia device is found
-        if '--nv' not in options and os.path.exists('/dev/nvidiactl') \
-                and '--no-nv' not in options:
-            options.append('--nv')
+        if ('--nv' not in container_options and 
+            os.path.exists('/dev/nvidiactl') and
+            '--no-nv' not in container_options):
+            container_options.append('--nv')
         # remove --no-nv which is not a singularity option
-        if '--no-nv' in options:
-            options.remove('--no-nv')
-    singularity += options
-    if container_image is None:
-        container_image = casa_distro.get('container_image')
-        if container_image is None:
-            raise ValueError('container_image is missing from casa_distro.json')
-        container_image = get_image_filename(
-            container_image,
-            osp.dirname(osp.dirname(casa_distro['build_workflow_dir'])))
-        if not osp.exists(container_image):
-            raise ValueError("'%s' does not exist" % container_image)
-    singularity += [container_image]
+        if '--no-nv' in container_options:
+            container_options.remove('--no-nv')
+    singularity += container_options
+    if image is None:
+        image = environment.get('image')
+        if image is None:
+            raise ValueError('image is missing from environement configuration file (casa_distro.json)')
+        image = osp.join(base_directory, image)
+        if not osp.exists(image):
+            raise ValueError("'%s' does not exist" % image)
+    singularity += [image]
     singularity += command
     if verbose:
         print('-' * 40, file=verbose)
@@ -206,9 +199,9 @@ def create_writable_singularity_image(image,
         casa_distro = json.load(open(casa_distro_json))
         image = casa_distro.get('container_image')
         
-    read_image = get_image_filename(image, build_workflows_repository)
-    write_image = read_image[:-4] + 'writable'
-    check_call(['sudo', 'singularity', 'build', '--sandbox', write_image, read_image])
+    #read_image = get_image_filename(image, build_workflows_repository)
+    #write_image = read_image[:-4] + 'writable'
+    #check_call(['sudo', 'singularity', 'build', '--sandbox', write_image, read_image])
 
 
 def singularity_root_shell(image, 
@@ -221,13 +214,13 @@ def singularity_root_shell(image,
         casa_distro = json.load(open(casa_distro_json))
         image = casa_distro.get('container_image')
         
-    write_image = get_image_filename(image, build_workflows_repository)
-    if not write_image.endswith('.writable.simg') \
-            and not write_image.endswith('.writable'):
-        if write_image.endswith('.simg'):
-            write_image = write_image[:-5]
-        write_image = write_image + '.writable'
-    check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
+    #write_image = get_image_filename(image, build_workflows_repository)
+    #if not write_image.endswith('.writable.simg') \
+            #and not write_image.endswith('.writable'):
+        #if write_image.endswith('.simg'):
+            #write_image = write_image[:-5]
+        #write_image = write_image + '.writable'
+    #check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
 
 def setup(type, distro, branch, system, name, base_directory, image,
           output, vm_memory, vm_disk_size, verbose, force):

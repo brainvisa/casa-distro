@@ -21,14 +21,14 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_distro,
                                   default_branch,
                                   default_download_url)
-from casa_distro.environment import (find_in_path,
+from casa_distro.environment import (casa_distro_directory,
+                                     find_in_path,
                                      iter_distros,
                                      iter_environments,
-                                     casa_distro_directory,
+                                     run_container,
                                      select_distro,
                                      select_environment)
-from casa_distro.build_workflow import (run_container,
-                                        merge_config,
+from casa_distro.build_workflow import (merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
 from casa_distro.log import verbose_file
@@ -74,14 +74,18 @@ def display_summary(status):
     print(status)
 
 
-def parse_string(msg):
+def parse_list(msg):
+    """
+    Parse a string containing a list of values separated by commas.
+    Items can be quoted with simple or double quotes.
+    Quotes and commas can be escaped by preceding them with a backslash.
+    """
     out_msg = []
     sub_msg = []
     esc = False
     in_quote = None
     for c in msg:
         if esc:
-            print('esc:', c)
             sub_msg.append(c)
             esc = False
         else:
@@ -364,6 +368,23 @@ def list_command(type=None, distro=None, branch=None, system=None,
                  verbose=None):
     '''
     List (eventually selected) run or dev environments created by "setup" command.
+
+    Parameters
+    ----------
+    type
+        If given, shows only environments having the given type.
+    distro
+        If given, shows only environments having the given distro name.
+    branch
+        If given, shows only environments having the given branch.
+    system
+        If given, shows only environments having the given system name.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
     '''
     verbose = verbose_file(verbose)
     for env_conf in iter_environments(base_directory,
@@ -372,7 +393,7 @@ def list_command(type=None, distro=None, branch=None, system=None,
                                       branch=branch,
                                       system=system):
         print(env_conf['name'])
-        for i in ('type', 'distro', 'branch', 'system'):
+        for i in ('type', 'distro', 'branch', 'system', 'container_type'):
             print('  %s:' % i, env_conf[i])
         print('  directory:', env_conf['directory'])
         if verbose:
@@ -382,41 +403,82 @@ def list_command(type=None, distro=None, branch=None, system=None,
 
 @command
 def run(type=None, distro=None, branch=None, system=None,
-        base_directroy=casa_distro_directory(),
-        gui=True, interactive=False, tmp_container=True,
-        container_image=None,container_options=[], cwd=None, env=None,
-        args_list=[], verbose=None):
+        base_directory=casa_distro_directory(),
+        gui=True,
+        cwd='/casa/host/home', 
+        env=None,
+        image=None,
+        container_options=None,
+        args_list=[],
+        verbose=None):
     """
     Start any command in a selected run or dev environment
 
     example:
         casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    gui
+        default={gui_default}
+        If "no", "false" or "0", command is not using a graphical user 
+        interface (GUI). Nothing is done to connect the container to a 
+        graphical interface. This option may be necessary in context where 
+        a graphical interface is not available.
+    cwd
+        default={cwd_default}
+        Set current working directory to the given value before launching
+        the command.
+    env
+        Comma separated list of environment variables to pass to the command.
+        Each variable must have the form name=value.
+    image
+        Force usage of a specific virtual image instead of the one defined
+        in the environment configuration.
+    container_options
+        Comma separated list of options to add to the command line used to
+        call the container system.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
     """
     verbose = verbose_file(verbose)
-    env_conf = select_environment(base_directroy,
+    env_conf = select_environment(base_directory,
                                   type=type,
                                   distro=distro,
                                   branch=branch,
                                   system=system)
-    #if isinstance(container_options, six.string_types) \
-            #and len(container_options) != 0:
-        #container_options = parse_string(container_options)
-    #if isinstance(env, six.string_types) \
-            #and len(env) != 0:
-        #env_list = parse_string(env)
-        #try:
-            #env = dict(e.split('=') for e in env_list)
-        #except:
-            #raise ValueError('env syntax error. Should be in the shape '
-                             #'"VAR1=value1 VAR2=value2" etc.')
+    if container_options:
+        container_options = parse_list(container_options)
+    if env:
+        env_list = parse_list(env)
+        try:
+            env = dict(e.split('=') for e in env_list)
+        except:
+            raise ValueError('env syntax error. Should be in the shape '
+                             '"VAR1=value1,VAR2=value2" etc.')
 
-    #env_conf = env_confs[0]
-    #command = args_list
-    #run_container(env_conf['build_workflow_directory'], command=command, gui=gui, 
-                #interactive=interactive, tmp_container=tmp_container,
-                #container_image=container_image, cwd=cwd, env=env,
-                #container_options=container_options, verbose=verbose,
-                #conf=conf)
+    command = args_list
+    run_container(env_conf, 
+                  command=command, 
+                  gui=gui, 
+                  cwd=cwd, 
+                  env=env,
+                  image=image,
+                  container_options=container_options,
+                  base_directory=base_directory,
+                  verbose=verbose)
 
 @command
 def update(distro='*',

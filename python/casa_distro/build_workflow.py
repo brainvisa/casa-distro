@@ -17,7 +17,6 @@ from casa_distro import six
 from casa_distro import share_directories
 from casa_distro.log import verbose_file
 from casa_distro.docker import run_docker, update_docker_image
-from casa_distro.singularity import run_singularity
 
 
 def update_dict_recursively(dict_to_update, dict_to_read):
@@ -290,11 +289,11 @@ alias ls='ls -F --color'
 alias ll='ls -als'
 ''')
     # initialize git-lfs for the local home
-    run_container(
-        build_workflow_directory,
-        ['bash', '-c',
-         'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
-        verbose=verbose)
+    #run_container(
+        #build_workflow_directory,
+        #['bash', '-c',
+         #'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
+        #verbose=verbose)
 
 def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config
@@ -319,38 +318,6 @@ def merge_config(casa_distro, conf):
         merge_dict(casa_distro, casa_distro.get('alt_configs', {})[conf])
     return casa_distro
 
-def run_container(bwf_directory, command, gui=False, interactive=False,
-                  tmp_container=True, container_image=None,
-                  cwd=None, env=None,
-                  container_options=[], verbose=False, conf='dev'):
-    '''Run any command in the container defined in the build workflow directory
-    '''
-    casa_distro_json = osp.join(bwf_directory, 'host', 'conf', 'casa_distro.json')
-    casa_distro = json.load(open(casa_distro_json))
-    casa_distro = merge_config(casa_distro, conf)
-    casa_distro['build_workflow_dir'] = bwf_directory
-    container_type = casa_distro.get('container_type')
-    if container_type:
-        if container_type == 'singularity':
-            run_singularity(casa_distro, command, gui=gui,
-                            interactive=interactive,
-                            tmp_container=tmp_container,
-                            container_image=container_image,
-                            cwd=cwd, env=env,
-                            container_options=container_options,
-                            verbose=verbose)
-        elif container_type == 'docker':
-            run_docker(casa_distro, command, gui=gui,
-                       interactive=interactive,
-                       tmp_container=tmp_container,
-                       cwd=cwd, env=env,
-                       container_image=container_image,
-                       container_options=container_options,
-                       verbose=verbose)
-        else:
-            raise ValueError('%s is no a valid container system (in "%s")' % (container_type, casa_distro_json))
-    else:
-        raise ValueError('No container_type in "%s"' % casa_distro_json)
 
 #def update_container_image(build_workflows_repository, container_type,
                            #container_image, verbose=False):

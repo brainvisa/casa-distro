@@ -252,8 +252,7 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
     '''
         
     environment = {}
-    environment.update(distro)
-    del environment['directory']
+    environment['casa_distro_compatibility'] = '3.0'
     environment['type'] = type
     environment['name'] = name
     environment['distro'] = distro['name']
@@ -275,7 +274,6 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
         'HOME': '/casa/host/home'})
 
     if container_type == 'singularity':
-        config.setdefault('container_options', []).extend(['--pwd', '/casa/host/home'])
         config.setdefault('gui_env', {}).update({
             'DISPLAY': '$DISPLAY',
             'XAUTHORITY': '$HOME/.Xauthority'})
@@ -290,6 +288,35 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
     casa_distro_json = osp.join(output, 'host', 'conf', 'casa_distro.json')
     json.dump(environment, open(casa_distro_json, 'w'), indent=4)
 
+    home = osp.join(output, 'host', 'home')
+    if not osp.exists(home):
+        os.mkdir(home)
+    
     #TODO check_svn_secret(bwf_dir)
 
+
+def run_container(environment, command, gui, cwd, env, image, 
+                  container_options, base_directory, verbose):
+    """
+    Run a command in the container defined in the environment
+    """
+    container_type = environment.get('container_type')
+    if container_type == 'singularity':
+        module = singularity
+    elif container_type == 'vbox':
+        raise NotImplementedError('run command is not implemented for Docker')
+        module = vbox
+    elif container_type == 'docker':
+        raise NotImplementedError('run command is not implemented for Docker')
+    else:
+        raise ValueError('Invalid container type: {0}'.format(container_type))
+    module.run(environment, 
+               command=command, 
+               gui=gui, 
+               cwd=cwd, 
+               env=env,
+               image=image,
+               container_options=container_options,
+               base_directory=base_directory,
+               verbose=verbose)
 
