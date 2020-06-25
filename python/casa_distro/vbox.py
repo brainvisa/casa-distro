@@ -30,6 +30,99 @@ def vbox_manage(cmd_options, output=False):
         subprocess.check_call(cmd)
 
 
+def create_image(base, base_metadata, 
+                 output, metadata,
+                 build_file,
+                 memory,
+                 disk_size,
+                 gui,
+                 verbose,
+                 **kwargs):
+    type = metadata['type']
+    if type == 'system':
+        # Create a machine in VirtualBox, set some parameters and start it.
+        name = metadata['name']
+        if verbose:
+            six.print_('Create Linux 64 bits virtual machine',
+                       file=verbose, flush=True)
+        vbox_manage(['createvm', 
+                    '--name', name, 
+                    '--ostype', 'Ubuntu_64',
+                    '--register'])
+        if verbose:
+            six.print_('Set memory to', memory, 'MiB and allow booting on DVD',
+                    file=verbose, flush=True)
+        vbox_manage(['modifyvm', name,
+                    '--memory', memory,
+                    '--boot1', 'dvd',
+                    '--nic1', 'nat'])
+        if verbose:
+            six.print_('Create a', disk_size, 'MiB system disk in', output,
+                    file=verbose, flush=True)
+        vbox_manage(['createmedium',
+                    '--filename', output,
+                    '--size', disk_size,
+                    '--format', 'VDI',
+                    '--variant', 'Standard'])
+        if verbose:
+            six.print_('Create a SATA controller in the VM',
+                    file=verbose, flush=True)
+        vbox_manage(['storagectl', name,
+                    '--name', '%s_SATA' % name,
+                    '--add', 'sata'])
+        if verbose:
+            six.print_('Attach the system disk to the machine',
+                    file=verbose, flush=True)
+        vbox_manage(['storageattach', name,
+                    '--storagectl', '%s_SATA' % name,
+                    '--medium', output,
+                    '--port', '1',
+                    '--type', 'hdd'])
+        if verbose:
+            six.print_('Attach', base, 'to the DVD',
+                    file=verbose, flush=True)
+        vbox_manage(['storageattach', name,
+                    '--storagectl', '%s_SATA' % name,
+                    '--port', '0',
+                    '--type', 'dvddrive',
+                    '--medium', base])
+        if verbose:
+            six.print_('Start the new virtual machine',
+                    file=verbose, flush=True)
+        vbox_manage(['startvm', name])
+        
+        return '''VirtualBox machine created. Now, perform the following steps:
+        1) Perform Ubuntu minimal installation with an autologin account named 
+        "brainvisa" and with password "brainvisa"
+        
+        2) Perform system updates and install packages required for kernel 
+        module creation :
+                
+                sudo apt update
+                sudo apt upgrade
+                sudo apt install gcc make perl
+
+        3) Disable automatic software update in "Update" tab of Software & Updates
+        properties. Otherwise installation may fail because installation
+        database is locked.
+
+        4) Set root password to "brainvisa" (this is necessary to automatically
+        connect to the VM to perform post-install)
+        
+        5) Reboot the VM
+
+        6) Download and install VirtualBox guest additions
+
+        7) Shut down the VM
+
+        8) Configure the VM in VirualBox (especially 3D acceleration, processors
+        and memory)
+    '''
+    else:
+        raise NotImplementedError('Creation of image of type {0} is not yet '
+                                  'implemented for VirtualBox'.format(type))
+
+
 def vbox_create_system(image_name, iso, output, verbose,
                        memory='8192',
                        disk_size='131072'):

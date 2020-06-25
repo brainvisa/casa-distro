@@ -162,10 +162,10 @@ def main():
         l = i.split('=', 1)
         if allows_kwargs and len(l) == 2:
             kwargs[l[0]] = l[1]
+        elif i == '--':
+            allows_kwargs = False
         else:
             args.append(i)
-            allows_kwargs = False
-    
     try:
         if not kwargs and args == ['-h'] or args == ['--help']:
             h = commands['help']

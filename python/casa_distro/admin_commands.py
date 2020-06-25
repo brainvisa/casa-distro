@@ -26,7 +26,7 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_login,
                                   default_download_url,
                                   default_system)
-from casa_distro.log import verbose_file
+from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
 from casa_distro.hash import file_hash
@@ -119,30 +119,30 @@ def create_latest_release(build_workflows_repository=default_build_workflow_repo
               file = sys.stderr)
         raise
         
-@command
-def publish_build_workflows(distro='*', branch='*', system='*', 
-                            build_workflows_repository=default_build_workflow_repository, 
-                            repository_server=default_repository_server, 
-                            repository_server_directory=default_repository_server_directory,
-                            login=default_repository_login, verbose=None):
-    '''Upload a build workflow to sftp server (require lftp command to be installed).'''
+#@command
+#def publish_build_workflows(distro='*', branch='*', system='*', 
+                            #build_workflows_repository=default_build_workflow_repository, 
+                            #repository_server=default_repository_server, 
+                            #repository_server_directory=default_repository_server_directory,
+                            #login=default_repository_login, verbose=None):
+    #'''Upload a build workflow to sftp server (require lftp command to be installed).'''
         
-    verbose = verbose_file(verbose)
-    if login:
-        remote = '%s@%s:' % (login, repository_server)
-    else:
-        remote = '%s:' % repository_server
-    for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
-        relative_bwf_dir = bwf_dir[len(build_workflows_repository)+1:]
+    #verbose = verbose_file(verbose)
+    #if login:
+        #remote = '%s@%s:' % (login, repository_server)
+    #else:
+        #remote = '%s:' % repository_server
+    #for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository, distro=distro, branch=branch, system=system):
+        #relative_bwf_dir = bwf_dir[len(build_workflows_repository)+1:]
         
-        cmd = ['rsync', '-rR', '--delete',
-               '--inplace', '--partial', '--links', '--times', '--perms',
-               osp.join(build_workflows_repository, '.', relative_bwf_dir) + '/', 
-               remote + repository_server_directory + '/']
-        if verbose:
-            print('Publish', bwf_dir, file=verbose)
-            cmd.append('--progress')
-        check_call(cmd)
+        #cmd = ['rsync', '-rR', '--delete',
+               #'--inplace', '--partial', '--links', '--times', '--perms',
+               #osp.join(build_workflows_repository, '.', relative_bwf_dir) + '/', 
+               #remote + repository_server_directory + '/']
+        #if verbose:
+            #print('Publish', bwf_dir, file=verbose)
+            #cmd.append('--progress')
+        #check_call(cmd)
 
 
 #@command
@@ -472,17 +472,20 @@ def publish_build_workflows(distro='*', branch='*', system='*',
 
 @command
 def create_image(type,
-                 name='casa-{type}',
+                 name='casa-{type}-{system}',
                  base=None,
-                 output=osp.join(default_build_workflow_repository, '{name}-{system}.{extension}'),
+                 output=osp.join(default_build_workflow_repository, '{name}.{extension}'),
                  container_type='singularity',
                  memory='8192',
                  disk_size='131072',
                  gui='no',
                  verbose=True):
-    """Create a new image"""
-    
+    """
+    Create a new virtual image
+    """
     verbose = verbose_file(verbose)
+    gui = boolean_value(gui)
+    
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
     
@@ -495,7 +498,6 @@ def create_image(type,
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
-    name = name.format(type=type)
     if base is None:
         if type == 'system':
             base = osp.join(default_build_workflow_repository, 'ubuntu-*.{extension}').format(
@@ -517,7 +519,7 @@ def create_image(type,
             # Raise appropriate error for non existing file
             open(base)
         elif len(bases) > 1:
-            raise ValueError('Several base images found : {0}'.format(', '.join(systems)))
+            raise ValueError('Several base images found : {0}'.format(', '.join(bases)))
         base = bases[0]
         
     if osp.exists(base + '.json'):
@@ -526,6 +528,7 @@ def create_image(type,
         base_metadata = {}
     system = base_metadata.get('system', default_system)        
     
+    name = name.format(type=type, system=system)
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            system=system,
                                                            extension=extension)
@@ -568,21 +571,26 @@ def create_image(type,
     else:
         module = casa_distro.singularity
         
-    module.create_image(base, base_metadata, 
-                        output, metadata,
-                        build_file=build_file,
-                        verbose=verbose,
-                        memory=memory,
-                        disk_size=disk_size,
-                        gui=gui)
-
+    msg = module.create_image(base, base_metadata, 
+                              output, metadata,
+                              build_file=build_file,
+                              verbose=verbose,
+                              memory=memory,
+                              disk_size=disk_size,
+                              gui=gui)
+    if msg:
+        print(msg)
+        
 
 @command
-def publish_image(image=osp.join(default_build_workflow_repository, 'casa-{image_type}-*.{extension}'),
-                  image_type='run',
-                  container_type='singularity'):
-    '''Upload a run or dev image on brainvisa.info web site'''
-    
+def publish_image(type,
+                  image=osp.join(default_build_workflow_repository, 'casa-{type}-*.{extension}'),
+                  container_type='singularity',
+                  verbose=True):
+    """
+    Upload a system, run, release or dev image on brainvisa.info web site
+    """
+    verbose = verbose_file(verbose)
     if container_type == 'singularity':
         extension = 'sif'
     elif container_type == 'vbox':
@@ -590,7 +598,7 @@ def publish_image(image=osp.join(default_build_workflow_repository, 'casa-{image
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
     
-    image = image.format(image_type=image_type,
+    image = image.format(type=type,
                          extension=extension)
     if not osp.exists(image):
         images = glob.glob(osp.expandvars(osp.expanduser(image)))
