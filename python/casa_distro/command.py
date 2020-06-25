@@ -72,27 +72,31 @@ def help(command=None):
         print('-' * len(command))
         print(command_help)
     else:
+        executable=osp.basename(sys.argv[0])
         global_help = '''Casa_distro is the BrainVISA suite distribution swiss knife. 
 It allows to setup a virtual environment and launch BrainVISA software. 
 See http://brainivsa.info/casa-distro for more information
 
 Version : {version}
 
-usage: casa_distro [-r REPOSITORY] [-v] [--version] <command> [<command parameters>...]
+usage: {executable} [-r REPOSITORY] [-v] [--version] <command> [<command parameters>...]
 
 optional arguments:
     -r REPOSITORY, --repository REPOSITORY
-                    Path of the directory containing build workflows
+                    Path of the directory containing virtual images and configured 
+                    environments.
                     (default={default_repository}) This base directory
                     may also be specified via an environment variable:
                     CASA_DEFAULT_REPOSITORY
     -v, --verbose   Display as much information as possible.
     --version       Display casa-distro version number and exit.
     -h, --help      Display help message and exit.
-                    If used after command name, display only the help of this command.
+                    If used after command name, display only the help of this
+                    command.
 
 Commands:
-'''.format(version=__version__,
+'''.format(executable=executable,
+           version=__version__,
            default_repository=default_build_workflow_repository)
     
         commands_summary = [global_help]
