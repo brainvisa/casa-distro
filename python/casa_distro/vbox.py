@@ -39,9 +39,9 @@ def create_image(base, base_metadata,
                  verbose,
                  **kwargs):
     type = metadata['type']
+    name = metadata['name']
     if type == 'system':
         # Create a machine in VirtualBox, set some parameters and start it.
-        name = metadata['name']
         if verbose:
             six.print_('Create Linux 64 bits virtual machine',
                        file=verbose, flush=True)
@@ -117,101 +117,21 @@ def create_image(base, base_metadata,
 
         8) Configure the VM in VirualBox (especially 3D acceleration, processors
         and memory)
-    '''
+'''
+    elif type in ('run', 'dev'):
+        if base:
+            vbox_import_image(base, name, output,
+                              verbose=verbose,
+                              memory=memory,
+                              disk_size=disk_size)
+        vbox = VBoxMachine(name)
+        vbox.install(build_file=build_file,
+                     verbose=verbose,
+                     gui=gui)
     else:
         raise NotImplementedError('Creation of image of type {0} is not yet '
                                   'implemented for VirtualBox'.format(type))
 
-
-def vbox_create_system(image_name, iso, output, verbose,
-                       memory='8192',
-                       disk_size='131072'):
-    '''
-    Create an machine in VirtualBox, set some parameters and start it.
-    
-    image_name: name of the image in VirtualBox (must not exist)
-    iso: name of the *.iso file containing the Ubuntu image
-    output: name of the *.vdi file that will contain the resulting image 
-            (must not be used in VirtualBox devices)
-    memory: memory allocated to the image (default = 8 GiB)
-    disk_size: maximum system disk size (default = 128 GiB)
-    '''
-    if verbose:
-        six.print_('Create Linux 64 bits virtual machine',
-                   file=verbose, flush=True)
-    vbox_manage(['createvm', 
-                 '--name', image_name, 
-                 '--ostype', 'Ubuntu_64',
-                 '--register'])
-    if verbose:
-        six.print_('Set memory to', memory, 'MiB and allow booting on DVD',
-                   file=verbose, flush=True)
-    vbox_manage(['modifyvm', image_name,
-                 '--memory', memory,
-                 '--boot1', 'dvd',
-                 '--nic1', 'nat'])
-    if verbose:
-        six.print_('Create a', disk_size, 'MiB system disk in', output,
-                   file=verbose, flush=True)
-    vbox_manage(['createmedium',
-                 '--filename', output,
-                 '--size', disk_size,
-                 '--format', 'VDI',
-                 '--variant', 'Standard'])
-    if verbose:
-        six.print_('Create a SATA controller in the VM',
-                   file=verbose, flush=True)
-    vbox_manage(['storagectl', image_name,
-                 '--name', '%s_SATA' % image_name,
-                 '--add', 'sata'])
-    if verbose:
-        six.print_('Attach the system disk to the machine',
-                   file=verbose, flush=True)
-    vbox_manage(['storageattach', image_name,
-                 '--storagectl', '%s_SATA' % image_name,
-                 '--medium', output,
-                 '--port', '1',
-                 '--type', 'hdd'])
-    if verbose:
-        six.print_('Attach', iso, 'to the DVD',
-                   file=verbose, flush=True)
-    vbox_manage(['storageattach', image_name,
-                 '--storagectl', '%s_SATA' % image_name,
-                 '--port', '0',
-                 '--type', 'dvddrive',
-                 '--medium', iso])
-    if verbose:
-        six.print_('Start the new virtual machine',
-                   file=verbose, flush=True)
-    vbox_manage(['startvm', image_name])
-    
-    return '''VirtualBox machine created. Now, perform the following steps:
-    1) Perform Ubuntu minimal installation with an autologin account named 
-       "brainvisa" and with password "brainvisa"
-    
-    2) Perform system updates and install packages required for kernel 
-       module creation :
-            
-            sudo apt update
-            sudo apt upgrade
-            sudo apt install gcc make perl
-
-    3) Disable automatic software update in "Update" tab of Software & Updates
-       properties. Otherwise installation may fail because installation
-       database is locked.
-
-    4) Set root password to "brainvisa" (this is necessary to automatically
-       connect to the VM to perform post-install)
-    
-    5) Reboot the VM
-
-    6) Download and install VirtualBox guest additions
-
-    7) Shut down the VM
-
-    8) Configure the VM in VirualBox (especially 3D acceleration, processors
-       and memory)
-'''
 
 
 class VBoxMachine:
@@ -220,12 +140,12 @@ class VBoxMachine:
     This machine is suposed to be based on a casa_distro system image.
     '''
     
-    def __init__(self, vm):
+    def __init__(self, name):
         '''
         Create an interface to a VirtualBox VM.
-        vm is the identifier of the VM in VirtualBox.
+        name is the identifier of the VM in VirtualBox.
         '''
-        self.vm = vm
+        self.name = name
         self.user = 'brainvisa'
         self.user_password = 'brainvisa'
         self.root_password = 'brainvisa'
@@ -239,7 +159,7 @@ class VBoxMachine:
         "VBoxManage showvminfo --machinereadable"
         that is parsed and put in a dictionary.
         '''
-        output = vbox_manage(['showvminfo', '--machinereadable', self.vm],
+        output = vbox_manage(['showvminfo', '--machinereadable', self.name],
                               output=True).decode()
         result = {}
         for line in output.split('\n'):
@@ -270,7 +190,7 @@ class VBoxMachine:
             type = 'gui'
         else:
             type = 'headless'
-        vbox_manage(['startvm', self.vm, '--type', type])
+        vbox_manage(['startvm', self.name, '--type', type])
 
 
     def start_and_wait(self, wait=5, attempts=50, verbose=None, gui=False):
@@ -281,7 +201,7 @@ class VBoxMachine:
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
-                six.print_('Starting', self.vm, 'and waiting for it to be ready',
+                six.print_('Starting', self.name, 'and waiting for it to be ready',
                            file=verbose, flush=True)
             self.start(gui=gui)
             command = self._run_user_command('echo')
@@ -299,7 +219,7 @@ class VBoxMachine:
         '''
         return vbox_manage_command([
             'guestcontrol', '--username', self.user, '--password',
-            self.user_password, self.vm, 'run', '--', '/bin/sh', '-c',
+            self.user_password, self.name, 'run', '--', '/bin/sh', '-c',
             command])
     
     def run_user(self, command):
@@ -314,7 +234,7 @@ class VBoxMachine:
         Run a shell command in VM as root
         '''
         vbox_manage(['guestcontrol', '--username', 'root',
-                     '--password', self.root_password, self.vm, 'run', '--', 
+                     '--password', self.root_password, self.name, 'run', '--', 
                      '/bin/sh', '-c', 'umask 0022 && ' + command])
 
 
@@ -323,7 +243,7 @@ class VBoxMachine:
         Copy a file in VM as root
         '''
         vbox_manage(['guestcontrol', '--username', 'root',
-                     '--password', self.root_password, self.vm, 'copyto',
+                     '--password', self.root_password, self.name, 'copyto',
                      '--target-directory', self.tmp_dir, source_file])
         f=os.path.basename(source_file)
         self.run_root('cp --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" && rm "{tmp}/{f}"'.format(
@@ -336,12 +256,12 @@ class VBoxMachine:
         Copy a file in VM as self.user
         '''
         vbox_manage(['guestcontrol', '--username', self.user, 
-                     '--password', self.user_password, self.vm, 
+                     '--password', self.user_password, self.name, 
                      'copyto', '--target-directory', dest_dir, 
                      source_file])
 
-    def install(self, image_type,
-                system='ubuntu-18.04', 
+    def install(self, 
+                build_file, 
                 verbose=None, 
                 gui=False):
         """
@@ -356,22 +276,14 @@ class VBoxMachine:
             installation process.
         """
         
-        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 
-                             'share')
-        casa_docker = osp.join(share_dir, 'docker', 'casa-%s' % image_type, system)
-
-        install_file = osp.join(casa_docker, 'vbox.py')
-        if not osp.exists(install_file):
-            raise RuntimeError('VirtualBox install file missing: %s' % install_file)
-        
         v = {}       
-        exec(compile(open(install_file, "rb").read(), install_file, 'exec'), v, v)
+        exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
         if 'install' not in v:
-            raise RuntimeError('No install function defined in %s' % install_file)
+            raise RuntimeError('No install function defined in {0}'.format(build_file))
         install_function = v['install']
         
         self.start_and_wait(verbose=verbose, gui=gui)
-        install_function(base_dir=casa_docker,
+        install_function(base_dir=osp.dirname(build_file),
                          builder=self,
                          verbose=verbose)
         

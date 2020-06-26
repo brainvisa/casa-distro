@@ -26,7 +26,7 @@ class RecipeBuilder:
     '''
     def __init__(self, name):
         self.name = name
-        self.tmpdir = None
+        self.tmp_dir = None
         self.user = None
         self.sections = {}
         

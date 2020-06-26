@@ -6,7 +6,7 @@ def install(base_dir, builder, verbose):
     if verbose:
         six.print_('Creating /casa and other directories in', builder.name,
                 file=verbose, flush=True)
-    if builder.tmpdir:
+    if builder.tmp_dir:
         builder.run_root('if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(builder.tmp_dir))
     builder.run_root('if [ ! -e /casa ]; then mkdir /casa; fi')
     builder.run_root('if [ ! -e /casa/host ]; then mkdir /casa/host; fi')
