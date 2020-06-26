@@ -283,6 +283,7 @@ class VBoxMachine:
         install_function = v['install']
         
         self.start_and_wait(verbose=verbose, gui=gui)
+        self.run_root('if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
         install_function(base_dir=osp.dirname(build_file),
                          builder=self,
                          verbose=verbose)
