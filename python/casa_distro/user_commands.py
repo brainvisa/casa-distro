@@ -337,7 +337,7 @@ def setup(type=default_environment_type,
             '-O', image])
     else:
         metadata = json.load(open(metadata_file))
-        if os.stat(image).st_size < metadata['size']:
+        if 'size' in metadata and os.stat(image).st_size < metadata['size']:
             subprocess.check_call([
                 'wget', '--continue',
                 '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),

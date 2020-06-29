@@ -407,7 +407,10 @@ def create_image(type,
                               gui=gui)
     if msg:
         print(msg)
-        
+    elif osp.isfile(output):
+        metadata['size'] = os.stat(output).st_size
+        metadata['md5'] = file_hash(output)
+        json.dump(metadata, open(metadata_output, 'w'), indent=4)
 
 @command
 def publish_image(type,
