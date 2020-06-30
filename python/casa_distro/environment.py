@@ -13,6 +13,12 @@ from casa_distro import (share_directories,
                          singularity,
                          vbox)
 
+bv_maker_branches = {
+    'latest_release': 'latest_release',
+    'master': 'bug_fix',
+    'integration': 'trunk'
+}
+
 def find_in_path(file):
     '''
     Look for a file in a series of directories contained in ``PATH`` environment variable.
@@ -257,6 +263,7 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
     environment['name'] = name
     environment['distro'] = distro['name']
     environment['branch'] = branch
+    environment['bv_maker_branch'] = bv_maker_branches[branch]
     environment['system'] = system
     environment['container_type'] = container_type
     environment['image'] = image
@@ -268,7 +275,7 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
         
     config.setdefault('env', {}).update({
         'CASA_DISTRO': '{name}',
-        'CASA_BRANCH': '{branch}',
+        'CASA_BRANCH': '{bv_maker_branch}',
         'CASA_SYSTEM': '{system}',
         'CASA_HOST_DIR': '{directory}',
         'HOME': '/casa/host/home'})
