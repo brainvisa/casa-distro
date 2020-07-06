@@ -298,19 +298,19 @@ def create_build_workflow_directory(build_workflow_directory,
     casa_distro_source_json = osp.join(distro_source_dir, 'conf',
                                        'casa_distro.json')
     if os.path.exists(casa_distro_source_json):
-        casa_distro = json.load(open(casa_distro_source_json))
+        casa_distro = load_casa_distro_json(casa_distro_source_json)
     else:
         casa_distro = {}
 
-    container_volumes = {'%(build_workflow_dir)s/home': '/casa/home',
-                         '%(build_workflow_dir)s/conf': '/casa/conf',
-                         '%(build_workflow_dir)s/src': '/casa/src',
-                         '%(build_workflow_dir)s/build': '/casa/build',
-                         '%(build_workflow_dir)s/install': '/casa/install',
-                         '%(build_workflow_dir)s/pack': '/casa/pack',
-                         '%(build_workflow_dir)s/tests': '/casa/tests',
-                         '%(build_workflow_dir)s/custom/src': '/casa/custom/src',
-                         '%(build_workflow_dir)s/custom/build': '/casa/custom/build'}
+    container_mounts = {'/casa/home': '%(build_workflow_dir)s/home',
+                        '/casa/conf': '%(build_workflow_dir)s/conf',
+                        '/casa/src': '%(build_workflow_dir)s/src',
+                        '/casa/build': '%(build_workflow_dir)s/build',
+                        '/casa/install': '%(build_workflow_dir)s/install',
+                        '/casa/pack': '%(build_workflow_dir)s/pack',
+                        '/casa/tests': '%(build_workflow_dir)s/tests',
+                        '/casa/custom/src': '%(build_workflow_dir)s/custom/src',
+                        '/casa/custom/build': '%(build_workflow_dir)s/custom/build'}
         
     container_env = {'CASA_DISTRO': '%(distro_name)s',
                      'CASA_BRANCH': '%(casa_branch)s',
@@ -326,7 +326,7 @@ def create_build_workflow_directory(build_workflow_directory,
     
     init_cmd = casa_distro.get('init_workflow_cmd')
     if system.startswith('windows'):
-        container_volumes['%(build_workflow_dir)s/sys'] = '/casa/sys'
+        container_mounts['/casa/sys'] = '%(build_workflow_dir)s/sys'
         
         if casa_distro.get('container_env', {}).get('WINEPREFIX') is None:
             container_env['WINEPREFIX'] = '/casa/sys/wine'
@@ -348,7 +348,7 @@ def create_build_workflow_directory(build_workflow_directory,
             container_type = container_type,
             casa_branch = casa_branch,
             system = system,
-            container_volumes = container_volumes,
+            container_mounts = container_mounts,
             container_env = container_env))
 
     if not container_image:
@@ -374,12 +374,12 @@ def create_build_workflow_directory(build_workflow_directory,
     if container_type == 'docker':
         # Set default ssh files to mount because docker does not support to 
         # mount a directory not readable by root
-        casa_distro.setdefault('container_volumes', {}).setdefault(
-            '$HOME/.ssh/id_rsa', '%s/.ssh/id_rsa' 
-            % container_env.get('HOME', ''))
-        casa_distro.setdefault('container_volumes', {}).setdefault(
-            '$HOME/.ssh/id_rsa.pub', '%s/.ssh/id_rsa.pub' 
-            % container_env.get('HOME', ''))
+        casa_distro.setdefault('container_mounts', {}).setdefault(
+            '%s/.ssh/id_rsa' % container_env.get('HOME', ''),
+            '$HOME/.ssh/id_rsa')
+        casa_distro.setdefault('container_mounts', {}).setdefault(
+            '%s/.ssh/id_rsa.pub' % container_env.get('HOME', ''),
+            '$HOME/.ssh/id_rsa.pub')
     
         container_options = ['--net=host']
         if not sys.platform.startswith('win'):
@@ -558,6 +558,21 @@ alias ll='ls -als'
          'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
         verbose=verbose)
 
+
+def load_casa_distro_json(filename):
+    ''' Load a casa_distro.json file, converting it to the latest version.
+    '''
+    with open(filename) as f:
+        conf = json.load(f)
+    if 'container_volumes' in conf:
+        # Convert values from the deprecated `container_volumes` key
+        mounts = conf.setdefault('container_mounts', {})
+        for host_dir, container_dir in six.iteritems(conf['container_volumes']):
+            mounts[container_dir] = host_dir
+        del conf['container_volumes']
+    return conf
+
+
 def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config
         sub-directory found as key ``conf``
@@ -588,7 +603,7 @@ def run_container(bwf_directory, command, gui=False, interactive=False,
     '''Run any command in the container defined in the build workflow directory
     '''
     casa_distro_json = osp.join(bwf_directory, 'conf', 'casa_distro.json')
-    casa_distro = json.load(open(casa_distro_json))
+    casa_distro = load_casa_distro_json(casa_distro_json)
     casa_distro = merge_config(casa_distro, conf)
     casa_distro['build_workflow_dir'] = bwf_directory
     container_type = casa_distro.get('container_type')

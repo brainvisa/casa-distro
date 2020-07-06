@@ -261,7 +261,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         singularity += ['--home', '/casa/home']
     if cwd:
         singularity += ['--pwd', cwd]
-    for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
+    for dest, source in six.iteritems(casa_distro.get('container_mounts',{})):
         source = source % casa_distro
         source = osp.expandvars(source)
         dest = dest % casa_distro
