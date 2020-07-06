@@ -559,6 +559,23 @@ alias ll='ls -als'
         verbose=verbose)
 
 
+def merge_dict(d, od):
+    ''' Deep-merge JSON objects (dictionaries are merged recursively, lists are
+        concatenated)
+    '''
+    for key, v in od.items():
+        if key not in d:
+            d[key] = v
+        else:
+            oldv = d[key]
+            if isinstance(oldv, dict):
+                merge_dict(oldv, v)
+            elif isinstance(oldv, list):
+                oldv += v
+            else:
+                d[key] = v
+
+
 def load_casa_distro_json(filename):
     ''' Load a casa_distro.json file, converting it to the latest version.
     '''
@@ -577,24 +594,30 @@ def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config
         sub-directory found as key ``conf``
     '''
-    def merge_dict(d, od):
-        for key, v in od.items():
-            if key not in d:
-                d[key] = v
-            else:
-                oldv = d[key]
-                if isinstance(oldv, dict):
-                    merge_dict(oldv, v)
-                elif isinstance(oldv, list):
-                    oldv += v
-                else:
-                    d[key] = v
-
     if conf not in ('dev', '', None, 'default'):
         # an alternative conf has been specified: merge sub-dictionary
         casa_distro = copy.deepcopy(casa_distro)
         merge_dict(casa_distro, casa_distro.get('alt_configs', {})[conf])
     return casa_distro
+
+
+def list_user_config_files(bwf_directory):
+    ''' List the possible user-specific casa_distro.json configuration files
+        for the current user, corresponding to the given build workflow
+        directory. Files are listed from lowest to highest priority, i.e. in
+        the order that the configurations should be merged.
+    '''
+    bwf_relative_subdirectory = osp.normcase(
+        osp.abspath(bwf_directory)).lstrip(os.sep)
+    user_config_home = os.path.join(
+        os.path.expanduser('~'), '.config', 'casa-distro'
+    )
+    yield os.path.join(user_config_home, 'casa_distro.json')
+    yield os.path.join(
+        user_config_home, bwf_relative_subdirectory,
+        'conf', 'casa_distro.json'
+    )
+
 
 def run_container(bwf_directory, command, gui=False, interactive=False,
                   tmp_container=True, container_image=None,
@@ -604,6 +627,13 @@ def run_container(bwf_directory, command, gui=False, interactive=False,
     '''
     casa_distro_json = osp.join(bwf_directory, 'conf', 'casa_distro.json')
     casa_distro = load_casa_distro_json(casa_distro_json)
+
+    # Read a user-specific configuration file stored in ~/.config/casa-distro
+    for user_casa_distro_json in list_user_config_files(bwf_directory):
+        if osp.exists(user_casa_distro_json):
+            user_config = load_casa_distro_json(user_casa_distro_json)
+            merge_dict(casa_distro, user_config)
+
     casa_distro = merge_config(casa_distro, conf)
     casa_distro['build_workflow_dir'] = bwf_directory
     container_type = casa_distro.get('container_type')
