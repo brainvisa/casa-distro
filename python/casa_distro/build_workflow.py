@@ -477,7 +477,7 @@ def update_build_workflow(build_workflow_directory, verbose=None,
         "host" (the calling command from the host system), "workflow" (use the
         sources from the build-workflow, the default), or a hard-coded path to
         the casa_distro command.
-     '''
+    '''
     bin_dir = os.path.join(build_workflow_directory, 'bin')
     if verbose:
         print('update_build_workflow:', build_workflow_directory)
@@ -519,17 +519,37 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
     if verbose:
         print('created run script:', script_file)
 
+    prepare_home(build_workflow_directory,
+                 os.path.join(build_workflow_directory, 'home'),
+                 verbose=verbose)
+
+
+def prepare_home(build_workflow_directory, home_path, verbose=None):
+    '''
+    Prepare the home directory of the container.
+    * creates a symlink to the home .Xauthority file, if it exists,
+      in the casa home dir
+    * writes a .bashrc in the casa home dir if there is not any yet.
+    * runs the command 'git lfs install' if git-lfs is available
+
+
+    Parameters
+    ----------
+    build_workflow_directory:
+        Directory containing all files of a build workflow.
+    verbose: bool
+        verbose mode
+    '''
     # symlink $HOME/.Xauthority if this file exists, in order to enable display
     # through ssh ($HOME is mounted in singularity)
     homexauth = os.path.join(os.environ['HOME'], '.Xauthority')
     if os.path.exists(homexauth):
-        casaxhauth = os.path.join(build_workflow_directory, 'home',
-                                  '.Xauthority')
+        casaxhauth = os.path.join(home_path, '.Xauthority')
         if os.path.exists(casaxhauth):
             os.unlink(casaxhauth)
         os.symlink(homexauth, casaxhauth)
 
-    bashrc = os.path.join(build_workflow_directory, 'home', '.bashrc')
+    bashrc = os.path.join(home_path, '.bashrc')
     if not os.path.exists(bashrc):
         open(bashrc, 'w').write(r'''
 if [ -f /etc/profile ]; then
@@ -637,6 +657,22 @@ def run_container(bwf_directory, command, gui=False, interactive=False,
     casa_distro = merge_config(casa_distro, conf)
     casa_distro['build_workflow_dir'] = bwf_directory
     container_type = casa_distro.get('container_type')
+
+    if casa_distro.get('user_specific_home'):
+        bwf_relative_subdirectory = osp.normcase(
+            osp.abspath(bwf_directory)).lstrip(os.sep)
+        home_path = os.path.join(
+            os.path.expanduser('~'), '.config', 'casa-distro',
+            bwf_relative_subdirectory, 'home')
+        casa_distro.setdefault('container_mounts', {})
+        casa_distro['container_mounts']['/casa/home'] = home_path
+        if not os.path.exists(home_path):
+            # In case of user-specific home directories, the home dir has not
+            # been initialized at the creation of the build-workflow, so it
+            # needs to be done at first launch.
+            os.makedirs(home_path)
+            prepare_home(bwf_directory, home_path)
+
     if container_type:
         if container_type == 'singularity':
             run_singularity(casa_distro, command, gui=gui,
