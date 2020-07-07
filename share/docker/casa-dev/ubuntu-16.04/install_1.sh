@@ -126,6 +126,7 @@ DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y ipython3
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y ipython3-notebook
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y ipython3-qtconsole
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-matplotlib
+DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-paramiko
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtmultimedia
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y python3-pyqt5.qtopengl
