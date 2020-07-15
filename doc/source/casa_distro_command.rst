@@ -312,6 +312,8 @@ init_workflow_cmd: string
     command run when initializing the build workflow. Normally none.
 system: string
     system the container runs (``ubuntu-12.04``, ``ubuntu-14.04``, ``ubuntu-16.04``, ``ubuntu-18.04``, ``centos-7.4``, ``windows-7-64``).
+user_specific_home: boolean
+    if true, this flag changes the mount for the ``/casa/home`` directory of the container, to point to a sub-directory of the current user's home directory ``$HOME/.config/casa-distro/<path/to/build-workflow>/home``. This allows a single build workflow directory to be shared among several users, who do not have write access to the build workflow directory itself (in particular, the ``</path/to/build-workflow>/home`` sub-directory). The resulting home directory is created and initialized if needed, the first time that a container command is run.
 
 
 .. _alt_configs:
