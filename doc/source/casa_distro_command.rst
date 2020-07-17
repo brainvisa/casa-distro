@@ -300,8 +300,10 @@ container_options: list
     list of commandline options passed to the container command: depends on the container types, options passed to docker and to singularity actually differ.
 container_type: string
     ``docker`` or ``singularity``. New container types, ``virtualbox`` for instance, may be added in future extensions.
+container_mounts: dictionary
+    mount points in the container. Directories from the host filesystem (source) are exported to the container (dest). The dictionary is a map of destination:source directories.
 container_volumes: dictionary
-    mount points in the container. Directories from the host filesystem (source) are exported to the container (dest). The dictionary is a map of source:destination directories.
+    *Deprecated: use ``container_mounts`` instead.* The dictionary is a map of source:destination directories.
 distro_name: string
     name of the distribution (set of configured sources built in the build workflow).
 distro_source: string
@@ -310,6 +312,8 @@ init_workflow_cmd: string
     command run when initializing the build workflow. Normally none.
 system: string
     system the container runs (``ubuntu-12.04``, ``ubuntu-14.04``, ``ubuntu-16.04``, ``ubuntu-18.04``, ``centos-7.4``, ``windows-7-64``).
+user_specific_home: boolean
+    if true, this flag changes the mount for the ``/casa/home`` directory of the container, to point to a sub-directory of the current user's home directory ``$HOME/.config/casa-distro/<path/to/build-workflow>/home``. This allows a single build workflow directory to be shared among several users, who do not have write access to the build workflow directory itself (in particular, the ``</path/to/build-workflow>/home`` sub-directory). The resulting home directory is created and initialized if needed, the first time that a container command is run.
 
 
 .. _alt_configs:

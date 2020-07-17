@@ -162,6 +162,7 @@ python3_packages=(
     python3-cryptography
     python3-html2text
     python3-openpyxl
+    python3-paramiko
     python3-traits
     python3-pip
     python3-configobj

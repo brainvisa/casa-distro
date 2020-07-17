@@ -454,7 +454,7 @@ If it is OK, you can set this option in the build workflow ``casa_distro.json`` 
         "container_gui_env": {
             "DISPLAY": "${DISPLAY}"
         },
-        "container_volumes": {
+        "container_mounts": {
         # ...
         },
         # ...

@@ -234,6 +234,17 @@ def update_singularity_image(build_workflows_repository, container_image,
     return True
 
     
+_singularity_major_version = None
+
+def singularity_major_version():
+    global _singularity_major_version
+
+    if _singularity_major_version is None:
+        output = subprocess.check_output(['singularity', '--version'])
+        version = output.split()[-1]
+        _singularity_major_version = int(version.split('.')[0])
+    return _singularity_major_version
+
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None,
                     cwd=None, env=None, container_options=[],
@@ -243,9 +254,14 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
     singularity = ['singularity', 'run', '--cleanenv']
+    if singularity_major_version() > 2:
+        # In singularity >= 3.0 host home directory is mounted
+        # and configured (e.g. in environment variables) if no
+        # option is given. 
+        singularity += ['--home', '/casa/home']
     if cwd:
         singularity += ['--pwd', cwd]
-    for source, dest in six.iteritems(casa_distro.get('container_volumes',{})):
+    for dest, source in six.iteritems(casa_distro.get('container_mounts',{})):
         source = source % casa_distro
         source = osp.expandvars(source)
         dest = dest % casa_distro
