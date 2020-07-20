@@ -2,6 +2,9 @@
 
 FROM ubuntu:18.04
 
+# Use a minimal UTF-8-aware locale.
+ENV LANG=C.UTF-8
+
 # copy a software-only mesa libGL in /usr/local/lib
 COPY libGL.so.1 /usr/local/lib/libGL.so.1
 COPY libglapi.so.0 /usr/local/lib/libglapi.so.0
