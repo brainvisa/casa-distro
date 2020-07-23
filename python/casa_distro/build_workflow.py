@@ -204,7 +204,6 @@ def check_svn_secret(bwf_dir, warn_type='NOTE'):
     return True
 
 
-
 def update_build_workflow(build_workflow_directory, verbose=None,
                           command=None):
     '''
@@ -294,6 +293,7 @@ alias ll='ls -als'
         #['bash', '-c',
          #'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
         #verbose=verbose)
+
 
 def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config

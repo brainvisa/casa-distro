@@ -300,8 +300,10 @@ container_options: list
     list of commandline options passed to the container command: depends on the container types, options passed to docker and to singularity actually differ.
 container_type: string
     ``docker`` or ``singularity``. New container types, ``virtualbox`` for instance, may be added in future extensions.
+container_mounts: dictionary
+    mount points in the container. Directories from the host filesystem (source) are exported to the container (dest). The dictionary is a map of destination:source directories.
 container_volumes: dictionary
-    mount points in the container. Directories from the host filesystem (source) are exported to the container (dest). The dictionary is a map of source:destination directories.
+    *Deprecated: use ``container_mounts`` instead.* The dictionary is a map of source:destination directories.
 distro_name: string
     name of the distribution (set of configured sources built in the build workflow).
 distro_source: string

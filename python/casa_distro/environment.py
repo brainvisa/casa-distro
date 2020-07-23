@@ -271,7 +271,7 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
     environment['vm_disk_size'] = vm_disk_size
     
     config = environment.setdefault('configs', {}).setdefault('default', {})
-    config.setdefault('volumes', {})['{directory}/host'] = '/casa/host'
+    config.setdefault('mounts', {})['/casa/host'] = '{directory}/host'
         
     config.setdefault('env', {}).update({
         'CASA_DISTRO': '{name}',

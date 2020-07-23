@@ -117,7 +117,6 @@ def run(environment, command, gui, cwd, env, image, container_options,
     if cwd:
         singularity += ['--pwd', cwd]
     
-    
     config = environment['configs']['default']
 
     if gui:
@@ -126,7 +125,7 @@ def run(environment, command, gui, cwd, env, image, container_options,
             shutil.copy(xauthority,
                         osp.join(environment['directory'], 'host/home/.Xauthority'))
     
-    for source, dest in config.get('volumes',{}).items():
+    for dest, source in config.get('mounts', {}).items():
         source = source.format(**environment)
         source = osp.expandvars(source)
         dest = dest.format(**environment)
