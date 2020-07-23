@@ -12,6 +12,7 @@ import shutil
 from casa_distro import (share_directories,
                          singularity,
                          vbox)
+from casa_distro.build_workflow import prepare_home  # should be moved here
 
 bv_maker_branches = {
     'latest_release': 'latest_release',
