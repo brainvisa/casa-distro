@@ -112,6 +112,25 @@ def copytree(src, dst, symlinks=False, ignore=None):
     if errors:
         raise shutil.Error(errors)
 
+
+def iter_user_config_files(env_directory):
+    ''' List the possible user-specific casa_distro.json configuration files
+        for the current user, corresponding to the given build workflow
+        directory. Files are listed from lowest to highest priority, i.e. in
+        the order that the configurations should be merged.
+    '''
+    env_relative_subdirectory = osp.normcase(
+        osp.abspath(env_directory)).lstrip(os.sep)
+    user_config_home = os.path.join(
+        os.path.expanduser('~'), '.config', 'casa-distro'
+    )
+    yield os.path.join(user_config_home, 'casa_distro.json')
+    yield os.path.join(
+        user_config_home, env_relative_subdirectory,
+        'conf', 'casa_distro.json'
+    )
+
+
 def iter_distros():
     """
     Iterate over all available distros. For each one, yield a
@@ -122,6 +141,9 @@ def iter_distros():
         for root, dirs, files in os.walk(share_directory):
             if 'casa_distro.json' in files:
                 distro = json.load(open(osp.join(root, 'casa_distro.json')))
+                # TODO: load user-specific configuration files stored in
+                # ~/.config/casa-distro (see iter_user_config_files above and
+                # https://github.com/brainvisa/casa-distro/issues/98)
                 distro['directory'] = osp.dirname(osp.dirname(root))
                 yield distro
 

@@ -295,23 +295,27 @@ alias ll='ls -als'
         #verbose=verbose)
 
 
+def merge_dict(d, od):
+    ''' Deep-merge JSON objects (dictionaries are merged recursively, lists are
+        concatenated)
+    '''
+    for key, v in od.items():
+        if key not in d:
+            d[key] = v
+        else:
+            oldv = d[key]
+            if isinstance(oldv, dict):
+                merge_dict(oldv, v)
+            elif isinstance(oldv, list):
+                oldv += v
+            else:
+                d[key] = v
+
+
 def merge_config(casa_distro, conf):
     ''' Merge casa_distro dictionary config with an alternative config
         sub-directory found as key ``conf``
     '''
-    def merge_dict(d, od):
-        for key, v in od.items():
-            if key not in d:
-                d[key] = v
-            else:
-                oldv = d[key]
-                if isinstance(oldv, dict):
-                    merge_dict(oldv, v)
-                elif isinstance(oldv, list):
-                    oldv += v
-                else:
-                    d[key] = v
-
     if conf not in ('dev', '', None, 'default'):
         # an alternative conf has been specified: merge sub-dictionary
         casa_distro = copy.deepcopy(casa_distro)
@@ -329,6 +333,7 @@ def merge_config(casa_distro, conf):
         #update_docker_image(container_image)
     #else:
         #raise ValueError('%s is no a valid container system' % container_type)
+
     
 def delete_build_workflow(bwf_directory):
     shutil.rmtree(bwf_directory)
