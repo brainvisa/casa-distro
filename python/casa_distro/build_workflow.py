@@ -223,7 +223,7 @@ def update_build_workflow(build_workflow_directory, verbose=None,
         "host" (the calling command from the host system), "workflow" (use the
         sources from the build-workflow, the default), or a hard-coded path to
         the casa_distro command.
-     '''
+    '''
     bin_dir = os.path.join(build_workflow_directory, 'bin')
     if verbose:
         print('update_build_workflow:', build_workflow_directory)
@@ -265,7 +265,26 @@ exec %s %s "$@"''' % (sys.executable, casa_distro_path))
     if verbose:
         print('created run script:', script_file)
 
-    bashrc = os.path.join(build_workflow_directory, 'host', 'home', '.bashrc')
+    prepare_home(build_workflow_directory,
+                 os.path.join(build_workflow_directory, 'host', 'home'),
+                 verbose=verbose)
+
+
+def prepare_home(build_workflow_directory, home_path, verbose=None):
+    '''
+    Prepare the home directory of the container.
+    * writes a .bashrc in the casa home dir if there is not any yet.
+    * runs the command 'git lfs install' if git-lfs is available
+
+
+    Parameters
+    ----------
+    build_workflow_directory:
+        Directory containing all files of a build workflow.
+    verbose: bool
+        verbose mode
+    '''
+    bashrc = os.path.join(home_path, '.bashrc')
     if not os.path.exists(bashrc):
         open(bashrc, 'w').write(r'''
 if [ -f /etc/profile ]; then
@@ -334,7 +353,6 @@ def merge_config(casa_distro, conf):
     #else:
         #raise ValueError('%s is no a valid container system' % container_type)
 
-    
+
 def delete_build_workflow(bwf_directory):
     shutil.rmtree(bwf_directory)
-

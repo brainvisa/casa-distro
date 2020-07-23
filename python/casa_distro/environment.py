@@ -329,6 +329,25 @@ def run_container(environment, command, gui, cwd, env, image,
     """
     Run a command in the container defined in the environment
     """
+    env_directory = environment['directory']
+    # TODO: make user_specific_home work under casa-distro 3 (see prepare_home
+    # in build_workflow.py and
+    # https://github.com/brainvisa/casa-distro/issues/99)
+    if environment.get('user_specific_home'):
+        env_relative_subdirectory = osp.normcase(
+            osp.abspath(env_directory)).lstrip(os.sep)
+        home_path = os.path.join(
+            os.path.expanduser('~'), '.config', 'casa-distro',
+            env_relative_subdirectory, 'home')
+        environment.setdefault('mounts', {})
+        environment['mounts']['/casa/home'] = home_path
+        if not os.path.exists(home_path):
+            # In case of user-specific home directories, the home dir has not
+            # been initialized at the creation of the build-workflow, so it
+            # needs to be done at first launch.
+            os.makedirs(home_path)
+            prepare_home(env_directory, home_path)
+
     container_type = environment.get('container_type')
     if container_type == 'singularity':
         module = singularity
@@ -348,4 +367,3 @@ def run_container(environment, command, gui, cwd, env, image,
                container_options=container_options,
                base_directory=base_directory,
                verbose=verbose)
-
