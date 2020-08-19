@@ -29,7 +29,8 @@ if [ -z "$BRAINVISA_BVMAKER_CFG" ]; then
 fi
 
 PATH=${CASA_BUILD}/bin:${PATH}:/usr/local/bin:/casa/brainvisa-cmake/bin
-export PATH
+LD_LIBRARY_PATH=/casa/host/lib:${LD_LIBRARY_PATH}
+export PATH LD_LIBRARY_PATH
 if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then
     . "${CASA_BUILD}/bin/bv_env.sh"
 fi
