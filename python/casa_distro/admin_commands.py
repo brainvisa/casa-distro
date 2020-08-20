@@ -309,7 +309,45 @@ def create_image(type,
                  verbose=True):
     """
     Create a new virtual image
-    """
+
+    Parameters
+    ----------
+    type
+        type of image to create. Either "system" for a base system image, or "run"
+        for an image used in a user environment, or "dev" for a developer image.
+
+    name
+        default={name_default}
+        name of the virtual image (no other image must have the same name).
+
+    base
+        Source file use to buld the image. The default value depends on image type and
+        container type.
+        
+    output
+        default={output_default}
+        File location where the image is created.
+        
+    container_type
+        default={container_type_default}
+        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
+        
+    memory
+        default={memory_default}
+        For vbox container type only. Size in MiB of memory allocated for virtual machine.
+        
+    disk_size
+        default={disk_size_default}
+        For vbox container type only. Size in MiB of maximum disk size of virtual machine.
+        
+    gui
+        default={gui_default}
+        For vbox container type only. If value is "yes", "true" or "1", display VirtualBox window.
+ 
+ verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+     """
     verbose = verbose_file(verbose)
     gui = boolean_value(gui)
     

@@ -188,7 +188,7 @@ def setup(type=default_environment_type,
         Name of the environment (no other environment must have the same name).
     container_type
         default={container_type_default}
-        Type of virtual applianrce to use. Either "singularity", "vbox" or "docker".
+        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
         If not given try to gues according to installed container software in the
         following order : Singularity, VirtualBox and Docker.
     base_directory
