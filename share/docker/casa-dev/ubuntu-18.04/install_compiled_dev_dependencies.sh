@@ -18,17 +18,5 @@ set -x  # display commands before running them
 # the casa-run image.
 PY_S=3.6 PY=3.6m /tmp/build_sip_pyqt.sh
 
-
-# Install Qt Installer Framework (prebuilt on Mandriva 2008)
-cd /tmp
-wget http://brainvisa.info/static/qt_installer-1.6.tar.gz
-cd /usr/local
-sudo tar xfz /tmp/qt_installer-1.6.tar.gz
-sudo ln -s qt_installer-1.6 qt_installer
-cd /usr/local/bin
-sudo ln -s ../qt_installer/bin/* .
-rm /tmp/qt_installer-1.6.tar.gz
-
-
 # Post-install configuration
 sudo ldconfig
