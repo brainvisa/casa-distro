@@ -281,7 +281,7 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
     '''
         
     environment = {}
-    environment['casa_distro_compatibility'] = '3.0'
+    environment['casa_distro_compatibility'] = '3'
     environment['type'] = type
     environment['name'] = name
     environment['distro'] = distro['name']
