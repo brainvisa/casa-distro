@@ -16,7 +16,7 @@ set -x  # display commands before running them
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
 # and virtual C++ inheritance. The same versions are compiled for Python 2 in
 # the casa-run image.
-PY_S=3.6 PY=3.6m /tmp/build_sip_pyqt.sh
+PY_S=3.6 PY=3.6m /opt/build_sip_pyqt.sh
 
 # Post-install configuration
 sudo ldconfig

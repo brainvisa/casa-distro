@@ -11,8 +11,10 @@ def install(base_dir, builder, verbose):
                 'install_compiled_dev_dependencies.sh',
                 'build_sip_pyqt.sh',
                 'install_casa_dev_components.sh'):
-        builder.copy_root(osp.realpath(osp.join(base_dir, f)), '/tmp')
-    builder.run_root('chmod +x /tmp/*.sh')
+        # /opt is used instead of /tmp here because /tmp can be bind mount
+        # during build on Singularity (and the copied files are hidden by this mount).
+        builder.copy_root(osp.realpath(osp.join(base_dir, f)), '/opt')
+    builder.run_root('chmod +x /opt/*.sh')
 
     builder.copy_user(osp.join(base_dir, 'environment.sh'),
                     '/casa')
@@ -34,20 +36,20 @@ def install(base_dir, builder, verbose):
     if verbose:
         six.print_('Running install_apt_dev_dependencies.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/install_apt_dev_dependencies.sh')
+    builder.run_root('/opt/install_apt_dev_dependencies.sh')
     if verbose:
         six.print_('Running install_pip_dev_dependencies.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/install_pip_dev_dependencies.sh')
+    builder.run_root('/opt/install_pip_dev_dependencies.sh')
     if verbose:
         six.print_('Running install_compiled_dev_dependencies.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/install_compiled_dev_dependencies.sh')
+    builder.run_root('/opt/install_compiled_dev_dependencies.sh')
 
     if verbose:
         six.print_('Running install_casa_dev_components.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/install_casa_dev_components.sh')
+    builder.run_root('/opt/install_casa_dev_components.sh')
 
 
     if verbose:
