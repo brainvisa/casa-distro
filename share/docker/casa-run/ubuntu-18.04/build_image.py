@@ -24,8 +24,10 @@ def install(base_dir, builder, verbose):
                 'build_netcdf.sh',
                 'build_sip_pyqt.sh',
                 'cleanup_build_dependencies.sh'):
-        builder.copy_root(osp.join(base_dir, f), '/tmp')
-    builder.run_root('chmod +x /tmp/*.sh')
+        # /opt is used instead of /tmp here because /tmp can be bind mount
+        # during build on Singularity (and the copied files are hidden by this mount).
+        builder.copy_root(osp.join(base_dir, f), '/opt')
+    builder.run_root('chmod +x /opt/*.sh')
 
     if verbose:
         six.print_('Copying entrypoint in', builder.name,
@@ -37,31 +39,31 @@ def install(base_dir, builder, verbose):
     if verbose:
         six.print_('Running install_apt_dependencies.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/install_apt_dependencies.sh')
+    builder.run_root('/opt/install_apt_dependencies.sh')
     if verbose:
         six.print_('Running install_pip_dependencies.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/install_pip_dependencies.sh')
+    builder.run_root('/opt/install_pip_dependencies.sh')
     if verbose:
         six.print_('Running install_compiled_dependencies.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/install_compiled_dependencies.sh')
+    builder.run_root('/opt/install_compiled_dependencies.sh')
 
     if verbose:
         six.print_('Running cleanup_build_dependencies.sh',
                 file=verbose, flush=True)
-    builder.run_root('/tmp/cleanup_build_dependencies.sh')
+    builder.run_root('/opt/cleanup_build_dependencies.sh')
 
 
     if verbose:
         six.print_('Cleanup files in', builder.name,
                 file=verbose, flush=True)
-    builder.run_root('rm -f /tmp/neurodebian-key.gpg '
-                    '/tmp/neurodebian.sources.list '
-                    '/tmp/install_apt_dependencies.sh '
-                    '/tmp/build_dependencies.sh '
-                    '/tmp/install_pip_dependencies.sh '
-                    '/tmp/install_compiled_dependencies.sh '
-                    '/tmp/build_netcdf.sh '
-                    '/tmp/build_sip_pyqt.sh '
-                    '/tmp/cleanup_build_dependencies.sh')
+    builder.run_root('rm -f /opt/neurodebian-key.gpg '
+                    '/opt/neurodebian.sources.list '
+                    '/opt/install_apt_dependencies.sh '
+                    '/opt/build_dependencies.sh '
+                    '/opt/install_pip_dependencies.sh '
+                    '/opt/install_compiled_dependencies.sh '
+                    '/opt/build_netcdf.sh '
+                    '/opt/build_sip_pyqt.sh '
+                    '/opt/cleanup_build_dependencies.sh')

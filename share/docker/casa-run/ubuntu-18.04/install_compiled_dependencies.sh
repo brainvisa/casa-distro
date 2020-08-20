@@ -60,7 +60,10 @@ rm -rf openslide
 
 
 # install a version of netcdf with fewer dependencies
-sudo bash /tmp/build_netcdf.sh
+#
+# /opt is used instead of /tmp here because /tmp can be bind mount during build
+# on Singularity. Therfore previously copied files are hidden.
+sudo bash /opt/build_netcdf.sh
 
 
 cd /tmp
