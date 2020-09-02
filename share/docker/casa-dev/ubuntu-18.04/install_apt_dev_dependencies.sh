@@ -48,7 +48,6 @@ packages_to_review=(
     libmpich-dev
     # libncurses5-dev
     # libqt5sensors5-dev
-    # libqt5svg5-dev
     # libqt5waylandclient5-dev
     # libqt5websockets5-dev
     # libqt5webview5-dev
@@ -281,6 +280,7 @@ brainvisa_standard_dev_dependencies=(
 
 
 brainvisa_toolboxes_dev_dependencies=(
+    libqt5svg5-dev # Required for building MRtrix3
 )
 
 
