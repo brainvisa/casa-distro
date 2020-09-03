@@ -152,6 +152,9 @@ def select_distro(distro):
     """
     Select a distro given its name or an existing distro directory.
     """
+    for d in iter_distros():
+        if d['name'] == distro:
+            return d
     if osp.isdir(distro):
         directory = distro
         casa_distro_json = osp.join(directory, 'host', 'conf', 'casa_distro.json')
@@ -159,10 +162,6 @@ def select_distro(distro):
             distro = json.load(open(casa_distro_json))
             distro['directory'] = directory
             return distro
-    else:
-        for d in iter_distros():
-            if d['name'] == distro:
-                return d
     raise ValueError('Invalid distro: {0}'.format(distro))
 
 _casa_distro_directory = None
@@ -334,7 +333,7 @@ def run_container(config, command, gui, cwd, env, image,
     if container_type == 'singularity':
         module = singularity
     elif container_type == 'vbox':
-        raise NotImplementedError('run command is not implemented for Docker')
+        raise NotImplementedError('run command is not implemented for VirtualBox')
         module = vbox
     elif container_type == 'docker':
         raise NotImplementedError('run command is not implemented for Docker')
