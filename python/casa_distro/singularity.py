@@ -240,7 +240,7 @@ def singularity_major_version():
     global _singularity_major_version
 
     if _singularity_major_version is None:
-        output = subprocess.check_output(['singularity', '--version'])
+        output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
         version = output.split()[-1]
         _singularity_major_version = int(version.split('.')[0])
     return _singularity_major_version
@@ -254,11 +254,6 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
     singularity = ['singularity', 'run', '--cleanenv']
-    if singularity_major_version() > 2:
-        # In singularity >= 3.0 host home directory is mounted
-        # and configured (e.g. in environment variables) if no
-        # option is given. 
-        singularity += ['--home', '/casa/home']
     if cwd:
         singularity += ['--pwd', cwd]
     for dest, source in six.iteritems(casa_distro.get('container_mounts',{})):
@@ -275,12 +270,27 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     if env is not None:
         tmp_env.update(env)
     
+    singularity_home = None
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
     for name, value in six.iteritems(tmp_env):
         value = value % casa_distro
         value = osp.expandvars(value)
-        container_env['SINGULARITYENV_' + name] = value
+        if name == 'HOME' and singularity_major_version() > 2:
+            # singularity3 uses a commandline option and complains about the
+            # env variable
+            singularity_home = ['--home', value]
+        else:
+            container_env['SINGULARITYENV_' + name] = value
+
+    if singularity_home is None and singularity_major_version() > 2:
+        # In singularity >= 3.0 host home directory is mounted
+        # and configured (e.g. in environment variables) if no
+        # option is given.
+        singularity_home = ['--home', '/casa/home']
+    if singularity_home:
+        singularity += singularity_home
+
     conf_options = casa_distro.get('container_options', [])
     if cwd:
         for i, opt in enumerate(conf_options):
@@ -292,8 +302,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     if gui:
         gui_options = casa_distro.get('container_gui_options', [])
         if gui_options:
-            options += [osp.expandvars(i) for i in gui_options
-                        if i != '--no-nv']
+            options += [osp.expandvars(i) for i in gui_options]
         # handle --nv option, if a nvidia device is found
         if '--nv' not in options and os.path.exists('/dev/nvidiactl') \
                 and '--no-nv' not in options:
@@ -301,7 +310,15 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         # remove --no-nv which is not a singularity option
         if '--no-nv' in options:
             options.remove('--no-nv')
+    if singularity_major_version() >= 3 \
+            and 'SINGULARITYENV_PS1' not in container_env \
+            and not [x for x in options if x.startswith('PS1=')]:
+        # the prompt with singularity 3 is ugly and cannot be overriden in the
+        # .bashrc of the container.
+        options += ['--env', b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
+
     singularity += options
+
     if container_image is None:
         container_image = casa_distro.get('container_image')
         if container_image is None:
