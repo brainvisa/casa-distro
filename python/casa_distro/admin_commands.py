@@ -344,7 +344,7 @@ def create_image(type,
         default={gui_default}
         For vbox container type only. If value is "yes", "true" or "1", display VirtualBox window.
  
- verbose
+    verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
      """
@@ -456,7 +456,26 @@ def publish_image(type,
                   container_type='singularity',
                   verbose=True):
     """
-    Upload a system, run, release or dev image on brainvisa.info web site
+    Upload an image to BrainVISA web site.
+    
+    Parameters
+    ----------
+    
+    type
+        type of image to create. Either "system" for a base system image, or "run"
+        for an image used in a user environment, or "dev" for a developer image.
+
+    image
+        default={image_default}
+        Image file to upload (as well as the corresponding JSON file)
+        
+    container_type
+        default={container_type_default}
+        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
+
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
     """
     verbose = verbose_file(verbose)
     if container_type == 'singularity':

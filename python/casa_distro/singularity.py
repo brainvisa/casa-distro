@@ -109,7 +109,7 @@ def singularity_major_version():
     return _singularity_major_version
 
 
-def run(environment, command, gui, cwd, env, image, container_options,
+def run(config, command, gui, cwd, env, image, container_options,
         base_directory, verbose):    
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
@@ -117,18 +117,16 @@ def run(environment, command, gui, cwd, env, image, container_options,
     if cwd:
         singularity += ['--pwd', cwd]
     
-    config = environment['configs']['default']
-
     if gui:
         xauthority = osp.expanduser('~/.Xauthority')
         if osp.exists(xauthority):
             shutil.copy(xauthority,
-                        osp.join(environment['directory'], 'host/home/.Xauthority'))
+                        osp.join(config['directory'], 'host/home/.Xauthority'))
     
     for dest, source in config.get('mounts', {}).items():
-        source = source.format(**environment)
+        source = source.format(**config)
         source = osp.expandvars(source)
-        dest = dest.format(**environment)
+        dest = dest.format(**config)
         dest = osp.expandvars(dest)
         singularity += ['--bind', '%s:%s' % (source, dest)]
         
@@ -142,7 +140,7 @@ def run(environment, command, gui, cwd, env, image, container_options,
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
     for name, value in tmp_env.items():
-        value = value.format(**environment)
+        value = value.format(**config)
         value = osp.expandvars(value)
         container_env['SINGULARITYENV_' + name] = value
         
@@ -167,7 +165,7 @@ def run(environment, command, gui, cwd, env, image, container_options,
             container_options.remove('--no-nv')
     singularity += container_options
     if image is None:
-        image = environment.get('image')
+        image = config.get('image')
         if image is None:
             raise ValueError('image is missing from environement configuration file (casa_distro.json)')
         image = osp.join(base_directory, image)

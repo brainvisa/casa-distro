@@ -203,12 +203,6 @@ def setup(type=default_environment_type,
     output
         default={output_default}
         Directory where the environement will be stored.
-    vm_memory
-        default={vm_memory_default}
-        Size in MiB of the memory allocated for running applications (for VirtualBox only).
-    vm_disk_size
-        default={vm_disk_size_default}
-        Maximum size in MiB of disk for the virtual machine running applications (for VirtualBox only).
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
@@ -387,25 +381,25 @@ def list_command(type=None, distro=None, branch=None, system=None,
         Print more detailed information if value is "yes", "true" or "1".
     '''
     verbose = verbose_file(verbose)
-    for env_conf in iter_environments(base_directory,
-                                      type=type,
-                                      distro=distro,
-                                      branch=branch,
-                                      system=system):
-        print(env_conf['name'])
+    for config in iter_environments(base_directory,
+                                    type=type,
+                                    distro=distro,
+                                    branch=branch,
+                                    system=system):
+        print(config['name'])
         for i in ('type', 'distro', 'branch', 'system', 'container_type'):
-            print('  %s:' % i, env_conf[i])
-        print('  directory:', env_conf['directory'])
+            print('  %s:' % i, config[i])
+        print('  directory:', config['directory'])
         if verbose:
             print('  full environment:')
-            for line in json.dumps(env_conf, indent=2).split('\n'):
+            for line in json.dumps(config, indent=2).split('\n'):
                 print('   ', line)
 
 @command
 def run(type=None, distro=None, branch=None, system=None,
         base_directory=casa_distro_directory(),
         gui=True,
-        cwd='/casa/host/home', 
+        cwd='/casa/home', 
         env=None,
         image=None,
         container_options=None,
@@ -454,11 +448,11 @@ def run(type=None, distro=None, branch=None, system=None,
         Print more detailed information if value is "yes", "true" or "1".
     """
     verbose = verbose_file(verbose)
-    env_conf = select_environment(base_directory,
-                                  type=type,
-                                  distro=distro,
-                                  branch=branch,
-                                  system=system)
+    config = select_environment(base_directory,
+                                type=type,
+                                distro=distro,
+                                branch=branch,
+                                system=system)
     if container_options:
         container_options = parse_list(container_options)
     if env:
@@ -470,7 +464,7 @@ def run(type=None, distro=None, branch=None, system=None,
                              '"VAR1=value1,VAR2=value2" etc.')
 
     command = args_list
-    run_container(env_conf, 
+    run_container(config, 
                   command=command, 
                   gui=gui, 
                   cwd=cwd, 
