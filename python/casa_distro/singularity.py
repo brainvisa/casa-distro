@@ -140,6 +140,8 @@ def run(config, command, gui, cwd, env, image, container_options,
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
     for name, value in tmp_env.items():
+        if name == 'HOME':
+            continue  # cannot be specified this way any longer.
         value = value.format(**config)
         value = osp.expandvars(value)
         container_env['SINGULARITYENV_' + name] = value
