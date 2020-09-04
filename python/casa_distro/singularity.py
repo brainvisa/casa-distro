@@ -256,13 +256,20 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     singularity = ['singularity', 'run', '--cleanenv']
     if cwd:
         singularity += ['--pwd', cwd]
+    home_mount = False
+    homedir = os.path.expanduser('~')
     for dest, source in six.iteritems(casa_distro.get('container_mounts',{})):
         source = source % casa_distro
         source = osp.expandvars(source)
         dest = dest % casa_distro
         dest = osp.expandvars(dest)
         singularity += ['--bind', '%s:%s' % (source, dest)]
-        
+        if source == homedir:
+            home_mount = True
+    if not home_mount and singularity_major_version() > 2:
+        # singularity 3 doesn't mount the home directory automatically.
+        singularity += ['--bind', homedir]
+
     container_env = os.environ.copy()
     tmp_env = dict(casa_distro.get('container_env', {}))
     if gui:
@@ -290,6 +297,15 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         singularity_home = ['--home', '/casa/home']
     if singularity_home:
         singularity += singularity_home
+
+    # handle ~/.ssh
+    ssh_dir = osp.join(homedir, '.ssh')
+    if singularity_home is None:
+        singularity_home = ['/casa/home']
+    if osp.isdir(ssh_dir):
+        singularity += [
+            '--bind',
+            '%s:%s' % (ssh_dir, osp.join(singularity_home[-1], '.ssh'))]
 
     conf_options = casa_distro.get('container_options', [])
     if cwd:
