@@ -8,6 +8,7 @@ import json
 import os
 import os.path as osp
 import shutil
+import fnmatch
 
 from casa_distro import (share_directories,
                          singularity,
@@ -31,7 +32,7 @@ def update_config(config, update):
         if k not in config:
             config[k] = v
         else:
-            oldv = d[k]
+            oldv = config[k]
             if isinstance(oldv, dict):
                 merge_config(oldv, v)
             elif isinstance(oldv, list):
@@ -187,8 +188,8 @@ def iter_environments(base_directory, **filter):
     base directory. For each one, yield a dictionary corrasponding to the
     casa_distro.json file with the "directory" item added.
     """
-    for casa_dsitro_json in sorted(glob(osp.join(base_directory, '*', 'host', 'conf', 
-                                  'casa_distro.json'))):
+    for casa_dsitro_json in sorted(glob(osp.join(base_directory, '*', 'host',
+                                                 'conf', 'casa_distro.json'))):
         environment_config = json.load(open(casa_dsitro_json))
 
         config = {}
@@ -219,7 +220,7 @@ def iter_environments(base_directory, **filter):
             if p is None:
                 continue
             v = config.get(k)
-            if v is None or v != p:
+            if v is None or not fnmatch.filter([v], p):
                 break
         else:
             match = True
