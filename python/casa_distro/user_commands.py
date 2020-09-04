@@ -208,6 +208,7 @@ def setup(type=default_environment_type,
     name
         default={name_default}
         Name of the environment (no other environment must have the same name).
+        This name may be used later to select the environment to run.
     container_type
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
@@ -388,7 +389,7 @@ def setup(type=default_environment_type,
 # command name in the command-line is not the same as the corresponding
 # Python function.
 @command('list')
-def list_command(type=None, distro=None, branch=None, system=None, 
+def list_command(type=None, distro=None, branch=None, system=None, name=None,
                  base_directory=casa_distro_directory(),
                  verbose=None):
     '''
@@ -404,6 +405,9 @@ def list_command(type=None, distro=None, branch=None, system=None,
         If given, shows only environments having the given branch.
     system
         If given, shows only environments having the given system name.
+    name
+        If given, select environment by its name. It replaces type, distro,
+        branch and system and is shorter to select one.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -416,7 +420,8 @@ def list_command(type=None, distro=None, branch=None, system=None,
                                     type=type,
                                     distro=distro,
                                     branch=branch,
-                                    system=system):
+                                    system=system,
+                                    name=name):
         print(config['name'])
         for i in ('type', 'distro', 'branch', 'system', 'container_type'):
             print('  %s:' % i, config[i])
@@ -433,10 +438,11 @@ def list_command(type=None, distro=None, branch=None, system=None,
 
 @command
 def run(type=None, distro=None, branch=None, system=None,
+        name=None,
         base_directory=casa_distro_directory(),
         gui=True,
         root=False,
-        cwd='/casa/home', 
+        cwd='/casa/host/home',
         env=None,
         image=None,
         container_options=None,
@@ -458,6 +464,9 @@ def run(type=None, distro=None, branch=None, system=None,
         If given, select environment having the given branch.
     system
         If given, select environments having the given system name.
+    name
+        If given, select environment by its name. It replaces type, distro,
+        branch and system and is shorter to select one.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -496,7 +505,8 @@ def run(type=None, distro=None, branch=None, system=None,
                                 type=type,
                                 distro=distro,
                                 branch=branch,
-                                system=system)
+                                system=system,
+                                name=name)
     if container_options:
         container_options = parse_list(container_options)
     if env:
@@ -568,7 +578,7 @@ def update(type=None, distro=None, branch=None, system=None,
                        verbose=verbose)
 
 @command
-def update_image(distro='*', branch='*', system='*', 
+def update_image(distro='*', branch='*', system='*', name=None,
          build_workflows_repository=default_build_workflow_repository,
          verbose=None):
     '''
@@ -602,16 +612,26 @@ def update_image(distro='*', branch='*', system='*',
 
 
 @command
-def shell(distro='*', branch='*', system='*',
-          build_workflows_repository=default_build_workflow_repository,
-          gui=True, interactive=True, tmp_container=True, container_image=None,
-          cwd=None, env=None, container_options=[], args_list=['-norc'],
-          verbose=None,
-          conf='dev'):
+def shell(type=None, distro='*', branch='*', system='*', name=None,
+          base_directory=casa_distro_directory(),
+          gui=True, cwd=None, # interactive=True,
+          env=None, image=None,container_options=[], args_list=['-norc'],
+          verbose=None):
     '''
     Start a bash shell in the configured container with the given repository
     configuration.
     '''
+    run(type=type, distro=distro, branch=branch, system=system,
+        name=name,
+        base_directory=base_directory,
+        gui=gui,
+        cwd=cwd,
+        env=env,
+        image=image,
+        container_options=container_options,
+        args_list=['/bin/bash'] + args_list,
+        verbose=verbose)
+
     #build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                #distro=distro, 
                                                #branch=branch, 
@@ -660,7 +680,7 @@ def shell(distro='*', branch='*', system='*',
 
 
 @command
-def mrun(distro='*', branch='*', system='*',
+def mrun(distro='*', branch='*', system='*', name=None,
          build_workflows_repository=default_build_workflow_repository,
          gui=True, interactive=False, tmp_container=True,
          container_image=None, cwd=None, env=None, container_options=[],
@@ -744,7 +764,7 @@ def mrun(distro='*', branch='*', system='*',
 
 
 @command
-def bv_maker(distro='*', branch='*', system='*',
+def bv_maker(distro='*', branch='*', system='*', name=None,
              build_workflows_repository=default_build_workflow_repository,
              gui=False, interactive=False, tmp_container=True, 
              container_image=None, cwd=None, env=None, container_options=[],
@@ -756,7 +776,7 @@ def bv_maker(distro='*', branch='*', system='*',
     This is a shortcut to "mrun bv_maker"
     '''    
     args_list = ['bv_maker' ] + args_list
-    mrun(distro=distro, branch=branch, system=system,
+    mrun(distro=distro, branch=branch, system=system, name=name,
           build_workflows_repository=build_workflows_repository, gui=gui,
           interactive=interactive, tmp_container=tmp_container,
           container_image=container_image, cwd=cwd, env=env,
@@ -764,9 +784,8 @@ def bv_maker(distro='*', branch='*', system='*',
           verbose=verbose)
 
 
-
 @command
-def delete(distro='*', branch='*', system='*',
+def delete(distro='*', branch='*', system='*', name=None,
         build_workflows_repository=default_build_workflow_repository,
         interactive=True):
     '''

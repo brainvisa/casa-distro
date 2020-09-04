@@ -103,7 +103,7 @@ def singularity_major_version():
     global _singularity_major_version
 
     if _singularity_major_version is None:
-        output = subprocess.check_output(['singularity', '--version'])
+        output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
         version = output.split()[-1]
         _singularity_major_version = int(version.split('.')[0])
     return _singularity_major_version
@@ -147,6 +147,8 @@ def run(config, command, gui, root, cwd, env, image, container_options,
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
     for name, value in tmp_env.items():
+        if name == 'HOME':
+            continue  # cannot be specified this way any longer.
         value = value.format(**config)
         value = osp.expandvars(value)
         container_env['SINGULARITYENV_' + name] = value
@@ -160,8 +162,7 @@ def run(config, command, gui, root, cwd, env, image, container_options,
     if gui:
         gui_options = config.get('container_gui_options', [])
         if gui_options:
-            container_options += [osp.expandvars(i) for i in gui_options
-                                  if i != '--no-nv']
+            container_options += [osp.expandvars(i) for i in gui_options]
         # handle --nv option, if a nvidia device is found
         if ('--nv' not in container_options and 
             os.path.exists('/dev/nvidiactl') and
@@ -170,6 +171,12 @@ def run(config, command, gui, root, cwd, env, image, container_options,
         # remove --no-nv which is not a singularity option
         if '--no-nv' in container_options:
             container_options.remove('--no-nv')
+    if 'SINGULARITYENV_PS1' not in container_env \
+            and not [x for x in container_options if x.startswith('PS1=')]:
+        # the prompt with singularity 3 is ugly and cannot be overriden in the
+        # .bashrc of the container.
+        container_options += ['--env', b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
+
     singularity += container_options
     if image is None:
         image = config.get('image')

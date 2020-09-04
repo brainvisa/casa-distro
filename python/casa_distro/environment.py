@@ -2,15 +2,13 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from fnmatch import fnmatchcase
+import fnmatch
 from glob import glob
 import json
 import os
 import os.path as osp
 import re
 import shutil
-import subprocess
-import tempfile
 
 from casa_distro import (share_directories,
                          singularity,
@@ -50,7 +48,7 @@ def update_config(config, update):
         if k not in config:
             config[k] = v
         else:
-            oldv = d[k]
+            oldv = config[k]
             if isinstance(oldv, dict):
                 merge_config(oldv, v)
             elif isinstance(oldv, list):
@@ -243,8 +241,8 @@ def iter_environments(base_directory, **filter):
     base directory. For each one, yield a dictionary corrasponding to the
     casa_distro.json file with the "directory" item added.
     """
-    for casa_dsitro_json in sorted(glob(osp.join(base_directory, '*', 'host', 'conf', 
-                                  'casa_distro.json'))):
+    for casa_dsitro_json in sorted(glob(osp.join(base_directory, '*', 'host',
+                                                 'conf', 'casa_distro.json'))):
         environment_config = json.load(open(casa_dsitro_json))
         directory = osp.dirname(osp.dirname(osp.dirname(casa_dsitro_json)))
         config = {}
@@ -280,7 +278,7 @@ def iter_environments(base_directory, **filter):
             if p is None:
                 continue
             v = config.get(k)
-            if v is None or v != p:
+            if v is None or not fnmatch.filter([v], p):
                 break
         else:
             match = True
@@ -390,7 +388,7 @@ def update_environment(config, base_directory, writable, verbose):
         size = string_to_byte_count(writable)
         if size:
             if os.path.exists(overlay):
-                resize_ext3_file(overlay, size)
+                resize_ext3_file(overlay, int(size / 1024) + (1 if size % 1024 else 0))
             else:
                 create_ext3_file(overlay, size)
         else:
