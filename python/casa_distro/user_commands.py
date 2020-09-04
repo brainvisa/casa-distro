@@ -558,16 +558,26 @@ def update_image(distro='*', branch='*', system='*', name=None,
 
 
 @command
-def shell(distro='*', branch='*', system='*', name=None,
-          build_workflows_repository=default_build_workflow_repository,
-          gui=True, interactive=True, tmp_container=True, container_image=None,
-          cwd=None, env=None, container_options=[], args_list=['-norc'],
-          verbose=None,
-          conf='dev'):
+def shell(type=None, distro='*', branch='*', system='*', name=None,
+          base_directory=casa_distro_directory(),
+          gui=True, cwd=None, # interactive=True,
+          env=None, image=None,container_options=[], args_list=['-norc'],
+          verbose=None):
     '''
     Start a bash shell in the configured container with the given repository
     configuration.
     '''
+    run(type=type, distro=distro, branch=branch, system=system,
+        name=name,
+        base_directory=base_directory,
+        gui=gui,
+        cwd=cwd,
+        env=env,
+        image=image,
+        container_options=container_options,
+        args_list=['/bin/bash'] + args_list,
+        verbose=verbose)
+
     #build_workflows = list(iter_build_workflow(build_workflows_repository, 
                                                #distro=distro, 
                                                #branch=branch, 
