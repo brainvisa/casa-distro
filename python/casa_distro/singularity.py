@@ -97,16 +97,19 @@ def create_image(base, base_metadata,
         subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
 
     
-_singularity_major_version = None
+_singularity_version = None
 
 def singularity_major_version():
-    global _singularity_major_version
+    return singularity_version()[0]
 
-    if _singularity_major_version is None:
+def singularity_version():
+    global _singularity_version
+
+    if _singularity_version is None:
         output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
         version = output.split()[-1]
-        _singularity_major_version = int(version.split('.')[0])
-    return _singularity_major_version
+        _singularity_version = [int(x) for x in version.split('.')]
+    return _singularity_version
 
 
 def run(config, command, gui, root, cwd, env, image, container_options,
@@ -172,10 +175,12 @@ def run(config, command, gui, root, cwd, env, image, container_options,
         if '--no-nv' in container_options:
             container_options.remove('--no-nv')
     if 'SINGULARITYENV_PS1' not in container_env \
-            and not [x for x in container_options if x.startswith('PS1=')]:
+            and not [x for x in container_options if x.startswith('PS1=')] \
+            and singularity_version() >= [3, 6]:
         # the prompt with singularity 3 is ugly and cannot be overriden in the
         # .bashrc of the container.
-        container_options += ['--env', b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
+        container_options += ['--env',
+                              b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
 
     singularity += container_options
     if image is None:
