@@ -109,13 +109,20 @@ def singularity_major_version():
     return _singularity_major_version
 
 
-def run(config, command, gui, cwd, env, image, container_options,
+def run(config, command, gui, root, cwd, env, image, container_options,
         base_directory, verbose):    
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
     singularity = ['singularity', 'run', '--cleanenv', '--home', '/casa/host/home']
     if cwd:
         singularity += ['--pwd', cwd]
+    
+    if root:
+        singularity = ['sudo'] + singularity
+        
+    overlay = osp.join(config['directory'], 'overlay.img')
+    if osp.exists(overlay):
+        singularity += ['--overlay', overlay]
     
     if gui:
         xauthority = osp.expanduser('~/.Xauthority')
@@ -186,38 +193,6 @@ def run(config, command, gui, cwd, env, image, container_options,
 
 
 
-def create_writable_singularity_image(image, 
-                                      build_workflow_directory,
-                                      build_workflows_repository,            
-                                      verbose):
-    verbose = verbose_file(verbose)
-    if build_workflow_directory:
-        casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
-        casa_distro = json.load(open(casa_distro_json))
-        image = casa_distro.get('container_image')
-        
-    #read_image = get_image_filename(image, build_workflows_repository)
-    #write_image = read_image[:-4] + 'writable'
-    #check_call(['sudo', 'singularity', 'build', '--sandbox', write_image, read_image])
-
-
-def singularity_root_shell(image, 
-                           build_workflow_directory,
-                           build_workflows_repository,            
-                           verbose):
-    verbose = verbose_file(verbose)
-    if build_workflow_directory:
-        casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
-        casa_distro = json.load(open(casa_distro_json))
-        image = casa_distro.get('container_image')
-        
-    #write_image = get_image_filename(image, build_workflows_repository)
-    #if not write_image.endswith('.writable.simg') \
-            #and not write_image.endswith('.writable'):
-        #if write_image.endswith('.simg'):
-            #write_image = write_image[:-5]
-        #write_image = write_image + '.writable'
-    #check_call(['sudo', 'singularity', 'shell', '--writable', write_image])
 
 def setup(type, distro, branch, system, name, base_directory, image,
           output, vm_memory, vm_disk_size, verbose, force):

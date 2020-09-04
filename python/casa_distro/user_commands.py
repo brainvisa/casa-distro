@@ -25,6 +25,7 @@ from casa_distro.environment import (casa_distro_directory,
                                      find_in_path,
                                      iter_distros,
                                      iter_environments,
+                                     update_environment,
                                      run_container,
                                      select_distro,
                                      select_environment)
@@ -32,9 +33,27 @@ from casa_distro.build_workflow import (merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
 from casa_distro.log import verbose_file
-from casa_distro.singularity import (create_writable_singularity_image,
-                                     singularity_root_shell)
 from casa_distro.web import url_listdir, urlopen
+
+
+def size_to_string(full_size):
+  size = full_size
+  if size >= 1024:
+    unit = 'K'
+    size /= 1024.0
+    if size >= 1024:
+      unit = 'M'
+      size /= 1024.0
+      if size >= 1024:
+        unit = 'G'
+        size /= 1024.0
+    s = '%.2f' % ( size, )
+    if s.endswith( '.00' ): s = s[:-3]
+    elif s[-1] == '0': s = s[:-1]
+    return s + unit + ' (' + str( full_size ) + ')'
+  else:
+    return str(size)
+
 
 def display_summary(status):
     # Display summary
@@ -149,11 +168,12 @@ def distro():
 
 @command
 def setup(type=default_environment_type,
-          distro=default_distro,
+          distro=None,
           branch=default_branch,
           system=None,
           name='{distro}-{type}-{system}',
           container_type = None,
+          writable=None,
           base_directory=casa_distro_directory(),
           image = '{base_directory}/casa-{type}-{system}{extension}',
           url=default_download_url + '/{container_type}',
@@ -175,7 +195,9 @@ def setup(type=default_environment_type,
         default={distro_default}
         Distro used to build this environment. This is typically "brainvisa",
         "opensource" or "cati_platform". Use "casa_distro distro" to list all
-        currently available distro.
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
     branch
         default={branch_default}
         Name of the source branch to use for dev environments. Either "latest_release",
@@ -191,6 +213,13 @@ def setup(type=default_environment_type,
         Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
         If not given try to gues according to installed container software in the
         following order : Singularity, VirtualBox and Docker.
+    writable
+        size of a writable file system that can be used to make environement specific
+        modification to the container file system. The size can be written in bytes as
+        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M", 
+        or in gygabytes with suffix "G". If size is not 0, this will create an
+        overlay.img file in the base environment directory. This file will contain the
+        any modification done to the container file system.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -337,17 +366,19 @@ def setup(type=default_environment_type,
                 '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
                 '-O', image])
     
+    if writable and container_type != 'singularity':
+        raise ValueError('Only Singularity supports writable file system overlay')
+    
     environment.setup(type=type,
           distro=distro,
           branch=branch,
           system=system,
           name=name,
           container_type=container_type,
+          writable=writable,
           base_directory=base_directory,
           image=image,
           output=output,
-          vm_memory=vm_memory,
-          vm_disk_size=vm_disk_size,
           verbose=verbose,
           force=force)
 
@@ -389,7 +420,12 @@ def list_command(type=None, distro=None, branch=None, system=None,
         print(config['name'])
         for i in ('type', 'distro', 'branch', 'system', 'container_type'):
             print('  %s:' % i, config[i])
+        overlay = config.get('overlay')
+        if overlay:
+            print('  writable file system:', overlay)
+            print('  writable file system size:', size_to_string(config['overlay_size']))
         print('  directory:', config['directory'])
+            
         if verbose:
             print('  full environment:')
             for line in json.dumps(config, indent=2).split('\n'):
@@ -399,6 +435,7 @@ def list_command(type=None, distro=None, branch=None, system=None,
 def run(type=None, distro=None, branch=None, system=None,
         base_directory=casa_distro_directory(),
         gui=True,
+        root=False,
         cwd='/casa/home', 
         env=None,
         image=None,
@@ -430,6 +467,11 @@ def run(type=None, distro=None, branch=None, system=None,
         interface (GUI). Nothing is done to connect the container to a 
         graphical interface. This option may be necessary in context where 
         a graphical interface is not available.
+    root
+        default={root_default}
+        If "yes", "true" or "1", start execution as system administrator. For 
+        Singularity container, this requires administrator privileges on host
+        system.
     cwd
         default={cwd_default}
         Set current working directory to the given value before launching
@@ -448,6 +490,8 @@ def run(type=None, distro=None, branch=None, system=None,
         Print more detailed information if value is "yes", "true" or "1".
     """
     verbose = verbose_file(verbose)
+    gui = check_boolean('gui', gui)
+    root = check_boolean('root', root)
     config = select_environment(base_directory,
                                 type=type,
                                 distro=distro,
@@ -466,7 +510,8 @@ def run(type=None, distro=None, branch=None, system=None,
     command = args_list
     run_container(config, 
                   command=command, 
-                  gui=gui, 
+                  gui=gui,
+                  root=root,
                   cwd=cwd, 
                   env=env,
                   image=image,
@@ -475,39 +520,52 @@ def run(type=None, distro=None, branch=None, system=None,
                   verbose=verbose)
 
 @command
-def update(distro='*',
-           branch='*',
-           system='*',
-           build_workflows_repository=default_build_workflow_repository,
-           verbose=None, command=None):
-    '''
-    Update an existing build workflow directory. For now it only re-creates
-    the run script in bin/casa_distro, pointing to the casa_distro command
-    inside the build workflow sources tree if it is found there, or to the one
-    used to actually perform the update if none is found in the sources. Using
-    the ``command`` option allows to change this behavior.
+def update(type=None, distro=None, branch=None, system=None,
+        base_directory=casa_distro_directory(),
+        writable=None,
+        verbose=None):
+    """
+    Update an existing environment.
 
-    distro:
-        Name of the distro that will be created. If omited, the name
-        of the distro source (or distro source directory) is used.
+    example:
+        casa_distro -r /home/casa run branch=bug_fix ls -als /casa
 
-    branch:
-        bv_maker branch to use (latest_release, bug_fix or trunk)
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    writable
+        size of a writable file system that can be used to make environement specific
+        modification to the container file system. The size can be written in bytes as
+        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M", 
+        or in gygabytes with suffix "G". If size is not 0, this will create or resize an
+        overlay.img file in the base environment directory. This file will contain the
+        any modification done to the container file system. If size is 0, the overlay.img
+        file is deleted and all its content is lost.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+    """
+    verbose = verbose_file(verbose)
+    config = select_environment(base_directory,
+                                type=type,
+                                distro=distro,
+                                branch=branch,
+                                system=system)
 
-    system:
-        Name of the target system.
-
-    command:
-        casa_distro command actually called in the run script. May be either
-        "host" (the calling command from the host system), "workflow" (use the
-        sources from the build-workflow, the default), or a hard-coded path to
-        the casa_distro command.
-    '''
-    images_to_update = {}
-    #for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-                                                #distro=distro, branch=branch,
-                                                #system=system):
-        #update_build_workflow(bwf_dir, verbose=verbose, command=command)
+    update_environment(config, 
+                       base_directory=base_directory,
+                       writable=writable,
+                       verbose=verbose)
 
 @command
 def update_image(distro='*', branch='*', system='*', 
@@ -706,126 +764,6 @@ def bv_maker(distro='*', branch='*', system='*',
           verbose=verbose)
 
 
-@command
-def create_writable_image(singularity_image=None, distro=None, branch=None, system=None,
-             build_workflows_repository=default_build_workflow_repository,            
-             verbose=None):
-    '''
-    Create a writable version of a Singularity image used to run containers.
-    This allows to modify an image (for instance install custom packages). To
-    use a writable image in a build workflow, it is necessary to edit its
-    "casa_distro.json" file (located in the "conf" directory of the build
-    workflow) to add ".writable" to the image name. For instance:
-    
-        "container_image": "cati/casa-dev:ubuntu-16.04.writable"
-
-    The singularity image can be identified by its Docker-like name:
-        casa_distro create_writable_image cati/casa-dev:ubuntu-16.04
-    
-    It is also possible to identify an image by selecting a build workflow:
-        casa_distro create_writable_image distro=brainvisa branch=bug_fix
-
-    Due to Singularity security, it is necessary to be root on the host 
-    system to create an image (sudo is used for that and can ask you a password).
-    
-    '''
-    if (distro or branch or system) and singularity_image:
-        raise ValueError('Image selection must be done with either an image '
-                        'name or a build workflow selection but not both')
-    #if not singularity_image:
-        #if not distro:
-            #distro = '*'
-        #if not branch:
-            #branch = '*'
-        #if not system:
-            #system = '*'
-        #build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                                   #distro=distro, 
-                                                   #branch=branch, 
-                                                   #system=system))
-        #if not build_workflows:
-            #print('Cannot find requested build workflow.',
-                #'You can list existing workflows using:\n'
-                #'    casa_distro list\n'
-                #'Or create new one using:\n'
-                #'    casa_distro create ...',
-                #file=sys.stderr)
-            #return 1
-        
-        #if len(build_workflows) > 1:
-            #print('Several build workflows found, you must explicitely select one',
-                #'giving values for distro, system and branch. You can list '
-                #'existing workflows using:\n'
-                #'    casa_distro list',
-                #file=sys.stderr)
-            #return 1
-        #d, b, s, bwf_dir = build_workflows[0]
-    #else:
-        #bwf_dir = None
-        
-    #create_writable_singularity_image(image=singularity_image, 
-                                      #build_workflow_directory=bwf_dir,
-                                      #build_workflows_repository=build_workflows_repository,
-                                      #verbose=None)
-
-@command
-def root_shell(singularity_image=None, distro=None, branch=None, system=None,
-               build_workflows_repository=default_build_workflow_repository,            
-               verbose=None):
-    '''
-    Start a shell with root privileges allowing to modify a writable
-    singularity image. Before using this command, a writable image 
-    must have been created with the create_writable_image command. Using
-    this command allows to modify the writable image (for instance to install
-    packages).
-    Due to Singularity security, it is necessary to be
-    root on the host system to start a root shell within the container (sudo 
-    is used for that and can ask you a password).
-    
-    The image can be identified by its Docker-like name:
-        casa_distro root_shell cati/casa-dev:ubuntu-16.04
-    
-    It is also possible to identify an image by selecting a build workflow:
-        casa_distro root_shell distro=brainvisa branch=bug_fix
-    '''
-    if (distro or branch or system) and singularity_image:
-        raise ValueError('Image selection must be done with either an image '
-                         'name or a build workflow selection but not both')
-    #if not singularity_image:
-        #if not distro:
-            #distro = '*'
-        #if not branch:
-            #branch = '*'
-        #if not system:
-            #system = '*'
-        #build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                                   #distro=distro, 
-                                                   #branch=branch, 
-                                                   #system=system))
-        #if not build_workflows:
-            #print('Cannot find requested build workflow.',
-                #'You can list existing workflows using:\n'
-                #'    casa_distro list\n'
-                #'Or create new one using:\n'
-                #'    casa_distro create ...',
-                #file=sys.stderr)
-            #return 1
-        
-        #if len(build_workflows) > 1:
-            #print('Several build workflows found, you must explicitely select one',
-                #'giving values for distro, system and branch. You can list '
-                #'existing workflows using:\n'
-                #'    casa_distro list',
-                #file=sys.stderr)
-            #return 1
-        #d, b, s, bwf_dir = build_workflows[0]
-    #else:
-        #bwf_dir = None
-        
-    #singularity_root_shell(image=singularity_image, 
-                           #build_workflow_directory=bwf_dir,
-                           #build_workflows_repository=build_workflows_repository,
-                           #verbose=None)
 
 @command
 def delete(distro='*', branch='*', system='*',

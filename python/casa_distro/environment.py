@@ -7,7 +7,10 @@ from glob import glob
 import json
 import os
 import os.path as osp
+import re
 import shutil
+import subprocess
+import tempfile
 
 from casa_distro import (share_directories,
                          singularity,
@@ -19,6 +22,22 @@ bv_maker_branches = {
     'master': 'bug_fix',
     'integration': 'trunk'
 }
+
+
+def string_to_byte_count(size):
+    coefs = {
+        '': 1,
+        'K': 1024,
+        'M': 1024 ** 2,
+        'G': 1024 ** 3}
+    
+    match = re.match(r'^(\d+(?:\.\d+)?)\s*([KMG]?)$', size)
+    if not match:
+        raise ValueError('Invlid file system size: {0}'.format(size))
+    n = float(match.group(1))
+    coef = coefs[match.group(2)]
+    return int(n * coef)
+
 
 def update_config(config, update):
     """
@@ -50,6 +69,43 @@ def find_in_path(file):
             r = glob(osp.join(p, file))
             if r:
                 return r[0]
+
+def ext3_file_size(filename):
+    block_size = block_count = None
+    for line in subprocess.check_output(['dumpe2fs', filename], stderr=subprocess.STDOUT).split('\n'):
+        if line.startswith('Block count'):
+            block_count = int(line.rsplit(None,1)[-1])
+        elif line.startswith('Block size'):
+            block_size = int(line.rsplit(None,1)[-1])
+    if block_size is not None and block_count is not None:
+        return block_size * block_count
+    return None
+
+def create_ext3_file(filename, size):
+    block_size = 1024*1024
+    block_count = int(size/block_size)
+    if size % block_size != 0:
+        block_count += 1
+    # If there are too few blocks, the system cannot be created
+    block_count = max(2, block_count)
+    subprocess.check_call(['dd', 
+                           'if=/dev/zero',
+                           'of={0}'.format(filename), 
+                           'bs={0}'.format(block_size),
+                           'count={0}'.format(block_count)])
+    tmp = tempfile.mkdtemp()
+    try:
+        subprocess.check_call(['mkfs.ext3', '-d', tmp, filename])
+    finally:
+        os.rmdir(tmp)
+
+def resize_ext3_file(filename, size):
+    if isinstance(size, int):
+        size=str(size)
+    elif not re.match(r'\d+[KMG]?', size):
+        raise ValueError('Invlid file system size: {0}'.format(size))
+    subprocess.check_call(['e2fsck', '-f', filename])
+    subprocess.check_call(['resize2fs', filename, size])
 
 # We need to duplicate this function to allow copying over
 # an existing directory
@@ -190,10 +246,10 @@ def iter_environments(base_directory, **filter):
     for casa_dsitro_json in sorted(glob(osp.join(base_directory, '*', 'host', 'conf', 
                                   'casa_distro.json'))):
         environment_config = json.load(open(casa_dsitro_json))
-
+        directory = osp.dirname(osp.dirname(osp.dirname(casa_dsitro_json)))
         config = {}
         config['config_files'] = [casa_dsitro_json]
-        config['directory'] = osp.dirname(osp.dirname(osp.dirname(casa_dsitro_json)))
+        config['directory'] = directory
         config['mounts'] = {'/casa/host':'{directory}/host'}
         config['env'] = {
             'CASA_DISTRO': '{name}',
@@ -213,7 +269,12 @@ def iter_environments(base_directory, **filter):
             if osp.exists(f):
                 config['config_files'].append(f)
                 update_config(config, json.load(open(f)))
-                
+        
+        overlay = osp.join(directory, 'overlay.img')
+        if osp.exists(overlay):
+            config['overlay'] = overlay
+            config['overlay_size'] = ext3_file_size(overlay)
+        
         match = False
         for k, p in filter.items():
             if p is None:
@@ -239,8 +300,8 @@ def select_environment(base_directory, **kwargs):
     raise ValueError('Cannot find any distro to perform requested action')
 
 
-def setup(type, distro, branch, system, name, container_type, base_directory,
-          image, output, verbose, force):
+def setup(type, distro, branch, system, name, container_type, writable,
+          base_directory, image, output, verbose, force):
     '''
     Create a new run or dev environment.
 
@@ -252,7 +313,9 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
     distro
         Distro used to build this environment. This is typically "brainvisa",
         "opensource" or "cati_platform". Use "casa_distro distro" to list all
-        currently available distro.
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
     branch
         Name of the source branch to use for dev environments. Either "latest_release",
         "master" or "integration".
@@ -265,6 +328,11 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
         Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
         If not given try to gues according to installed container software in the
         following order : Singularity, VirtualBox and Docker.
+    writable
+        size in bytes of a writable file system that can be used to make environement specific
+        modification to the container file system. If not 0, this will create an
+        overlay.img file in the base environment directory. This file will contain the
+        any modification done to the container file system.
     base_directory
         Directory where images and environments are stored
     image
@@ -304,11 +372,33 @@ def setup(type, distro, branch, system, name, container_type, base_directory,
     home = osp.join(output, 'host', 'home')
     if not osp.exists(home):
         os.mkdir(home)
-    
-    #TODO check_svn_secret(bwf_dir)
+
+    if writable:
+        size = string_to_byte_count(writable)
+        if size:
+            overlay = osp.join(output, 'overlay.img')
+            create_ext3_file(overlay, size)
 
 
-def run_container(config, command, gui, cwd, env, image, 
+def update_environment(config, base_directory, writable, verbose):
+    """
+    Update an existing environment
+    """
+    env_directory = config['directory']
+    if writable:
+        overlay = osp.join(env_directory, 'overlay.img')
+        size = string_to_byte_count(writable)
+        if size:
+            if os.path.exists(overlay):
+                resize_ext3_file(overlay, size)
+            else:
+                create_ext3_file(overlay, size)
+        else:
+            if os.path.exists(overlay):
+                os.remove(overlay)
+
+
+def run_container(config, command, gui, root, cwd, env, image, 
                   container_options, base_directory, verbose):
     """
     Run a command in the container defined in the environment
@@ -341,7 +431,8 @@ def run_container(config, command, gui, cwd, env, image,
         raise ValueError('Invalid container type: {0}'.format(container_type))
     module.run(config, 
                command=command, 
-               gui=gui, 
+               gui=gui,
+               root=root,
                cwd=cwd, 
                env=env,
                image=image,
