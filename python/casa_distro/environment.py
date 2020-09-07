@@ -197,10 +197,16 @@ def iter_distros():
     with the "directory" item added.
     """
     for share_directory in share_directories():
-        for root, dirs, files in os.walk(share_directory):
-            if 'casa_distro.json' in files:
-                distro = json.load(open(osp.join(root, 'casa_distro.json')))
-                distro['directory'] = osp.dirname(osp.dirname(root))
+        distro_dir = osp.join(share_directory, 'distro')
+        if not osp.isdir(distro_dir):
+            continue
+        for basename in os.listdir(distro_dir):
+            casa_distro_json = osp.join(distro_dir, basename,
+                                        'host', 'conf', 'casa_distro.json')
+            if osp.isfile(casa_distro_json):
+                with open(casa_distro_json) as f:
+                    distro = json.load(f)
+                distro['directory'] = osp.join(distro_dir, basename)
                 yield distro
 
 
