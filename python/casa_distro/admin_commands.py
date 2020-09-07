@@ -26,6 +26,8 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_login,
                                   default_download_url,
                                   default_system)
+from casa_distro.environment import (casa_distro_directory,
+                                     select_environment)
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
@@ -450,6 +452,8 @@ def create_image(type,
         metadata['md5'] = file_hash(output)
         json.dump(metadata, open(metadata_output, 'w'), indent=4)
 
+
+
 @command
 def publish_image(type,
                   image=osp.join(default_build_workflow_repository, 'casa-{type}-*.{extension}'),
@@ -508,3 +512,51 @@ def publish_image(type,
                 'brainvisa@brainvisa.info:prod/www/casa-distro/%s/' % container_type])
 
 
+@command
+def create_release(version,
+                   name='{distro}-{version}',
+                   distro=None,
+                   system=None,
+                   environment_name=None,
+                   container_type='singularity',
+                   base_directory=casa_distro_directory(),
+                   verbose=True):
+    """
+    Create a release image given a development environment.
+    The development environment must be using the master branch.
+    If several environments exist, one can be selected using its
+    distro and system or simply by its name.
+    
+    Parameters
+    ----------
+    version
+        Version of the release to create.
+    name
+        default={name_default}
+        Name given to the created distro.
+    distro
+        If given, select environment having the given distro name.
+    system
+        If given, select environments having the given system name.
+    environment_name
+        If given, select environment by its name. It replaces type, distro,
+        branch and system and is shorter to select one.
+    container_type
+        default={container_type_default}
+        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+    """
+    verbose = verbose_file(verbose)
+    config = select_environment(base_directory,
+                                type='dev',
+                                distro=distro,
+                                branch='master',
+                                system=system,
+                                name=environment_name)
+    name = name.format(version=version, **config)
+    print('Creating', name, 'from', config['directory'])
