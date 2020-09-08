@@ -241,7 +241,7 @@ def singularity_major_version():
 
     if _singularity_major_version is None:
         output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
-        version = output.split()[-1]
+        version = output.split()[-1].split('-')[0]
         _singularity_major_version = int(version.split('.')[0])
     return _singularity_major_version
 
