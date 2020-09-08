@@ -261,12 +261,11 @@ def iter_environments(base_directory, **filter):
             'CASA_DISTRO': '{name}',
             'CASA_BRANCH': '{bv_maker_branch}',
             'CASA_SYSTEM': '{system}',
-            'CASA_HOST_DIR': '{directory}',
-            'HOME': '/casa/home'}
+            'CASA_HOST_DIR': '{directory}'}
         if environment_config['container_type'] == 'singularity':
             config.setdefault('gui_env', {}).update({
                 'DISPLAY': '$DISPLAY',
-                'XAUTHORITY': '$HOME/.Xauthority'})
+                'XAUTHORITY': '/casa/host/home/.Xauthority'})
 
         update_config(config, environment_config)
         
