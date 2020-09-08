@@ -301,7 +301,7 @@ def select_environment(base_directory, **kwargs):
 
 
 def setup(type, distro, branch, system, name, container_type, writable,
-          base_directory, image, output, verbose, force):
+          base_directory, image, output, verbose):
     '''
     Create a new run or dev environment.
 
@@ -343,8 +343,6 @@ def setup(type, distro, branch, system, name, container_type, writable,
         Directory where the environement will be stored.
     verbose
         Print more detailed information if value is "yes", "true" or "1".
-    force
-        Allow to perform setup with unsuported configuration.
     '''
         
     environment = {}

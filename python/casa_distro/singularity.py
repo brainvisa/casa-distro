@@ -97,6 +97,39 @@ def create_image(base, base_metadata,
         subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
 
     
+def create_release(dev_config,
+                   output,
+                   base_directory,
+                   skip_install,
+                   verbose):
+    if not skip_install:
+        run(config=dev_config, 
+            command=['make', 'BRAINVISA_INSTALL_PREFIX=/casa/host/install', 'install-runtime'],
+            gui=False, 
+            root=False, 
+            cwd='/casa/host/build',
+            env={},
+            image=None, 
+            container_options=None,
+            base_directory=base_directory, 
+            verbose=verbose)
+    recipe = tempfile.NamedTemporaryFile()
+    recipe.write('''Bootstrap: localimage
+    From: {run_image}
+    
+%files
+    {environment_directory}/host/install /casa/install
+'''.format(run_image=dev_config['image'],
+           environment_directory=dev_config['directory']))
+    recipe.flush()
+    if verbose:
+        print('---------- Singularity recipe ----------', file=verbose)
+        print(open(recipe.name).read(), file=verbose)
+        print('----------------------------------------', file=verbose)
+        verbose.flush()
+    subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
+
+
 _singularity_version = None
 
 def singularity_major_version():

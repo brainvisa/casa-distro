@@ -167,30 +167,24 @@ def distro():
 
 
 @command
-def setup(type=default_environment_type,
-          distro=None,
-          branch=default_branch,
-          system=None,
-          name='{distro}-{type}-{system}',
-          container_type = None,
-          writable=None,
-          base_directory=casa_distro_directory(),
-          image = '{base_directory}/casa-{type}-{system}{extension}',
-          url=default_download_url + '/{container_type}',
-          output='{base_directory}/{name}',
-          vm_memory='8192',
-          vm_disk_size='131072',
-          verbose=True,
-          force=False):
+def setup_dev(distro=None,
+              branch=default_branch,
+              system=None,
+              name='{distro}-dev-{system}',
+              container_type = None,
+              writable=None,
+              base_directory=casa_distro_directory(),
+              image = '{base_directory}/casa-dev-{system}{extension}',
+              url=default_download_url + '/{container_type}',
+              output='{base_directory}/{name}',
+              #vm_memory='8192',
+              #vm_disk_size='131072',
+              verbose=True):
     """
-    Create a new run or dev environment
+    Create a new developer environment
 
     Parameters
     ----------
-    type
-        default={type_default}
-        Environment type to setup. Either "run" for users or "dev" for
-        developers
     distro
         default={distro_default}
         Distro used to build this environment. This is typically "brainvisa",
@@ -207,7 +201,8 @@ def setup(type=default_environment_type,
         system of the selected distro.
     name
         default={name_default}
-        Name of the environment (no other environment must have the same name).
+        Name of the environment. No other environment must have the same name (including
+        non developer environments).
         This name may be used later to select the environment to run.
     container_type
         default={container_type_default}
@@ -236,18 +231,8 @@ def setup(type=default_environment_type,
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
-    force
-        default={force_default}
-        Allow to perform setup with unsuported configuration.
     """
     verbose = verbose_file(verbose)
-    force = check_boolean('force', force)
-    
-    if type not in ('run', 'dev'):
-        raise ValueError('Invalid environment type: {0}'.format(type))
-    if verbose:
-        print('Type:', type,
-              file=verbose)
     
     if not container_type:
         if find_in_path('singularity'):
@@ -289,14 +274,13 @@ def setup(type=default_environment_type,
     if system is None:
         system = distro['systems'][0]
     
-    if system not in distro['systems'] and not force:
-        raise ValueError('The system {0} is not supported by the distro {1}. Use force=true or select one of the following systems: {2}'.format(system, distro['name'], ', '.join(distro['systems'])))
+    if system not in distro['systems']:
+        raise ValueError('The system {0} is not supported by the distro {1}. Please select one of the following systems: {2}'.format(system, distro['name'], ', '.join(distro['systems'])))
     if verbose:
         print('System:', system,
               file=verbose)
     
-    name = name.format(type=type,
-                       distro=distro['name'],
+    name = name.format(distro=distro['name'],
                        branch=branch,
                        system=system)
     if verbose:
@@ -309,8 +293,7 @@ def setup(type=default_environment_type,
         print('base directory:', base_directory,
               file=verbose)
     
-    image = image.format(type=type,
-                         distro=distro['name'],
+    image = image.format(distro=distro['name'],
                          branch=branch,
                          system=system,
                          base_directory=base_directory,
@@ -320,8 +303,7 @@ def setup(type=default_environment_type,
         print('image:', image,
               file=verbose)
 
-    url = url.format(type=type,
-                     distro=distro['name'],
+    url = url.format(distro=distro['name'],
                      branch=branch,
                      system=system,
                      base_directory=base_directory,
@@ -331,8 +313,7 @@ def setup(type=default_environment_type,
         print('download image url:', url,
               file=verbose)
 
-    output = output.format(type=type,
-                           distro=distro['name'],
+    output = output.format(distro=distro['name'],
                            branch=branch,
                            system=system,
                            base_directory=base_directory,
@@ -370,7 +351,7 @@ def setup(type=default_environment_type,
     if writable and container_type != 'singularity':
         raise ValueError('Only Singularity supports writable file system overlay')
     
-    environment.setup(type=type,
+    environment.setup(type='dev',
           distro=distro,
           branch=branch,
           system=system,
@@ -380,8 +361,204 @@ def setup(type=default_environment_type,
           base_directory=base_directory,
           image=image,
           output=output,
-          verbose=verbose,
-          force=force)
+          verbose=verbose)
+
+
+
+@command
+def setup(distro=None,
+          version=None,
+          system=None,
+          name='{distro}-{version}',
+          container_type = None,
+          writable=None,
+          base_directory=casa_distro_directory(),
+          image = '{base_directory}/{distro}-{version}{extension}',
+          url=default_download_url + '/release/{container_type}',
+          output='{base_directory}/{name}',
+          #vm_memory='8192',
+          #vm_disk_size='131072',
+          verbose=True):
+    """
+    Create a new user environment
+
+    Parameters
+    ----------
+    distro
+        default={distro_default}
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    version
+        version of the distro to use. By default the release with highest version
+        is selected.
+    system
+        System to use inside this environment.
+    name
+        default={name_default}
+        Name of the environment. No other environment must have the same name (including
+        developer environments).
+        This name may be used later to select the environment to run.
+    container_type
+        default={container_type_default}
+        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
+        If not given try to gues according to installed container software in the
+        following order : Singularity, VirtualBox and Docker.
+    writable
+        size of a writable file system that can be used to make environement specific
+        modification to the container file system. The size can be written in bytes as
+        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M", 
+        or in gygabytes with suffix "G". If size is not 0, this will create an
+        overlay.img file in the base environment directory. This file will contain the
+        any modification done to the container file system.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    image
+        default={image_default}
+        Location of the virtual image for this environement.
+    url
+        default={url_default}
+        URL where to download image if it is not found.
+    output
+        default={output_default}
+        Directory where the environement will be stored.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+    """
+    verbose = verbose_file(verbose)
+    
+    if not container_type:
+        if find_in_path('singularity'):
+            container_type = 'singularity'
+        elif find_in_path('VBoxManage'):
+            container_type = 'vbox'
+        elif find_in_path('docker'):
+            container_type = 'docker'
+        else:
+            raise ValueError('Cannot guess container_type according to '
+                             'Singularity, VirtualBox or Docker command '
+                             'research')
+
+    if container_type == 'singularity':
+        extension = '.sif'
+    elif container_type == 'vbox':
+        extension = '.vdi'
+    elif container_type == 'docker':
+        raise NotImplementedError('docker container type is not yet supported by this command')
+    else:
+        raise ValueError('Invalid container type: {0}'.format(container_type))
+    if verbose:
+        print('Container type:', container_type,
+              file=verbose)
+
+    distro = select_distro(distro)
+    if verbose:
+        print('Distro:', distro['name'],
+              file=verbose)
+        print('Distro directory:', distro['directory'],
+              file=verbose)
+    
+    if branch not in ('latest_release', 'master', 'integration'):
+        raise ValueError('Invalid branch : {0}'.format(branch))
+    if verbose:
+        print('Branch:', branch,
+              file=verbose)
+
+    if system is None:
+        system = distro['systems'][0]
+    
+    if system not in distro['systems']:
+        raise ValueError('The system {0} is not supported by the distro {1}. Please select one of the following systems: {2}'.format(system, distro['name'], ', '.join(distro['systems'])))
+    if verbose:
+        print('System:', system,
+              file=verbose)
+    
+    name = name.format(distro=distro['name'],
+                       branch=branch,
+                       system=system)
+    if verbose:
+        print('name:', name,
+              file=verbose)
+    
+    if not osp.isdir(base_directory):
+        raise ValueError('No such directory: {0}'.format(base_directory))
+    if verbose:
+        print('base directory:', base_directory,
+              file=verbose)
+    
+    image = image.format(distro=distro['name'],
+                         branch=branch,
+                         system=system,
+                         base_directory=base_directory,
+                         container_type=container_type,
+                         extension=extension)
+    if verbose:
+        print('image:', image,
+              file=verbose)
+
+    url = url.format(distro=distro['name'],
+                     branch=branch,
+                     system=system,
+                     base_directory=base_directory,
+                     container_type=container_type,
+                     extension=extension)
+    if verbose:
+        print('download image url:', url,
+              file=verbose)
+
+    output = output.format(distro=distro['name'],
+                           branch=branch,
+                           system=system,
+                           base_directory=base_directory,
+                           name=name,
+                           extension=extension)
+    if verbose:
+        print('output:', output,
+              file=verbose)
+
+    metadata_file = image + '.json'
+    image_file_name = osp.basename(image)
+    if not osp.exists(image):
+        if image_file_name not in url_listdir(url): 
+            raise ValueError('File {image} does not exist and cannot be '
+                             'downloaded from {url}/{image_file_name}'.format(
+                                 image=image, 
+                                 url=url, 
+                                 image_file_name=image_file_name))
+        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
+        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+        
+        subprocess.check_call([
+            'wget', 
+            '{url}/{image_file_name}'.format(url=url,
+                                             image_file_name=image_file_name),
+            '-O', image])
+    else:
+        metadata = json.load(open(metadata_file))
+        if 'size' in metadata and os.stat(image).st_size < metadata['size']:
+            subprocess.check_call([
+                'wget', '--continue',
+                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
+                '-O', image])
+    
+    if writable and container_type != 'singularity':
+        raise ValueError('Only Singularity supports writable file system overlay')
+    
+    environment.setup(type='dev',
+          distro=distro,
+          branch=branch,
+          system=system,
+          name=name,
+          container_type=container_type,
+          writable=writable,
+          base_directory=base_directory,
+          image=image,
+          output=output,
+          verbose=verbose)
 
 
 
@@ -631,51 +808,6 @@ def shell(type=None, distro='*', branch='*', system='*', name=None,
         container_options=container_options,
         args_list=['/bin/bash'] + args_list,
         verbose=verbose)
-
-    #build_workflows = list(iter_build_workflow(build_workflows_repository, 
-                                               #distro=distro, 
-                                               #branch=branch, 
-                                               #system=system))
-    #if not build_workflows:
-        #print('Cannot find requested build workflow.',
-              #'You can list existing workflows using:\n'
-              #'    casa_distro list\n'
-              #'Or create new one using:\n'
-              #'    casa_distro create ...',
-              #file=sys.stderr)
-        #return 1
-    
-    #if len(build_workflows) > 1:
-        #print('Several build workflows found, you must explicitely select one',
-              #'giving values for distro, system and branch. You can list',
-              #'existing workflows using:\n'
-              #'casa_distro -r %s list' 
-              #% build_workflows_repository, 
-              #file=sys.stderr)
-        #return 1
-
-    #if isinstance(container_options, six.string_types) \
-            #and len(container_options) != 0:
-        #container_options = parse_string(container_options)
-    #if isinstance(env, six.string_types) \
-            #and len(env) != 0:
-        #env_list = parse_string(env)
-        #try:
-            #env = dict(e.split('=') for e in env_list)
-        #except:
-            #raise ValueError('env syntax error. Should be in the shape '
-                             #'"VAR1=value1 VAR2=value2" etc.')
-
-    #distro, branch, system, bwf_dir = build_workflows[0]
-    #bwf_directory = osp.join(build_workflows_repository, '%s' % distro,
-                             #'%s_%s' % (branch, system))
-    #command = ['/bin/bash' ] + args_list
-    #run_container(bwf_directory, command=command, gui=gui, 
-                  #interactive=interactive, tmp_container=tmp_container,
-                  #container_image=container_image, cwd=cwd, env=env,
-                  #container_options=container_options, verbose=verbose,
-                  #conf=conf)
-
 
 
 
