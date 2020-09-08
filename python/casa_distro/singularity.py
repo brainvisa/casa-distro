@@ -140,16 +140,41 @@ def singularity_version():
 
     if _singularity_version is None:
         output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
-        version = output.split()[-1]
+        version = output.split()[-1].split('-')[0]
         _singularity_version = [int(x) for x in version.split('.')]
     return _singularity_version
+
+
+_singularity_run_help = None
+
+def singularity_run_help():
+    """
+    Useful to get available commandline options, because they differ with
+    versions and systems.
+    """
+    global _singularity_run_help
+
+    if _singularity_run_help:
+        return _singularity_run_help
+
+    output = subprocess.check_output(['singularity', 'help',
+                                      'run']).decode('utf-8')
+    return output
+
+
+def singularity_has_option(option):
+    doc = singularity_run_help()
+    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
 
 
 def run(config, command, gui, root, cwd, env, image, container_options,
         base_directory, verbose):    
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
     # to the container
-    singularity = ['singularity', 'run', '--cleanenv', '--home', '/casa/host/home']
+    singularity = ['singularity', 'run']
+    if singularity_has_option('--cleanenv'):
+        singularity.append('--cleanenv')
+    singularity += ['--home', '/casa/host/home']
     if cwd:
         singularity += ['--pwd', cwd]
     
@@ -192,7 +217,7 @@ def run(config, command, gui, root, cwd, env, image, container_options,
     container_options = config.get('container_options', []) + (container_options or [])
     if cwd:
         for i, opt in enumerate(container_options):
-            if opt == '--pwd':
+            if opt == '--pwd' and singularity_has_option('--pwd'):
                 container_options = container_options[:i] + container_options[i+2:]
                 break
     if gui:
@@ -202,14 +227,15 @@ def run(config, command, gui, root, cwd, env, image, container_options,
         # handle --nv option, if a nvidia device is found
         if ('--nv' not in container_options and 
             os.path.exists('/dev/nvidiactl') and
-            '--no-nv' not in container_options):
+            '--no-nv' not in container_options and
+            singularity_has_option('--nv')):
             container_options.append('--nv')
         # remove --no-nv which is not a singularity option
         if '--no-nv' in container_options:
             container_options.remove('--no-nv')
     if 'SINGULARITYENV_PS1' not in container_env \
             and not [x for x in container_options if x.startswith('PS1=')] \
-            and singularity_version() >= [3, 6]:
+            and singularity_has_option('--env'):
         # the prompt with singularity 3 is ugly and cannot be overriden in the
         # .bashrc of the container.
         container_options += ['--env',

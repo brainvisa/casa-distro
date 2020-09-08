@@ -197,10 +197,16 @@ def iter_distros():
     with the "directory" item added.
     """
     for share_directory in share_directories():
-        for root, dirs, files in os.walk(share_directory):
-            if 'casa_distro.json' in files:
-                distro = json.load(open(osp.join(root, 'casa_distro.json')))
-                distro['directory'] = osp.dirname(osp.dirname(root))
+        distro_dir = osp.join(share_directory, 'distro')
+        if not osp.isdir(distro_dir):
+            continue
+        for basename in os.listdir(distro_dir):
+            casa_distro_json = osp.join(distro_dir, basename,
+                                        'host', 'conf', 'casa_distro.json')
+            if osp.isfile(casa_distro_json):
+                with open(casa_distro_json) as f:
+                    distro = json.load(f)
+                distro['directory'] = osp.join(distro_dir, basename)
                 yield distro
 
 
@@ -255,12 +261,11 @@ def iter_environments(base_directory, **filter):
             'CASA_DISTRO': '{name}',
             'CASA_BRANCH': '{bv_maker_branch}',
             'CASA_SYSTEM': '{system}',
-            'CASA_HOST_DIR': '{directory}',
-            'HOME': '/casa/home'}
+            'CASA_HOST_DIR': '{directory}'}
         if environment_config['container_type'] == 'singularity':
             config.setdefault('gui_env', {}).update({
                 'DISPLAY': '$DISPLAY',
-                'XAUTHORITY': '$HOME/.Xauthority'})
+                'XAUTHORITY': '/casa/host/home/.Xauthority'})
 
         update_config(config, environment_config)
         
