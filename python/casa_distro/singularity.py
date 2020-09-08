@@ -265,7 +265,7 @@ def singularity_run_help():
 
 def singularity_has_option(option):
     doc = singularity_run_help()
-    return doc.find(' %s ' % option) >= 0
+    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
 
 
 def run_singularity(casa_distro, command, gui=False, interactive=False,
