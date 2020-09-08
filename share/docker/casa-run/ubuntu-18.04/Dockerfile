@@ -1,3 +1,8 @@
+# This file is used for building the image Docker. At the moment a separate
+# build_image.py file is used to support Singularity and VirtualBox, *please*
+# keep these files synchronized so that they perform exactly the same
+# installation steps.
+
 FROM ubuntu:18.04
 
 # Use a minimal UTF-8-aware locale.
@@ -32,16 +37,6 @@ RUN rm -f /tmp/neurodebian-key.gpg \
           /tmp/build_netcdf.sh \
           /tmp/build_sip_pyqt.sh \
           /tmp/cleanup_build_dependencies.sh
-
-
-# Copy a software-only mesa libGL into /usr/local/lib. We copy this library
-# manually because there seems to be no system package that provides a libGL
-# which *only* does software rendering. We need such a lib to be used as a
-# fallback, when 'singularity run --nv' loads a non-functional Nvidia libGL
-# (e.g. when the calling user does not have the required permissions on
-# /dev/nvidia*, such as when running over SSH).
-COPY libGL.so.1 /usr/local/lib/libGL.so.1
-COPY libglapi.so.0 /usr/local/lib/libglapi.so.0
 
 COPY entrypoint /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
