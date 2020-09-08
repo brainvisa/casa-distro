@@ -18,6 +18,15 @@ def install(base_dir, builder, verbose):
         builder.run_root('/bin/chown {0}:{0} /casa'.format(builder.user))
         builder.run_root('/bin/chown {0}:{0} /casa/host'.format(builder.user))
 
+    # Use a minimal UTF-8-aware locale.
+    #
+    # TODO: implement builder.set_env (see
+    # https://github.com/brainvisa/casa-distro/issues/114) and uncomment the
+    # following line
+    #
+    # builder.set_env('LANG', 'C.UTF-8')
+
+
     if verbose:
         six.print_('Copying files in', builder.name,
                     file=verbose, flush=True)
