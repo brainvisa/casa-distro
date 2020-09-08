@@ -601,7 +601,9 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
                                     name=name):
         print(config['name'])
         for i in ('type', 'distro', 'branch', 'system', 'container_type'):
-            print('  %s:' % i, config[i])
+            v = config.get(i)
+            if v is not None:
+                print('  %s:' % i, config[i])
         overlay = config.get('overlay')
         if overlay:
             print('  writable file system:', overlay)

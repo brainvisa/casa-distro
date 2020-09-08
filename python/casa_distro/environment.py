@@ -259,9 +259,11 @@ def iter_environments(base_directory, **filter):
         config['mounts'] = {'/casa/host':'{directory}/host'}
         config['env'] = {
             'CASA_DISTRO': '{name}',
-            'CASA_BRANCH': '{bv_maker_branch}',
             'CASA_SYSTEM': '{system}',
-            'CASA_HOST_DIR': '{directory}'}
+            'CASA_HOST_DIR': '{directory}',
+        }
+        if 'bv_maker_branch' in config:
+            env['CASA_BRANCH'] = config['bv_maker_branch']
         if environment_config['container_type'] == 'singularity':
             config.setdefault('gui_env', {}).update({
                 'DISPLAY': '$DISPLAY',
