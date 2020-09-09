@@ -97,23 +97,11 @@ def create_image(base, base_metadata,
         subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
 
     
-def create_release(base_image,
-                   dev_config,
-                   output,
-                   base_directory,
-                   skip_install,
-                   verbose):
-    if not skip_install:
-        run(config=dev_config, 
-            command=['make', 'BRAINVISA_INSTALL_PREFIX=/casa/host/install', 'install-runtime'],
-            gui=False, 
-            root=False, 
-            cwd='/casa/host/build',
-            env={},
-            image=None, 
-            container_options=None,
-            base_directory=base_directory, 
-            verbose=verbose)
+def create_user_image(base_image,
+                      dev_config,
+                      output,
+                      base_directory,
+                      verbose):
     recipe = tempfile.NamedTemporaryFile()
     recipe.write('''Bootstrap: localimage
     From: {base_image}

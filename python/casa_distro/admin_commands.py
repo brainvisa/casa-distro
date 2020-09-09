@@ -19,7 +19,7 @@ from casa_distro.info import __version__ as casa_distro_version
 from casa_distro.info import version_major, version_minor
 
 from casa_distro import six
-from casa_distro.command import command
+from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_repository_server,
                                   default_repository_server_directory,
@@ -27,6 +27,7 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_download_url,
                                   default_system)
 from casa_distro.environment import (casa_distro_directory,
+                                     run_container,
                                      select_environment)
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
@@ -98,7 +99,7 @@ def download_image(type,
 
 
 @command
-def create_image(type,
+def create_base_image(type,
                  name='casa-{type}-{system}',
                  base=None,
                  output=osp.join(default_build_workflow_repository, '{name}.{extension}'),
@@ -253,10 +254,10 @@ def create_image(type,
 
 
 @command
-def publish_image(type,
-                  image=osp.join(default_build_workflow_repository, 'casa-{type}-*.{extension}'),
-                  container_type='singularity',
-                  verbose=True):
+def publish_base_image(type,
+                       image=osp.join(default_build_workflow_repository, 'casa-{type}-*.{extension}'),
+                       container_type='singularity',
+                       verbose=True):
     """
     Upload an image to BrainVISA web site.
     
@@ -311,22 +312,33 @@ def publish_image(type,
 
 
 @command
-def create_release(version,
-                   name='{distro}-{version}',
-                   base_image='{base_directory}/casa-run-{system}{extension}',
-                   distro=None,
-                   system=None,
-                   environment_name=None,
-                   container_type='singularity',
-                   output=osp.join(default_build_workflow_repository, 'run', '{name}{extension}'),
-                   base_directory=casa_distro_directory(),
-                   skip_install=False,
-                   verbose=True):
+def create_user_image(version,
+                      name='{distro}-{version}',
+                      base_image='{base_directory}/casa-run-{system}{extension}',
+                      distro=None,
+                      system=None,
+                      environment_name=None,
+                      container_type='singularity',
+                      output=osp.join(default_build_workflow_repository, 'run', '{name}{extension}'),
+                      base_directory=casa_distro_directory(),
+                      install='yes',
+                      generate='yes',
+                      upload='no',
+                      verbose=True):
     """
-    Create a release image given a development environment.
-    The development environment must be using the master branch.
-    If several environments exist, one can be selected using its
-    distro and system or simply by its name.
+    Create a run image given a development environment.
+    The development environment is selected among existing ones its
+    distro and system or simply by its name. Only developement environments
+    using the master branch are considered.
+    This command can perform three steps. Each step can be ignored by setting
+    the corresponding option to "no" :
+    
+    - install: perform an installation of the development environment into its installation directory. This modify the development environment by updating its installation directory.
+    
+    - generate: generate a new image for the run environment. The ne image is based on base_image and the installation directory of the development environment is copied into the image in /casa/install.
+    
+    - upload: upload the run image on BrainVISA web site.
+    
     
     Parameters
     ----------
@@ -334,28 +346,40 @@ def create_release(version,
         Version of the release to create.
     name
         default={name_default}
-        Name given to the created distro.
+        Name given to the created image.
     distro
         If given, select environment having the given distro name.
     system
         If given, select environments having the given system name.
     environment_name
-        If given, select environment by its name. It replaces type, distro,
-        branch and system and is shorter to select one.
+        If given, select environment by its name.
     container_type
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
-    skip_install
-        default={skip_install_default}
-        If "True", "Yes" or "1", skip the make install step.
-    verbos
+    install
+        default={install_default}
+        If "true", "yes" or "1", perform the installation step.
+        If "false", "no" or "0", skip this step
+    generate
+        default={generate_default}
+        If "true", "yes" or "1", perform the image creation step.
+        If "false", "no" or "0", skip this step
+    upload
+        default={generate_default}
+        If "true", "yes" or "1", upload the image on BrainVISA web site.
+        If "false", "no" or "0", skip this step
+    verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
     """
-    verbose = verbose_file(verbose)
+    install = check_boolean('install', install)
+    generate = check_boolean('generate', generate)
+    upload = check_boolean('upload', upload)
+
+    verbose = verbose_file(verbose)    
     if container_type == 'singularity':
         extension = '.sif'
     elif container_type == 'vbox':
@@ -374,7 +398,6 @@ def create_release(version,
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            extension=extension,
                                                            **kwargs)
-    print('Creating', name, 'from', config['directory'], 'in', output)
     if container_type == 'vbox':
         module = casa_distro.vbox
     else:
@@ -392,19 +415,35 @@ def create_release(version,
     base_image=base_image.format(base_directory=base_directory,
                                  extension=extension,
                                  **metadata)
-    #msg = module.create_release(
-                   #base_image=base_image,
-                   #dev_config=config,
-                   #output=output,
-                   #base_directory=base_directory,
-                   #skip_install=skip_install,
-                   #verbose=verbose)
-    #if msg:
-        #print(msg)
+    
+    if upload:
+        raise NotImplementedError('Upload is not implemented yet')
 
-    # Add image file md5 hash to JSON metadata file
-    metadata_file = output + '.json'
-    metadata['size'] = os.stat(output).st_size
-    metadata['md5'] = file_hash(output)
-    json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    if install:
+        run_container(config=config, 
+            command=['make', 'BRAINVISA_INSTALL_PREFIX=/casa/host/install', 'install-runtime'],
+            gui=False, 
+            root=False, 
+            cwd='/casa/host/build',
+            env={},
+            image=None, 
+            container_options=None,
+            base_directory=base_directory, 
+            verbose=verbose)
+
+    if generate:
+        msg = module.create_user_image(
+                    base_image=base_image,
+                    dev_config=config,
+                    output=output,
+                    base_directory=base_directory,
+                    verbose=verbose)
+        if msg:
+            print(msg)
+
+        # Add image file md5 hash to JSON metadata file
+        metadata_file = output + '.json'
+        metadata['size'] = os.stat(output).st_size
+        metadata['md5'] = file_hash(output)
+        json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
