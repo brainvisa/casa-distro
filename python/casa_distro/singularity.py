@@ -279,7 +279,6 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     singularity = ['singularity', 'run']
     if singularity_has_option('--cleanenv'):
         singularity.append('--cleanenv')
-    singularity += ['--home', '/casa/host/home']
     if cwd and singularity_has_option('--pwd'):
         singularity += ['--pwd', cwd]
     home_mount = False
