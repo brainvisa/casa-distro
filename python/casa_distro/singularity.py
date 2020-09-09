@@ -214,8 +214,9 @@ def run(config, command, gui, root, cwd, env, image, container_options,
         tmp_env.update(config.get('gui_env', {}))
     if env is not None:
         tmp_env.update(env)
-    
+
     singularity_home = None
+
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
@@ -223,37 +224,30 @@ def run(config, command, gui, root, cwd, env, image, container_options,
         value = value.format(**config)
         value = osp.expandvars(value)
         if name == 'HOME':
-            if singularity_has_option('--home'):
-                # singularity3 uses a commandline option and complains about
-                # the env variable
-                singularity_home = ['--home', value]
-            else:
-                singularity_home = []
-                container_env['SINGULARITYENV_' + name] = value
+            singularity_home = value
         else:
             container_env['SINGULARITYENV_' + name] = value
-        
-    container_options = config.get('container_options', []) + (container_options or [])
 
+    default_casa_home = '/casa/host/home'
     if singularity_home is None:
-        if singularity_has_option('--home'):
-            # In singularity >= 3.0 host home directory is mounted
-            # and configured (e.g. in environment variables) if no
-            # option is given.
-            singularity_home = ['--home', '/casa/home']
-        else:
-            container_env['SINGULARITYENV_HOME'] = '/casa/home'
-    if singularity_home:
-        singularity += singularity_home
+        singularity_home = default_casa_home
+
+    if singularity_has_option('--home'):
+        # In singularity >= 3.0 host home directory is mounted
+        # and configured (e.g. in environment variables) if no
+        # option is given.
+        singularity += ['--home', singularity_home]
+    else:
+        container_env['SINGULARITYENV_HOME'] = singularity_home
 
     # handle ~/.ssh
     ssh_dir = osp.join(homedir, '.ssh')
-    if singularity_home is None:
-        singularity_home = ['/casa/home']
     if osp.isdir(ssh_dir):
         singularity += [
             '--bind',
-            '%s:%s' % (ssh_dir, osp.join(singularity_home[-1], '.ssh'))]
+            '%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
+
+    container_options = config.get('container_options', []) + (container_options or [])
 
     if cwd:
         for i, opt in enumerate(container_options):
