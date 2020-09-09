@@ -307,69 +307,19 @@ def select_environment(base_directory, **kwargs):
     raise ValueError('Cannot find any distro to perform requested action')
 
 
-def setup(type, distro, branch, system, name, container_type, writable,
-          base_directory, image, output, verbose):
+def setup(metadata, writable,
+          base_directory, output, verbose):
     '''
-    Create a new run or dev environment.
+    Create a new run environment.
 
-    Parameters
-    ----------
-    type
-        Environment type to setup. Either "run" for users or "dev" for
-        developers
-    distro
-        Distro used to build this environment. This is typically "brainvisa",
-        "opensource" or "cati_platform". Use "casa_distro distro" to list all
-        currently available distro. Choosing a distro is mandatory to create a
-        new environment. If the environment already exists, distro must be set
-        only to reset configuration files to their default values.
-    branch
-        Name of the source branch to use for dev environments. Either "latest_release",
-        "master" or "integration".
-    system
-        System to use with this environment. By default, it uses the first supported
-        system of the selected distro.
-    name
-        Name of the environment (no other environment must have the same name).
-    container_type
-        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
-        If not given try to gues according to installed container software in the
-        following order : Singularity, VirtualBox and Docker.
-    writable
-        size in bytes of a writable file system that can be used to make environement specific
-        modification to the container file system. If not 0, this will create an
-        overlay.img file in the base environment directory. This file will contain the
-        any modification done to the container file system.
-    base_directory
-        Directory where images and environments are stored
-    image
-        Location of the virtual image for this environement.
-    url
-*        URL where to download image if it is not found.
-    output
-        Directory where the environement will be stored.
-    verbose
-        Print more detailed information if value is "yes", "true" or "1".
     '''
         
     environment = {}
+    environment.update(metadata)
     environment['casa_distro_compatibility'] = '3'
-    environment['type'] = type
-    environment['name'] = name
-    environment['distro'] = distro['name']
-    environment['branch'] = branch
-    environment['bv_maker_branch'] = bv_maker_branches[branch]
-    environment['system'] = system
-    environment['container_type'] = container_type
-    environment['image'] = image
-    
-    
-    if not osp.exists(output):
-        os.makedirs(output)
-    
-    src = osp.join(distro['directory'], 'host')
-    dst = osp.join(output, 'host')
-    copytree(src, dst)
+        
+    if not osp.exists(osp.join(output, 'host', 'conf')):
+        os.makedirs(osp.join(output, 'host', 'conf'))
         
     casa_distro_json = osp.join(output, 'host', 'conf', 'casa_distro.json')
     json.dump(environment, open(casa_distro_json, 'w'), indent=4)

@@ -318,7 +318,7 @@ def create_release(version,
                    system=None,
                    environment_name=None,
                    container_type='singularity',
-                   output=osp.join(default_build_workflow_repository, 'release', '{name}{extension}'),
+                   output=osp.join(default_build_workflow_repository, 'run', '{name}{extension}'),
                    base_directory=casa_distro_directory(),
                    skip_install=False,
                    verbose=True):
@@ -379,16 +379,32 @@ def create_release(version,
         module = casa_distro.vbox
     else:
         module = casa_distro.singularity
+    
+    metadata = {
+        'name': name,
+        'type': 'run',
+        'distro': config['distro'],
+        'system': config['system'],
+        'version': version,
+        'container_type': container_type,
+        'creation_time': datetime.datetime.now().isoformat(),
+    }        
     base_image=base_image.format(base_directory=base_directory,
-                                 system=config['system'],
-                                 extension=extension)
-    msg = module.create_release(
-                   base_image=base_image,
-                   dev_config=config,
-                   output=output,
-                   base_directory=base_directory,
-                   skip_install=skip_install,
-                   verbose=verbose)
-    if msg:
-        print(msg)
+                                 extension=extension,
+                                 **metadata)
+    #msg = module.create_release(
+                   #base_image=base_image,
+                   #dev_config=config,
+                   #output=output,
+                   #base_directory=base_directory,
+                   #skip_install=skip_install,
+                   #verbose=verbose)
+    #if msg:
+        #print(msg)
+
+    # Add image file md5 hash to JSON metadata file
+    metadata_file = output + '.json'
+    metadata['size'] = os.stat(output).st_size
+    metadata['md5'] = file_hash(output)
+    json.dump(metadata, open(metadata_file, 'w'), indent=4)
     

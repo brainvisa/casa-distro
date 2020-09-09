@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
-import sys
-import tempfile
+import glob
+import json
 import os
 import os.path as osp
-import time
+import sys
 import subprocess
+import tempfile
+import time
 import traceback
-import json
 
 from casa_distro import (environment,
                          six)
@@ -455,17 +456,24 @@ def setup(distro=None,
         print('Container type:', container_type,
               file=verbose)
 
-    if system is None:
-        system = distro['systems'][0]
-    
-    if system not in distro['systems']:
-        raise ValueError('The system {0} is not supported by the distro {1}. Please select one of the following systems: {2}'.format(system, distro['name'], ', '.join(distro['systems'])))
-    if verbose:
-        print('System:', system,
-              file=verbose)
-    
-    name = name.format(distro=distro['name'],
-                       branch=branch,
+    if distro is None or version is None or system is None:
+        selected = None
+        for metadata_file in glob.glob(osp.join(base_directory, 'run', '*.json')):
+            metadata = json.load(open(metadata_file))
+            if ((distro is None or distro == metadata['distro']) and
+                (version is None or version == metadata['version']) and
+                (system is None or system == metadata['system'])):
+                if selected:
+                    raise ValueError('Several releases found. Please adjust, distro, version and system to select only one')
+                metadata['image'] = metadata_file[:metadata_file.rfind('.')]
+                selected = metadata
+        if selected is None:
+            raise ValueError('No release found. Please adjust, distro, version and system to select one')
+        distro = selected['distro']
+        version = selected['version']
+        system = selected['version']
+    name = name.format(distro=distro,
+                       version=version,
                        system=system)
     if verbose:
         print('name:', name,
@@ -477,8 +485,8 @@ def setup(distro=None,
         print('base directory:', base_directory,
               file=verbose)
     
-    image = image.format(distro=distro['name'],
-                         branch=branch,
+    image = image.format(distro=distro,
+                         version=version,
                          system=system,
                          base_directory=base_directory,
                          container_type=container_type,
@@ -487,18 +495,18 @@ def setup(distro=None,
         print('image:', image,
               file=verbose)
 
-    url = url.format(distro=distro['name'],
-                     branch=branch,
-                     system=system,
-                     base_directory=base_directory,
-                     container_type=container_type,
-                     extension=extension)
-    if verbose:
-        print('download image url:', url,
-              file=verbose)
+    #url = url.format(distro=distro,
+                     #version=version,
+                     #system=system,
+                     #base_directory=base_directory,
+                     #container_type=container_type,
+                     #extension=extension)
+    #if verbose:
+        #print('download image url:', url,
+              #file=verbose)
 
-    output = output.format(distro=distro['name'],
-                           branch=branch,
+    output = output.format(distro=distro,
+                           version=version,
                            system=system,
                            base_directory=base_directory,
                            name=name,
@@ -506,44 +514,13 @@ def setup(distro=None,
     if verbose:
         print('output:', output,
               file=verbose)
-
-    metadata_file = image + '.json'
-    image_file_name = osp.basename(image)
-    if not osp.exists(image):
-        if image_file_name not in url_listdir(url): 
-            raise ValueError('File {image} does not exist and cannot be '
-                             'downloaded from {url}/{image_file_name}'.format(
-                                 image=image, 
-                                 url=url, 
-                                 image_file_name=image_file_name))
-        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
-        
-        subprocess.check_call([
-            'wget', 
-            '{url}/{image_file_name}'.format(url=url,
-                                             image_file_name=image_file_name),
-            '-O', image])
-    else:
-        metadata = json.load(open(metadata_file))
-        if 'size' in metadata and os.stat(image).st_size < metadata['size']:
-            subprocess.check_call([
-                'wget', '--continue',
-                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-                '-O', image])
     
     if writable and container_type != 'singularity':
         raise ValueError('Only Singularity supports writable file system overlay')
     
-    environment.setup(type='dev',
-          distro=distro,
-          branch=branch,
-          system=system,
-          name=name,
-          container_type=container_type,
+    environment.setup(selected,
           writable=writable,
           base_directory=base_directory,
-          image=image,
           output=output,
           verbose=verbose)
 
@@ -587,7 +564,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
                                     system=system,
                                     name=name):
         print(config['name'])
-        for i in ('type', 'distro', 'branch', 'system', 'container_type'):
+        for i in ('type', 'distro', 'branch', 'version', 'system', 'container_type', 'image'):
             v = config.get(i)
             if v is not None:
                 print('  %s:' % i, config[i])
