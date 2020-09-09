@@ -162,13 +162,12 @@ def singularity_has_option(option):
 
 def run(config, command, gui, root, cwd, env, image, container_options,
         base_directory, verbose):    
-    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
+    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
     singularity = ['singularity', 'run']
     if singularity_has_option('--cleanenv'):
         singularity.append('--cleanenv')
-    singularity += ['--home', '/casa/host/home']
-    if cwd:
+    if cwd and singularity_has_option('--pwd'):
         singularity += ['--pwd', cwd]
     
     if root:
@@ -184,30 +183,60 @@ def run(config, command, gui, root, cwd, env, image, container_options,
             shutil.copy(xauthority,
                         osp.join(config['directory'], 'host/home/.Xauthority'))
     
+    home_mount = False
+    homedir = os.path.expanduser('~')
     for dest, source in config.get('mounts', {}).items():
         source = source.format(**config)
         source = osp.expandvars(source)
         dest = dest.format(**config)
         dest = osp.expandvars(dest)
         singularity += ['--bind', '%s:%s' % (source, dest)]
-        
+        if source == homedir:
+            home_mount = True
+    if not home_mount and singularity_major_version() > 2:
+        # singularity 3 doesn't mount the home directory automatically.
+        singularity += ['--bind', homedir]
+
     tmp_env = dict(config.get('env', {}))
     if gui:
         tmp_env.update(config.get('gui_env', {}))
     if env is not None:
         tmp_env.update(env)
-    
+
+    singularity_home = None
+
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
     for name, value in tmp_env.items():
-        if name == 'HOME':
-            continue  # cannot be specified this way any longer.
         value = value.format(**config)
         value = osp.expandvars(value)
-        container_env['SINGULARITYENV_' + name] = value
-        
+        if name == 'HOME':
+            singularity_home = value
+        else:
+            container_env['SINGULARITYENV_' + name] = value
+
+    default_casa_home = '/casa/host/home'
+    if singularity_home is None:
+        singularity_home = default_casa_home
+
+    if singularity_has_option('--home'):
+        # In singularity >= 3.0 host home directory is mounted
+        # and configured (e.g. in environment variables) if no
+        # option is given.
+        singularity += ['--home', singularity_home]
+    else:
+        container_env['SINGULARITYENV_HOME'] = singularity_home
+
+    # handle ~/.ssh
+    ssh_dir = osp.join(homedir, '.ssh')
+    if osp.isdir(ssh_dir):
+        singularity += [
+            '--bind',
+            '%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
+
     container_options = config.get('container_options', []) + (container_options or [])
+
     if cwd:
         for i, opt in enumerate(container_options):
             if opt == '--pwd' and singularity_has_option('--pwd'):
@@ -235,6 +264,7 @@ def run(config, command, gui, root, cwd, env, image, container_options,
                               b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
 
     singularity += container_options
+
     if image is None:
         image = config.get('image')
         if image is None:
