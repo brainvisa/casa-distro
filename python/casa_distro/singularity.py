@@ -228,12 +228,13 @@ def run(config, command, gui, root, cwd, env, image, container_options,
     else:
         container_env['SINGULARITYENV_HOME'] = singularity_home
 
+    # The following code may prevent containers to run on some system
     # handle ~/.ssh
-    ssh_dir = osp.join(homedir, '.ssh')
-    if osp.isdir(ssh_dir):
-        singularity += [
-            '--bind',
-            '%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
+    #ssh_dir = osp.join(homedir, '.ssh')
+    #if osp.isdir(ssh_dir):
+        #singularity += [
+            #'--bind',
+            #'%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
 
     container_options = config.get('container_options', []) + (container_options or [])
 
