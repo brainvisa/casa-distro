@@ -280,7 +280,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     if singularity_has_option('--cleanenv'):
         singularity.append('--cleanenv')
     singularity += ['--home', '/casa/host/home']
-    if cwd:
+    if cwd and singularity_has_option('--pwd'):
         singularity += ['--pwd', cwd]
     home_mount = False
     homedir = os.path.expanduser('~')
@@ -309,18 +309,25 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     for name, value in six.iteritems(tmp_env):
         value = value % casa_distro
         value = osp.expandvars(value)
-        if name == 'HOME' and singularity_major_version() > 2:
-            # singularity3 uses a commandline option and complains about the
-            # env variable
-            singularity_home = ['--home', value]
+        if name == 'HOME':
+            if singularity_has_option('--home'):
+                # singularity3 uses a commandline option and complains about
+                # the env variable
+                singularity_home = ['--home', value]
+            else:
+                singularity_home = []
+                container_env['SINGULARITYENV_' + name] = value
         else:
             container_env['SINGULARITYENV_' + name] = value
 
-    if singularity_home is None and singularity_major_version() > 2:
-        # In singularity >= 3.0 host home directory is mounted
-        # and configured (e.g. in environment variables) if no
-        # option is given.
-        singularity_home = ['--home', '/casa/home']
+    if singularity_home is None:
+        if singularity_has_option('--home'):
+            # In singularity >= 3.0 host home directory is mounted
+            # and configured (e.g. in environment variables) if no
+            # option is given.
+            singularity_home = ['--home', '/casa/home']
+        else:
+            container_env['SINGULARITYENV_HOME'] = '/casa/home'
     if singularity_home:
         singularity += singularity_home
 
