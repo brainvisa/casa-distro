@@ -313,6 +313,7 @@ def publish_image(type,
 @command
 def create_release(version,
                    name='{distro}-{version}',
+                   base_image='{base_directory}/casa-run-{system}{extension}',
                    distro=None,
                    system=None,
                    environment_name=None,
@@ -378,8 +379,11 @@ def create_release(version,
         module = casa_distro.vbox
     else:
         module = casa_distro.singularity
-        
+    base_image=base_image.format(base_directory=base_directory,
+                                 system=config['system'],
+                                 extension=extension)
     msg = module.create_release(
+                   base_image=base_image,
                    dev_config=config,
                    output=output,
                    base_directory=base_directory,

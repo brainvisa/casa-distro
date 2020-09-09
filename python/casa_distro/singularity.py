@@ -97,7 +97,8 @@ def create_image(base, base_metadata,
         subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
 
     
-def create_release(dev_config,
+def create_release(base_image,
+                   dev_config,
                    output,
                    base_directory,
                    skip_install,
@@ -115,11 +116,15 @@ def create_release(dev_config,
             verbose=verbose)
     recipe = tempfile.NamedTemporaryFile()
     recipe.write('''Bootstrap: localimage
-    From: {run_image}
+    From: {base_image}
     
 %files
     {environment_directory}/host/install /casa/install
-'''.format(run_image=dev_config['image'],
+
+%runscript
+    /casa/install/bin/bv_env "$@"
+
+'''.format(base_image=base_image,
            environment_directory=dev_config['directory']))
     recipe.flush()
     if verbose:

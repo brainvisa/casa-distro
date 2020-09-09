@@ -455,19 +455,6 @@ def setup(distro=None,
         print('Container type:', container_type,
               file=verbose)
 
-    distro = select_distro(distro)
-    if verbose:
-        print('Distro:', distro['name'],
-              file=verbose)
-        print('Distro directory:', distro['directory'],
-              file=verbose)
-    
-    if branch not in ('latest_release', 'master', 'integration'):
-        raise ValueError('Invalid branch : {0}'.format(branch))
-    if verbose:
-        print('Branch:', branch,
-              file=verbose)
-
     if system is None:
         system = distro['systems'][0]
     
