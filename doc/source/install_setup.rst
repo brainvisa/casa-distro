@@ -3,6 +3,24 @@
 Installation and setup
 ======================
 
+#. Install a container or virtual machine on your host system. Currently Singularity and VirtualBox are supported, probably Docker later.
+
+#. If needed, install Python on your host system
+
+#. get Dasa-Distro::
+
+    pip install casa-distro
+
+#. setup a run or dev environent
+    ::
+
+        casa_distro setup ...
+
+    or::
+
+        casa_distro setup_dev ...
+
+
 .. highlight:: bash
 
 Setting up Docker
@@ -479,4 +497,33 @@ Via a ssh connection:
         either. Remote GLX rendering has always been a very delicate thing...
 
         It works for me using the software Mesa rendering (slow). So at this point, using casa_distro actually makes it possible to render OpenGL when the host system cannot (or not directly)...
+
+
+On MacOS systems
+----------------
+
+Singularity is not working, it's just doing nothing
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+We experienced this behaviour on MacOS 10.11 using Singularity Desktop 3.3-beta for Mac. We had to upgrade the system (to 10.15) and then it worked.
+
+
+GUI is not working in singularity
++++++++++++++++++++++++++++++++++
+
+Graphical commands (brainvisa, anatomist, others...) should run through a X11 server. Xquartz is installed in MacOS systems, but need to be started, and a bit configured.
+
+* open Xquartz, either using the desktop / finder icon, or by running a X command such as::
+
+    xhost +
+
+* in the Xquartz preferences menu, go to "security" and check the option to enable network connections (tcp) to the X server
+* quit the server, it needs to be restarted
+* run
+    ::
+
+        xhost +
+
+    to enable other users / apps to use the graphical server (this will start Xquartz, if not already running). Note that this command needs to be run again each time the Xquartz server is stopped / restarted.
+* now graphical applications should run inside singularity containers. 3D hardware is not used however, rendering is using a software rendering, so it is not fast.
 
