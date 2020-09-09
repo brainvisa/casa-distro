@@ -228,12 +228,12 @@ def update_singularity_image(build_workflows_repository, container_image,
                 if verbose:
                     print('Not updating', image_path, 'which is identical to',
                           url, file=verbose)
-                    
+
                 return False
     download_singularity_image(build_workflows_repository, container_image)
     return True
 
-    
+
 _singularity_major_version = None
 
 def singularity_major_version():
@@ -241,19 +241,45 @@ def singularity_major_version():
 
     if _singularity_major_version is None:
         output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
-        version = output.split()[-1]
+        version = output.split()[-1].split('-')[0]
         _singularity_major_version = int(version.split('.')[0])
     return _singularity_major_version
+
+
+_singularity_run_help = None
+
+def singularity_run_help():
+    """
+    Useful to get available commandline options, because they differ with
+    versions and systems.
+    """
+    global _singularity_run_help
+
+    if _singularity_run_help:
+        return _singularity_run_help
+
+    output = subprocess.check_output(['singularity', 'help',
+                                      'run']).decode('utf-8')
+    return output
+
+
+def singularity_has_option(option):
+    doc = singularity_run_help()
+    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
+
 
 def run_singularity(casa_distro, command, gui=False, interactive=False,
                     tmp_container=True, container_image=None,
                     cwd=None, env=None, container_options=[],
                     verbose=None):
     verbose = log.getLogFile(verbose)
-    
-    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
+
+    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
-    singularity = ['singularity', 'run', '--cleanenv']
+    singularity = ['singularity', 'run']
+    if singularity_has_option('--cleanenv'):
+        singularity.append('--cleanenv')
+    singularity += ['--home', '/casa/host/home']
     if cwd:
         singularity += ['--pwd', cwd]
     home_mount = False
@@ -310,7 +336,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
     conf_options = casa_distro.get('container_options', [])
     if cwd:
         for i, opt in enumerate(conf_options):
-            if opt == '--pwd':
+            if opt == '--pwd' and singularity_has_option('--pwd'):
                 conf_options = conf_options[:i] + conf_options[i+2:]
                 break
     options = list(conf_options)
@@ -321,14 +347,17 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
             options += [osp.expandvars(i) for i in gui_options]
         # handle --nv option, if a nvidia device is found
         if '--nv' not in options and os.path.exists('/dev/nvidiactl') \
-                and '--no-nv' not in options:
+                and '--no-nv' not in options \
+                and singularity_has_option('--nv'):
+
             options.append('--nv')
         # remove --no-nv which is not a singularity option
         if '--no-nv' in options:
             options.remove('--no-nv')
     if singularity_major_version() >= 3 \
             and 'SINGULARITYENV_PS1' not in container_env \
-            and not [x for x in options if x.startswith('PS1=')]:
+            and not [x for x in options if x.startswith('PS1=')] \
+            and singularity_has_option('--env'):
         # the prompt with singularity 3 is ugly and cannot be overriden in the
         # .bashrc of the container.
         options += ['--env', b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
