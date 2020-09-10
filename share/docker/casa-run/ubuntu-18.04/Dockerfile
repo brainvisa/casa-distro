@@ -8,6 +8,9 @@ FROM ubuntu:18.04
 # Use a minimal UTF-8-aware locale.
 ENV LANG=C.UTF-8
 
+# copy a software-only mesa libGL in /usr/local/lib
+COPY mesa /usr/local/lib/
+
 COPY install_apt_dependencies.sh \
      build_dependencies.sh \
      neurodebian.sources.list \
