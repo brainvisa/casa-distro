@@ -5,8 +5,8 @@ Casa-Distro
 This page contains informations for developpers. If you want to install simply casa-distro as a user, you can see :doc:`Quickstart page <quickstart>`
 
 
-I - Overview
-============
+Overview
+========
 
 What is CASA ?
 --------------
@@ -18,18 +18,32 @@ When these two projects decided to use the same development and software deliver
 What is Casa-Distro ?
 ---------------------
 
-It's a development environment which helps to provide developers with a commont working development environment for BrainVISA and CATI tools. Before casa-distro each developer had its own development environment where all required development software and libraries was installed manually. It was impossible to keep the same version of all software in all environments. It was not unusual to discover difference of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment. 
+It's a cross-platform environment which is used by user to install/use BrainVisa and CATI environment, and by developer to provide a common working development environment for BrainVISA and CATI tools. It avoids the manual installation of required development software and libraries, which can cause the use of different versions on different systems.
+It was not unusual to discover difference of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment. 
 
-Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual applicance to host the compilation system. casa_distro supports two container technologies,`Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ and on virtual machine technoloy : `VirtualBox <https://www.virtualbox.org/>`_.
+
+Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual applicance to host the compilation system. casa_distro supports two container technologies, `Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ and one virtual machine technology : `VirtualBox <https://www.virtualbox.org/>`_.
 
 Casa-distro project is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It contains all tools to create and publish the virtual images as well as tools for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
 
-Use cases
----------
+  Use cases
+  ---------
 
-* I develop toolboxes, I need to build and release them as binary compatible with the official BrainVisa distrtibutions
-* I am a contributor of Cati/BrainVisa environment, and need to get started quickly
-* I am release maintainer of BrainVisa and need to produce a new release yesterday
+..
+  * I develop toolboxes, I need to build and release them as binary compatible with the official BrainVisa distrtibutions
+  * I am a contributor of Cati/BrainVisa environment, and need to get started quickly
+  * I am release maintainer of BrainVisa and need to produce a new release yesterday
+
++----------+--------------+---------+-------------+
+|          | Singularity  | Docker  | VirtualBox  |
++----------+--------------+---------+-------------+
+| Linux    | X            | X       | X           |
++----------+--------------+---------+-------------+
+| Windows  |              |         | X           |
++----------+--------------+---------+-------------+
+| Mac OS   |              |         | X           |
++----------+--------------+---------+-------------+
+
 
 
 What Casa-Distro is **not**
@@ -39,13 +53,11 @@ What Casa-Distro is **not**
 
   The user will be able to use the build system (:bv-cmake:`bv_maker <bv_maker.html>`), inside Docker, in a way that ensures to build, run, and ship software that is compatible with public distributions of BrainVisa.
 
-* Casa-Distro is not a end-user distribution of BrainVisa. End-user distributions are similar because they are also based on a virtual system (either container or virtual machine) but they are smaller since they contains much less dependencies as the corresponding development environment.
-
 
 II - Background: distributions, versions and build workflows.
 =============================================================
 
-Software distributions managed by casa-distroare composed of many versioned software components
+Software distributions managed by casa-distro are composed of many versioned software components
 (more than 50 at the time of this writing). Each one has its own time line for
 development and release. BrainVISA team is not big enough to follow the
 release of all projects and make sure that good practices are followed
@@ -60,11 +72,8 @@ casa-distro distributions
 
 The casa-distro development environment is composed of two virtual images:
 
--  **run image:** this image is used by end users to execute softwares distributed by BrainVISA and CATI. It is a Linux distribution where all the required system dependencies are already installed. This image is ready to be used with one of the casa-distro software distribution (see below).
+- **run image:** this image is used by end users to execute softwares distributed by BrainVISA and CATI. It is a Linux distribution where all the required system dependencies are already installed. This image is ready to be used with one of the casa-distro software distribution (see below).
 - **dev image:** this image is used be developers to build softwares distributed by BrainVISA and CATI. It is based on the run image and adds all dependencies required for building all projects.
-
-This page contains informations for developpers. If you want to install simply casa-distro as a user, you can see :doc:`Quickstart page <quickstart>`
-
 
 These two images are distributed using three technologies:
 
@@ -181,7 +190,7 @@ The hardware representation of a build workflow is a set of directories
 
 .. _install:
 
-III - casa_distro installation and setup
+III - Installation and setup
 ========================================
 
 Requirements
@@ -220,10 +229,25 @@ Otherwise, to install Singularity on Debian based Linux systems (such as Ubuntu)
 For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
 
 
+Install with python
+-------------------
+
+Casa_distro is available in the official python package repository `PyPi <https://pypi.org/project/casa-distro/>`_. If python is installed, you can use this command to install casa_distro :
+
+.. code-block:: bash
+
+    pip install casa_distro
+
+Once installed, you can use the casa_distro command in your terminal :
+
+.. code-block:: bash
+
+    casa_distro setup [options]
+
 Install latest release
 ----------------------
 
-This is the simplest and the only recommended way to use casa_distro. Simply download the latest release from https://github.com/brainvisa/casa-distro, either using git:
+To get last realease you can simply download the latest release from https://github.com/brainvisa/casa-distro, either using git:
 
 .. code-block:: bash
 
@@ -250,6 +274,26 @@ This advanced method can be used by people that are familiar with the use of :bv
   <path_to_build_dir>/bin/bv_env_host casa_distro --help
 
 
+Retrieve a CASA build
+=====================
+
+Images with compiled softwares and tools are available to download. It allows to install ready-to-use softwares without need of compilation. For developper, you can refer to `Building CASA projects`_.
+
+You can install the default image using this command :
+
+.. code-block:: bash
+
+  casa_distro setup distro=brainvisa container_type=singularity  # For singularity image
+  # or
+  casa_distro setup distro=brainvisa container_type=vbox         # For VirtualBox image
+
+The command will launch the download of the corresponding image. After some minutes (according to your internet connection speed), your environment is ready to use :
+
+.. code-block:: bash
+
+  casa_distro run brainvisa
+
+
 Building CASA projects
 ======================
 
@@ -262,6 +306,7 @@ Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this 
 
 .. code-block:: bash
 
+    casa_distro setup 
     python /tmp/casa-distro/bin/casa_distro -r /home/me/casa create distro_source=opensource branch=bug_fix system=ubuntu-12.04
 
 This command specifies to setup a build workflow for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``bug_fix`` branch (default is ``latest_release``), using a container system based on Ubuntu 12.04.
@@ -381,3 +426,4 @@ Remember that software run that way live in a container, which is more or less i
 .. toctree::
 
     quickstart
+
