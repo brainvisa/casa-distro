@@ -66,6 +66,7 @@ class RecipeBuilder:
 def create_image(base, base_metadata, 
                  output, metadata,
                  build_file,
+                 cleanup,
                  verbose, **kwargs):
     type = metadata['type']
     if type == 'system':
@@ -94,7 +95,10 @@ def create_image(base, base_metadata,
             print(open(recipe.name).read(), file=verbose)
             print('----------------------------------------', file=verbose)
             verbose.flush()
-        subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
+        build_command = ['sudo', 'singularity', 'build', '--disable-cache']
+        if not cleanup:
+            build_command.append('--no-cleanup')
+        subprocess.check_call(build_command + [output, recipe.name])
 
     
 def create_user_image(base_image,

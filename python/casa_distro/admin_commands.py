@@ -107,6 +107,7 @@ def create_base_image(type,
                  memory='8192',
                  disk_size='131072',
                  gui='no',
+                 cleanup='yes',
                  verbose=True):
     """
     Create a new virtual image
@@ -145,12 +146,20 @@ def create_base_image(type,
         default={gui_default}
         For vbox container type only. If value is "yes", "true" or "1", display VirtualBox window.
  
+    cleanup
+        default={cleanup_default}
+        If "no", "false" or "0", do not cleanup after a failure during image building. This may 
+        allow to debug a problem after the failure. For instance, with Singularity one can use a
+        command like :
+          sudo chroot /tmp/rootfs-<uuid>/ /bin/bash
+          
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
      """
     verbose = verbose_file(verbose)
     gui = boolean_value(gui)
+    cleanup = boolean_value(cleanup)
     
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
@@ -240,6 +249,7 @@ def create_base_image(type,
     msg = module.create_image(base, base_metadata, 
                               output, metadata,
                               build_file=build_file,
+                              cleanup=cleanup,
                               verbose=verbose,
                               memory=memory,
                               disk_size=disk_size,
