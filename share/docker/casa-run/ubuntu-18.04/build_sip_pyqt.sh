@@ -4,7 +4,7 @@ set -e
 set -x
 
 SIP_VERSION=4.19.24
-PYQT_VERSION=5.15.0
+PYQT_VERSION=5.15.0 # changing the version her requires to change the download URLs below for PyQt and PyQtWebEngine since they are different for each release on PyPi
 PREFIX=/usr/local/sip-$SIP_VERSION
 BUILD=/tmp/sipbuild
 
