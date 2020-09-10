@@ -3,8 +3,8 @@
 set -e
 set -x
 
-SIP_VERSION=4.19.15
-PYQT_VERSION=5.12.1
+SIP_VERSION=4.19.24
+PYQT_VERSION=5.15.0
 PREFIX=/usr/local/sip-$SIP_VERSION
 BUILD=/tmp/sipbuild
 
@@ -16,12 +16,11 @@ QMAKE=/usr/lib/qt5/bin/qmake
 
 mkdir "$BUILD"
 
-PYQT=PyQt5_gpl-${PYQT_VERSION}
-PYQT_WEBENGINE=PyQtWebEngine_gpl-${PYQT_VERSION}
+PYQT=PyQt5-${PYQT_VERSION}
+PYQT_WEBENGINE=PyQtWebEngine-${PYQT_VERSION}
 DL_URL_SIP="https://www.riverbankcomputing.com/static/Downloads/sip/${SIP_VERSION}/sip-${SIP_VERSION}.tar.gz"
-DL_URL_PYQT="https://www.riverbankcomputing.com/static/Downloads/PyQt5/${PYQT_VERSION}/${PYQT}.tar.gz"
-DL_URL_PYQT_WEBENGINE="https://www.riverbankcomputing.com/static/Downloads/PyQtWebEngine/${PYQT_VERSION}/PyQtWebEngine_gpl-${PYQT_VERSION}.tar.gz"
-
+DL_URL_PYQT="https://files.pythonhosted.org/packages/8c/90/82c62bbbadcca98e8c6fa84f1a638de1ed1c89e85368241e9cc43fcbc320/${PYQT}.tar.gz"
+DL_URL_PYQT_WEBENGINE="https://files.pythonhosted.org/packages/0d/8d/aece7598d2959f66f09fcced6487dd7727f44ad867fc09978c5aeeaf1d29/${PYQT_WEBENGINE}.tar.gz"
 
 # download sources
 
