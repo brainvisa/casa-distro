@@ -2,6 +2,8 @@
 Casa-Distro
 ===========
 
+This page contains informations for developpers. If you want to install simply casa-distro as a user, you can see :doc:`Quickstart page <quickstart>`
+
 
 I - Overview
 ============
@@ -60,6 +62,9 @@ The casa-distro development environment is composed of two virtual images:
 
 -  **run image:** this image is used by end users to execute softwares distributed by BrainVISA and CATI. It is a Linux distribution where all the required system dependencies are already installed. This image is ready to be used with one of the casa-distro software distribution (see below).
 - **dev image:** this image is used be developers to build softwares distributed by BrainVISA and CATI. It is based on the run image and adds all dependencies required for building all projects.
+
+This page contains informations for developpers. If you want to install simply casa-distro as a user, you can see :doc:`Quickstart page <quickstart>`
+
 
 These two images are distributed using three technologies:
 
@@ -369,3 +374,10 @@ Remember that software run that way live in a container, which is more or less i
 
     install_setup
 
+
+:doc:`quickstart`
+=================
+
+.. toctree::
+
+    quickstart
