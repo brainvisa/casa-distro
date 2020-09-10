@@ -34,7 +34,7 @@ from casa_distro.build_workflow import (merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
 from casa_distro.log import verbose_file
-from casa_distro.web import url_listdir, urlopen
+from casa_distro.web import url_listdir, urlopen, wget_command
 
 
 def size_to_string(full_size):
@@ -336,16 +336,17 @@ def setup_dev(distro=None,
         metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
         json.dump(metadata, open(metadata_file, 'w'), indent=4)
         
-        subprocess.check_call([
-            'wget', 
+        subprocess.check_call(
+            wget_command() + [
             '{url}/{image_file_name}'.format(url=url,
                                              image_file_name=image_file_name),
             '-O', image])
     else:
         metadata = json.load(open(metadata_file))
         if 'size' in metadata and os.stat(image).st_size < metadata['size']:
-            subprocess.check_call([
-                'wget', '--continue',
+            subprocess.check_call(
+                wget_command() + [
+                '--continue',
                 '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
                 '-O', image])
     
