@@ -327,7 +327,7 @@ def casa_distro_directory():
     Either $CASA_DEFAULT_REPOSITORY or ~/casa_distro.
     """
     global _casa_distro_directory
-    
+
     if _casa_distro_directory is None:
         _casa_distro_directory = os.environ.get('CASA_DEFAULT_REPOSITORY')
         if not _casa_distro_directory:
@@ -385,6 +385,38 @@ def iter_environments(base_directory, **filter):
             match = True
         if match:
             yield config
+
+
+def iter_images(base_directory=casa_distro_directory(), **filter):
+    if filter.get('name') or filter.get('system') or filter.get('distro') \
+            or filter.get('branch'):
+        # select by environment
+        for config in iter_environments(base_directory,
+                                        type=filter.get('type'),
+                                        distro=filter.get('distro'),
+                                        branch=filter.get('branch'),
+                                        system=filter.get('system'),
+                                        name=filter.get('name'),
+                                        image=filter.get('image')):
+            image = (config['container_type'], config['image'])
+            yield image
+
+    else:
+        # select by images
+        image_filter = filter.get('image')
+        for image in singularity.iter_images(base_directory=base_directory):
+            if not image_filter or fnmatch.filter([image], image_filter):
+                yield ('singularity', image)
+        #for image in docker.iter_images(base_directory=base_directory):
+            #if not filter or fnmatch.filter([image], filter):
+                #yield ('docker', image)
+        #for image in vbox.iter_images(base_directory=base_directory):
+            #if not filter or fnmatch.filter([image], filter):
+                #yield ('vbox', image)
+
+
+def update_container_image(container_type, image_name):
+    pass
 
 
 def select_environment(base_directory, **kwargs):

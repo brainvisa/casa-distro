@@ -29,7 +29,9 @@ from casa_distro.environment import (casa_distro_directory,
                                      update_environment,
                                      run_container,
                                      select_distro,
-                                     select_environment)
+                                     select_environment,
+                                     iter_images,
+                                     update_container_image)
 from casa_distro.build_workflow import (merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
@@ -680,7 +682,7 @@ def run(type=None, distro=None, branch=None, system=None,
                   verbose=verbose)
 
 @command
-def update(type=None, distro=None, branch=None, system=None,
+def update(type=None, distro=None, branch=None, system=None, name=None,
         base_directory=casa_distro_directory(),
         writable=None,
         verbose=None):
@@ -720,7 +722,8 @@ def update(type=None, distro=None, branch=None, system=None,
                                 type=type,
                                 distro=distro,
                                 branch=branch,
-                                system=system)
+                                system=system,
+                                name=name)
 
     update_environment(config, 
                        base_directory=base_directory,
@@ -728,37 +731,43 @@ def update(type=None, distro=None, branch=None, system=None,
                        verbose=verbose)
 
 @command
-def update_image(distro='*', branch='*', system='*', name=None,
-         build_workflows_repository=default_build_workflow_repository,
-         verbose=None):
+def pull_image(distro=None, branch=None, system=None, name=None, type=None,
+               image='*', base_directory=casa_distro_directory(),
+               verbose=None):
     '''
-    Update the container images of (eventually selected) build workflows
-    created by "create" command.
+    Update the container images, possibly filtered by environments
+    created by "setup_dev" command.
     '''
     verbose = verbose_file(verbose)
-    #images_to_update = {}
-    #for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-                                                #distro=distro, branch=branch,
-                                                #system=system):
-        #casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
-                                              #'casa_distro.json')))
-        #confs = set(['dev'])
-        #confs.update(casa_distro.get('alt_configs', {}).keys())
-        #for conf in confs:
-            #wfconf = merge_config(casa_distro, conf)
-            #images_to_update.setdefault(wfconf['container_type'], set()).add(
-                #wfconf['container_image'].replace('.writable', ''))
-        #if verbose:
-            #print('images_to_update:', images_to_update,
-                  #file=verbose)
-    #if not images_to_update:
-        #print('No build workflow match selection criteria', file=sys.stderr)
-        #return 1
-    #for container_type, container_images in six.iteritems(images_to_update):
-        #for container_image in container_images:
-            #update_container_image(build_workflows_repository,
-                                   #container_type, container_image,
-                                   #verbose=verbose) 
+    images_to_update = list(iter_images(base_directory=base_directory,
+                                        distro=distro, branch=branch,
+                                        system=system, name=name, type=type,
+                                        image=image))
+
+    if verbose:
+        print('images_to_update:\n %s'
+              % '\n'.join(['%s\t: %s' % i for i in images_to_update]),
+              file=verbose)
+
+    for container_type, image in images_to_update:
+        update_container_image(base_directory,
+                               container_type, image, verbose=verbose)
+    else:
+        print('No build workflow match selection criteria',
+              file=sys.stderr)
+        return 1
+
+
+@command
+def list_images(distro=None, branch=None, system=None, name=None, type=None,
+                image='*', base_directory=casa_distro_directory(),
+                verbose=None):
+    images_to_update = list(iter_images(base_directory=base_directory,
+                                        distro=distro, branch=branch,
+                                        system=system, name=name, type=type,
+                                        image=image))
+
+    print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
 
 
 @command

@@ -62,6 +62,12 @@ class RecipeBuilder:
             for line in lines:
                 print('   ', line, file=file)
         file.flush()
+
+
+def iter_images(base_directory):
+    for filename in os.listdir(base_directory):
+        if filename.endswith('.sif') or filename.endswith('.simg'):
+            yield filename
     
     
 def create_image(base, base_metadata, 
