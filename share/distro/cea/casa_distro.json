@@ -3,10 +3,5 @@
     "name": "cea",
     "description": "BrainVISA suite software with internal private projects.",
     "systems": ["ubuntu-18.04"],
-    "container_image": "casa-dev-{system}",
-    "alt_configs": {
-        "test": {
-            "container_image": "casa-run-{system}"
-        }
-    }
+    "container_image": "casa-dev-{system}"
 }

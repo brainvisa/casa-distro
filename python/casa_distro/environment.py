@@ -294,7 +294,7 @@ def iter_distros():
             continue
         for basename in os.listdir(distro_dir):
             casa_distro_json = osp.join(distro_dir, basename,
-                                        'host', 'conf', 'casa_distro.json')
+                                        'casa_distro.json')
             if osp.isfile(casa_distro_json):
                 with open(casa_distro_json) as f:
                     distro = json.load(f)
@@ -442,9 +442,10 @@ def setup_dev(metadata,
     for subdir in all_subdirs:
         if not osp.exists(osp.join(output, 'host', subdir)):
             os.makedirs(osp.join(output, 'host', subdir))
-    for subdir in os.listdir(distro['directory']):
-    
-        cp(osp.join(distro['directory'], subdir), osp.join(output, subdir), verbose=verbose)
+    for i in os.listdir(distro['directory']):
+        if i == 'casa_distro.json':
+            continue
+        cp(osp.join(distro['directory'], i), osp.join(output, i), verbose=verbose)
         
 def update_environment(config, base_directory, writable, verbose):
     """
@@ -495,6 +496,11 @@ def run_container(config, command, gui, root, cwd, env, image,
         raise NotImplementedError('run command is not implemented for Docker')
     else:
         raise ValueError('Invalid container type: {0}'.format(container_type))
+    env = (env.copy() if env else {})
+    branch = config.get('branch')
+    if branch:
+        env['CASA_BRANCH'] = bv_maker_branches[branch]
+        print('!', branch)
     module.run(config, 
                command=command, 
                gui=gui,
