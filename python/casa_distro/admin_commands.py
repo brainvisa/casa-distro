@@ -151,7 +151,7 @@ def create_base_image(type,
         If "no", "false" or "0", do not cleanup after a failure during image building. This may 
         allow to debug a problem after the failure. For instance, with Singularity one can use a
         command like :
-          sudo chroot /tmp/rootfs-<uuid>/ /bin/bash
+          sudo singularity run --writable /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
           
     verbose
         default={verbose_default}
