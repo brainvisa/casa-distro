@@ -446,7 +446,32 @@ def setup_dev(metadata,
         if i == 'casa_distro.json':
             continue
         cp(osp.join(distro['directory'], i), osp.join(output, i), verbose=verbose)
-        
+    
+    svn_secret = osp.join(output, 'host', 'conf', 'svn.secret')
+    if not os.path.exists(svn_secret):
+        print('\n------------------------------------------------------------')
+        print('**WARNING:**' )
+        print('Before using "casa_distro bv_maker" you will have to '
+              'create the svn.secret file with your Bioproj login / password '
+              'in order to access the BrainVisa repository.')
+        print('Place it at the following location:\n')
+        print(svn_secret)
+        print('\nThis file is a shell script that must set the variables '
+              'SVN_USERNAME and SVN_PASSWORD. Do not forget to properly quote '
+              'the values if they contains special characters.')
+        print('For instance, the file could contain the two following lines (replacing '
+              '"your_login" and "your_password" by appropriate values:\n')
+        print("SVN_USERNAME='your_login'")
+        print("SVN_PASSWORD='your_password'\n")
+        print('If you are only using open-source projects, you can use the '
+              '"public" login/password: brainvisa / Soma2009\n')
+        print('Remember also that you can edit and customize the projects to '
+              'be built, by editing the following file:\n')
+        print(osp.join(output, 'host', 'conf', 'bv_maker.cfg'))
+        print('------------------------------------------------------------')
+        print()
+
+
 def update_environment(config, base_directory, writable, verbose):
     """
     Update an existing environment
