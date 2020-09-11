@@ -52,7 +52,7 @@ def update_config(config, update):
         else:
             oldv = config[k]
             if isinstance(oldv, dict):
-                merge_config(oldv, v)
+                update_config(oldv, v)
             elif isinstance(oldv, list):
                 oldv += v
             else:
@@ -263,7 +263,7 @@ def iter_environments(base_directory, **filter):
             'CASA_HOST_DIR': '{directory}',
         }
         if 'bv_maker_branch' in config:
-            env['CASA_BRANCH'] = config['bv_maker_branch']
+            config['env']['CASA_BRANCH'] = config['bv_maker_branch']
         if environment_config['container_type'] == 'singularity':
             config.setdefault('gui_env', {}).update({
                 'DISPLAY': '$DISPLAY',
