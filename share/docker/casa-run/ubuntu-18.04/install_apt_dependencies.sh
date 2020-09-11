@@ -258,6 +258,7 @@ brainvisa_shared_library_dependencies=(
     libqt5quick5
     libqt5quickwidgets5
     libqt5sql5
+    libqt5svg5
     libqt5test5
     libqt5webchannel5
     libqt5webengine5

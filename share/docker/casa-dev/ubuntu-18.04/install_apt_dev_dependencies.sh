@@ -280,7 +280,9 @@ brainvisa_standard_dev_dependencies=(
 
 
 brainvisa_toolboxes_dev_dependencies=(
-    libqt5svg5-dev # Required for building MRtrix3
+    # Required for building MRtrix3, also for PyQt5 (see
+    # casa-run/ubuntu-18.04/build_dependencies.sh)
+    libqt5svg5-dev
 )
 
 
