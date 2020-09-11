@@ -107,10 +107,9 @@ PIP2="sudo python2 -m pip --no-cache-dir"
 # use a sequence of 'pip uninstall', 'pip install' rather than 'pip
 # --force-reinstall', because the latter also uninstalls and reinstalls all
 # dependencies of the specified packages.
-$PIP2 uninstall --yes pip
+$PIP2 install -U --force-reinstall pip
 $PIP2 uninstall --yes jupyter-console
 $PIP2 uninstall --yes dipy
-$PIP2 install pip
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
 
