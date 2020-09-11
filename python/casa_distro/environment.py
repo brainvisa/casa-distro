@@ -246,15 +246,15 @@ def casa_distro_directory():
 def iter_environments(base_directory, **filter):
     """
     Iterate over environments created with "setup" command in the given
-    base directory. For each one, yield a dictionary corrasponding to the
+    base directory. For each one, yield a dictionary corresponding to the
     casa_distro.json file with the "directory" item added.
     """
-    for casa_dsitro_json in sorted(glob(osp.join(base_directory, '*', 'host',
+    for casa_distro_json in sorted(glob(osp.join(base_directory, '*', 'host',
                                                  'conf', 'casa_distro.json'))):
-        environment_config = json.load(open(casa_dsitro_json))
-        directory = osp.dirname(osp.dirname(osp.dirname(casa_dsitro_json)))
+        environment_config = json.load(open(casa_distro_json))
+        directory = osp.dirname(osp.dirname(osp.dirname(casa_distro_json)))
         config = {}
-        config['config_files'] = [casa_dsitro_json]
+        config['config_files'] = [casa_distro_json]
         config['directory'] = directory
         config['mounts'] = {'/casa/host':'{directory}/host'}
         config['env'] = {
