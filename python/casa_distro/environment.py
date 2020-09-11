@@ -23,6 +23,98 @@ bv_maker_branches = {
     'integration': 'trunk'
 }
 
+# We need to duplicate this function to allow copying over
+# an existing directory
+def copytree(src, dst, symlinks=False, ignore=None):
+    """Recursively copy a directory tree using copy2().
+    If exception(s) occur, an Error is raised with a list of reasons.
+    If the optional symlinks flag is true, symbolic links in the
+    source tree result in symbolic links in the destination tree; if
+    it is false, the contents of the files pointed to by symbolic
+    links are copied.
+    The optional ignore argument is a callable. If given, it
+    is called with the `src` parameter, which is the directory
+    being visited by copytree(), and `names` which is the list of
+    `src` contents, as returned by os.listdir():
+        callable(src, names) -> ignored_names
+    Since copytree() is called recursively, the callable will be
+    called once for each directory that is copied. It returns a
+    list of names relative to the `src` directory that should
+    not be copied.
+    XXX Consider this example code rather than the ultimate tool.
+    """
+    if os.path.isdir(src):
+        names = os.listdir(src)
+        dstnames = names
+    else:
+        names = [os.path.basename(src)]
+        src = os.path.dirname(src)
+        
+        if os.path.isdir(dst):
+            dstnames = names
+        else:
+            dstnames = [os.path.basename(dst)]
+            dst = os.path.dirname(dst)
+        
+    if ignore is not None:
+        ignored_names = ignore(src, names, 
+                               dst, dstnames)
+    else:
+        ignored_names = set()
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+        
+    errors = []
+    for name, new_name in zip(names, dstnames):
+        if name in ignored_names:
+            continue
+        srcname = os.path.join(src, name)
+        dstname = os.path.join(dst, new_name)
+        try:
+            if symlinks and os.path.islink(srcname):
+                linkto = os.readlink(srcname)
+                os.symlink(linkto, dstname)
+            elif os.path.isdir(srcname):
+                copytree(srcname, dstname, symlinks, ignore)
+            else:
+                # Will raise a SpecialFileError for unsupported file types
+                shutil.copy2(srcname, dstname)
+        # catch the Error from the recursive copytree so that we can
+        # continue with other files
+        except shutil.Error as err:
+            errors.extend(err.args[0])
+        except EnvironmentError as why:
+            errors.append((srcname, dstname, str(why)))
+    try:
+        shutil.copystat(src, dst)
+    except OSError as why:
+        if shutil.WindowsError is not None and isinstance(why, shutil.WindowsError):
+            # Copying file access times may fail on Windows
+            pass
+        else:
+            errors.append((src, dst, str(why)))
+    if errors:
+        raise shutil.Error(errors)
+    
+def cp(src, dst, not_override=[], verbose=None):
+    
+    def override_exclusion(cur_src, names, 
+                           cur_dst, dst_names):
+        excluded = []
+        for n in not_override:
+            if n in names:
+              i = names.index(n)
+              d = os.path.join(cur_dst, dst_names[i])
+              if os.path.exists(d) or os.path.islink(d):
+                excluded.append(n)
+                if verbose:
+                    print('file', d, 'exists,', 'skipping override.', 
+                          file=verbose)
+
+        return excluded
+
+    copytree(src, dst, ignore=override_exclusion)
 
 def string_to_byte_count(size):
     coefs = {
@@ -334,7 +426,26 @@ def setup(metadata, writable,
             overlay = osp.join(output, 'overlay.img')
             create_ext3_file(overlay, size)
 
+def setup_dev(metadata,
+              distro,
+              writable,
+              base_directory, 
+              output, 
+              verbose):
+    setup(metadata=metadata,
+          writable=writable,
+          base_directory=base_directory,
+          output=output,
+          verbose=verbose)
 
+    all_subdirs = ('conf', 'home', 'src', 'build', 'install',)    
+    for subdir in all_subdirs:
+        if not osp.exists(osp.join(output, 'host', subdir)):
+            os.makedirs(osp.join(output, 'host', subdir))
+    for subdir in os.listdir(distro['directory']):
+    
+        cp(osp.join(distro['directory'], subdir), osp.join(output, subdir), verbose=verbose)
+        
 def update_environment(config, base_directory, writable, verbose):
     """
     Update an existing environment

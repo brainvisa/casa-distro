@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+import fnmatch
+import json
+import glob
 import os
 import os.path as osp
-import subprocess
-import json
-import tempfile
+import re
 import shutil
-import fnmatch
+import subprocess
 from subprocess import check_call, check_output
-import glob
+import tempfile
 import sys
 
 from casa_distro import six
@@ -137,8 +138,12 @@ def singularity_version():
 
     if _singularity_version is None:
         output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
-        version = output.split()[-1].split('-')[0]
-        _singularity_version = [int(x) for x in version.split('.')]
+        m = re.match(r'^([\d.]*).*$', output.split()[-1])
+        if m:
+            version = m.group(1)
+            _singularity_version = [int(x) for x in version.split('.')]
+        else:
+            raise RuntimeError('Cannot determine singularity numerical version : version string = "{0}"'.format(output))
     return _singularity_version
 
 

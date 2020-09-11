@@ -353,17 +353,23 @@ def setup_dev(distro=None,
     if writable and container_type != 'singularity':
         raise ValueError('Only Singularity supports writable file system overlay')
     
-    environment.setup(type='dev',
-          distro=distro,
-          branch=branch,
-          system=system,
-          name=name,
-          container_type=container_type,
-          writable=writable,
-          base_directory=base_directory,
-          image=image,
-          output=output,
-          verbose=verbose)
+    
+    metadata = {
+        'name': name,
+        'type': 'dev',
+        'distro': distro['name'],
+        'branch': branch,
+        'system': system,
+        'container_type': container_type,
+        'image': image,
+    }
+        
+    environment.setup_dev(metadata=metadata,
+                          distro=distro,
+                          writable=writable,
+                          base_directory=base_directory,
+                          output=output,
+                          verbose=verbose)
 
 
 
@@ -660,8 +666,8 @@ def run(type=None, distro=None, branch=None, system=None,
         except:
             raise ValueError('env syntax error. Should be in the shape '
                              '"VAR1=value1,VAR2=value2" etc.')
-
     command = args_list
+
     run_container(config, 
                   command=command, 
                   gui=gui,
@@ -756,10 +762,10 @@ def update_image(distro='*', branch='*', system='*', name=None,
 
 
 @command
-def shell(type=None, distro='*', branch='*', system='*', name=None,
+def shell(type=None, distro=None, branch=None, system=None, name=None,
           base_directory=casa_distro_directory(),
-          gui=True, cwd=None, # interactive=True,
-          env=None, image=None,container_options=[], args_list=['-norc'],
+          gui=True, cwd=None,
+          env=None, image=None, container_options=[], args_list=['-norc'],
           verbose=None):
     '''
     Start a bash shell in the configured container with the given repository
@@ -863,58 +869,28 @@ def mrun(distro='*', branch='*', system='*', name=None,
 
 
 @command
-def bv_maker(distro='*', branch='*', system='*', name=None,
-             build_workflows_repository=default_build_workflow_repository,
-             gui=False, interactive=False, tmp_container=True, 
-             container_image=None, cwd=None, env=None, container_options=[],
-             args_list=[], verbose=None):
+def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
+             base_directory=casa_distro_directory(),
+             gui=False, cwd=None,
+             env=None, image=None, container_options=[], args_list=[],
+             verbose=None):
     '''
-    Start bv_maker in the configured container for all the selected build
-    workflows (by default, all created build workflows).
-    
-    This is a shortcut to "mrun bv_maker"
-    '''    
+    Start a bv_maker in the configured container with the given repository
+    configuration.
+    '''
     args_list = ['bv_maker' ] + args_list
-    mrun(distro=distro, branch=branch, system=system, name=name,
-          build_workflows_repository=build_workflows_repository, gui=gui,
-          interactive=interactive, tmp_container=tmp_container,
-          container_image=container_image, cwd=cwd, env=env,
-          container_options=container_options, args_list=args_list,
-          verbose=verbose)
+    run(type=type, distro=distro, branch=branch, system=system,
+        name=name,
+        base_directory=base_directory,
+        gui=gui,
+        cwd=cwd,
+        env=env,
+        image=image,
+        container_options=container_options,
+        args_list=args_list,
+        verbose=verbose)
 
 
-@command
-def delete(distro='*', branch='*', system='*', name=None,
-        build_workflows_repository=default_build_workflow_repository,
-        interactive=True):
-    '''
-    Delete (physically remove files) an entire build workflow.
-    The container image will not be erased, see clean_images for that.
-
-    example:
-        casa_distro delete branch=bug_fix
-
-    By default the "interactive" mode is on, and a confirmation will be asked before proceding. If interactive is disabled, then the deletion will be done without confirmation.
-    '''
-    #build_workflows = [bwf
-                       #for bwf in iter_build_workflow(
-                            #build_workflows_repository,
-                            #distro=distro,
-                            #branch=branch,
-                            #system=system) if osp.exists(bwf[-1])]
-    #print('the following build workflows will be permanently deleted:')
-    #print('\n'.join([bwf[-1] for bwf in build_workflows]))
-
-    #if len(build_workflows) != 0 and interactive:
-        #print('delete build worflow(s) ? (y/[n]): ', end='')
-        #sys.stdout.flush()
-        #confirm = sys.stdin.readline()
-        #if confirm.strip().lower() not in ('y', 'yes'):
-            #print('abort.')
-            #return 0
-
-    #for d, b, s, bwf_directory in build_workflows:
-        #delete_build_workflow(bwf_directory)
 
 @command
 def clean_images(build_workflows_repository=default_build_workflow_repository,
