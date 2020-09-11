@@ -122,7 +122,6 @@ def main():
 
     parser = argparse.ArgumentParser(add_help=False)
 
-    parser.add_argument('-r', '--repository', default=None)
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('--version', action='version',
                         version='casa-distro version: %s' % __version__)
@@ -148,14 +147,8 @@ def main():
     # Get command argument specification
     cargs = inspect.getargspec(command)
 
-    if options.repository:
-        kwargs['build_workflows_repository'] = options.repository
-        from casa_distro import defaults
-        # change the global repository dir
-        defaults.default_build_workflow_repository = options.repository
-        
     if options.verbose and 'verbose' in cargs.args:
-        kwargs['verbose'] = sys.stdout
+        kwargs['verbose'] = 'yes'
         
     allows_kwargs = True
     for i in options.command_options:
