@@ -16,6 +16,7 @@ from casa_distro import (share_directories,
                          singularity,
                          vbox)
 from casa_distro.build_workflow import prepare_home  # should be moved here
+from casa_distro.web import url_listdir, urlopen, wget_command
 
 bv_maker_branches = {
     'latest_release': 'latest_release',
@@ -199,88 +200,6 @@ def resize_ext3_file(filename, size):
     subprocess.check_call(['e2fsck', '-f', filename])
     subprocess.check_call(['resize2fs', filename, size])
 
-# We need to duplicate this function to allow copying over
-# an existing directory
-def copytree(src, dst, symlinks=False, ignore=None):
-    """Recursively copy a directory tree using copy2().
-
-    If exception(s) occur, an Error is raised with a list of reasons.
-
-    If the optional symlinks flag is true, symbolic links in the
-    source tree result in symbolic links in the destination tree; if
-    it is false, the contents of the files pointed to by symbolic
-    links are copied.
-
-    The optional ignore argument is a callable. If given, it
-    is called with the `src` parameter, which is the directory
-    being visited by copytree(), and `names` which is the list of
-    `src` contents, as returned by os.listdir():
-
-        callable(src, names) -> ignored_names
-
-    Since copytree() is called recursively, the callable will be
-    called once for each directory that is copied. It returns a
-    list of names relative to the `src` directory that should
-    not be copied.
-
-    XXX Consider this example code rather than the ultimate tool.
-
-    """
-    if os.path.isdir(src):
-        names = os.listdir(src)
-        dstnames = names
-    else:
-        names = [os.path.basename(src)]
-        src = os.path.dirname(src)
-        
-        if os.path.isdir(dst):
-            dstnames = names
-        else:
-            dstnames = [os.path.basename(dst)]
-            dst = os.path.dirname(dst)
-        
-    if ignore is not None:
-        ignored_names = ignore(src, names, 
-                               dst, dstnames)
-    else:
-        ignored_names = set()
-
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-        
-    errors = []
-    for name, new_name in zip(names, dstnames):
-        if name in ignored_names:
-            continue
-        srcname = os.path.join(src, name)
-        dstname = os.path.join(dst, new_name)
-        try:
-            if symlinks and os.path.islink(srcname):
-                linkto = os.readlink(srcname)
-                os.symlink(linkto, dstname)
-            elif os.path.isdir(srcname):
-                copytree(srcname, dstname, symlinks, ignore)
-            else:
-                # Will raise a SpecialFileError for unsupported file types
-                shutil.copy2(srcname, dstname)
-        # catch the Error from the recursive copytree so that we can
-        # continue with other files
-        except shutil.Error as err:
-            errors.extend(err.args[0])
-        except EnvironmentError as why:
-            errors.append((srcname, dstname, str(why)))
-    try:
-        shutil.copystat(src, dst)
-    except OSError as why:
-        if shutil.WindowsError is not None and isinstance(why, shutil.WindowsError):
-            # Copying file access times may fail on Windows
-            pass
-        else:
-            errors.append((src, dst, str(why)))
-    if errors:
-        raise shutil.Error(errors)
-
-
 
 def iter_distros():
     """
@@ -337,7 +256,8 @@ def casa_distro_directory():
 
 def iter_environments(base_directory, **filter):
     """
-    Iterate over environments created with "setup" command in the given
+    Iterate over environments created with "setup" or "setup_dev" commands
+    in the given
     base directory. For each one, yield a dictionary corresponding to the
     casa_distro.json file with the "directory" item added.
     """
@@ -388,6 +308,15 @@ def iter_environments(base_directory, **filter):
 
 
 def iter_images(base_directory=casa_distro_directory(), **filter):
+    """
+    Iterate over locally installed images, with filtering.
+    Filtering may be environment-driven (filter from existing environments),
+    or image-driven (filter local image names even if they are not used in any
+    environment). Image-driven mode is used if none of the environment
+    selection filters are used (name, system, distro and branch are all None).
+    If you with to trigger the environment-driven mode without filtering, just
+    select "*" as one of the environment filter variables.
+    """
     if filter.get('name') or filter.get('system') or filter.get('distro') \
             or filter.get('branch'):
         # select by environment
@@ -415,8 +344,60 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
                 #yield ('vbox', image)
 
 
-def update_container_image(container_type, image_name):
-    pass
+def image_remote_location(container_type, image_name, url):
+    if container_type == 'docker':
+        raise NotImplementedError('docker case not implemented yet.')
+    return '%s/%s' % (url, osp.basename(image_name))
+
+
+def update_container_image(container_type, image_name, url, force=False,
+                           verbose=False, new_only=False):
+    """
+    Download a container image.
+
+    Parameters
+    ----------
+    container_type: str
+        singularity, docker, vbox
+    image_name: str
+        image filename (full path)
+    url: str
+        pattern ('http://brainvisa.info/casa-distro/singularity/{container_type}')
+    force: bool
+        download image even if it seems up-to-date
+    verbose: bool
+        print things
+    new_only: bool
+        download only if the local image is missing (don't really update)
+    """
+    url = url.format(container_type=container_type)
+    remote_image = image_remote_location(container_type, image_name, url)
+
+    image = osp.basename(image_name)
+    if image not in url_listdir(url):
+        raise ValueError('File {image_name} does not exist and cannot be '
+                          'downloaded from {remote_image}'.format(
+                              image=image_name,
+                              remote_image=remote_image))
+
+    metadata_file = '%s.json' % image_name
+    metadata = json.loads(urlopen('%s.json' % remote_image).read())
+    if new_only and osp.exists(metadata_file):
+        return  # don't update
+    if not force and osp.exists(metadata_file):
+        local_metadata = json.load(open(metadata_file))
+        if local_metadata.get('md5') == metadata.get('md5') \
+                and local_metadata.get('size') == metadata.get('size') \
+                and osp.isfile(image_name) \
+                and os.stat(image_name).st_size == metadata.get('size'):
+            if verbose:
+                print('image %s is up-to-date.' % image)
+            return
+    if verbose:
+        print('pulling image: %s' % image_name)
+    json.dump(metadata, open(metadata_file, 'w'), indent=4)
+
+    subprocess.check_call(wget_command() + [remote_image, '-O', image_name])
 
 
 def select_environment(base_directory, **kwargs):

@@ -327,31 +327,8 @@ def setup_dev(distro=None,
               file=verbose)
 
     metadata_file = image + '.json'
-    image_file_name = osp.basename(image)
-    if not osp.exists(image):
-        if image_file_name not in url_listdir(url): 
-            raise ValueError('File {image} does not exist and cannot be '
-                             'downloaded from {url}/{image_file_name}'.format(
-                                 image=image, 
-                                 url=url, 
-                                 image_file_name=image_file_name))
-        metadata = json.loads(urlopen(url + '/%s.json' % image_file_name).read())
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
-        
-        subprocess.check_call(
-            wget_command() + [
-            '{url}/{image_file_name}'.format(url=url,
-                                             image_file_name=image_file_name),
-            '-O', image])
-    else:
-        metadata = json.load(open(metadata_file))
-        if 'size' in metadata and os.stat(image).st_size < metadata['size']:
-            subprocess.check_call(
-                wget_command() + [
-                '--continue',
-                '{url}/{image_file_name}'.format(url=url, image_file_name=image_file_name),
-                '-O', image])
-    
+    update_container_image(container_type, image, url, new_only=True)
+
     if writable and container_type != 'singularity':
         raise ValueError('Only Singularity supports writable file system overlay')
     
@@ -733,11 +710,50 @@ def update(type=None, distro=None, branch=None, system=None, name=None,
 @command
 def pull_image(distro=None, branch=None, system=None, name=None, type=None,
                image='*', base_directory=casa_distro_directory(),
-               verbose=None):
+               url=default_download_url + '/{container_type}',
+               force=False, verbose=None):
     '''
     Update the container images, possibly filtered by environments
     created by "setup_dev" command.
-    '''
+
+    Parameters
+    ----------
+    distro
+        default=None
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    branch
+        default=None
+        Name of the source branch to use for dev environments. Either "latest_release",
+        "master" or "integration".
+    system
+        default=None
+        System to use with this environment. By default, it uses the first supported
+        system of the selected distro.
+    name
+        default=None
+        Name of the environment. No other environment must have the same name (including
+        non developer environments).
+        This name may be used later to select the environment to run.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    image
+        default="*"
+        Location of the virtual image for this environement.
+    url
+        default={url_default}
+        URL where to download image if it is not found.
+    force
+        default=False
+        force re-download of images even if they are locally present and up-to-date.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+     '''
     verbose = verbose_file(verbose)
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
@@ -750,8 +766,8 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
               file=verbose)
 
     for container_type, image in images_to_update:
-        update_container_image(base_directory,
-                               container_type, image, verbose=verbose)
+        update_container_image(container_type, image, verbose=verbose,
+                               url=url, force=force)
     else:
         print('No build workflow match selection criteria',
               file=sys.stderr)

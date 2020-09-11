@@ -124,6 +124,9 @@ function _complete_casa_distro_option_()
     verbose)
         COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
         ;;
+    force)
+        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
+        ;;
     base_directory)
         COMPREPLY=($(compgen -d -- "${word}"))
         ;;
@@ -225,7 +228,7 @@ function _complete_casa_distro_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help distro list setup setup_dev shell update update_image run mrun bv_maker delete clean_images"
+    local cmd_list="help distro list list_images setup setup_dev shell update pull_image run mrun bv_maker delete clean_images"
     local opt_list="-r --repository -h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -301,6 +304,9 @@ function _complete_casa_distro_()
         list)
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= verbose=" -- "${word}"))
             ;;
+        list_images)
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= image= base_directory= verbose=" -- "${word}"))
+            ;;
         mrun)
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
@@ -313,8 +319,8 @@ function _complete_casa_distro_()
         update)
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= writable= verbose=" -- "${word}"))
             ;;
-        update_image)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= writable= verbose=" -- "${word}"))
+        pull_image)
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= image= url= force= verbose=" -- "${word}"))
             ;;
         delete)
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= interactive=" -- "${word}"))
