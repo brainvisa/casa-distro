@@ -56,7 +56,7 @@ class CasaLauncher(Qt.QDialog):
     
     def close_and_launch(self, command):
         self.close()
-        subprocess.run(command)
+        subprocess.check_call(command)
     
     def block_launchers(self):
         self._launchers.disable_for_reload()
@@ -86,12 +86,12 @@ class MountManager(Qt.QWidget):
         
         self._mount_table = Qt.QTableWidget()
         self._mount_table.setColumnCount(2)
-        self._mount_table.setRowCount(len(self.conf['container_volumes']))
+        self._mount_table.setRowCount(len(self.conf.get('mounts', {})))
         self._mount_table.setHorizontalHeaderLabels(['Host', 'Container'])
         self._mount_table.horizontalHeader().setSectionResizeMode(0, Qt.QHeaderView.Stretch)
         self._mount_table.horizontalHeader().setSectionResizeMode(1, Qt.QHeaderView.Stretch)
         
-        for idx, (host, container) in enumerate(self.conf['container_volumes'].items()):
+        for idx, (host, container) in enumerate(self.conf.get('mounts', {}).items()):
             self._mount_table.setItem(idx, 0, Qt.QTableWidgetItem(host))
             # First col not editable
             self._mount_table.item(idx, 0).setFlags(self._mount_table.item(idx, 0).flags() ^ Qt.Qt.ItemIsEditable)
@@ -125,7 +125,7 @@ class MountManager(Qt.QWidget):
             host_path = host_mount_choice.selectedFiles()[0]
             self._mount_table.setItem(self._mount_table.rowCount()-1, 0, Qt.QTableWidgetItem(host_path))
             self._mount_table.setItem(self._mount_table.rowCount()-1, 1, Qt.QTableWidgetItem(''))
-            self.conf['container_volumes'][host_path] = ''
+            self.conf.get('mounts', {})[host_path] = ''
             self.check_all_mounts()
     
     def _delete_mount_row(self):
@@ -135,7 +135,7 @@ class MountManager(Qt.QWidget):
             rows = sorted(list(set([item.row() for item in self._mount_table.selectedItems()])), reverse=True)
             for row in rows:
                 host_path = self._mount_table.item(row, 0).text()
-                del self.conf['container_volumes'][host_path]
+                del self.conf.get('mounts', {})[host_path]
                 self._mount_table.removeRow(row)       
 
     def check_mount(self, host, container):
@@ -147,7 +147,7 @@ class MountManager(Qt.QWidget):
             return
         host = self._mount_table.item(row, 0).text()
         cont = self._mount_table.item(row, 1).text()
-        self.conf['container_volumes'][host] = cont
+        self.conf['mounts'][host] = cont
         self.valueChanged.emit()
         self.check_all_mounts()
         
@@ -216,11 +216,11 @@ class Launchers(Qt.QWidget):
         
         self._reload_msg = Qt.QLabel()
         
-        brainvisa_icon = Qt.QPixmap('/casa/build/share/doc/axon/images/brainvisa.png')
+        brainvisa_icon = Qt.QPixmap('/casa/host/build/share/doc/axon/images/brainvisa.png')
         self._brainvisa_btn = Qt.QPushButton(Qt.QIcon(brainvisa_icon), 'BRAINVISA')
         self._brainvisa_btn.setIconSize(Qt.QSize(self.icon_size, self.icon_size))
         
-        anatomist_icon = Qt.QPixmap('/casa/build/share/doc/anatomist-4.6/html/images/anaLogo.png')
+        anatomist_icon = Qt.QPixmap('/casa/host/build/share/doc/anatomist-4.6/html/images/anaLogo.png')
         self._anatomist_btn = Qt.QPushButton(Qt.QIcon(anatomist_icon), 'ANATOMIST')
         self._anatomist_btn.setIconSize(Qt.QSize(self.icon_size, self.icon_size))
         
@@ -259,7 +259,7 @@ class Launchers(Qt.QWidget):
 if __name__ == "__main__":
     app = Qt.QApplication(sys.argv)
         
-    conf_path = '/casa/conf/casa_distro.json'
+    conf_path = '/casa/host/conf/casa_distro.json'
     dialog = CasaLauncher(conf_path)
     dialog.show()
     
