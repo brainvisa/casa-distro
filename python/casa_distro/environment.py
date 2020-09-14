@@ -531,7 +531,7 @@ def update_environment(config, base_directory, writable, verbose):
                 os.remove(overlay)
 
 
-def run_container(config, command, gui, root, cwd, env, image, 
+def run_container(config, command, gui, opengl, root, cwd, env, image,
                   container_options, base_directory, verbose):
     """
     Run a command in the container defined in the environment
@@ -570,6 +570,7 @@ def run_container(config, command, gui, root, cwd, env, image,
     module.run(config, 
                command=command, 
                gui=gui,
+               opengl=opengl,
                root=root,
                cwd=cwd, 
                env=env,

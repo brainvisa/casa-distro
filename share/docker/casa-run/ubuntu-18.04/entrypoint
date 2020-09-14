@@ -3,6 +3,9 @@
 # Use the software-only mesa library install in /usr/local/lib as a fallback
 # (singularity puts the path to nvidia libraries in LD_LIBRARY_PATH).
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}${LD_LIBRARY_PATH+:}/usr/local/lib
+if [ "$SOFTWARE_OPENGL" = "1" ]; then
+    LD_LIBRARY_PATH=/usr/local/lib/mesa${LD_LIBRARY_PATH+:}${LD_LIBRARY_PATH}
+fi
 export LD_LIBRARY_PATH
 
 # Source the environment that is defined in the casa-dev images, if it exists.

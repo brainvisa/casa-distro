@@ -86,7 +86,8 @@ def create_image(base, base_metadata,
 %runscript
     . /usr/local/bin/entrypoint
 '''.format(base=base))
-        v = {}       
+        v = {}
+        print('build_file:', build_file)
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
         if 'install' not in v:
             raise RuntimeError('No install function defined in %s' % build_file)
@@ -175,7 +176,7 @@ def singularity_has_option(option):
     return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
 
 
-def run(config, command, gui, root, cwd, env, image, container_options,
+def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         base_directory, verbose):    
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
@@ -263,14 +264,27 @@ def run(config, command, gui, root, cwd, env, image, container_options,
         if gui_options:
             container_options += [osp.expandvars(i) for i in gui_options]
         # handle --nv option, if a nvidia device is found
-        if ('--nv' not in container_options and 
-            os.path.exists('/dev/nvidiactl') and
+        if ('--nv' not in container_options and
+            opengl in ('auto', 'nv') and os.path.exists('/dev/nvidiactl') and
             '--no-nv' not in container_options and
             singularity_has_option('--nv')):
             container_options.append('--nv')
         # remove --no-nv which is not a singularity option
         if '--no-nv' in container_options:
             container_options.remove('--no-nv')
+        # handle --softgl option
+        if '--softgl' in container_options:
+            # remove it, it's a fake option not for singularity
+            container_options.remove('--softgl')
+            if opengl == 'auto':
+                # force software mode
+                opengl = 'software'
+        if opengl in ('software', ):
+            # activate mesa path in enrypoint
+            container_env['SINGULARITYENV_SOFTWARE_OPENGL'] = '1'
+            # this variable avoids to use "funny" transparent visuals
+            container_env['SINGULARITYENV_XLIB_SKIP_ARGB_VISUALS'] = '1'
+
     if 'SINGULARITYENV_PS1' not in container_env \
             and not [x for x in container_options if x.startswith('PS1=')] \
             and singularity_has_option('--env'):

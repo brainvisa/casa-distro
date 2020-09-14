@@ -582,6 +582,7 @@ def run(type=None, distro=None, branch=None, system=None,
         name=None,
         base_directory=casa_distro_directory(),
         gui=True,
+        opengl="auto",
         root=False,
         cwd='/casa/host/home',
         env=None,
@@ -617,6 +618,21 @@ def run(type=None, distro=None, branch=None, system=None,
         interface (GUI). Nothing is done to connect the container to a 
         graphical interface. This option may be necessary in context where 
         a graphical interface is not available.
+    opengl
+        default={opengl_default}
+        Setup different ways of trying to use OpenGL 3D rendering and GPU.
+        "auto", "container", "nv", or "software".
+        * "auto": performs auto-detection: same as "nv" if an NVidia device is
+        detected on a host linux system, otherwise same as "container", unless
+        we detect a case where that is known to fail (in which case we would
+        use "software").
+        * "container": passes no special options to Singularity: the mesa
+        installed in the container is used
+        * "nv" tries to mount the proprietary NVidia driver of the host (linux)
+        system in the container
+        * "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
+        rendering. This solution is the slowest but is a fallback when no other
+        solution works.
     root
         default={root_default}
         If "yes", "true" or "1", start execution as system administrator. For 
@@ -662,6 +678,7 @@ def run(type=None, distro=None, branch=None, system=None,
     run_container(config, 
                   command=command, 
                   gui=gui,
+                  opengl=opengl,
                   root=root,
                   cwd=cwd, 
                   env=env,
