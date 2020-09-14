@@ -115,6 +115,7 @@ toolchain_packages=(
 # Development tools and convenience utilities
 development_tools=(
     bash-completion
+    default-jre    # needed for jenkins server logs (is it really worth it? the dependencies of default-jre are huge...)
     flake8
     gdb
     gdbserver

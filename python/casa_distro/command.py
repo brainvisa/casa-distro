@@ -40,7 +40,10 @@ def get_doc(command, indent=''):
     paragraphs = []
     cargs = inspect.getargspec(command)
     defaults = dict((i + '_default', j) for i, j in zip(cargs.args[-len(cargs.defaults or ()):], cargs.defaults or ()))
-    doc = command.__doc__.format(**defaults)
+    if command.__doc__ is None:
+        doc = ''
+    else:
+        doc = command.__doc__.format(**defaults)
     
     
     lines = doc.split('\n')
