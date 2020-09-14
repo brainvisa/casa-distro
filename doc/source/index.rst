@@ -73,7 +73,7 @@ casa-distro distributions
 The casa-distro development environment is composed of two virtual images:
 
 - **run image:** this image is used by end users to execute softwares distributed by BrainVISA and CATI. It is a Linux distribution where all the required system dependencies are already installed. This image is ready to be used with one of the casa-distro software distribution (see below).
-- **dev image:** this image is used be developers to build softwares distributed by BrainVISA and CATI. It is based on the run image and adds all dependencies required for building all projects.
+- **dev image:** this image is used by developers to build softwares distributed by BrainVISA and CATI. It is based on the run image and adds all dependencies required for building all projects.
 
 These two images are distributed using three technologies:
 
@@ -104,7 +104,7 @@ managed by CASA :
 -  **brainvisa**: the historical BrainVISA distribution. It combines
    open source and close source software. It can be downloaded by anyone
    and used freely for non profit research.
--  **cati_platform**: this distro contains the sowtware necessary to 
+-  **cati_platform**: this distro contains the software necessary to 
    operate CATI platform. It is managed by CATI and distributed only to 
    CATI members.
 -  **cea**: this distribution is based on the BrainVISA distribution but
@@ -132,7 +132,7 @@ It has been chosen to use a classical version numbering convention :
 Distribution creation
 +++++++++++++++++++++
 
-The creation of a distribution is a three steps process :
+The creation of a distribution is a four steps process :
 
 #. **Create release plan:** selection of the software components that
    are going to be upgraded in the next release of the distribution.
@@ -161,7 +161,7 @@ build workflow is identified by three variables:
 | - **branch:** the name of the virtual branch used to select software
   component sources (``latest_release``, ``bug_fix`` or ``trunk``).
 | - **system:** the operating system the distro is build for (*e.g.*
-  ``ubuntu-12.04``, ``ubuntu-16.04``, ``win32`` or ``win64``).
+  ``ubuntu-16.04``, ``ubuntu-18.04``, ``win32`` or ``win64``).
 
 The hardware representation of a build workflow is a set of directories
 :
@@ -208,23 +208,12 @@ the following characteristics:
 
 The rest takes place inside containers, so are normally not restricted by the building system, (as long as it has enough memory and disk space).
 
-Singularity is available as an apt package on Ubuntu 16.04 in `neurodebian repositories <http://neuro.debian.net/>`_ and on Ubuntu 18.04 in the main repository, as the ``singularity-container`` package.
+Since Casa-Distro 3.0, Singularity >= 3.0 is needed. 
+Singularity v3 is not available as an apt package on Ubuntu, it is necessary to download 
+sources and to compile it. 
 
-Otherwise, to install Singularity on Debian based Linux systems (such as Ubuntu), the following packages must be installed :
-
-.. code-block:: bash
-
-  # System dependencies
-  sudo apt-get install python build-essential
-
-  # Singularity install
-  VERSION=2.4.5
-  wget https://github.com/singularityware/singularity/releases/download/$VERSION/singularity-$VERSION.tar.gz
-  tar xvf singularity-$VERSION.tar.gz
-  cd singularity-$VERSION
-  ./configure --prefix=/usr/local
-  make
-  sudo make install
+It requires Go to be installed. 
+You can follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
 
 For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
 
@@ -283,9 +272,7 @@ You can install the default image using this command :
 
 .. code-block:: bash
 
-  casa_distro setup distro=brainvisa container_type=singularity  # For singularity image
-  # or
-  casa_distro setup distro=brainvisa container_type=vbox         # For VirtualBox image
+  casa_distro setup distro=brainvisa container_type=singularity
 
 The command will launch the download of the corresponding image. After some minutes (according to your internet connection speed), your environment is ready to use :
 

@@ -34,7 +34,7 @@ the following characteristics:
 
 
 * `Singularity v3 <https://www.sylabs.io/>`_ must be installed and setup for 
-  the use on the building system. To install Singularity on Debian based Linux systems (such as Ubuntu), follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html?highlight=uninstall#install-from-source>`_
+  the use on the building system. To install Singularity on Debian based Linux systems (such as Ubuntu), follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
 
 * Python >= 2.7 is necessary to run the ``casa_distro`` command. Python is usually install on most Linux distribution. To check its installation, open a terminal and type python
 
