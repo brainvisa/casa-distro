@@ -377,7 +377,7 @@ def update_container_image(container_type, image_name, url, force=False,
     if image not in url_listdir(url):
         raise ValueError('File {image_name} does not exist and cannot be '
                           'downloaded from {remote_image}'.format(
-                              image=image_name,
+                              image_name=image,
                               remote_image=remote_image))
 
     metadata_file = '%s.json' % image_name
