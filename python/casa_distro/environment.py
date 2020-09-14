@@ -362,7 +362,7 @@ def update_container_image(container_type, image_name, url, force=False,
     image_name: str
         image filename (full path)
     url: str
-        pattern ('http://brainvisa.info/casa-distro/singularity/{container_type}')
+        pattern ('http://brainvisa.info/casa-distro/{container_type}')
     force: bool
         download image even if it seems up-to-date
     verbose: bool
@@ -373,12 +373,18 @@ def update_container_image(container_type, image_name, url, force=False,
     url = url.format(container_type=container_type)
     remote_image = image_remote_location(container_type, image_name, url)
 
+    if not os.path.isabs(image_name) and not osp.exists(image_name):
+        image_name = osp.join(casa_distro_directory(), image_name)
+
     image = osp.basename(image_name)
     if image not in url_listdir(url):
-        raise ValueError('File {image_name} does not exist and cannot be '
-                          'downloaded from {remote_image}'.format(
-                              image_name=image,
-                              remote_image=remote_image))
+        if image.endswith('.simg') and not verbose:
+            # probably a casa-distro 2 image: don't even warn
+            return
+        print('File {image_name} does not exist and cannot be downloaded '
+              'from {remote_image}'.format(
+                  image_name=image, remote_image=remote_image))
+        return
 
     metadata_file = '%s.json' % image_name
     metadata = json.loads(urlopen('%s.json' % remote_image).read())
@@ -390,14 +396,38 @@ def update_container_image(container_type, image_name, url, force=False,
                 and local_metadata.get('size') == metadata.get('size') \
                 and osp.isfile(image_name) \
                 and os.stat(image_name).st_size == metadata.get('size'):
-            if verbose:
-                print('image %s is up-to-date.' % image)
+            #if verbose:
+            print('image %s is up-to-date.' % image)
             return
-    if verbose:
-        print('pulling image: %s' % image_name)
-    json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    #if verbose:
+    print('pulling image: %s' % image_name)
+    tmp_metadata_file = list(osp.split(metadata_file))
+    tmp_metadata_file[-1] = '.%s' % tmp_metadata_file[-1]
+    tmp_metadata_file = osp.join(*tmp_metadata_file)
 
-    subprocess.check_call(wget_command() + [remote_image, '-O', image_name])
+    tmp_image_name = list(osp.split(image_name))
+    tmp_image_name[-1] = '.%s' % tmp_image_name[-1]
+    tmp_image_name = osp.join(*tmp_image_name)
+
+    print(tmp_metadata_file)
+    print(tmp_image_name)
+
+    download_all = True
+    if osp.exists(tmp_metadata_file):
+        older_metadata = json.load(open(tmp_metadata_file))
+        if older_metadata['md5'] == metadata['md5']:
+            download_all = False
+
+    json.dump(metadata, open(tmp_metadata_file, 'w'), indent=4)
+    if download_all:
+        subprocess.check_call(wget_command() + [remote_image, '-O',
+                                                tmp_image_name])
+    else:
+        subprocess.check_call(wget_command() + ['--continue', remote_image,
+                                                '-O', tmp_image_name])
+    # move to final location
+    os.rename(tmp_image_name, image_name)
+    os.rename(tmp_metadata_file, metadata_file)
 
 
 def select_environment(base_directory, **kwargs):

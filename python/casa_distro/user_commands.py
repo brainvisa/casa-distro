@@ -762,9 +762,8 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
 
     if not images_to_update and image not in (None, '') and '*' not in image:
         if image.endswith('.sif') or image.endswith('.simg'):
-            image_url = url + '/' + image
             container_type = 'singularity'
-            images_to_update = [container_type, image_url]
+            images_to_update = [(container_type, image)]
 
     if verbose:
         print('images_to_update:\n %s'
@@ -774,7 +773,7 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
     for container_type, image in images_to_update:
         update_container_image(container_type, image, verbose=verbose,
                                url=url, force=force)
-    else:
+    if not images_to_update:
         print('No build workflow match selection criteria',
               file=sys.stderr)
         return 1
