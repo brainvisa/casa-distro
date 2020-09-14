@@ -28,7 +28,8 @@ from casa_distro.defaults import (default_build_workflow_repository,
                                   default_system)
 from casa_distro.environment import (casa_distro_directory,
                                      run_container,
-                                     select_environment)
+                                     select_environment,
+                                     update_container_image)
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
@@ -51,9 +52,18 @@ def download_image(type,
                    url= default_download_url + '/{container_type}',
                    output=osp.join(default_build_workflow_repository, '{filename}'),
                    container_type='singularity',
+                   force=False,
                    verbose=True):
     """
     Download an image from brainvisa.info web site
+
+    type
+    filename
+    url
+    output
+    container_type
+    force
+    verbose
     """
     verbose = verbose_file(verbose)
 
@@ -78,25 +88,9 @@ def download_image(type,
     filename = filenames[0]
     output = output.format(filename=filename)
     output = osp.expandvars(osp.expanduser(output))
-    
-    metadata = json.loads(urlopen(url + '/{0}.json'.format(filename)).read())
-    json_output = output + '.json'
-    download_all = True
-    if osp.exists(json_output):
-        output_metadata = json.load(open(json_output))
-        if output_metadata['md5'] == metadata['md5']:
-            download_all = False
-    
-    json.dump(metadata, open(json_output, 'w'), indent=4)
-    if download_all:
-        check_call(['wget', 
-                    '{url}/{filename}'.format(url=url, filename=filename),
-                    '-O', output])
-    else:
-        check_call(['wget', '--continue', 
-                    '{url}/{filename}'.format(url=url, filename=filename),
-                    '-O', output])
 
+    update_container_image(container_type, output, url, force=force,
+                           verbose=verbose, new_only=False)
 
 @command
 def create_base_image(type,
