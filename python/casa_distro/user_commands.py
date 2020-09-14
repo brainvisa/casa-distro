@@ -326,8 +326,8 @@ def setup_dev(distro=None,
         print('output:', output,
               file=verbose)
 
-    metadata_file = image + '.json'
-    update_container_image(container_type, image, url, new_only=True)
+    update_container_image(container_type, image, url, new_only=True,
+                           verbose=verbose)
 
     if writable and container_type != 'singularity':
         raise ValueError('Only Singularity supports writable file system overlay')
@@ -458,9 +458,17 @@ def setup(distro=None,
         distro = selected['distro']
         version = selected['version']
         system = selected['version']
+    else:
+        selected = {
+            'distro': distro,
+            'system': system,
+            'version': version,
+            'container_type': container_type,
+        }
     name = name.format(distro=distro,
                        version=version,
                        system=system)
+    selected['name'] = name
     if verbose:
         print('name:', name,
               file=verbose)
@@ -477,19 +485,23 @@ def setup(distro=None,
                          base_directory=base_directory,
                          container_type=container_type,
                          extension=extension)
+    selected['image'] = image
     if verbose:
         print('image:', image,
               file=verbose)
 
-    #url = url.format(distro=distro,
-                     #version=version,
-                     #system=system,
-                     #base_directory=base_directory,
-                     #container_type=container_type,
-                     #extension=extension)
-    #if verbose:
-        #print('download image url:', url,
-              #file=verbose)
+    url = url.format(distro=distro,
+                     version=version,
+                     system=system,
+                     base_directory=base_directory,
+                     container_type=container_type,
+                     extension=extension)
+    if verbose:
+        print('download image url:', url,
+              file=verbose)
+
+    update_container_image(container_type, image, url, new_only=True,
+                           verbose=verbose)
 
     output = output.format(distro=distro,
                            version=version,

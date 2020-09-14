@@ -351,7 +351,7 @@ def image_remote_location(container_type, image_name, url):
 
 
 def update_container_image(container_type, image_name, url, force=False,
-                           verbose=False, new_only=False):
+                           verbose=None, new_only=False):
     """
     Download a container image.
 
@@ -365,7 +365,7 @@ def update_container_image(container_type, image_name, url, force=False,
         pattern ('http://brainvisa.info/casa-distro/{container_type}')
     force: bool
         download image even if it seems up-to-date
-    verbose: bool
+    verbose: file
         print things
     new_only: bool
         download only if the local image is missing (don't really update)
@@ -389,6 +389,7 @@ def update_container_image(container_type, image_name, url, force=False,
     metadata_file = '%s.json' % image_name
     metadata = json.loads(urlopen('%s.json' % remote_image).read())
     if new_only and osp.exists(metadata_file):
+        print('image %s already exists.' % image, file=verbose)
         return  # don't update
     if not force and osp.exists(metadata_file):
         local_metadata = json.load(open(metadata_file))
@@ -408,9 +409,6 @@ def update_container_image(container_type, image_name, url, force=False,
     tmp_image_name = list(osp.split(image_name))
     tmp_image_name[-1] = '.%s' % tmp_image_name[-1]
     tmp_image_name = osp.join(*tmp_image_name)
-
-    print(tmp_metadata_file)
-    print(tmp_image_name)
 
     download_all = True
     if osp.exists(tmp_metadata_file):
