@@ -329,7 +329,7 @@ def create_user_image(version,
                       system=None,
                       environment_name=None,
                       container_type='singularity',
-                      output=osp.join(default_build_workflow_repository, 'run', '{name}{extension}'),
+                      output=osp.join(default_build_workflow_repository, 'releases', '{name}{extension}'),
                       base_directory=casa_distro_directory(),
                       install='yes',
                       generate='yes',
@@ -378,7 +378,7 @@ def create_user_image(version,
         If "true", "yes" or "1", perform the image creation step.
         If "false", "no" or "0", skip this step
     upload
-        default={generate_default}
+        default={upload_default}
         If "true", "yes" or "1", upload the image on BrainVISA web site.
         If "false", "no" or "0", skip this step
     verbose
@@ -426,9 +426,6 @@ def create_user_image(version,
                                  extension=extension,
                                  **metadata)
     
-    if upload:
-        raise NotImplementedError('Upload is not implemented yet')
-
     if install:
         run_container(config=config, 
             command=['make', 'BRAINVISA_INSTALL_PREFIX=/casa/host/install', 'install-runtime'],
@@ -441,6 +438,8 @@ def create_user_image(version,
             base_directory=base_directory, 
             verbose=verbose)
 
+    metadata_file = output + '.json'
+    
     if generate:
         msg = module.create_user_image(
                     base_image=base_image,
@@ -452,8 +451,11 @@ def create_user_image(version,
             print(msg)
 
         # Add image file md5 hash to JSON metadata file
-        metadata_file = output + '.json'
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
         json.dump(metadata, open(metadata_file, 'w'), indent=4)
     
+    if upload:
+        check_call(['rsync', '-P', '--progress', '--chmod=a+r',
+                    metadata_file, output, 
+                    'brainvisa@brainvisa.info:prod/www/casa-distro/releases/'])
