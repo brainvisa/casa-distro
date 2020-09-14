@@ -760,6 +760,12 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
                                         system=system, name=name, type=type,
                                         image=image))
 
+    if not images_to_update and image not in (None, '') and '*' not in image:
+        if image.endswith('.sif') or image.endswith('.simg'):
+            image_url = url + '/' + image
+            container_type = 'singularity'
+            images_to_update = [container_type, image_url]
+
     if verbose:
         print('images_to_update:\n %s'
               % '\n'.join(['%s\t: %s' % i for i in images_to_update]),
