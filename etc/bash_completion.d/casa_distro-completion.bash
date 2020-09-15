@@ -133,6 +133,9 @@ function _complete_casa_distro_option_()
     force)
         COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
         ;;
+    root)
+        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
+        ;;
     base_directory)
         COMPREPLY=($(compgen -d -- "${word}"))
         ;;
