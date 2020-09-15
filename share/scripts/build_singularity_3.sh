@@ -26,13 +26,12 @@ if [ "${INSTALL_GO}" -eq "1" ]; then
     if [ -z "${GO_INSTALL_PREFIX}" ]; then
         GO_INSTALL_PREFIX=${INSTALL_PREFIX}/go-${GO_VERSION}
     fi
-    wget https://dl.google.com/go/go${GO_VERSION}.${OS}-${ARCH}.tar.gz && \
-    ${SUDO} tar -C /tmp -xzvf go${GO_VERSION}.${OS}-${ARCH}.tar.gz && \
-    ${SUDO} mv -f /tmp/go ${GO_INSTALL_PREFIX} && \
-    rm go${GO_VERSION}.${OS}-${ARCH}.tar.gz && \
-    PATH="${GO_INSTALL_PREFIX}/bin:${PATH}" && \
-    [ -z "${GOPATH}" ] && \
-    GOPATH="${GO_INSTALL_PREFIX}"
+    wget https://dl.google.com/go/go${GO_VERSION}.${OS}-${ARCH}.tar.gz
+    ${SUDO} tar -C /tmp -xzf go${GO_VERSION}.${OS}-${ARCH}.tar.gz
+    ${SUDO} mv -f /tmp/go ${GO_INSTALL_PREFIX}
+    rm go${GO_VERSION}.${OS}-${ARCH}.tar.gz
+    PATH="${GO_INSTALL_PREFIX}/bin:${PATH}"
+    [ -z "${GOPATH}" ] && GOPATH="${GO_INSTALL_PREFIX}"
 fi
 
 if [ -z "${GOPATH}" ]; then
@@ -40,7 +39,7 @@ if [ -z "${GOPATH}" ]; then
     GOPATH="/tmp/.go/cache"
 fi
 
-export GOPATH
+export PATH GOPATH
 
 # Install singularity 3.6.2
 echo "Installing singularity ..."
@@ -49,14 +48,14 @@ if [ -z "${SINGULARITY_INSTALL_PREFIX}" ]; then
     SINGULARITY_INSTALL_PREFIX=${INSTALL_PREFIX}/singularity-${SINGULARITY_VERSION}
 fi
 
-wget https://github.com/hpcng/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-${SINGULARITY_VERSION}.tar.gz -O singularity-${SINGULARITY_VERSION}.tar.gz && \
-tar xvf singularity-${SINGULARITY_VERSION}.tar.gz && \
-rm singularity-${SINGULARITY_VERSION}.tar.gz && \
-pushd singularity && \
-./mconfig --prefix=${SINGULARITY_INSTALL_PREFIX} && \
-make -C ./builddir && \
-${SUDO} make -C ./builddir install && \
-popd && \
+wget https://github.com/hpcng/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-${SINGULARITY_VERSION}.tar.gz -O singularity-${SINGULARITY_VERSION}.tar.gz
+tar -zxf singularity-${SINGULARITY_VERSION}.tar.gz
+rm singularity-${SINGULARITY_VERSION}.tar.gz
+pushd singularity
+./mconfig --prefix=${SINGULARITY_INSTALL_PREFIX}
+make -C ./builddir
+${SUDO} make -C ./builddir install
+popd
 rm -rf singularity
 
 popd
