@@ -117,6 +117,9 @@ def create_image(base, base_metadata,
         build_command = _singularity_build_command()
         if not cleanup:
             build_command.append('--no-cleanup')
+        if verbose:
+            print('run create command:\n',
+                  *(build_command + [output, recipe.name]))
         subprocess.check_call(build_command + [output, recipe.name])
 
     
