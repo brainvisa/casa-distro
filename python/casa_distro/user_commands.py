@@ -741,9 +741,16 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
                image='*', base_directory=casa_distro_directory(),
                url=default_download_url + '/{container_type}',
                force=False, verbose=None):
-    '''
-    Update the container images, possibly filtered by environments
-    created by "setup_dev" command.
+    '''Update the container images. By default all images that are used by at least
+    one environment are updated. There are two ways of selecting the image(s)
+    to be downloaded:
+
+    1. filtered by environment, using the 'name' selector, or a combination of
+       'distro', 'branch', and 'system'.
+
+    2. directly specifying a full image name, e.g.:
+
+           casa_distro pull_image image=casa-run-ubuntu-18.04.sif
 
     Parameters
     ----------
@@ -782,7 +789,8 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
-     '''
+
+    '''
     verbose = verbose_file(verbose)
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
