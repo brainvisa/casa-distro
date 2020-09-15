@@ -453,8 +453,16 @@ if [ -f /etc/profile ]; then
 fi
 
 # source any bash_completion scripts
-if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
+if [ -n "$CASA_BUILD" -a -d "$CASA_BUILD/etc/bash_completion.d" ]; then
+    # from a build directory
     for d in "$CASA_BUILD/etc/bash_completion.d/"*; do
+        if [ -f "$d" ]; then
+            . "$d"
+        fi
+    done
+elif [ -d "/casa/install/etc/bash_completion.d" ]; then
+    # else from an install directory
+    for d in "/casa/install/etc/bash_completion.d/"*; do
         if [ -f "$d" ]; then
             . "$d"
         fi
