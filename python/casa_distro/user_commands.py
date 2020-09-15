@@ -823,7 +823,9 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
 @command
 def shell(type=None, distro=None, branch=None, system=None, name=None,
           base_directory=casa_distro_directory(),
-          gui=True, cwd=None,
+          gui=True,
+          opengl="auto",
+          cwd=None,
           env=None, image=None, container_options=[], args_list=['-norc'],
           verbose=None):
     '''
@@ -834,6 +836,7 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
         name=name,
         base_directory=base_directory,
         gui=gui,
+        opengl=opengl,
         cwd=cwd,
         env=env,
         image=image,
@@ -846,7 +849,9 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
 @command
 def mrun(distro='*', branch='*', system='*', name=None,
          build_workflows_repository=default_build_workflow_repository,
-         gui=True, interactive=False, tmp_container=True,
+         gui=True,
+         opengl="auto",
+         interactive=False, tmp_container=True,
          container_image=None, cwd=None, env=None, container_options=[],
          args_list=[], verbose=None, conf='dev'):
     '''
@@ -930,7 +935,9 @@ def mrun(distro='*', branch='*', system='*', name=None,
 @command
 def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
              base_directory=casa_distro_directory(),
-             gui=False, cwd=None,
+             gui=False,
+             opengl="auto",
+             cwd=None,
              env=None, image=None, container_options=[], args_list=[],
              verbose=None):
     '''
@@ -942,6 +949,7 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
         name=name,
         base_directory=base_directory,
         gui=gui,
+        opengl=opengl,
         cwd=cwd,
         env=env,
         image=image,

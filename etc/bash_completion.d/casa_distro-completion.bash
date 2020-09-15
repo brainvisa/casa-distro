@@ -121,6 +121,12 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
+    gui)
+        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
+        ;;
+    opengl)
+        COMPREPLY=($(compgen -W "auto nv container software" -- "${word}"))
+        ;;
     verbose)
         COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
         ;;
@@ -308,13 +314,13 @@ function _complete_casa_distro_()
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= image= base_directory= verbose=" -- "${word}"))
             ;;
         mrun)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= root= image= cwd= env= container_options= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         run)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= root= image= cwd= env= container_options= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         shell)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= root= image= cwd= env= container_options= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         update)
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= writable= verbose=" -- "${word}"))
