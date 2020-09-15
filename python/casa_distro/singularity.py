@@ -68,8 +68,19 @@ def iter_images(base_directory):
     for filename in os.listdir(base_directory):
         if filename.endswith('.sif') or filename.endswith('.simg'):
             yield filename
-    
-    
+
+
+def _singularity_build_command():
+    build_command = ['sudo']
+    if 'SINGULARITY_TMPDIR' in os.environ:
+        build_command += ['SINGULARITY_TMPDIR='
+                          + os.environ['SINGULARITY_TMPDIR']]
+    if 'TMPDIR' in os.environ:
+        build_command += ['TMPDIR=' + os.environ['TMPDIR']]
+    build_command += ['singularity', 'build', '--disable-cache']
+    return build_command
+
+
 def create_image(base, base_metadata, 
                  output, metadata,
                  build_file,
@@ -103,7 +114,7 @@ def create_image(base, base_metadata,
             print(open(recipe.name).read(), file=verbose)
             print('----------------------------------------', file=verbose)
             verbose.flush()
-        build_command = ['sudo', 'singularity', 'build', '--disable-cache']
+        build_command = _singularity_build_command()
         if not cleanup:
             build_command.append('--no-cleanup')
         subprocess.check_call(build_command + [output, recipe.name])
@@ -132,7 +143,8 @@ def create_user_image(base_image,
         print(open(recipe.name).read(), file=verbose)
         print('----------------------------------------', file=verbose)
         verbose.flush()
-    subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
+    build_command = _singularity_build_command()
+    subprocess.check_call(build_command + [output, recipe.name])
 
 
 _singularity_version = None
