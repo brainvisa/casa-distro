@@ -20,6 +20,7 @@ mkdir /casa/home
 
 sudo chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
 sudo git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
+sudo git lfs install --system --skip-repo
 
 # allow attach gdb to a process
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
