@@ -1,0 +1,1 @@
+../../../scripts/build_singularity_3.sh

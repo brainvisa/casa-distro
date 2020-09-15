@@ -741,9 +741,16 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
                image='*', base_directory=casa_distro_directory(),
                url=default_download_url + '/{container_type}',
                force=False, verbose=None):
-    '''
-    Update the container images, possibly filtered by environments
-    created by "setup_dev" command.
+    '''Update the container images. By default all images that are used by at least
+    one environment are updated. There are two ways of selecting the image(s)
+    to be downloaded:
+
+    1. filtered by environment, using the 'name' selector, or a combination of
+       'distro', 'branch', and 'system'.
+
+    2. directly specifying a full image name, e.g.:
+
+           casa_distro pull_image image=casa-run-ubuntu-18.04.sif
 
     Parameters
     ----------
@@ -782,7 +789,8 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
-     '''
+
+    '''
     verbose = verbose_file(verbose)
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
@@ -823,7 +831,10 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
 @command
 def shell(type=None, distro=None, branch=None, system=None, name=None,
           base_directory=casa_distro_directory(),
-          gui=True, cwd=None,
+          gui=True,
+          opengl="auto",
+          root=False,
+          cwd=None,
           env=None, image=None, container_options=[], args_list=['-norc'],
           verbose=None):
     '''
@@ -834,6 +845,8 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
         name=name,
         base_directory=base_directory,
         gui=gui,
+        opengl=opengl,
+        root=root,
         cwd=cwd,
         env=env,
         image=image,
@@ -846,7 +859,10 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
 @command
 def mrun(distro='*', branch='*', system='*', name=None,
          build_workflows_repository=default_build_workflow_repository,
-         gui=True, interactive=False, tmp_container=True,
+         gui=True,
+         opengl="auto",
+         root=False,
+         interactive=False, tmp_container=True,
          container_image=None, cwd=None, env=None, container_options=[],
          args_list=[], verbose=None, conf='dev'):
     '''
@@ -930,7 +946,9 @@ def mrun(distro='*', branch='*', system='*', name=None,
 @command
 def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
              base_directory=casa_distro_directory(),
-             gui=False, cwd=None,
+             gui=False,
+             opengl="auto",
+             cwd=None,
              env=None, image=None, container_options=[], args_list=[],
              verbose=None):
     '''
@@ -942,6 +960,7 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
         name=name,
         base_directory=base_directory,
         gui=gui,
+        opengl=opengl,
         cwd=cwd,
         env=env,
         image=image,

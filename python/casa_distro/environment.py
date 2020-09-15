@@ -387,7 +387,7 @@ def update_container_image(container_type, image_name, url, force=False,
         return
 
     metadata_file = '%s.json' % image_name
-    metadata = json.loads(urlopen('%s.json' % remote_image).read())
+    metadata = json.loads(urlopen('%s.json' % remote_image).read().decode('utf-8'))
     if new_only and osp.exists(metadata_file):
         print('image %s already exists.' % image, file=verbose)
         return  # don't update
@@ -440,6 +440,32 @@ def select_environment(base_directory, **kwargs):
     raise ValueError('Cannot find any distro to perform requested action')
 
 
+def write_environment_homedir(output):
+    home = osp.join(output, 'host', 'home')
+    if not osp.exists(home):
+        os.makedirs(home)
+    bashrc = osp.join(home, '.bashrc')
+    if not osp.exists(bashrc):
+        with open(bashrc, 'w') as f:
+            print('''
+if [ -f /etc/profile ]; then
+    . /etc/profile
+fi
+
+# source any bash_completion scripts
+if [ -d "$CASA_BUILD/etc/bash_completion.d" ]; then
+    for d in "$CASA_BUILD/etc/bash_completion.d/"*; do
+        if [ -f "$d" ]; then
+            . "$d"
+        fi
+    done
+fi
+
+export PS1='\\[^[[33m\\]\\u@\\h \\$\\[^[[0m\\] '
+
+''', file=f)
+
+
 def setup(metadata, writable,
           base_directory, output, verbose):
     '''
@@ -457,9 +483,7 @@ def setup(metadata, writable,
     casa_distro_json = osp.join(output, 'host', 'conf', 'casa_distro.json')
     json.dump(environment, open(casa_distro_json, 'w'), indent=4)
 
-    home = osp.join(output, 'host', 'home')
-    if not osp.exists(home):
-        os.mkdir(home)
+    write_environment_homedir(output)
 
     if writable:
         size = string_to_byte_count(writable)
@@ -479,15 +503,18 @@ def setup_dev(metadata,
           output=output,
           verbose=verbose)
 
-    all_subdirs = ('conf', 'home', 'src', 'build', 'install',)    
+    all_subdirs = ('conf', 'src', 'build', 'install',)
     for subdir in all_subdirs:
         if not osp.exists(osp.join(output, 'host', subdir)):
             os.makedirs(osp.join(output, 'host', subdir))
+
+    write_environment_homedir(output)
+
     for i in os.listdir(distro['directory']):
         if i == 'casa_distro.json':
             continue
         cp(osp.join(distro['directory'], i), osp.join(output, i), verbose=verbose)
-    
+
     svn_secret = osp.join(output, 'host', 'conf', 'svn.secret')
     if not os.path.exists(svn_secret):
         print('\n------------------------------------------------------------')
