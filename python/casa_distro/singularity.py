@@ -9,7 +9,6 @@ import os.path as osp
 import re
 import shutil
 import subprocess
-from subprocess import check_call, check_output
 import tempfile
 import sys
 
@@ -193,6 +192,11 @@ def singularity_has_option(option):
 
 def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         base_directory, verbose):    
+    """Run a command in the Singularity container.
+
+    Return the exit code of the command, or raise an exception if the command
+    cannot be run.
+    """
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
     singularity = ['singularity', 'run']
@@ -328,7 +332,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             v = container_env[n]
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
-    check_call(singularity, env=container_env)
+    return subprocess.call(singularity, env=container_env)
 
 
 

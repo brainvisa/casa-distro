@@ -562,6 +562,9 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
                   container_options, base_directory, verbose):
     """
     Run a command in the container defined in the environment
+
+    Return the exit code of the command, or raise an exception if the command
+    cannot be run.
     """
     env_directory = config['directory']
     # if config.get('user_specific_home'):
@@ -594,14 +597,14 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     if branch:
         env['CASA_BRANCH'] = bv_maker_branches[branch]
         print('!', branch)
-    module.run(config, 
-               command=command, 
-               gui=gui,
-               opengl=opengl,
-               root=root,
-               cwd=cwd, 
-               env=env,
-               image=image,
-               container_options=container_options,
-               base_directory=base_directory,
-               verbose=verbose)
+    return module.run(config,
+                      command=command,
+                      gui=gui,
+                      opengl=opengl,
+                      root=root,
+                      cwd=cwd,
+                      env=env,
+                      image=image,
+                      container_options=container_options,
+                      base_directory=base_directory,
+                      verbose=verbose)
