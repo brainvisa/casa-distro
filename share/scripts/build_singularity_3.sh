@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
+set -e  # stop the script on error
+set -x  # display commands before running them
+
 pushd /tmp
 
-export OS=linux
-export ARCH=amd64
-export SUDO=sudo
+# Assign default values
+: ${OS:=linux} ${ARCH:=amd64} ${SUDO:=sudo}
+
 
 if [ -z "${INSTALL_PREFIX}" ]; then
     INSTALL_PREFIX=/usr/local
@@ -14,7 +17,7 @@ if [ -z "${INSTALL_GO}" ]; then
     if [ -z "$(which go)" ]; then
         INSTALL_GO=1
     fi
-fi 
+fi
 
 if [ "${INSTALL_GO}" -eq "1" ]; then
     # Install go
@@ -36,6 +39,8 @@ if [ -z "${GOPATH}" ]; then
     # Set default GOPATH
     GOPATH="/tmp/.go/cache"
 fi
+
+export GOPATH
 
 # Install singularity 3.6.2
 echo "Installing singularity ..."

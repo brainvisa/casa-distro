@@ -1,0 +1,1 @@
+../../../scripts/install_singularity_3.sh
