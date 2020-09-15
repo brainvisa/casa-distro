@@ -14,16 +14,8 @@ set -x  # display commands before running them
 ###############################################################################
 
 # create casa directories for singularity compatibility
-for d in $CASA_CONF \
-         $CASA_SRC \
-         $CASA_CUSTOM_SRC \
-         $CASA_BUILD \
-         $CASA_CUSTOM_BUILD; do
-    if [ ! -e $d ]; then
-        mkdir -p $d
-        chmod 777 $d
-    fi
-done
+mkdir /casa/host
+mkdir /casa/home
 
 
 sudo chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
