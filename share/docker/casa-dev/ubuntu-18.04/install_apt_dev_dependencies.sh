@@ -137,6 +137,16 @@ development_tools=(
     xterm
 )
 
+singularity_build_dependencies=(
+    uuid-dev
+    libgpgme-dev
+    squashfs-tools
+    libseccomp-dev
+    wget
+    pkg-config
+    git
+)
+
 # TODO: review and add -dbg packages that contain the debug symbols
 # corresponding to installed -dev packages.
 debug_symbol_packages=(
@@ -308,6 +318,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${version_control_packages[@]} \
     ${toolchain_packages[@]} \
     ${development_tools[@]} \
+    ${singularity_build_dependencies[@]} \
     ${debug_symbol_packages[@]} \
     ${documentation_building_packages[@]} \
     ${python3_packages[@]} \

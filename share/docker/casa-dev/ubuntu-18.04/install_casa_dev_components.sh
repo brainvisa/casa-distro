@@ -13,12 +13,6 @@ set -x  # display commands before running them
 # Install configuration elements that are specific to casa-dev
 ###############################################################################
 
-# create mount points for singularity compatibility
-mkdir /casa/host
-mkdir /casa/home
-chmod 0777 /casa/host
-chmod 0777 /casa/home
-
 sudo chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
 sudo git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
 sudo git lfs install --system --skip-repo

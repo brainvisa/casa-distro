@@ -1,13 +1,12 @@
 version: ~> 1.0
 os: linux
 language: python
+dist: xenial
 
 jobs:
   include:
     - python: 3.8
-      dist: xenial  # required for Python >= 3.7
     - python: 3.7
-      dist: xenial  # required for Python >= 3.7
     - python: 3.6
     - python: 3.5
     - python: 3.4
@@ -26,11 +25,12 @@ install:
 script: tox
 
 deploy:
+  strategy: git
   provider: pages
   skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  target-branch: gh-pages
-  local-dir: doc/build_html
+  token: $GITHUB_TOKEN
+  target_branch: gh-pages
+  local_dir: doc/build_html
   on:
     branch: master
     condition: $PUSH_DOC_TO_GH_PAGES == yes && $TRAVIS_OS_NAME == linux && $TRAVIS_PYTHON_VERSION == 3.8

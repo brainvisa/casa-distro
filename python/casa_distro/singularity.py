@@ -9,7 +9,6 @@ import os.path as osp
 import re
 import shutil
 import subprocess
-from subprocess import check_call, check_output
 import tempfile
 import sys
 
@@ -68,8 +67,19 @@ def iter_images(base_directory):
     for filename in os.listdir(base_directory):
         if filename.endswith('.sif') or filename.endswith('.simg'):
             yield filename
-    
-    
+
+
+def _singularity_build_command():
+    build_command = ['sudo']
+    if 'SINGULARITY_TMPDIR' in os.environ:
+        build_command += ['SINGULARITY_TMPDIR='
+                          + os.environ['SINGULARITY_TMPDIR']]
+    if 'TMPDIR' in os.environ:
+        build_command += ['TMPDIR=' + os.environ['TMPDIR']]
+    build_command += ['singularity', 'build', '--disable-cache']
+    return build_command
+
+
 def create_image(base, base_metadata, 
                  output, metadata,
                  build_file,
@@ -103,7 +113,7 @@ def create_image(base, base_metadata,
             print(open(recipe.name).read(), file=verbose)
             print('----------------------------------------', file=verbose)
             verbose.flush()
-        build_command = ['sudo', 'singularity', 'build', '--disable-cache']
+        build_command = _singularity_build_command()
         if not cleanup:
             build_command.append('--no-cleanup')
         if verbose:
@@ -135,7 +145,8 @@ def create_user_image(base_image,
         print(open(recipe.name).read(), file=verbose)
         print('----------------------------------------', file=verbose)
         verbose.flush()
-    subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
+    build_command = _singularity_build_command()
+    subprocess.check_call(build_command + [output, recipe.name])
 
 
 _singularity_version = None
@@ -181,6 +192,11 @@ def singularity_has_option(option):
 
 def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         base_directory, verbose):    
+    """Run a command in the Singularity container.
+
+    Return the exit code of the command, or raise an exception if the command
+    cannot be run.
+    """
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
     singularity = ['singularity', 'run']
@@ -316,7 +332,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             v = container_env[n]
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
-    check_call(singularity, env=container_env)
+    return subprocess.call(singularity, env=container_env)
 
 
 

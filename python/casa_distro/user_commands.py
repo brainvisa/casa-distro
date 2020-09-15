@@ -675,17 +675,17 @@ def run(type=None, distro=None, branch=None, system=None,
                              '"VAR1=value1,VAR2=value2" etc.')
     command = args_list
 
-    run_container(config, 
-                  command=command, 
-                  gui=gui,
-                  opengl=opengl,
-                  root=root,
-                  cwd=cwd, 
-                  env=env,
-                  image=image,
-                  container_options=container_options,
-                  base_directory=base_directory,
-                  verbose=verbose)
+    return run_container(config,
+                         command=command,
+                         gui=gui,
+                         opengl=opengl,
+                         root=root,
+                         cwd=cwd,
+                         env=env,
+                         image=image,
+                         container_options=container_options,
+                         base_directory=base_directory,
+                         verbose=verbose)
 
 @command
 def update(type=None, distro=None, branch=None, system=None, name=None,
@@ -956,17 +956,17 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
     configuration.
     '''
     args_list = ['bv_maker' ] + args_list
-    run(type=type, distro=distro, branch=branch, system=system,
-        name=name,
-        base_directory=base_directory,
-        gui=gui,
-        opengl=opengl,
-        cwd=cwd,
-        env=env,
-        image=image,
-        container_options=container_options,
-        args_list=args_list,
-        verbose=verbose)
+    return run(type=type, distro=distro, branch=branch, system=system,
+               name=name,
+               base_directory=base_directory,
+               gui=gui,
+               opengl=opengl,
+               cwd=cwd,
+               env=env,
+               image=image,
+               container_options=container_options,
+               args_list=args_list,
+               verbose=verbose)
 
 
 
