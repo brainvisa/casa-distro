@@ -37,30 +37,15 @@ def command(f, name=None):
     return f
 
 def get_doc(command, indent=''):
-    paragraphs = []
+    doc = inspect.getdoc(command) or ''
+
     cargs = inspect.getargspec(command)
     defaults = dict((i + '_default', j) for i, j in zip(cargs.args[-len(cargs.defaults or ()):], cargs.defaults or ()))
-    if command.__doc__ is None:
-        doc = ''
-    else:
-        doc = command.__doc__.format(**defaults)
-    
-    
-    lines = doc.split('\n')
-    while lines and not lines[0].strip():
-        lines = lines[1:]
-    new_lines = []
-    if lines:
-        space_re = re.compile(r'^[ ]*')
-        begining_spaces = space_re.match(lines[0]).group()
-        for line in lines:
-            if line.strip():
-                if line.startswith(begining_spaces):
-                    line = line[len(begining_spaces):]
-                new_lines.append(indent + line)
-            else:
-                new_lines.append('\n')
-    return '\n'.join(new_lines)
+
+    doc = doc.format(**defaults)
+    if indent:
+        doc = '\n'.join(indent + line for line in doc.split('\n'))
+    return doc
 
 
 @command
