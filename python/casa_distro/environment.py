@@ -16,7 +16,8 @@ from casa_distro import (share_directories,
                          singularity,
                          vbox)
 from casa_distro.build_workflow import prepare_home  # should be moved here
-from casa_distro.web import url_listdir, urlopen, wget_command
+from casa_distro.web import url_listdir, urlopen
+from casa_distro import downloader
 
 bv_maker_branches = {
     'latest_release': 'latest_release',
@@ -417,14 +418,13 @@ def update_container_image(container_type, image_name, url, force=False,
             download_all = False
 
     json.dump(metadata, open(tmp_metadata_file, 'w'), indent=4)
-    if download_all:
-        subprocess.check_call(wget_command() + [remote_image, '-O',
-                                                tmp_image_name])
-    else:
-        subprocess.check_call(wget_command() + ['--continue', remote_image,
-                                                '-O', tmp_image_name])
-    # move to final location
-    os.rename(tmp_image_name, image_name)
+    downloader.download_file(remote_image, image_name,
+                             allow_continue=not download_all,
+                             use_tmp=True,
+                             md5_check=metadata['md5'],
+                             callback=downloader.stdout_progress)
+
+    # move metadata to final location
     os.rename(tmp_metadata_file, metadata_file)
 
 
