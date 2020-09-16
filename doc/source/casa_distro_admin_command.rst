@@ -34,53 +34,48 @@ Subcommands
 
 help
 ----
+Print global help or help about a command.
 
-package_casa_distro
--------------------
 
-publish_casa_distro
--------------------
-
-create_release_plan
--------------------
-
-update_release_plan
--------------------
-
-publish_release_plan
---------------------
-
-apply_release_plan
-------------------
-
-create_docker
--------------
-
-update_docker
--------------
-
-publish_docker
+download_image
 --------------
 
-create_singularity
+Download an image from brainvisa.info web site
+
+type
+filename
+url
+output
+container_type
+force
+verbose
+
+
+create_base_image
+-----------------
+
+Create a new virtual image
+
+publish_base_image
 ------------------
 
-*create_singularity* converts a docker image into a singularity image. To do so it needs to unpack the docker image into a temporary directory, and re-pack it in a different way. It requires
+Upload an image to BrainVISA web site.
 
-* sudo / root privileges: the user has to be allowed to run sodo commands, the password will be asked when needed.
-* lots of temporary disk space. It may be needed to setup the following environment variables while running ``casa_distro_admin create_singularity``:
-    * ``TMPDIR``
-    * ``SINGULARITY_TMPDIR``
-    * ``SINGULARITY_CACHEDIR``
+create_user_image
+-----------------
 
-And *create_docker* needs to have run before, or the docker image should have been pulled. Thus docker is required at this point in the current way things have been impemented (this may change in the future).
+Create a run image given a development environment.
+The development environment is selected among existing ones its
+distro and system or simply by its name. Only developement environments
+using the master branch are considered.
+This command can perform three steps. Each step can be ignored by setting
+the corresponding option to "no" :
 
+- install: perform an installation of the development environment into its installation directory. This modify the development environment by updating its installation directory.
 
-publish_singularity
--------------------
+- generate: generate a new image for the run environment. The ne image is based on base_image and the installation directory of the development environment is copied into the image in /casa/install.
 
-publish_build_workflows
------------------------
+- upload: upload the run image on BrainVISA web site.
 
 
 Managing container images

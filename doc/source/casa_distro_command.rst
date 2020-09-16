@@ -48,137 +48,104 @@ or print help about a command:
 
     casa_distro help <command>
 
-bv_maker
---------
-
-Start bv_maker in the configured container for all the selected build workflows (by default, all created build workflows).
-
-clean_images
-------------
-
-Delete singularity images which are no longer used in any build workflow, or those listed in image_names.
-
-create
+distro
 ------
 
-Initialize a new build workflow directory. This creates a conf subdirectory with casa_distro.json, bv_maker.cfg and svn.secret files that can be edited before compilation.
+List all available distro and provide information for each one.
 
-distro_source:
-    Either the name of a predefined distro (on of the directory located in
-    share/distro) or a directory containing the distro source. A predefinied
-    distro definition may be one of the buitin ones found in casa-distro
-    (brainvisa, opensource, cati_platform), or one user-defined which will be
-    looked for in $HOME/.config/casa-distro/distro, $HOME/.casa-distro/distro,
-    or in the share/distro subdirectory inside the main repository directory.
 
-distro_name:
-    Name of the distro that will be created. If omited, the name of the distro
-    source (or distro source directory) is used.
+setup_dev
+---------
 
-container_type: type of container thechnology to use. It can be either
-    'singularity', 'docker' or None (the default). If it is None, it first try
-    to see if Singularity is installed or try to see if Docker is installed.
+Create a new developer environment
 
-container_image: image to use for the compilation container. If no
-    value is given, uses the one defined in the distro.
+setup
+-----
 
-container_test_image: image to use for the package tests container. If no
-    value is given, uses the one defined in the distro.
-
-branch:
-    bv_maker branch to use (latest_release, bug_fix or trunk)
-
-system:
-    Name of the target system.
-
-not_override:
-    a coma separated list of file name that must not be overriden if they
-    already exist.
-
-create_writable_image
----------------------
-
-Create a writable version of a Singularity image used to run containers. This allows to modify an image (for instance install custom packages). To use a writable image in a build workflow, it is necessary to edit its "casa_distro.json" file (located in the "conf" directory of the build workflow) to add ".writable" to the image name. For instance::
-
-    "container_image": "cati/casa-dev:ubuntu-16.04.writable"
-
-The singularity image can be identified by its Docker-like name::
-
-    casa_distro create_writable_image cati/casa-dev:ubuntu-16.04
-
-It is also possible to identify an image by selecting a build workflow::
-
-    casa_distro create_writable_image distro=brainvisa branch=bug_fix
-
-Due to Singularity security, it is necessary to be root on the host system to create an image (sudo is used for that and can ask you a password).
-
-delete
-------
-
-Delete (physically remove files) an entire build workflow. The container image will not be erased, see clean_images for that.
-
-example::
-
-    casa_distro delete branch=bug_fix
-
-By default the "interactive" mode is on, and a confirmation will be asked before proceding. If interactive is disabled, then the deletion will be done without confirmation.
+Create a new user environment
 
 list
 ----
 
-List (eventually selected) build workflows created by the `create`_ command.
+List (eventually selected) run or dev environments created by "setup" command.
+
+run
+---
+
+Start any command in a selected run or dev environment
+
+
+example::
+
+    casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+
+update
+------
+
+Update an existing environment.
+
+
+example::
+
+    casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+
+pull_image
+----------
+
+Update the container images. By default all images that are used by at least
+one environment are updated. There are two ways of selecting the image(s)
+to be downloaded:
+
+
+1. filtered by environment, using the 'name' selector, or a combination of
+    'distro', 'branch', and 'system'.
+
+
+2. directly specifying a full image name, e.g.::
+
+        casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+
+list_images
+-----------
+
+shell
+-----
+
+Start a bash shell in the configured container with the given repository
+configuration.
+
 
 mrun
 ----
 
-Start any command in one or several container with the given repository configuration. By default, command is executed in all existing build workflows.
+Start any command in one or several container with the given
+repository configuration. By default, command is executed in
+all existing build workflows.
+
 
 example::
 
     # Launch bv_maker on all build workflows using any version of Ubuntu
     casa_distro mrun bv_maker system=ubuntu-*
 
-The "conf" parameter may address an additional config dictionary within the casa_distro.json config file. Typically, a test config may use a different system image (casa-test images), or options, or mounted directories.
 
-root_shell
-----------
+The "conf" parameter may address an additional config dictionary within the
+casa_distro.json config file. Typically, a test config may use a different
+system image (casa-test images), or options, or mounted directories.
 
-Start a shell with root privileges allowing to modify a writable singularity image. Before using this command, a writable image must have been created with the create_writable_image command. Using this command allows to modify the writable image (for instance to install packages). Due to Singularity security, it is necessary to be root on the host system to start a root shell within the container (sudo is used for that and can ask you a password).
 
-The image can be identified by its Docker-like name::
+bv_maker
+--------
 
-    casa_distro root_shell cati/casa-dev:ubuntu-16.04
+Start a bv_maker in the configured container with the given repository
+configuration.
 
-It is also possible to identify an image by selecting a build workflow::
 
-    casa_distro root_shell distro=brainvisa branch=bug_fix
-
-run
----
-
-Start any command in the configured container (Docker or Singularity) with the given repository configuration. example::
-
-    casa_distro -r /home/casa run branch=bug_fix ls -als /casa
-
-The "conf" parameter may address an additional config dictionary within the casa_distro.json config file. Typically, a test config may use a different system image (casa-test images), or options, or mounted directories.
-
-.. _shell:
-
-shell
------
-
-Start a bash shell in the configured container with the given repository configuration.
-
-update
-------
-
-Update an existing build workflow directory. For now it only re-creates the run script in bin/casa_distro, pointing to the casa_distro command used to actually perform the update.
-
-update_image
+clean_images
 ------------
 
-Update the container images of (eventually selected) build workflows created by `create`_ command.
-
+Delete singularity images which are no longer used in any build workflow,
+or those listed in image_names.
 
 
 The complexity of arguments parsing
