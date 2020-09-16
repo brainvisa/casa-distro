@@ -39,6 +39,8 @@ from casa_distro.web import url_listdir, urlretrieve, urlopen
 
 _true_str = re.compile('^(?:yes|true|y|1)$', re.I)
 _false_str = re.compile('^(?:no|false|n|0|none)$', re.I)
+
+
 def str_to_bool(string):
     if _false_str.match(string):
         return False
@@ -46,11 +48,13 @@ def str_to_bool(string):
         return True
     raise ValueError('Invalid value for boolean: ' + repr(string))
 
+
 @command
 def download_image(type,
                    filename='casa-{type}-*.{extension}',
-                   url= default_download_url + '/{container_type}',
-                   output=osp.join(default_build_workflow_repository, '{filename}'),
+                   url=default_download_url + '/{container_type}',
+                   output=osp.join(
+                       default_build_workflow_repository, '{filename}'),
                    container_type='singularity',
                    force=False,
                    verbose=True):
@@ -69,22 +73,28 @@ def download_image(type,
 
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Unsupported image type: {0}'.format(type))
-    
+
     if container_type == 'singularity':
         extension = 'sif'
     elif container_type == 'vbox':
         extension = 'vdi'
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
-    
+
     filename = filename.format(type=type, extension=extension)
     url = url.format(container_type=container_type)
-    filenames = [i for i in url_listdir(url) 
-              if fnmatchcase(i, filename)]
+    filenames = [i for i in url_listdir(url)
+                 if fnmatchcase(i, filename)]
     if len(filenames) == 0:
-        raise ValueError('Cannot find file corresponding to pattern {0} in {1}'.format(filename, url))
+        raise ValueError(
+            'Cannot find file corresponding to pattern {0} in {1}'
+            .format(filename, url)
+        )
     elif len(filenames) > 1:
-        raise ValueError('Several image files found in {1}: {0}'.format(', '.join(filenames), url))
+        raise ValueError(
+            'Several image files found in {1}: {0}'
+            .format(', '.join(filenames), url)
+        )
     filename = filenames[0]
     output = output.format(filename=filename)
     output = osp.expandvars(osp.expanduser(output))
@@ -92,17 +102,19 @@ def download_image(type,
     update_container_image(container_type, output, url, force=force,
                            verbose=verbose, new_only=False)
 
+
 @command
 def create_base_image(type,
-                 name='casa-{type}-{system}',
-                 base=None,
-                 output=osp.join(default_build_workflow_repository, '{name}.{extension}'),
-                 container_type='singularity',
-                 memory='8192',
-                 disk_size='131072',
-                 gui='no',
-                 cleanup='yes',
-                 verbose=True):
+                      name='casa-{type}-{system}',
+                      base=None,
+                      output=osp.join(
+                      default_build_workflow_repository, '{name}.{extension}'),
+                      container_type='singularity',
+                      memory='8192',
+                      disk_size='131072',
+                      gui='no',
+                      cleanup='yes',
+                      verbose=True):
     """
     Create a new virtual image
 
@@ -119,34 +131,34 @@ def create_base_image(type,
     base
         Source file use to buld the image. The default value depends on image type and
         container type.
-        
+
     output
         default={output_default}
         File location where the image is created.
-        
+
     container_type
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
-        
+
     memory
         default={memory_default}
         For vbox container type only. Size in MiB of memory allocated for virtual machine.
-        
+
     disk_size
         default={disk_size_default}
         For vbox container type only. Size in MiB of maximum disk size of virtual machine.
-        
+
     gui
         default={gui_default}
         For vbox container type only. If value is "yes", "true" or "1", display VirtualBox window.
- 
+
     cleanup
         default={cleanup_default}
-        If "no", "false" or "0", do not cleanup after a failure during image building. This may 
+        If "no", "false" or "0", do not cleanup after a failure during image building. This may
         allow to debug a problem after the failure. For instance, with Singularity one can use a
         command like :
           sudo singularity run --writable /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
-          
+
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
@@ -154,10 +166,10 @@ def create_base_image(type,
     verbose = verbose_file(verbose)
     gui = boolean_value(gui)
     cleanup = boolean_value(cleanup)
-    
+
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
-    
+
     if container_type == 'singularity':
         origin_extension = 'sif'
         extension = 'sif'
@@ -177,26 +189,27 @@ def create_base_image(type,
         else:
             base = osp.join(default_build_workflow_repository, 'casa-run-ubuntu-*.{extension}').format(
                 extension=extension)
-    
+
     if not osp.exists(base):
         base_pattern = osp.expandvars(osp.expanduser(base))
         if verbose:
             print('Looking for base in', base_pattern,
-                    file=verbose)
+                  file=verbose)
         bases = glob.glob(base_pattern)
         if len(bases) == 0:
             # Raise appropriate error for non existing file
             open(base)
         elif len(bases) > 1:
-            raise ValueError('Several base images found : {0}'.format(', '.join(bases)))
+            raise ValueError(
+                'Several base images found : {0}'.format(', '.join(bases)))
         base = bases[0]
-        
+
     if osp.exists(base + '.json'):
         base_metadata = json.load(open(base + '.json'))
     else:
         base_metadata = {}
-    system = base_metadata.get('system', default_system)        
-    
+    system = base_metadata.get('system', default_system)
+
     name = name.format(type=type, system=system)
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            system=system,
@@ -205,13 +218,13 @@ def create_base_image(type,
     if type == 'system':
         build_file = None
     else:
-        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 
+        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
                              'share')
         casa_docker = osp.join(share_dir, 'docker', 'casa-%s' % type, system)
 
         build_file = osp.join(casa_docker, 'build_image.py')
-        open(build_file) # raise appropriate exception if file does not exist
-        
+        open(build_file)  # raise appropriate exception if file does not exist
+
     metadata_output = output + '.json'
     metadata = {
         'name': name,
@@ -239,8 +252,8 @@ def create_base_image(type,
         module = casa_distro.vbox
     else:
         module = casa_distro.singularity
-        
-    msg = module.create_image(base, base_metadata, 
+
+    msg = module.create_image(base, base_metadata,
                               output, metadata,
                               build_file=build_file,
                               cleanup=cleanup,
@@ -256,26 +269,27 @@ def create_base_image(type,
         json.dump(metadata, open(metadata_output, 'w'), indent=4)
 
 
-
 @command
 def publish_base_image(type,
-                       image=osp.join(default_build_workflow_repository, 'casa-{type}-*.{extension}'),
+                       image=osp.join(
+                           default_build_workflow_repository,
+                           'casa-{type}-*.{extension}'),
                        container_type='singularity',
                        verbose=True):
     """
     Upload an image to BrainVISA web site.
-    
+
     Parameters
     ----------
-    
+
     type
-        type of image to create. Either "system" for a base system image, or "run"
+        type of image to publish. Either "system" for a base system image, or "run"
         for an image used in a user environment, or "dev" for a developer image.
 
     image
         default={image_default}
         Image file to upload (as well as the corresponding JSON file)
-        
+
     container_type
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
@@ -291,7 +305,7 @@ def publish_base_image(type,
         extension = 'vdi'
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
-    
+
     image = image.format(type=type,
                          extension=extension)
     if not osp.exists(image):
@@ -300,18 +314,19 @@ def publish_base_image(type,
             # Raise appropriate error for non existing file
             open(image)
         elif len(images) > 1:
-            raise ValueError('Several image files found : {0}'.format(', '.join(images)))
+            raise ValueError(
+                'Several image files found : {0}'.format(', '.join(images)))
         image = images[0]
-    
+
     # Add image file md5 hash to JSON metadata file
     metadata_file = image + '.json'
     metadata = json.load(open(metadata_file))
     metadata['size'] = os.stat(image).st_size
     metadata['md5'] = file_hash(image)
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
-    
+
     check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                metadata_file, image, 
+                metadata_file, image,
                 'brainvisa@brainvisa.info:prod/www/casa-distro/%s/' % container_type])
 
 
@@ -323,7 +338,9 @@ def create_user_image(version,
                       system=None,
                       environment_name=None,
                       container_type='singularity',
-                      output=osp.join(default_build_workflow_repository, 'releases', '{name}{extension}'),
+                      output=osp.join(
+                          default_build_workflow_repository,
+                          'releases', '{name}{extension}'),
                       base_directory=casa_distro_directory(),
                       install='yes',
                       generate='yes',
@@ -336,14 +353,14 @@ def create_user_image(version,
     using the master branch are considered.
     This command can perform three steps. Each step can be ignored by setting
     the corresponding option to "no" :
-    
+
     - install: perform an installation of the development environment into its installation directory. This modify the development environment by updating its installation directory.
-    
+
     - generate: generate a new image for the run environment. The ne image is based on base_image and the installation directory of the development environment is copied into the image in /casa/install.
-    
+
     - upload: upload the run image on BrainVISA web site.
-    
-    
+
+
     Parameters
     ----------
     version
@@ -383,7 +400,7 @@ def create_user_image(version,
     generate = check_boolean('generate', generate)
     upload = check_boolean('upload', upload)
 
-    verbose = verbose_file(verbose)    
+    verbose = verbose_file(verbose)
     if container_type == 'singularity':
         extension = '.sif'
     elif container_type == 'vbox':
@@ -406,7 +423,7 @@ def create_user_image(version,
         module = casa_distro.vbox
     else:
         module = casa_distro.singularity
-    
+
     metadata = {
         'name': name,
         'type': 'run',
@@ -415,29 +432,32 @@ def create_user_image(version,
         'version': version,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
-    }        
-    base_image=base_image.format(base_directory=base_directory,
-                                 extension=extension,
-                                 **metadata)
-    
+    }
+    base_image = base_image.format(base_directory=base_directory,
+                                   extension=extension,
+                                   **metadata)
+
     if install:
-        run_container(config=config, 
-            command=['make', 'BRAINVISA_INSTALL_PREFIX=/casa/host/install', 'install-runtime'],
-            gui=False, 
-            opengl="auto",
-            root=False, 
-            cwd='/casa/host/build',
-            env={},
-            image=None, 
-            container_options=None,
-            base_directory=base_directory, 
-            verbose=verbose)
+        # TODO check the return code
+        run_container(config=config,
+                      command=['make',
+                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                               'install-runtime'],
+                      gui=False,
+                      opengl="auto",
+                      root=False,
+                      cwd='/casa/host/build',
+                      env={},
+                      image=None,
+                      container_options=None,
+                      base_directory=base_directory,
+                      verbose=verbose)
 
     metadata_file = output + '.json'
-    
+
     if generate:
         msg = module.create_user_image(
-                    base_image=base_image,
+            base_image=base_image,
                     dev_config=config,
                     output=output,
                     base_directory=base_directory,
@@ -449,8 +469,8 @@ def create_user_image(version,
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
         json.dump(metadata, open(metadata_file, 'w'), indent=4)
-    
+
     if upload:
         check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                    metadata_file, output, 
+                    metadata_file, output,
                     'brainvisa@brainvisa.info:prod/www/casa-distro/releases/'])

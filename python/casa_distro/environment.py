@@ -27,6 +27,8 @@ bv_maker_branches = {
 
 # We need to duplicate this function to allow copying over
 # an existing directory
+
+
 def copytree(src, dst, symlinks=False, ignore=None):
     """Recursively copy a directory tree using copy2().
     If exception(s) occur, an Error is raised with a list of reasons.
@@ -51,22 +53,22 @@ def copytree(src, dst, symlinks=False, ignore=None):
     else:
         names = [os.path.basename(src)]
         src = os.path.dirname(src)
-        
+
         if os.path.isdir(dst):
             dstnames = names
         else:
             dstnames = [os.path.basename(dst)]
             dst = os.path.dirname(dst)
-        
+
     if ignore is not None:
-        ignored_names = ignore(src, names, 
+        ignored_names = ignore(src, names,
                                dst, dstnames)
     else:
         ignored_names = set()
 
     if not os.path.exists(dst):
         os.makedirs(dst)
-        
+
     errors = []
     for name, new_name in zip(names, dstnames):
         if name in ignored_names:
@@ -98,25 +100,27 @@ def copytree(src, dst, symlinks=False, ignore=None):
             errors.append((src, dst, str(why)))
     if errors:
         raise shutil.Error(errors)
-    
+
+
 def cp(src, dst, not_override=[], verbose=None):
-    
-    def override_exclusion(cur_src, names, 
+
+    def override_exclusion(cur_src, names,
                            cur_dst, dst_names):
         excluded = []
         for n in not_override:
             if n in names:
-              i = names.index(n)
-              d = os.path.join(cur_dst, dst_names[i])
-              if os.path.exists(d) or os.path.islink(d):
-                excluded.append(n)
-                if verbose:
-                    print('file', d, 'exists,', 'skipping override.', 
-                          file=verbose)
+                i = names.index(n)
+                d = os.path.join(cur_dst, dst_names[i])
+                if os.path.exists(d) or os.path.islink(d):
+                    excluded.append(n)
+                    if verbose:
+                        print('file', d, 'exists,', 'skipping override.',
+                              file=verbose)
 
         return excluded
 
     copytree(src, dst, ignore=override_exclusion)
+
 
 def string_to_byte_count(size):
     coefs = {
@@ -124,7 +128,7 @@ def string_to_byte_count(size):
         'K': 1024,
         'M': 1024 ** 2,
         'G': 1024 ** 3}
-    
+
     match = re.match(r'^(\d+(?:\.\d+)?)\s*([KMG]?)$', size)
     if not match:
         raise ValueError('Invlid file system size: {0}'.format(size))
@@ -135,8 +139,8 @@ def string_to_byte_count(size):
 
 def update_config(config, update):
     """
-    Update a configuration dictionary with an update configuration dictionary. 
-    These two dictionaries are JSON objects. To date this simply merge the 
+    Update a configuration dictionary with an update configuration dictionary.
+    These two dictionaries are JSON objects. To date this simply merge the
     two dictionaries (dictionaries are merged recursively, lists are
     concatenated)
     """
@@ -152,6 +156,7 @@ def update_config(config, update):
             else:
                 config[k] = v
 
+
 def find_in_path(file):
     '''
     Look for a file in a series of directories contained in ``PATH`` environment variable.
@@ -164,27 +169,29 @@ def find_in_path(file):
             if r:
                 return r[0]
 
+
 def ext3_file_size(filename):
     block_size = block_count = None
     for line in subprocess.check_output(['dumpe2fs', filename], stderr=subprocess.STDOUT).split('\n'):
         if line.startswith('Block count'):
-            block_count = int(line.rsplit(None,1)[-1])
+            block_count = int(line.rsplit(None, 1)[-1])
         elif line.startswith('Block size'):
-            block_size = int(line.rsplit(None,1)[-1])
+            block_size = int(line.rsplit(None, 1)[-1])
     if block_size is not None and block_count is not None:
         return block_size * block_count
     return None
 
+
 def create_ext3_file(filename, size):
-    block_size = 1024*1024
-    block_count = int(size/block_size)
+    block_size = 1024 * 1024
+    block_count = int(size / block_size)
     if size % block_size != 0:
         block_count += 1
     # If there are too few blocks, the system cannot be created
     block_count = max(2, block_count)
-    subprocess.check_call(['dd', 
+    subprocess.check_call(['dd',
                            'if=/dev/zero',
-                           'of={0}'.format(filename), 
+                           'of={0}'.format(filename),
                            'bs={0}'.format(block_size),
                            'count={0}'.format(block_count)])
     tmp = tempfile.mkdtemp()
@@ -193,9 +200,10 @@ def create_ext3_file(filename, size):
     finally:
         os.rmdir(tmp)
 
+
 def resize_ext3_file(filename, size):
     if isinstance(size, int):
-        size=str(size)
+        size = str(size)
     elif not re.match(r'\d+[KMG]?', size):
         raise ValueError('Invlid file system size: {0}'.format(size))
     subprocess.check_call(['e2fsck', '-f', filename])
@@ -231,7 +239,8 @@ def select_distro(distro):
             return d
     if osp.isdir(distro):
         directory = distro
-        casa_distro_json = osp.join(directory, 'host', 'conf', 'casa_distro.json')
+        casa_distro_json = osp.join(
+            directory, 'host', 'conf', 'casa_distro.json')
         if osp.exists(casa_distro_json):
             distro = json.load(open(casa_distro_json))
             distro['directory'] = directory
@@ -269,7 +278,7 @@ def iter_environments(base_directory, **filter):
         config = {}
         config['config_files'] = [casa_distro_json]
         config['directory'] = directory
-        config['mounts'] = {'/casa/host':'{directory}/host'}
+        config['mounts'] = {'/casa/host': '{directory}/host'}
         config['env'] = {
             'CASA_DISTRO': '{name}',
             'CASA_SYSTEM': '{system}',
@@ -283,18 +292,18 @@ def iter_environments(base_directory, **filter):
                 'XAUTHORITY': '/casa/host/home/.Xauthority'})
 
         update_config(config, environment_config)
-        
+
         for i in ('~/.config/casa-distro/casa_distro_3.json',):
             f = osp.expanduser(i).format(name=config['name'])
             if osp.exists(f):
                 config['config_files'].append(f)
                 update_config(config, json.load(open(f)))
-        
+
         overlay = osp.join(directory, 'overlay.img')
         if osp.exists(overlay):
             config['overlay'] = overlay
             config['overlay_size'] = ext3_file_size(overlay)
-        
+
         match = False
         for k, p in filter.items():
             if p is None:
@@ -337,12 +346,12 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
         for image in singularity.iter_images(base_directory=base_directory):
             if not image_filter or fnmatch.filter([image], image_filter):
                 yield ('singularity', image)
-        #for image in docker.iter_images(base_directory=base_directory):
-            #if not filter or fnmatch.filter([image], filter):
-                #yield ('docker', image)
-        #for image in vbox.iter_images(base_directory=base_directory):
-            #if not filter or fnmatch.filter([image], filter):
-                #yield ('vbox', image)
+        # for image in docker.iter_images(base_directory=base_directory):
+        #     if not filter or fnmatch.filter([image], filter):
+        #         yield ('docker', image)
+        # for image in vbox.iter_images(base_directory=base_directory):
+        #     if not filter or fnmatch.filter([image], filter):
+        #         yield ('vbox', image)
 
 
 def image_remote_location(container_type, image_name, url):
@@ -388,7 +397,8 @@ def update_container_image(container_type, image_name, url, force=False,
         return
 
     metadata_file = '%s.json' % image_name
-    metadata = json.loads(urlopen('%s.json' % remote_image).read().decode('utf-8'))
+    metadata = json.loads(
+        urlopen('%s.json' % remote_image).read().decode('utf-8'))
     if new_only and osp.exists(metadata_file):
         print('image %s already exists.' % image, file=verbose)
         return  # don't update
@@ -398,10 +408,10 @@ def update_container_image(container_type, image_name, url, force=False,
                 and local_metadata.get('size') == metadata.get('size') \
                 and osp.isfile(image_name) \
                 and os.stat(image_name).st_size == metadata.get('size'):
-            #if verbose:
+            # if verbose:
             print('image %s is up-to-date.' % image)
             return
-    #if verbose:
+    # if verbose:
     print('pulling image: %s' % image_name)
     tmp_metadata_file = list(osp.split(metadata_file))
     tmp_metadata_file[-1] = '.%s' % tmp_metadata_file[-1]
@@ -436,7 +446,10 @@ def select_environment(base_directory, **kwargs):
     if len(l) == 1:
         return l[0]
     if len(l) > 1:
-        raise ValueError('Several distros found, use a more selective criteria: {0}'.format(', '.join(i['name'] for i in l)))
+        raise ValueError(
+            'Several distros found, use a more selective criterion: {0}'
+            .format(', '.join(i['name'] for i in l))
+        )
     raise ValueError('Cannot find any distro to perform requested action')
 
 
@@ -480,14 +493,14 @@ def setup(metadata, writable,
     Create a new run environment.
 
     '''
-        
+
     environment = {}
     environment.update(metadata)
     environment['casa_distro_compatibility'] = '3'
-        
+
     if not osp.exists(osp.join(output, 'host', 'conf')):
         os.makedirs(osp.join(output, 'host', 'conf'))
-        
+
     casa_distro_json = osp.join(output, 'host', 'conf', 'casa_distro.json')
     json.dump(environment, open(casa_distro_json, 'w'), indent=4)
 
@@ -499,11 +512,12 @@ def setup(metadata, writable,
             overlay = osp.join(output, 'overlay.img')
             create_ext3_file(overlay, size)
 
+
 def setup_dev(metadata,
               distro,
               writable,
-              base_directory, 
-              output, 
+              base_directory,
+              output,
               verbose):
     setup(metadata=metadata,
           writable=writable,
@@ -521,12 +535,13 @@ def setup_dev(metadata,
     for i in os.listdir(distro['directory']):
         if i == 'casa_distro.json':
             continue
-        cp(osp.join(distro['directory'], i), osp.join(output, i), verbose=verbose)
+        cp(osp.join(distro['directory'], i),
+           osp.join(output, i), verbose=verbose)
 
     svn_secret = osp.join(output, 'host', 'conf', 'svn.secret')
     if not os.path.exists(svn_secret):
         print('\n------------------------------------------------------------')
-        print('**WARNING:**' )
+        print('**WARNING:**')
         print('Before using "casa_distro bv_maker" you will have to '
               'create the svn.secret file with your Bioproj login / password '
               'in order to access the BrainVisa repository.')
@@ -558,7 +573,8 @@ def update_environment(config, base_directory, writable, verbose):
         size = string_to_byte_count(writable)
         if size:
             if os.path.exists(overlay):
-                resize_ext3_file(overlay, int(size / 1024) + (1 if size % 1024 else 0))
+                resize_ext3_file(
+                    overlay, int(size / 1024) + (1 if size % 1024 else 0))
             else:
                 create_ext3_file(overlay, size)
         else:
@@ -594,7 +610,8 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     if container_type == 'singularity':
         module = singularity
     elif container_type == 'vbox':
-        raise NotImplementedError('run command is not implemented for VirtualBox')
+        raise NotImplementedError(
+            'run command is not implemented for VirtualBox')
         module = vbox
     elif container_type == 'docker':
         raise NotImplementedError('run command is not implemented for Docker')

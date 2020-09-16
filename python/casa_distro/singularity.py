@@ -20,16 +20,18 @@ from . import downloader
 
 
 class RecipeBuilder:
+
     '''
     Class to interact with an existing VirtualBox machine.
     This machine is suposed to be based on a casa_distro system image.
     '''
+
     def __init__(self, name):
         self.name = name
         self.tmp_dir = None
         self.user = None
         self.sections = {}
-        
+
     def run_user(self, command):
         '''
         Run a shell command in VM as self.user
@@ -42,19 +44,20 @@ class RecipeBuilder:
         '''
         self.sections.setdefault('post', []).append(command)
 
-
     def copy_root(self, source_file, dest_dir):
         '''
         Copy a file in VM as root
         '''
-        self.sections.setdefault('files', []).append('%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
+        self.sections.setdefault('files', []).append(
+            '%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
 
     def copy_user(self, source_file, dest_dir):
         '''
         Copy a file in VM as self.user
         '''
-        self.sections.setdefault('files', []).append('%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
-    
+        self.sections.setdefault('files', []).append(
+            '%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
+
     def write(self, file):
         for section, lines in self.sections.items():
             print('\n%%%s' % section, file=file)
@@ -80,7 +83,7 @@ def _singularity_build_command():
     return build_command
 
 
-def create_image(base, base_metadata, 
+def create_image(base, base_metadata,
                  output, metadata,
                  build_file,
                  cleanup,
@@ -100,9 +103,10 @@ def create_image(base, base_metadata,
         print('build_file:', build_file)
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
         if 'install' not in v:
-            raise RuntimeError('No install function defined in %s' % build_file)
+            raise RuntimeError(
+                'No install function defined in %s' % build_file)
         install_function = v['install']
-        
+
         recipe_builder = RecipeBuilder(output)
         install_function(base_dir=osp.dirname(build_file),
                          builder=recipe_builder,
@@ -121,7 +125,7 @@ def create_image(base, base_metadata,
                   *(build_command + [output, recipe.name]))
         subprocess.check_call(build_command + [output, recipe.name])
 
-    
+
 def create_user_image(base_image,
                       dev_config,
                       output,
@@ -130,7 +134,7 @@ def create_user_image(base_image,
     recipe = tempfile.NamedTemporaryFile()
     recipe.write('''Bootstrap: localimage
     From: {base_image}
-    
+
 %files
     {environment_directory}/host/install /casa/install
 
@@ -151,24 +155,30 @@ def create_user_image(base_image,
 
 _singularity_version = None
 
+
 def singularity_major_version():
     return singularity_version()[0]
+
 
 def singularity_version():
     global _singularity_version
 
     if _singularity_version is None:
-        output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
+        output = subprocess.check_output(
+            ['singularity', '--version']).decode('utf-8')
         m = re.match(r'^([\d.]*).*$', output.split()[-1])
         if m:
             version = m.group(1)
             _singularity_version = [int(x) for x in version.split('.')]
         else:
-            raise RuntimeError('Cannot determine singularity numerical version : version string = "{0}"'.format(output))
+            raise RuntimeError(
+                'Cannot determine singularity numerical version : '
+                'version string = "{0}"'.format(output))
     return _singularity_version
 
 
 _singularity_run_help = None
+
 
 def singularity_run_help():
     """
@@ -191,7 +201,7 @@ def singularity_has_option(option):
 
 
 def run(config, command, gui, opengl, root, cwd, env, image, container_options,
-        base_directory, verbose):    
+        base_directory, verbose):
     """Run a command in the Singularity container.
 
     Return the exit code of the command, or raise an exception if the command
@@ -204,20 +214,20 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         singularity.append('--cleanenv')
     if cwd and singularity_has_option('--pwd'):
         singularity += ['--pwd', cwd]
-    
+
     if root:
         singularity = ['sudo'] + singularity
-        
+
     overlay = osp.join(config['directory'], 'overlay.img')
     if osp.exists(overlay):
         singularity += ['--overlay', overlay]
-    
+
     if gui:
         xauthority = osp.expanduser('~/.Xauthority')
         if osp.exists(xauthority):
             shutil.copy(xauthority,
                         osp.join(config['directory'], 'host/home/.Xauthority'))
-    
+
     home_mount = False
     homedir = os.path.expanduser('~')
     for dest, source in config.get('mounts', {}).items():
@@ -265,18 +275,20 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
 
     # The following code may prevent containers to run on some system
     # handle ~/.ssh
-    #ssh_dir = osp.join(homedir, '.ssh')
-    #if osp.isdir(ssh_dir):
-        #singularity += [
-            #'--bind',
-            #'%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
+    # ssh_dir = osp.join(homedir, '.ssh')
+    # if osp.isdir(ssh_dir):
+    #     singularity += [
+    #         '--bind',
+    #         '%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
 
-    container_options = config.get('container_options', []) + (container_options or [])
+    container_options = config.get(
+        'container_options', []) + (container_options or [])
 
     if cwd:
         for i, opt in enumerate(container_options):
             if opt == '--pwd' and singularity_has_option('--pwd'):
-                container_options = container_options[:i] + container_options[i+2:]
+                container_options = (
+                    container_options[:i] + container_options[i + 2:])
                 break
     if gui:
         gui_options = config.get('container_gui_options', [])
@@ -286,7 +298,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         if ('--nv' not in container_options and
             opengl in ('auto', 'nv') and os.path.exists('/dev/nvidiactl') and
             '--no-nv' not in container_options and
-            singularity_has_option('--nv')):
+                singularity_has_option('--nv')):
             container_options.append('--nv')
         # remove --no-nv which is not a singularity option
         if '--no-nv' in container_options:
@@ -317,7 +329,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     if image is None:
         image = config.get('image')
         if image is None:
-            raise ValueError('image is missing from environement configuration file (casa_distro.json)')
+            raise ValueError(
+                'image is missing from environment configuration file '
+                '(casa_distro.json)')
         image = osp.join(base_directory, image)
         if not osp.exists(image):
             raise ValueError("'%s' does not exist" % image)
@@ -333,8 +347,6 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
     return subprocess.call(singularity, env=container_env)
-
-
 
 
 def setup(type, distro, branch, system, name, base_directory, image,

@@ -87,7 +87,7 @@ def download_file_internal(url, dest, timeout=10., callback=None,
             allow_continue = False
         else:
             open_mode = 'ab'
-            headers={'Range': 'bytes=%d-%d' % (dsize, size)}
+            headers = {'Range': 'bytes=%d-%d' % (dsize, size)}
             new_url = Request(url, headers=headers)
             input = urlopen(new_url, timeout=timeout)
             dl_len = dsize
@@ -110,11 +110,11 @@ def download_file_internal(url, dest, timeout=10., callback=None,
                 if len(buffer) < buffer_size:
                     break
             except socket.timeout:
-                #print('*** timeout ***')
-                #print('resume at:', dl_len)
+                # print('*** timeout ***')
+                # print('resume at:', dl_len)
                 if size == 0:
                     s = 10000000000
-                headers={'Range': 'bytes=%d-%d' % (dl_len, size)}
+                headers = {'Range': 'bytes=%d-%d' % (dl_len, size)}
                 new_url = Request(url, headers=headers)
                 input = urlopen(new_url, timeout=timeout)
         if callback:
@@ -123,6 +123,7 @@ def download_file_internal(url, dest, timeout=10., callback=None,
 
 _term_width = 79
 _term_width_timestamp = 0
+
 
 def stdout_progress(url, pos, size, speed, block, count):
     ''' Print the current download progress on stdout
@@ -137,32 +138,32 @@ def stdout_progress(url, pos, size, speed, block, count):
         except subprocess.CalledProcessError:
             pass
 
-    if _term_width >=70:
+    if _term_width >= 70:
         url_width = _term_width - 40
     else:
         url_width = _term_width - 30
-    if pos > (1<<30):
-        posstr = '%.2fGB' % (float(pos) / (1<<30))
-    elif pos > (1<<20):
-        posstr = '%.2fMB' % (float(pos) / (1<<20))
-    elif pos > (1<<10):
-        posstr = '%.2fKB' % (float(pos) / (1<<10))
+    if pos > (1 << 30):
+        posstr = '%.2fGB' % (float(pos) / (1 << 30))
+    elif pos > (1 << 20):
+        posstr = '%.2fMB' % (float(pos) / (1 << 20))
+    elif pos > (1 << 10):
+        posstr = '%.2fKB' % (float(pos) / (1 << 10))
     else:
         posstr = '%dB' % pos
-    if size > (1<<30):
-        szstr = '%.2fGB' % (float(size) / (1<<30))
-    elif size > (1<<20):
-        szstr = '%.2fMB' % (float(size) / (1<<20))
-    elif size > (1<<10):
-        szstr = '%.2fKB' % (float(size) / (1<<10))
+    if size > (1 << 30):
+        szstr = '%.2fGB' % (float(size) / (1 << 30))
+    elif size > (1 << 20):
+        szstr = '%.2fMB' % (float(size) / (1 << 20))
+    elif size > (1 << 10):
+        szstr = '%.2fKB' % (float(size) / (1 << 10))
     else:
         szstr = '%dB' % size
-    if speed > (1<<30):
-        spstr = '%.2fGB/s' % (float(speed) / (1<<30))
-    elif speed > (1<<20):
-        spstr = '%.2fMB/s' % (float(speed) / (1<<20))
-    elif speed > (1<<10):
-        spstr = '%.2fKB/s' % (float(speed) / (1<<10))
+    if speed > (1 << 30):
+        spstr = '%.2fGB/s' % (float(speed) / (1 << 30))
+    elif speed > (1 << 20):
+        spstr = '%.2fMB/s' % (float(speed) / (1 << 20))
+    elif speed > (1 << 10):
+        spstr = '%.2fKB/s' % (float(speed) / (1 << 10))
     else:
         spstr = '%.2fB/s' % speed
     perstr = '%d' % int((float(pos) / size) * 100) + '%'
@@ -198,6 +199,7 @@ def stdout_progress(url, pos, size, speed, block, count):
 _wget_command = None
 _temporary_files = []
 
+
 def _clear_temp_files():
     import shutil
 
@@ -208,6 +210,7 @@ def _clear_temp_files():
             shutil.rmtree(item)
         else:
             os.unlink(item)
+
 
 def wget_command(download_container=True):
     '''
@@ -377,9 +380,9 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3,
                 subprocess.check_call(cmd)
             elif method == 'internal':
                 download_file_internal(url, tmp_dest, timeout=timeout,
-                                      callback=callback,
-                                      cbk_interval=cbk_interval,
-                                      allow_continue=allow_continue)
+                                       callback=callback,
+                                       cbk_interval=cbk_interval,
+                                       allow_continue=allow_continue)
             done = True
             break
         except Exception:

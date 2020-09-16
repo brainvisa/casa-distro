@@ -39,22 +39,24 @@ from casa_distro.log import verbose_file
 
 
 def size_to_string(full_size):
-  size = full_size
-  if size >= 1024:
-    unit = 'K'
-    size /= 1024.0
+    size = full_size
     if size >= 1024:
-      unit = 'M'
-      size /= 1024.0
-      if size >= 1024:
-        unit = 'G'
+        unit = 'K'
         size /= 1024.0
-    s = '%.2f' % ( size, )
-    if s.endswith( '.00' ): s = s[:-3]
-    elif s[-1] == '0': s = s[:-1]
-    return s + unit + ' (' + str( full_size ) + ')'
-  else:
-    return str(size)
+        if size >= 1024:
+            unit = 'M'
+            size /= 1024.0
+            if size >= 1024:
+                unit = 'G'
+                size /= 1024.0
+        s = '%.2f' % (size, )
+        if s.endswith('.00'):
+            s = s[:-3]
+        elif s[-1] == '0':
+            s = s[:-1]
+        return s + unit + ' (' + str(full_size) + ')'
+    else:
+        return str(size)
 
 
 def display_summary(status):
@@ -70,7 +72,7 @@ def display_summary(status):
     for (d, b, s), (es, bwf_dir) in six.iteritems(status):
         status = es.get_status_mapped()
         if status != '':
-            message = '%s distro=%s branch=%s system=%s: %s' % (status, d, 
+            message = '%s distro=%s branch=%s system=%s: %s' % (status, d,
                                                                 b, s, bwf_dir)
             start = es.start_time
             if start:
@@ -137,13 +139,13 @@ class ExecutionStatus(object):
                   'succeeded': 'OK         ',
                   'failed': 'FAILED     ',
                   'interrupted': 'INTERRUPTED'}
- 
+
     def __init__(self,
-                    error_code = None, 
-                    exception = None, 
-                    status = 'not run',
-                    start_time = None,
-                    stop_time = None):
+                 error_code=None,
+                 exception=None,
+                 status='not run',
+                 start_time=None,
+                 stop_time=None):
         self.error_code = error_code
         self.exception = exception
         self.status = status
@@ -152,6 +154,7 @@ class ExecutionStatus(object):
 
     def get_status_mapped(self):
         return self.status_map.get(self.status)
+
 
 @command
 def distro():
@@ -173,14 +176,14 @@ def setup_dev(distro=None,
               branch=default_branch,
               system=None,
               name='{distro}-dev-{system}',
-              container_type = None,
+              container_type=None,
               writable=None,
               base_directory=casa_distro_directory(),
-              image = '{base_directory}/casa-dev-{system}{extension}',
+              image='{base_directory}/casa-dev-{system}{extension}',
               url=default_download_url + '/{container_type}',
               output='{base_directory}/{name}',
-              #vm_memory='8192',
-              #vm_disk_size='131072',
+              # vm_memory='8192',
+              # vm_disk_size='131072',
               verbose=True):
     """
     Create a new developer environment
@@ -214,7 +217,7 @@ def setup_dev(distro=None,
     writable
         size of a writable file system that can be used to make environement specific
         modification to the container file system. The size can be written in bytes as
-        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M", 
+        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M",
         or in gygabytes with suffix "G". If size is not 0, this will create an
         overlay.img file in the base environment directory. This file will contain the
         any modification done to the container file system.
@@ -235,7 +238,7 @@ def setup_dev(distro=None,
         Print more detailed information if value is "yes", "true" or "1".
     """
     verbose = verbose_file(verbose)
-    
+
     if not container_type:
         if find_in_path('singularity'):
             container_type = 'singularity'
@@ -253,7 +256,8 @@ def setup_dev(distro=None,
     elif container_type == 'vbox':
         extension = '.vdi'
     elif container_type == 'docker':
-        raise NotImplementedError('docker container type is not yet supported by this command')
+        raise NotImplementedError(
+            'docker container type is not yet supported by this command')
     else:
         raise ValueError('Invalid container type: {0}'.format(container_type))
     if verbose:
@@ -266,7 +270,7 @@ def setup_dev(distro=None,
               file=verbose)
         print('Distro directory:', distro['directory'],
               file=verbose)
-    
+
     if branch not in ('latest_release', 'master', 'integration'):
         raise ValueError('Invalid branch : {0}'.format(branch))
     if verbose:
@@ -275,26 +279,27 @@ def setup_dev(distro=None,
 
     if system is None:
         system = distro['systems'][0]
-    
+
     if system not in distro['systems']:
-        raise ValueError('The system {0} is not supported by the distro {1}. Please select one of the following systems: {2}'.format(system, distro['name'], ', '.join(distro['systems'])))
+        raise ValueError('The system {0} is not supported by the distro {1}. Please select one of the following systems: {2}'.format(
+            system, distro['name'], ', '.join(distro['systems'])))
     if verbose:
         print('System:', system,
               file=verbose)
-    
+
     name = name.format(distro=distro['name'],
                        branch=branch,
                        system=system)
     if verbose:
         print('name:', name,
               file=verbose)
-    
+
     if not osp.isdir(base_directory):
         raise ValueError('No such directory: {0}'.format(base_directory))
     if verbose:
         print('base directory:', base_directory,
               file=verbose)
-    
+
     image = image.format(distro=distro['name'],
                          branch=branch,
                          system=system,
@@ -329,9 +334,9 @@ def setup_dev(distro=None,
                            verbose=verbose)
 
     if writable and container_type != 'singularity':
-        raise ValueError('Only Singularity supports writable file system overlay')
-    
-    
+        raise ValueError(
+            'Only Singularity supports writable file system overlay')
+
     metadata = {
         'name': name,
         'type': 'dev',
@@ -341,7 +346,7 @@ def setup_dev(distro=None,
         'container_type': container_type,
         'image': image,
     }
-        
+
     environment.setup_dev(metadata=metadata,
                           distro=distro,
                           writable=writable,
@@ -350,20 +355,19 @@ def setup_dev(distro=None,
                           verbose=verbose)
 
 
-
 @command
 def setup(distro=None,
           version=None,
           system=None,
           name='{distro}-{version}',
-          container_type = None,
+          container_type=None,
           writable=None,
           base_directory=casa_distro_directory(),
-          image = '{base_directory}/{distro}-{version}{extension}',
+          image='{base_directory}/{distro}-{version}{extension}',
           url=default_download_url + '/releases/{container_type}',
           output='{base_directory}/{name}',
-          #vm_memory='8192',
-          #vm_disk_size='131072',
+          # vm_memory='8192',
+          # vm_disk_size='131072',
           verbose=True):
     """
     Create a new user environment
@@ -395,7 +399,7 @@ def setup(distro=None,
     writable
         size of a writable file system that can be used to make environement specific
         modification to the container file system. The size can be written in bytes as
-        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M", 
+        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M",
         or in gygabytes with suffix "G". If size is not 0, this will create an
         overlay.img file in the base environment directory. This file will contain the
         any modification done to the container file system.
@@ -416,7 +420,7 @@ def setup(distro=None,
         Print more detailed information if value is "yes", "true" or "1".
     """
     verbose = verbose_file(verbose)
-    
+
     if not container_type:
         if find_in_path('singularity'):
             container_type = 'singularity'
@@ -434,7 +438,8 @@ def setup(distro=None,
     elif container_type == 'vbox':
         extension = '.vdi'
     elif container_type == 'docker':
-        raise NotImplementedError('docker container type is not yet supported by this command')
+        raise NotImplementedError(
+            'docker container type is not yet supported by this command')
     else:
         raise ValueError('Invalid container type: {0}'.format(container_type))
     if verbose:
@@ -447,13 +452,15 @@ def setup(distro=None,
             metadata = json.load(open(metadata_file))
             if ((distro is None or distro == metadata['distro']) and
                 (version is None or version == metadata['version']) and
-                (system is None or system == metadata['system'])):
+                    (system is None or system == metadata['system'])):
                 if selected:
-                    raise ValueError('Several releases found. Please adjust, distro, version and system to select only one')
+                    raise ValueError(
+                        'Several releases found. Please adjust, distro, version and system to select only one')
                 metadata['image'] = metadata_file[:metadata_file.rfind('.')]
                 selected = metadata
         if selected is None:
-            raise ValueError('No release found. Please adjust, distro, version and system to select one')
+            raise ValueError(
+                'No release found. Please adjust, distro, version and system to select one')
         distro = selected['distro']
         version = selected['version']
         system = selected['version']
@@ -471,13 +478,13 @@ def setup(distro=None,
     if verbose:
         print('name:', name,
               file=verbose)
-    
+
     if not osp.isdir(base_directory):
         raise ValueError('No such directory: {0}'.format(base_directory))
     if verbose:
         print('base directory:', base_directory,
               file=verbose)
-    
+
     image = image.format(distro=distro,
                          version=version,
                          system=system,
@@ -511,16 +518,16 @@ def setup(distro=None,
     if verbose:
         print('output:', output,
               file=verbose)
-    
-    if writable and container_type != 'singularity':
-        raise ValueError('Only Singularity supports writable file system overlay')
-    
-    environment.setup(selected,
-          writable=writable,
-          base_directory=base_directory,
-          output=output,
-          verbose=verbose)
 
+    if writable and container_type != 'singularity':
+        raise ValueError(
+            'Only Singularity supports writable file system overlay')
+
+    environment.setup(selected,
+                      writable=writable,
+                      base_directory=base_directory,
+                      output=output,
+                      verbose=verbose)
 
 
 # "list" cannot be used as a function name in Python. Therefore, the
@@ -568,13 +575,15 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
         overlay = config.get('overlay')
         if overlay:
             print('  writable file system:', overlay)
-            print('  writable file system size:', size_to_string(config['overlay_size']))
+            print('  writable file system size:',
+                  size_to_string(config['overlay_size']))
         print('  directory:', config['directory'])
-            
+
         if verbose:
             print('  full environment:')
             for line in json.dumps(config, indent=2).split('\n'):
                 print('   ', line)
+
 
 @command
 def run(type=None, distro=None, branch=None, system=None,
@@ -613,9 +622,9 @@ def run(type=None, distro=None, branch=None, system=None,
         Directory where images and environments are stored
     gui
         default={gui_default}
-        If "no", "false" or "0", command is not using a graphical user 
-        interface (GUI). Nothing is done to connect the container to a 
-        graphical interface. This option may be necessary in context where 
+        If "no", "false" or "0", command is not using a graphical user
+        interface (GUI). Nothing is done to connect the container to a
+        graphical interface. This option may be necessary in context where
         a graphical interface is not available.
     opengl
         default={opengl_default}
@@ -634,7 +643,7 @@ def run(type=None, distro=None, branch=None, system=None,
         solution works.
     root
         default={root_default}
-        If "yes", "true" or "1", start execution as system administrator. For 
+        If "yes", "true" or "1", start execution as system administrator. For
         Singularity container, this requires administrator privileges on host
         system.
     cwd
@@ -686,16 +695,18 @@ def run(type=None, distro=None, branch=None, system=None,
                          base_directory=base_directory,
                          verbose=verbose)
 
+
 @command
 def update(type=None, distro=None, branch=None, system=None, name=None,
-        base_directory=casa_distro_directory(),
-        writable=None,
-        verbose=None):
+           base_directory=casa_distro_directory(),
+           writable=None,
+           verbose=None):
     """
     Update an existing environment.
 
-    example:
-        casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+    This command allows a user to change some parameters of an existing
+    environment. At the moment only the 'writable' parameter can be changed
+    (see below).
 
     Parameters
     ----------
@@ -713,7 +724,7 @@ def update(type=None, distro=None, branch=None, system=None, name=None,
     writable
         size of a writable file system that can be used to make environement specific
         modification to the container file system. The size can be written in bytes as
-        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M", 
+        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M",
         or in gygabytes with suffix "G". If size is not 0, this will create or resize an
         overlay.img file in the base environment directory. This file will contain the
         any modification done to the container file system. If size is 0, the overlay.img
@@ -730,10 +741,11 @@ def update(type=None, distro=None, branch=None, system=None, name=None,
                                 system=system,
                                 name=name)
 
-    update_environment(config, 
+    update_environment(config,
                        base_directory=base_directory,
                        writable=writable,
                        verbose=verbose)
+
 
 @command
 def pull_image(distro=None, branch=None, system=None, name=None, type=None,
@@ -854,7 +866,6 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
         verbose=verbose)
 
 
-
 @command
 def mrun(distro='*', branch='*', system='*', name=None,
          build_workflows_repository=default_build_workflow_repository,
@@ -868,7 +879,7 @@ def mrun(distro='*', branch='*', system='*', name=None,
     Start any command in one or several container with the given
     repository configuration. By default, command is executed in
     all existing build workflows.
-    
+
     example:
         # Launch bv_maker on all build workflows using any version of Ubuntu
 
@@ -878,68 +889,67 @@ def mrun(distro='*', branch='*', system='*', name=None,
     casa_distro.json config file. Typically, a test config may use a different
     system image (casa-test images), or options, or mounted directories.
     '''
-    #build_workflows = list(iter_build_workflow(build_workflows_repository,
-                                               #distro=distro, 
-                                               #branch=branch, 
-                                               #system=system))
-    #if not build_workflows:
-        #print('Cannot find requested build workflow.',
-              #'You can list existing workflows using:\n'
-              #'    casa_distro list\n'
-              #'Or create new one using:\n'
-              #'    casa_distro create ...',
-              #file=sys.stderr)
-        #return 1
-    
+    # build_workflows = list(iter_build_workflow(build_workflows_repository,
+    #                                            distro=distro,
+    #                                            branch=branch,
+    #                                            system=system))
+    # if not build_workflows:
+    #     print('Cannot find requested build workflow.',
+    #           'You can list existing workflows using:\n'
+    #           '    casa_distro list\n'
+    #           'Or create new one using:\n'
+    #           '    casa_distro create ...',
+    #           file=sys.stderr)
+    #     return 1
 
-    #if isinstance(container_options, six.string_types) \
-            #and len(container_options) != 0:
-        #container_options = parse_string(container_options)
-    #if isinstance(env, six.string_types) \
-            #and len(env) != 0:
-        #env_list = parse_string(env)
-        #try:
-            #env = dict(e.split('=') for e in env_list)
-        #except:
-            #raise ValueError('env syntax error. Should be in the shape '
-                             #'"VAR1=value1 VAR2=value2" etc.')
+    # if isinstance(container_options, six.string_types) \
+    #         and len(container_options) != 0:
+    #     container_options = parse_string(container_options)
+    # if isinstance(env, six.string_types) \
+    #         and len(env) != 0:
+    #     env_list = parse_string(env)
+    #     try:
+    #         env = dict(e.split('=') for e in env_list)
+    #     except:
+    #         raise ValueError('env syntax error. Should be in the shape '
+    #                          '"VAR1=value1 VAR2=value2" etc.')
 
-    #status = {}
-    #global_failed = False
+    # status = {}
+    # global_failed = False
 
-    #for d, b, s, bwf_dir in build_workflows:
-        #es = ExecutionStatus(start_time = time.localtime())
-        #status[(d, b, s)] = (es, bwf_dir)
-        #try:
-            #command = args_list
-            #bwf_directory = osp.join(build_workflows_repository, '%s' % d,
-                                    #'%s_%s' % (b, s))
-            #run_container(bwf_directory, command=command, gui=gui, 
-                        #interactive=interactive, tmp_container=tmp_container,
-                        #container_image=container_image, cwd=cwd,
-                        #env=env,
-                        #container_options=container_options, verbose=verbose,
-                        #conf=conf)
-            #es.stop_time = time.localtime()
-            #es.error_code = 0
-            #es.status = 'succeeded'
-        
-        #except subprocess.CalledProcessError:
-            #global_failed = True
-            #es.stop_time = time.localtime()
-            #es.exception = traceback.format_exc()
-            #es.error_code = 1
-            #es.status = 'failed'
-            
-        #except KeyboardInterrupt:
-            #global_failed = True
-            #es.stop_time = time.localtime()
-            #es.error_code = 1
-            #es.status = 'interrupted'
-            #break
+    # for d, b, s, bwf_dir in build_workflows:
+    #     es = ExecutionStatus(start_time = time.localtime())
+    #     status[(d, b, s)] = (es, bwf_dir)
+    #     try:
+    #         command = args_list
+    #         bwf_directory = osp.join(build_workflows_repository, '%s' % d,
+    #                                 '%s_%s' % (b, s))
+    #         run_container(bwf_directory, command=command, gui=gui,
+    #                     interactive=interactive, tmp_container=tmp_container,
+    #                     container_image=container_image, cwd=cwd,
+    #                     env=env,
+    #                     container_options=container_options, verbose=verbose,
+    #                     conf=conf)
+    #         es.stop_time = time.localtime()
+    #         es.error_code = 0
+    #         es.status = 'succeeded'
 
-    #display_summary(status)
-    #return global_failed
+    #     except subprocess.CalledProcessError:
+    #         global_failed = True
+    #         es.stop_time = time.localtime()
+    #         es.exception = traceback.format_exc()
+    #         es.error_code = 1
+    #         es.status = 'failed'
+
+    #     except KeyboardInterrupt:
+    #         global_failed = True
+    #         es.stop_time = time.localtime()
+    #         es.error_code = 1
+    #         es.status = 'interrupted'
+    #         break
+
+    # display_summary(status)
+    # return global_failed
 
 
 @command
@@ -954,7 +964,7 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
     Start a bv_maker in the configured container with the given repository
     configuration.
     '''
-    args_list = ['bv_maker' ] + args_list
+    args_list = ['bv_maker'] + args_list
     return run(type=type, distro=distro, branch=branch, system=system,
                name=name,
                base_directory=base_directory,
@@ -968,7 +978,6 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
                verbose=verbose)
 
 
-
 @command
 def clean_images(build_workflows_repository=default_build_workflow_repository,
                  image_names='*', verbose=False, interactive=True):
@@ -977,19 +986,17 @@ def clean_images(build_workflows_repository=default_build_workflow_repository,
     or those listed in image_names.
     '''
     images_to_keep = {}
-    #for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-                                                #distro='*', branch='*',
-                                                #system='*'):
-        #casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
-                                              #'casa_distro.json')))
-        #confs = set(['dev'])
-        #confs.update(casa_distro.get('alt_configs', {}).keys())
-        #for conf in confs:
-            #wfconf = merge_config(casa_distro, conf)
-            #images_to_keep.setdefault(wfconf['container_type'], set()).add(
-                #wfconf['container_image'])
+    # for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
+    #                                             distro='*', branch='*',
+    #                                             system='*'):
+    #     casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
+    #                                           'casa_distro.json')))
+    #     confs = set(['dev'])
+    #     confs.update(casa_distro.get('alt_configs', {}).keys())
+    #     for conf in confs:
+    #         wfconf = merge_config(casa_distro, conf)
+    #         images_to_keep.setdefault(wfconf['container_type'], set()).add(
+    #             wfconf['container_image'])
 
-    #clean_singularity_images(build_workflows_repository, image_names,
-                             #images_to_keep, verbose, interactive)
-
-
+    # clean_singularity_images(build_workflows_repository, image_names,
+    #                          images_to_keep, verbose, interactive)

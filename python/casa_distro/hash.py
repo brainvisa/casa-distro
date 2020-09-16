@@ -4,15 +4,17 @@ from __future__ import absolute_import, print_function
 import hashlib
 import os
 
+
 def file_hash(path, blocksize=2**20):
     m = hashlib.md5()
-    with open(path , 'rb') as f:
+    with open(path, 'rb') as f:
         while True:
             buf = f.read(blocksize)
             if not buf:
                 break
-            m.update( buf )
+            m.update(buf)
     return m.hexdigest()
+
 
 def check_hash(path, md5_file):
     if os.path.isfile(path):
@@ -21,4 +23,3 @@ def check_hash(path, md5_file):
         hashsum = path
     recorded_hash = open(md5_file).read().strip().split()[0]
     return hashsum == recorded_hash
-

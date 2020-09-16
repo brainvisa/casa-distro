@@ -14,10 +14,10 @@ del ppath
 try:
     from casa_distro.command import main
 except ImportError:
-    sys.path.append(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 
+    sys.path.append(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),
                              'python'))
     from casa_distro.command import main
-    
+
 from casa_distro import admin_commands
 
 main()

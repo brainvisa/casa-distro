@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 
 packages = find_packages('python')
 
-scripts = ['bin/casa_distro']
+scripts = ['bin/casa_distro', 'bin/casa_distro_admin']
 
 here = os.path.abspath(os.path.dirname(__file__))
 release_info = {}
@@ -22,8 +22,16 @@ distro_dir = os.path.join(here, 'share', 'distro')
 data_files = []
 for base, dirs, files in os.walk(distro_dir):
     if files:
-        #data_files.extend(os.path.join(base[len(here)+1:],i) for i in files)
-        data_files.append([os.path.join('lib', 'python%d.%d' % sys.version_info[:2], 'site-packages', 'casa_distro', 'share', 'distro', base[len(distro_dir)+1:]), [os.path.join(base[len(here)+1:],i) for i in files]])    
+        # data_files.extend(os.path.join(base[len(here)+1:],i) for i in files)
+        data_files.append([
+            os.path.join(
+                'lib', 'python%d.%d' % sys.version_info[:2],
+                'site-packages', 'casa_distro',
+                'share', 'distro',
+                base[len(distro_dir) + 1:]
+            ),
+            [os.path.join(base[len(here) + 1:], i) for i in files]
+        ])
 from pprint import pprint
 pprint(data_files)
 
