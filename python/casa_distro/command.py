@@ -19,28 +19,35 @@ from casa_distro.info import __version__
 from casa_distro.log import boolean_value
 from casa_distro import six
 
+
 def check_boolean(name, value):
     result = boolean_value(value)
     if result is None:
-        raise ValueError('Invalid boolean value for {0}: {1}'.format(name, value))
+        raise ValueError(
+            'Invalid boolean value for {0}: {1}'.format(name, value))
     return result
 
 commands = OrderedDict()
+
+
 def command(f, name=None):
     if isinstance(f, six.string_types):
         return partial(command, name=f)
-    
+
     global commands
     if name is None:
         name = f.__name__
     commands[name] = f
     return f
 
+
 def get_doc(command, indent=''):
     doc = inspect.getdoc(command) or ''
 
     cargs = inspect.getargspec(command)
-    defaults = dict((i + '_default', j) for i, j in zip(cargs.args[-len(cargs.defaults or ()):], cargs.defaults or ()))
+    defaults = {i + '_default': j
+                for i, j in zip(cargs.args[-len(cargs.defaults or ()):],
+                                cargs.defaults or ())}
 
     doc = doc.format(**defaults)
     if indent:
@@ -54,15 +61,15 @@ def help(command=None):
     Print global help or help about a command.
     """
     if command:
-        command_help = get_doc(commands[command], indent=' '*4)
+        command_help = get_doc(commands[command], indent=' ' * 4)
         print('-' * len(command))
         print(command)
         print('-' * len(command))
         print(command_help)
     else:
-        executable=osp.basename(sys.argv[0])
-        global_help = '''Casa_distro is the BrainVISA suite distribution swiss knife. 
-It allows to setup a virtual environment and launch BrainVISA software. 
+        executable = osp.basename(sys.argv[0])
+        global_help = '''Casa_distro is the BrainVISA suite distribution swiss knife.
+It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro for more information
 
 Version : {version}
@@ -71,7 +78,7 @@ usage: {executable} [-r REPOSITORY] [-v] [--version] <command> [<command paramet
 
 optional arguments:
     -r REPOSITORY, --repository REPOSITORY
-                    Path of the directory containing virtual images and configured 
+                    Path of the directory containing virtual images and configured
                     environments.
                     (default={default_repository}) This base directory
                     may also be specified via an environment variable:
@@ -86,14 +93,16 @@ Commands:
 '''.format(executable=executable,
            version=__version__,
            default_repository=default_build_workflow_repository)
-    
+
         commands_summary = [global_help]
         for command in commands:
             command_doc = get_doc(commands[command], indent=' ' * 8)
             # Split the docstring in two to remove parameters documentation
             # The docstring is supposed to follow the Numpy style docstring
-            # see https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
-            command_doc = re.split(r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
+            # see
+            # https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
+            command_doc = re.split(
+                r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
             commands_summary.append('    ' + '-' * len(command))
             commands_summary.append('    ' + command)
             commands_summary.append('    ' + '-' * len(command))
@@ -121,23 +130,23 @@ def main():
     if options.help or not options.command:
         help()
         return
-        
+
     result = None
     args = []
     kwargs = {}
-    
+
     if isinstance(options.command, list):
         command_name = options.command[0]
     else:
         command_name = options.command
     command = commands[command_name]
-    
+
     # Get command argument specification
     cargs = inspect.getargspec(command)
 
     if options.verbose and 'verbose' in cargs.args:
         kwargs['verbose'] = 'yes'
-        
+
     allows_kwargs = True
     for i in options.command_options:
         l = i.split('=', 1)
@@ -154,10 +163,9 @@ def main():
         else:
             if 'args_list' in cargs.args:
                 kwargs['args_list'] = args + args_list
-                args= []
+                args = []
             result = command(*args, **kwargs)
     except (ValueError, RuntimeError, NotImplementedError) as e:
         print('ERROR:', e)
         result = os.EX_USAGE
     sys.exit(result)
-

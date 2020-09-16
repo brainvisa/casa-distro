@@ -32,12 +32,11 @@ def update_dict_recursively(dict_to_update, dict_to_read):
             dict_to_update[k] = dict_to_read[k]
 
 
-
-def iter_environments(build_workflows_repository, 
-                     type='*',
-                     distro='*',
-                     branch='*',
-                     system='*'):
+def iter_environments(build_workflows_repository,
+                      type='*',
+                      distro='*',
+                      branch='*',
+                      system='*'):
     for i in sorted(glob.glob(osp.join(build_workflows_repository, distro,
                                        '%s_%s' % (branch, system), 'host', 'conf'))):
         env_json = osp.join(i, 'casa_distro.json')
@@ -45,7 +44,8 @@ def iter_environments(build_workflows_repository,
             env_conf = json.load(open(env_json))
             the_type = env_conf.get('type', 'dev')
             if fnmatch(the_type, type):
-                env_conf['build_workflow_directory'] = osp.dirname(osp.dirname(osp.dirname(env_json)))
+                env_conf['build_workflow_directory'] = osp.dirname(
+                    osp.dirname(osp.dirname(env_json)))
                 env_conf['type'] = the_type
                 yield env_conf
 
@@ -64,6 +64,8 @@ def find_in_path(file):
 
 # We need to duplicate this function to allow copying over
 # an existing directory
+
+
 def copytree(src, dst, symlinks=False, ignore=None):
     """Recursively copy a directory tree using copy2().
 
@@ -95,22 +97,22 @@ def copytree(src, dst, symlinks=False, ignore=None):
     else:
         names = [os.path.basename(src)]
         src = os.path.dirname(src)
-        
+
         if os.path.isdir(dst):
             dstnames = names
         else:
             dstnames = [os.path.basename(dst)]
             dst = os.path.dirname(dst)
-        
+
     if ignore is not None:
-        ignored_names = ignore(src, names, 
+        ignored_names = ignore(src, names,
                                dst, dstnames)
     else:
         ignored_names = set()
 
     if not os.path.exists(dst):
         os.makedirs(dst)
-        
+
     errors = []
     for name, new_name in zip(names, dstnames):
         if name in ignored_names:
@@ -142,21 +144,22 @@ def copytree(src, dst, symlinks=False, ignore=None):
             errors.append((src, dst, str(why)))
     if errors:
         raise shutil.Error(errors)
-    
+
+
 def cp(src, dst, not_override=[], verbose=None):
-    
-    def override_exclusion(cur_src, names, 
+
+    def override_exclusion(cur_src, names,
                            cur_dst, dst_names):
         excluded = []
         for n in not_override:
             if n in names:
-              i = names.index(n)
-              d = os.path.join(cur_dst, dst_names[i])
-              if os.path.exists(d) or os.path.islink(d):
-                excluded.append(n)
-                if verbose:
-                    print('file', d, 'exists,', 'skipping override.', 
-                          file=verbose)
+                i = names.index(n)
+                d = os.path.join(cur_dst, dst_names[i])
+                if os.path.exists(d) or os.path.islink(d):
+                    excluded.append(n)
+                    if verbose:
+                        print('file', d, 'exists,', 'skipping override.',
+                              file=verbose)
 
         return excluded
 
@@ -240,7 +243,7 @@ def update_build_workflow(build_workflow_directory, verbose=None,
         try_paths = [os.path.join(build_workflow_directory, 'src',
                                   'development', 'casa-distro', branch, 'bin',
                                   'casa_distro')
-                    for branch in branches]
+                     for branch in branches]
     elif command == 'host':
         # no default path, use the fallback
         try_paths = []
@@ -307,11 +310,11 @@ alias ls='ls -F --color'
 alias ll='ls -als'
 ''')
     # initialize git-lfs for the local home
-    #run_container(
-        #build_workflow_directory,
-        #['bash', '-c',
-         #'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
-        #verbose=verbose)
+    # run_container(
+    #     build_workflow_directory,
+    #     ['bash', '-c',
+    #      'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
+    #     verbose=verbose)
 
 
 def merge_dict(d, od):
@@ -342,16 +345,17 @@ def merge_config(casa_distro, conf):
     return casa_distro
 
 
-#def update_container_image(build_workflows_repository, container_type,
-                           #container_image, verbose=False):
-    #if container_type == 'singularity':
-        #update_singularity_image(build_workflows_repository,
-                                 #container_image,
-                                 #verbose=verbose)
-    #elif container_type == 'docker':
-        #update_docker_image(container_image)
-    #else:
-        #raise ValueError('%s is no a valid container system' % container_type)
+# def update_container_image(build_workflows_repository, container_type,
+#                            container_image, verbose=False):
+#     if container_type == 'singularity':
+#         update_singularity_image(build_workflows_repository,
+#                                  container_image,
+#                                  verbose=verbose)
+#     elif container_type == 'docker':
+#         update_docker_image(container_image)
+#     else:
+#         raise ValueError('%s is no a valid container system' %
+#         container_type)
 
 
 def delete_build_workflow(bwf_directory):

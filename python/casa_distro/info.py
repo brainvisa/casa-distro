@@ -15,7 +15,7 @@ __version__ = '{0}.{1}.{2}{3}'.format(
     version_major, version_minor, version_micro, version_extra)
 
 # Build model required for brainvisa-cmake
-BRAINVISA_BUILD_MODEL='pure_python'
+BRAINVISA_BUILD_MODEL = 'pure_python'
 
 # Project descriptions
 NAME = "casa-distro"
@@ -29,6 +29,6 @@ Casa-distro package is the user component of a BrainVISA project allowing to
 distribute containers containing standard compilation environements for
 various BrainVISA distributions.
 '''
-LICENSE='CeCILL-B'
+LICENSE = 'CeCILL-B'
 AUTHOR = 'BrainVISA team'
 AUTHOR_EMAIL = 'contact@brainvisa.info'

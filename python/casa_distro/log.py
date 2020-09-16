@@ -14,7 +14,7 @@ def boolean_value(value):
     '''
     Return True or False if value can be interpreted as a boolean
     or None in other cases. Booleans are recognized from bool, int
-    and strings '0', '1', 'true', 'false', 'yes' and 'no' (case 
+    and strings '0', '1', 'true', 'false', 'yes' and 'no' (case
     insensitive)
     '''
     if isinstance(value, (int, bool)):
@@ -39,10 +39,8 @@ def verbose_file(verbose, openmode='w+'):
         except IOError:
             return None
 
-    if ((sys.version_info[0] >= 3 and 
-         isinstance(verbose, io.IOBase)) or
-        (sys.version_info[0] < 3 and 
-         isinstance(verbose, types.FileType))):
+    if (isinstance(verbose, io.IOBase)
+            or six.PY2 and isinstance(verbose, types.FileType)):
         return verbose
 
     return None

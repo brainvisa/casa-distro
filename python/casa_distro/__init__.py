@@ -12,11 +12,15 @@ share_directory = osp.join(osp.dirname(__file__), 'share')
 if not osp.exists(share_directory):
     share_directory = osp.join(osp.dirname(osp.dirname(__file__)), 'share')
     if not osp.exists(share_directory):
-        share_directory = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))), 'share')
+        share_directory = osp.join(
+            osp.dirname(osp.dirname(osp.dirname(__file__))), 'share')
         if not osp.exists(share_directory):
             brainvisa_home = os.environ.get('BRAINVISA_HOME')
             if brainvisa_home:
-                share_directory = osp.join(brainvisa_home, 'share', '%s-%s.%s' % (project_name, version_major, version_minor))
+                share_directory = osp.join(
+                    brainvisa_home, 'share',
+                    '%s-%s.%s' % (project_name, version_major, version_minor)
+                )
             del brainvisa_home
 casa_branches = ['latest_release', 'bug_fix', 'trunk']
 
@@ -38,4 +42,3 @@ def share_directories():
     share_directories = [d for d in share_directories if os.path.isdir(d)] \
         + [share_directory]
     return share_directories
-
