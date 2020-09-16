@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-import six
 import os.path as osp
+
+from casa_distro import six
+
 
 def install(base_dir, builder, verbose):
     if verbose:

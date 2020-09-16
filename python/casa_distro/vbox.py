@@ -5,10 +5,12 @@ import os
 import os.path as osp
 import re
 import shutil
-import six
 import subprocess
 import tempfile
 import time
+
+import casa_distro.six as six
+
 
 def vbox_manage_command(cmd_options):
     '''

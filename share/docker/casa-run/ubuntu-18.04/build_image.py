@@ -5,8 +5,10 @@
 # these files synchronized so that they perform exactly the same installation
 # steps.
 
-import six
 import os.path as osp
+
+from casa_distro import six
+
 
 def install(base_dir, builder, verbose):
     if verbose:
