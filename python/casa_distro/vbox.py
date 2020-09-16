@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, division, print_function
 
 import os
 import os.path as osp
@@ -128,9 +128,9 @@ def create_image(base, base_metadata,
                 sudo apt upgrade
                 sudo apt install gcc make perl
 
-        3) Disable automatic software update in "Update" tab of Software & Updates
-        properties. Otherwise installation may fail because installation
-        database is locked.
+        3) Disable automatic software update in "Update" tab of Software &
+        Updates properties. Otherwise installation may fail because
+        installation database is locked.
 
         4) Set root password to "brainvisa" (this is necessary to automatically
         connect to the VM to perform post-install)
@@ -141,9 +141,9 @@ def create_image(base, base_metadata,
 
         7) Shut down the VM
 
-        8) Configure the VM in VirualBox (especially 3D acceleration, processors
-        and memory)
-'''
+        8) Configure the VM in VirualBox (especially 3D acceleration,
+        processors and memory)
+        '''
     elif type in ('run', 'dev'):
         if base:
             vbox_import_image(base, name, output,
@@ -164,13 +164,16 @@ def create_user_image(base_image,
                       output,
                       base_directory,
                       verbose):
-    name = dev_config['name']
-
     install_dir = osp.join(dev_config['directory'], 'host', 'install')
     vm_name = osp.splitext(osp.basename(output))[0]
     vm = VBoxMachine(vm_name)
     # if vm.exists():
-    #     raise RuntimeError("VirtulaBox already has a VM named {0}. Use the following command to remove it : VBoxManage unregistervm '{0}'. Add the -delete option to remove associated files (be sure of what you do). If it is running, you can switch it off with : VBoxManage controlvm '{0}' poweroff".format(vm_name))
+    #     raise RuntimeError(
+    #         "VirtualBox already has a VM named {0}. Use the following "
+    #         "command to remove it : VBoxManage unregistervm '{0}'. Add the "
+    #         "-delete option to remove associated files (be sure of what you "
+    #         "do). If it is running, you can switch it off with : VBoxManage "
+    #         "controlvm '{0}' poweroff".format(vm_name))
     # vbox_import_image(base_image, vm_name, output, verbose=verbose)
     vm.start_and_wait(verbose=verbose)
     if verbose:
@@ -257,9 +260,8 @@ class VBoxMachine:
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
-                six.print_(
-                    'Starting', self.name, 'and waiting for it to be ready',
-                           file=verbose, flush=True)
+                print('Starting', self.name, 'and waiting for it to be ready',
+                      file=verbose, flush=True)
             self.start(gui=gui)
             command = self._run_user_command('echo')
             for i in range(attempts):
@@ -328,10 +330,10 @@ class VBoxMachine:
                      '--password', self.root_password, self.name, 'copyto',
                      '--target-directory', self.tmp_dir, source_file])
         f = os.path.basename(source_file)
-        self.run_root('cp --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" && rm "{tmp}/{f}"'.format(
-            tmp=self.tmp_dir,
-            f=f,
-            dest=dest_dir))
+        self.run_root('cp --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" '
+                      '&& rm "{tmp}/{f}"'.format(tmp=self.tmp_dir,
+                                                 f=f,
+                                                 dest=dest_dir))
 
     def copy_user(self, source, dest_dir):
         '''
@@ -359,7 +361,8 @@ class VBoxMachine:
                              '--username', self.user,
                              '--password', self.user_password,
                              self.name,
-                             'run', '--', '/bin/tar', '-xf', dest_tar, '--directory', dest_dir])
+                             'run', '--', '/bin/tar', '-xf', dest_tar,
+                             '--directory', dest_dir])
                 vbox_manage(['guestcontrol',
                              '--username', self.user,
                              '--password', self.user_password,
@@ -377,10 +380,10 @@ class VBoxMachine:
                 build_file,
                 verbose=None,
                 gui=False):
-        """
-        Install dependencies of casa-{image_type} image
-        This method look for a share/docker/casa-{image_type}/{system}/vbox.py file
-        and execute the install(base_dir, vbox, verbose) command that must
+        """Install dependencies of casa-{image_type} image
+
+        This method look for a share/docker/casa-{image_type}/{system}/vbox.py
+        file and execute the install(base_dir, vbox, verbose) command that must
         be defined in this file.
 
         base_dir is the directory containing the vbox.py file
