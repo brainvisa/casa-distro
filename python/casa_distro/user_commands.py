@@ -36,7 +36,6 @@ from casa_distro.build_workflow import (merge_config,
                                         update_build_workflow,
                                         delete_build_workflow)
 from casa_distro.log import verbose_file
-from casa_distro.web import url_listdir, urlopen, wget_command
 
 
 def size_to_string(full_size):
