@@ -695,8 +695,9 @@ def update(type=None, distro=None, branch=None, system=None, name=None,
     """
     Update an existing environment.
 
-    example:
-        casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+    This command allows a user to change some parameters of an existing
+    environment. At the moment only the 'writable' parameter can be changed
+    (see below).
 
     Parameters
     ----------

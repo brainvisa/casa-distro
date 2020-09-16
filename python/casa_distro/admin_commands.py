@@ -269,7 +269,7 @@ def publish_base_image(type,
     ----------
     
     type
-        type of image to create. Either "system" for a base system image, or "run"
+        type of image to publish. Either "system" for a base system image, or "run"
         for an image used in a user environment, or "dev" for a developer image.
 
     image
