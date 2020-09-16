@@ -1,0 +1,18 @@
+# http://editorconfig.org
+
+root = true
+
+# Defaults for every file
+[*]
+charset = utf-8
+indent_style = space
+insert_final_newline = true
+#trim_trailing_whitespace = true  # not ready to do so everywhere yet
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+# Makefiles must use tabs for indentation
+[Makefile]
+indent_style = tab

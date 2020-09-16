@@ -3,10 +3,14 @@ from __future__ import absolute_import, print_function
 
 import os
 import os.path as osp
+import re
 import shutil
-import six
 import subprocess
+import tempfile
 import time
+
+import casa_distro.six as six
+
 
 def vbox_manage_command(cmd_options):
     '''
@@ -30,9 +34,29 @@ def vbox_manage(cmd_options, output=False):
         subprocess.check_call(cmd)
 
 
+_re_vbox_list_vms = re.compile(r'^"([^"]+)"\s+\{(.*)\}$')
+
+def vbox_list_vms(running=False):
+    '''
+    Iterate over VMs defined in VirtualBox and yield their name.
+    If running is True, consider only VMs that are currently running.
+    '''
+    global _re_vbox_list_vms
+    
+    if running:
+        cmd = 'runningvms'
+    else:
+        cmd = 'vms'
+    output = vbox_manage(['list', cmd], output=True).decode('utf8')
+    for i in output.split('\n'):
+        m = _re_vbox_list_vms.match(i)
+        if m:
+            yield m.group(1)
+
 def create_image(base, base_metadata, 
                  output, metadata,
                  build_file,
+                 cleanup,
                  memory,
                  disk_size,
                  gui,
@@ -132,7 +156,25 @@ def create_image(base, base_metadata,
         raise NotImplementedError('Creation of image of type {0} is not yet '
                                   'implemented for VirtualBox'.format(type))
 
+def create_user_image(base_image,
+                      dev_config,
+                      output,
+                      base_directory,
+                      verbose):
+    name = dev_config['name']
 
+    install_dir = osp.join(dev_config['directory'], 'host', 'install')
+    vm_name = osp.splitext(osp.basename(output))[0]
+    vm = VBoxMachine(vm_name)
+    #if vm.exists():
+        #raise RuntimeError("VirtulaBox already has a VM named {0}. Use the following command to remove it : VBoxManage unregistervm '{0}'. Add the -delete option to remove associated files (be sure of what you do). If it is running, you can switch it off with : VBoxManage controlvm '{0}' poweroff".format(vm_name))
+    #vbox_import_image(base_image, vm_name, output, verbose=verbose)
+    vm.start_and_wait(verbose=verbose)
+    if verbose:
+        six.print_('Copying', install_dir, 'to /casa/install in VM',
+                    file=verbose, flush=True)
+    vm.copy_user(install_dir, '/casa/install')
+    vm.remove(verbose=verbose)
 
 class VBoxMachine:
     '''
@@ -151,7 +193,20 @@ class VBoxMachine:
         self.root_password = 'brainvisa'
         self.tmp_dir = '/tmp/casa_distro'
     
-                
+    
+    def exists(self):
+        '''
+        Check if a VM named self.name is defined in VirtualBox
+        '''
+        return self.name in vbox_list_vms()
+    
+    def running(self):
+        '''
+        Check if a VM named self.name is currently running in VirtualBox
+        '''
+        return self.name in vbox_list_vms(running=True)
+    
+        
     def vm_info(self):
         '''
         Return information about the VM.
@@ -211,7 +266,34 @@ class VBoxMachine:
                     return True
         return False
 
+    def stop(self, wait=5, attempts=50, verbose=None):
+        '''
+        Stop a running VM
+        '''
+        if self.running():
+            if verbose:
+                six.print_('Stopping', self.name,
+                            file=verbose, flush=True)
+            vbox_manage(['controlvm', self.name, 'acpipowerbutton'])
+            for i in range(attempts):
+                if not self.running():
+                    break
+                time.sleep(wait)
+            else:
+                raise RuntimeError('Failed to stop VM {0}'.format(self.name))
             
+    def remove(self, verbose=None):
+        '''
+        Remove a VM from VirtualBox without deleting the image file
+        '''
+        if self.exists():
+            self.stop(verbose=verbose)
+            if verbose:
+                six.print_('Removing', self.name,
+                            file=verbose, flush=True)
+                    
+            vbox_manage(['unregistervm', self.name])
+
     def _run_user_command(self, command):
         '''
         Return a command useable with subprocess module to run a shell
@@ -251,14 +333,44 @@ class VBoxMachine:
             f=f,
             dest=dest_dir))
 
-    def copy_user(self, source_file, dest_dir):
+    def copy_user(self, source, dest_dir):
         '''
-        Copy a file in VM as self.user
+        Copy a file or a directory in VM as self.user
         '''
-        vbox_manage(['guestcontrol', '--username', self.user, 
-                     '--password', self.user_password, self.name, 
-                     'copyto', '--target-directory', dest_dir, 
-                     source_file])
+        if osp.isdir(source):
+            # Some directories (in particular install directory) cannot be
+            # directly copied by "VBoxManage guestcontrol copyto" command.
+            # I think this is because there are too many files/directories
+            # in it. Therefore, directories are copied through "tar"
+            tmp = tempfile.mkdtemp()
+            dir, base = osp.split(source)
+            tar = osp.join(tmp, base + '.tar')
+            dest_tar = osp.join(dest_dir, base + '.tar')
+            try:
+                subprocess.call(['ls', '-l', tmp])
+                subprocess.check_call(['tar', '-cf', tar, '--directory', dir, base])
+                vbox_manage(['guestcontrol',
+                             '--username', self.user, 
+                             '--password', self.user_password, 
+                             self.name, 
+                             'copyto', tar, dest_tar])
+                vbox_manage(['guestcontrol',
+                             '--username', self.user, 
+                             '--password', self.user_password, 
+                             self.name, 
+                             'run', '--', '/bin/tar', '-xf', dest_tar, '--directory', dest_dir])
+                vbox_manage(['guestcontrol',
+                             '--username', self.user, 
+                             '--password', self.user_password, 
+                             self.name, 
+                             'rm', dest_tar])
+            finally:
+                shutil.rmtree(tmp)
+        else:
+            vbox_manage(['guestcontrol', '--username', self.user, 
+                        '--password', self.user_password, self.name, 
+                        'copyto', '--target-directory', dest_dir, 
+                        source])
 
     def install(self, 
                 build_file, 
@@ -336,20 +448,3 @@ def vbox_import_image(image, vbox_machine, output,
                  '--type', 'hdd'])
 
 
-def setup(type, distro, branch, system, name, base_directory, image,
-          output, vm_memory, vm_disk_size, verbose, force):
-    """
-    VirtualBox specific part of setup command
-    """
-    raise NotImplementedError('setup is not implemented for VirtualBox')
-    #if output:
-        #vm_name = vm_name.format(image_name=image_name)
-        #output = osp.expanduser(osp.expandvars(output.format(vm_name=vm_name)))
-        #if os.path.exists(output):
-            #raise ValueError('File %s already exists, please remove it and retry' % output)
-        #vbox_import_image(image=source_image,
-                           #vbox_machine=vm_name,
-                           #output=output,
-                           #memory=vm_memory,
-                           #disk_size=vm_disk_size)
-        #VBoxManage sharedfolder add test --name casa --hostpath ~/casa_distro/brainvisa/bug_fix_ubuntu-18.04 --automount

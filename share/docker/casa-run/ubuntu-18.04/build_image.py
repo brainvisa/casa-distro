@@ -5,8 +5,10 @@
 # these files synchronized so that they perform exactly the same installation
 # steps.
 
-import six
 import os.path as osp
+
+from casa_distro import six
+
 
 def install(base_dir, builder, verbose):
     if verbose:
@@ -50,6 +52,9 @@ def install(base_dir, builder, verbose):
     builder.copy_root(osp.join(base_dir, 'entrypoint'),
                             '/usr/local/bin/')
     builder.run_root('chmod a+rx /usr/local/bin/entrypoint')
+
+    # copy a software-only mesa libGL in /usr/local/lib
+    builder.copy_root(osp.join(base_dir, 'mesa'), '/usr/local/lib/')
 
     if verbose:
         six.print_('Running install_apt_dependencies.sh',

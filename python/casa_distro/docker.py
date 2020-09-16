@@ -8,6 +8,7 @@ import json
 import os
 import os.path as osp
 import shutil
+import subprocess
 from subprocess import check_call, check_output, call
 import sys
 import tempfile
@@ -166,7 +167,7 @@ def update_docker_images(image_name_filters = ['*']):
 def get_image_id(image_full_name):
     try:
         images = check_output(['docker', 'images', image_full_name])
-    except:
+    except subprocess.CalledProcessError:
         return None
     images = [i for i in images.split('\n')[1:] if i != '']
     if len(images) != 1:
@@ -195,7 +196,7 @@ def pull_image(image_full_name):
         check_call(cmd)
         if get_image_id(image_full_name) != old_image:
             return old_image
-    except:
+    except subprocess.CalledProcessError:
         return None
     return None
 
@@ -212,11 +213,11 @@ def rm_images(images):
     finally:
         try:
             os.close(tmp[0])
-        except:
+        except OSError:
             pass
         try:
             os.unlink(tmp[1])
-        except:
+        except OSError:
             pass
 
 def create_docker_images(image_name_filters = ['*'],
@@ -367,7 +368,11 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
                tmp_container=True, container_image=None, cwd=None, env=None,
                container_options=[],
                verbose=None):
-    
+    """Run a command in the Docker container.
+
+    Return the exit code of the command, or raise an exception if the command
+    cannot be run.
+    """
     verbose = verbose_file(verbose)
     
     docker = ['docker', 'run']
@@ -411,7 +416,7 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
         print('Running docker with the following command:', file=verbose)
         print(*("'%s'" % i for i in docker), file=verbose)
         print('-' * 40, file=verbose)
-    check_call(docker)
+    return subprocess.call(docker)
 
 
 

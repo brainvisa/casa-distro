@@ -82,17 +82,18 @@ $PIP3 install 'scikit-learn<0.21'
 
 
 # IPython/Jupyter: only a very specific combination of versions works correctly
-# for our purposes (the APT versions supplied by Ubuntu 18.04 DO NOT work):
-#
+# for our purposes:
 # 1. qtconsole in BrainVISA and Anatomist;
 # 2. notebook-based tests (e.g. pyaims-tests).
-$PIP3 install 'pyzmq<18'
-$PIP3 install -U 'ipython<8'
-$PIP3 install jupyter
-$PIP3 install --ignore-installed -U 'ipykernel<5' 'tornado<4.5'
-$PIP3 install 'qtconsole<4.5'
-$PIP3 install -U 'nbsphinx<0.5'
-$PIP3 install 'sphinx-gallery<0.4'
+#
+# The versions below were tested successfully (the APT versions supplied by
+# Ubuntu 18.04 DO NOT work).
+$PIP3 install -U 'ipython~=5.9.0' 'ipykernel~=4.10.1' 'tornado~=4.5.3' \
+                 'jupyter~=1.0.0' 'jupyter_client~=5.3.4' \
+                 'pyzmq~=18.0.2' 'qtconsole~=4.4.4'
+
+$PIP3 install 'nbsphinx~=0.4.3'
+$PIP3 install 'sphinx-gallery~=0.3.1'
 
 
 # Re-install Python 2 packages whose binaries have been overwritten by
@@ -106,10 +107,9 @@ PIP2="sudo python2 -m pip --no-cache-dir"
 # use a sequence of 'pip uninstall', 'pip install' rather than 'pip
 # --force-reinstall', because the latter also uninstalls and reinstalls all
 # dependencies of the specified packages.
-$PIP2 uninstall --yes pip
+$PIP2 install -U --force-reinstall pip
 $PIP2 uninstall --yes jupyter-console
 $PIP2 uninstall --yes dipy
-$PIP2 install pip
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
 

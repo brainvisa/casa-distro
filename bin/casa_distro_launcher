@@ -1,0 +1,266 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+import json
+import os
+import subprocess
+
+from soma.wip.application.api import Application
+from soma.qt_gui.qt_backend import Qt
+from soma.qt_gui.qt_backend.QtCore import pyqtSignal
+
+class CasaLauncher(Qt.QDialog):
+    
+    def __init__(self, conf_path):
+        super(CasaLauncher, self).__init__()
+        self.conf_path = conf_path
+        
+        with open(conf_path, 'r') as conf_file:
+            self.conf = json.load(conf_file)
+        
+        self.setup_ui()
+        self.setup_links()
+
+    def setup_ui(self):
+        self._main_layout = Qt.QVBoxLayout(self)
+        
+        self._mount_manager = MountManager(self.conf)
+        self._launchers = Launchers()
+        
+        self._errors_label = Qt.QLabel()
+        
+        self._validation_btns = Qt.QDialogButtonBox(Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel)
+
+        self._main_layout.addWidget(self._mount_manager)
+        self._main_layout.addWidget(self._launchers)
+        self._main_layout.addWidget(self._errors_label)
+        self._main_layout.addWidget(self._validation_btns)
+    
+    def setup_links(self):
+        self._validation_btns.accepted.connect(self.save_conf)
+        self._validation_btns.rejected.connect(self.close)
+        self._mount_manager.valueChanged.connect(self.block_launchers)
+        self._launchers.launched.connect(self.close_and_launch)
+
+    def save_conf(self):
+        if self._mount_manager.check_all_mounts():
+            print('SAVE')
+            with open(self.conf_path, 'w') as conf_file:
+                json.dump(self.conf, conf_file, indent=4)
+            self.accept()
+        else:
+            # Redondent with errors in MountManager errors
+            # Could be used to regroup errors from software conf in the future
+            self._errors_label.setText('Mount points are not all set correctly!')
+    
+    def close_and_launch(self, command):
+        self.close()
+        subprocess.check_call(command)
+    
+    def block_launchers(self):
+        self._launchers.disable_for_reload()
+    
+    # def closeEvent(self, *args, **kwargs):
+    #     super(Qt.QDialog, self).closeEvent(*args, **kwargs)
+    #     print('CLOSE!!!!')
+
+
+class MountManager(Qt.QWidget):
+    
+    def __init__(self, conf):
+        super(MountManager, self).__init__()
+        self.conf = conf
+        self.modified = False
+        
+        self._red = Qt.QColor(250, 130 ,130)
+        self._orange = Qt.QColor(250, 200 ,100)
+        
+        self.setup_ui()
+        self.setup_links()
+    
+    valueChanged = pyqtSignal()
+ 
+    def setup_ui(self):
+        self._main_layout = Qt.QVBoxLayout(self)
+        
+        self._mount_table = Qt.QTableWidget()
+        self._mount_table.setColumnCount(2)
+        self._mount_table.setRowCount(len(self.conf.get('mounts', {})))
+        self._mount_table.setHorizontalHeaderLabels(['Host', 'Container'])
+        self._mount_table.horizontalHeader().setSectionResizeMode(0, Qt.QHeaderView.Stretch)
+        self._mount_table.horizontalHeader().setSectionResizeMode(1, Qt.QHeaderView.Stretch)
+        
+        for idx, (host, container) in enumerate(self.conf.get('mounts', {}).items()):
+            self._mount_table.setItem(idx, 0, Qt.QTableWidgetItem(host))
+            # First col not editable
+            self._mount_table.item(idx, 0).setFlags(self._mount_table.item(idx, 0).flags() ^ Qt.Qt.ItemIsEditable)
+            self._mount_table.setItem(idx, 1, Qt.QTableWidgetItem(container))
+        
+        self._error_label = Qt.QLabel()
+        
+        self._manager_btns = Qt.QHBoxLayout()
+        self._add_mount = Qt.QPushButton('+')
+        self._remove_mount = Qt.QPushButton('-')
+        self._manager_btns.addStretch(1)
+        self._manager_btns.addWidget(self._add_mount)
+        self._manager_btns.addWidget(self._remove_mount)
+        
+        self._main_layout.addWidget(self._mount_table)
+        self._main_layout.addWidget(self._error_label)
+        self._main_layout.addLayout(self._manager_btns)
+
+    def setup_links(self):
+        self._add_mount.clicked.connect(self._add_mount_row)
+        self._remove_mount.clicked.connect(self._delete_mount_row)
+        self._mount_table.cellChanged.connect(self._value_modified)
+     
+    def _add_mount_row(self):
+        host_mount_choice = Qt.QFileDialog()
+        host_mount_choice.setFileMode(Qt.QFileDialog.Directory)
+        if host_mount_choice.exec_():
+            self.modified = True
+            self.valueChanged.emit()
+            self._mount_table.setRowCount(self._mount_table.rowCount() + 1)
+            host_path = host_mount_choice.selectedFiles()[0]
+            self._mount_table.setItem(self._mount_table.rowCount()-1, 0, Qt.QTableWidgetItem(host_path))
+            self._mount_table.setItem(self._mount_table.rowCount()-1, 1, Qt.QTableWidgetItem(''))
+            self.conf.get('mounts', {})[host_path] = ''
+            self.check_all_mounts()
+    
+    def _delete_mount_row(self):
+        if self._mount_table.selectedItems():
+            self.modified = True
+            self.valueChanged.emit()
+            rows = sorted(list(set([item.row() for item in self._mount_table.selectedItems()])), reverse=True)
+            for row in rows:
+                host_path = self._mount_table.item(row, 0).text()
+                del self.conf.get('mounts', {})[host_path]
+                self._mount_table.removeRow(row)       
+
+    def check_mount(self, host, container):
+        if host and container:
+            return True
+    
+    def _value_modified(self, row, col):
+        if not getattr(self._mount_table.item(row, 0), 'text', None) or not getattr(self._mount_table.item(row, 1), 'text', None):
+            return
+        host = self._mount_table.item(row, 0).text()
+        cont = self._mount_table.item(row, 1).text()
+        self.conf['mounts'][host] = cont
+        self.valueChanged.emit()
+        self.check_all_mounts()
+        
+    
+    def check_all_mounts(self, *args):
+        self._mount_table.blockSignals(True)
+        self.modified = True
+        all_mounts_ok = True
+        in_container = []
+        
+        for idx in range(self._mount_table.rowCount()):
+            if not getattr(self._mount_table.item(idx, 0), 'text', None) or not getattr(self._mount_table.item(idx, 1), 'text', None):
+                self._mount_table.blockSignals(False)
+                return None
+            host = self._mount_table.item(idx, 0).text()
+            container = self._mount_table.item(idx, 1).text()
+            if container in in_container:
+                self._mount_table.item(idx, 0).setBackground(self._orange)
+                self._mount_table.item(idx, 1).setBackground(self._orange)
+                
+                other_idx = in_container.index(container)
+                self._mount_table.item(other_idx, 0).setBackground(self._orange)
+                self._mount_table.item(other_idx, 1).setBackground(self._orange)
+                all_mounts_ok = False
+                
+            elif self.check_mount(host, container):
+                self._mount_table.item(idx, 0).setBackground(Qt.QColor('white'))
+                self._mount_table.item(idx, 1).setBackground(Qt.QColor('white'))
+                
+            else:
+                self._mount_table.item(idx, 0).setBackground(self._red)
+                self._mount_table.item(idx, 1).setBackground(self._red)
+                all_mounts_ok = False
+            
+            in_container.append(container)
+        
+        if not all_mounts_ok:
+            self._error_label.setText('Mount points are not all set correctly!')
+        else:
+            self._error_label.setText('')
+            
+            
+        self._mount_table.blockSignals(False)
+        return all_mounts_ok
+                
+
+class Launchers(Qt.QWidget):
+    
+    launched = pyqtSignal(str)
+    
+    def __init__(self):
+        super(Launchers, self).__init__()
+        self.icon_size = 70
+        
+        self.setup_ui()
+        self.setup_links()
+        
+    def setup_ui(self):
+        self._main_layout = Qt.QVBoxLayout(self)
+        self._launchers_container = Qt.QWidget()
+        self._launchers_layout = Qt.QHBoxLayout()
+        
+        # self._frame = QFrame(self)
+        # self._layout = Qt.QHBoxLayout(self._frame)
+        # self._frame.setFrameShape(QFrame.StyledPanel)
+        
+        self._reload_msg = Qt.QLabel()
+        
+        brainvisa_icon = Qt.QPixmap('/casa/host/build/share/doc/axon/images/brainvisa.png')
+        self._brainvisa_btn = Qt.QPushButton(Qt.QIcon(brainvisa_icon), 'BRAINVISA')
+        self._brainvisa_btn.setIconSize(Qt.QSize(self.icon_size, self.icon_size))
+        
+        anatomist_icon = Qt.QPixmap('/casa/host/build/share/doc/anatomist-4.6/html/images/anaLogo.png')
+        self._anatomist_btn = Qt.QPushButton(Qt.QIcon(anatomist_icon), 'ANATOMIST')
+        self._anatomist_btn.setIconSize(Qt.QSize(self.icon_size, self.icon_size))
+        
+        self._terminal_btn = Qt.QPushButton(Qt.QIcon(), 'TERMINAL')
+        
+        self._launchers_layout.addWidget(self._brainvisa_btn)
+        self._launchers_layout.addWidget(self._anatomist_btn)
+        self._launchers_layout.addWidget(self._terminal_btn)
+        
+        self._main_layout.addWidget(self._reload_msg)
+        self._main_layout.addWidget(self._launchers_container)
+        self._launchers_container.setLayout(self._launchers_layout)
+    
+    def setup_links(self):
+        self._brainvisa_btn.clicked.connect(self._launch_brainvisa)
+        self._anatomist_btn.clicked.connect(self._launch_anatomist)
+        self._terminal_btn.clicked.connect(self._launch_terminal)
+
+    def _launch_brainvisa(self):
+        self.launch('brainvisa')
+        
+    def _launch_anatomist(self):
+        self.launch('anatomist')
+        
+    def _launch_terminal(self):
+        self.launch('xterm')
+        
+    def launch(self, command):
+        self.launched.emit(command)
+
+    def disable_for_reload(self):
+        self._launchers_container.setEnabled(False)
+        self._reload_msg.setText("Reloading is needed to launch softwares/terminal!")
+
+
+if __name__ == "__main__":
+    app = Qt.QApplication(sys.argv)
+        
+    conf_path = '/casa/host/conf/casa_distro.json'
+    dialog = CasaLauncher(conf_path)
+    dialog.show()
+    
+    app.exec_()

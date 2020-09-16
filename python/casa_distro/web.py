@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import os
+
 try:
     # Python 2 imports
     from urllib import urlopen, urlretrieve
@@ -48,3 +50,4 @@ def url_listdir(url):
     parser = ListdirHTMLParser()
     parser.feed(urlopen(url).read().decode('utf8'))
     return parser.listdir[1:]
+

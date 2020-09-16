@@ -13,21 +13,9 @@ set -x  # display commands before running them
 # Install configuration elements that are specific to casa-dev
 ###############################################################################
 
-# create casa directories for singularity compatibility
-for d in $CASA_CONF \
-         $CASA_SRC \
-         $CASA_CUSTOM_SRC \
-         $CASA_BUILD \
-         $CASA_CUSTOM_BUILD; do
-    if [ ! -e $d ]; then
-        mkdir -p $d
-        chmod 777 $d
-    fi
-done
-
-
 sudo chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
 sudo git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
+sudo git lfs install --system --skip-repo
 
 # allow attach gdb to a process
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf

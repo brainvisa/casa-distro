@@ -115,6 +115,7 @@ toolchain_packages=(
 # Development tools and convenience utilities
 development_tools=(
     bash-completion
+    default-jre    # needed for jenkins server logs (is it really worth it? the dependencies of default-jre are huge...)
     flake8
     gdb
     gdbserver
@@ -134,6 +135,16 @@ development_tools=(
     spyder
     vim
     xterm
+)
+
+singularity_build_dependencies=(
+    uuid-dev
+    libgpgme-dev
+    squashfs-tools
+    libseccomp-dev
+    wget
+    pkg-config
+    git
 )
 
 # TODO: review and add -dbg packages that contain the debug symbols
@@ -280,7 +291,9 @@ brainvisa_standard_dev_dependencies=(
 
 
 brainvisa_toolboxes_dev_dependencies=(
-    libqt5svg5-dev # Required for building MRtrix3
+    # Required for building MRtrix3, also for PyQt5 (see
+    # casa-run/ubuntu-18.04/build_dependencies.sh)
+    libqt5svg5-dev
 )
 
 
@@ -305,6 +318,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${version_control_packages[@]} \
     ${toolchain_packages[@]} \
     ${development_tools[@]} \
+    ${singularity_build_dependencies[@]} \
     ${debug_symbol_packages[@]} \
     ${documentation_building_packages[@]} \
     ${python3_packages[@]} \

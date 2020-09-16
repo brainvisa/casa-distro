@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+import fnmatch
+import json
+import glob
 import os
 import os.path as osp
-import subprocess
-import json
-import tempfile
+import re
 import shutil
-import fnmatch
-from subprocess import check_call, check_output
-import glob
+import subprocess
+import tempfile
 import sys
 
 from casa_distro import six
@@ -61,11 +61,29 @@ class RecipeBuilder:
             for line in lines:
                 print('   ', line, file=file)
         file.flush()
-    
-    
+
+
+def iter_images(base_directory):
+    for filename in os.listdir(base_directory):
+        if filename.endswith('.sif') or filename.endswith('.simg'):
+            yield filename
+
+
+def _singularity_build_command():
+    build_command = ['sudo']
+    if 'SINGULARITY_TMPDIR' in os.environ:
+        build_command += ['SINGULARITY_TMPDIR='
+                          + os.environ['SINGULARITY_TMPDIR']]
+    if 'TMPDIR' in os.environ:
+        build_command += ['TMPDIR=' + os.environ['TMPDIR']]
+    build_command += ['singularity', 'build', '--disable-cache']
+    return build_command
+
+
 def create_image(base, base_metadata, 
                  output, metadata,
                  build_file,
+                 cleanup,
                  verbose, **kwargs):
     type = metadata['type']
     if type == 'system':
@@ -78,7 +96,8 @@ def create_image(base, base_metadata,
 %runscript
     . /usr/local/bin/entrypoint
 '''.format(base=base))
-        v = {}       
+        v = {}
+        print('build_file:', build_file)
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
         if 'install' not in v:
             raise RuntimeError('No install function defined in %s' % build_file)
@@ -94,9 +113,42 @@ def create_image(base, base_metadata,
             print(open(recipe.name).read(), file=verbose)
             print('----------------------------------------', file=verbose)
             verbose.flush()
-        subprocess.check_call(['sudo', 'singularity', 'build', '--disable-cache', output, recipe.name])
+        build_command = _singularity_build_command()
+        if not cleanup:
+            build_command.append('--no-cleanup')
+        if verbose:
+            print('run create command:\n',
+                  *(build_command + [output, recipe.name]))
+        subprocess.check_call(build_command + [output, recipe.name])
 
     
+def create_user_image(base_image,
+                      dev_config,
+                      output,
+                      base_directory,
+                      verbose):
+    recipe = tempfile.NamedTemporaryFile()
+    recipe.write('''Bootstrap: localimage
+    From: {base_image}
+    
+%files
+    {environment_directory}/host/install /casa/install
+
+%runscript
+    /casa/install/bin/bv_env "$@"
+
+'''.format(base_image=base_image,
+           environment_directory=dev_config['directory']))
+    recipe.flush()
+    if verbose:
+        print('---------- Singularity recipe ----------', file=verbose)
+        print(open(recipe.name).read(), file=verbose)
+        print('----------------------------------------', file=verbose)
+        verbose.flush()
+    build_command = _singularity_build_command()
+    subprocess.check_call(build_command + [output, recipe.name])
+
+
 _singularity_version = None
 
 def singularity_major_version():
@@ -107,17 +159,50 @@ def singularity_version():
 
     if _singularity_version is None:
         output = subprocess.check_output(['singularity', '--version']).decode('utf-8')
-        version = output.split()[-1]
-        _singularity_version = [int(x) for x in version.split('.')]
+        m = re.match(r'^([\d.]*).*$', output.split()[-1])
+        if m:
+            version = m.group(1)
+            _singularity_version = [int(x) for x in version.split('.')]
+        else:
+            raise RuntimeError('Cannot determine singularity numerical version : version string = "{0}"'.format(output))
     return _singularity_version
 
 
-def run(config, command, gui, root, cwd, env, image, container_options,
+_singularity_run_help = None
+
+def singularity_run_help():
+    """
+    Useful to get available commandline options, because they differ with
+    versions and systems.
+    """
+    global _singularity_run_help
+
+    if _singularity_run_help:
+        return _singularity_run_help
+
+    output = subprocess.check_output(['singularity', 'help',
+                                      'run']).decode('utf-8')
+    return output
+
+
+def singularity_has_option(option):
+    doc = singularity_run_help()
+    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
+
+
+def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         base_directory, verbose):    
-    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted 
+    """Run a command in the Singularity container.
+
+    Return the exit code of the command, or raise an exception if the command
+    cannot be run.
+    """
+    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
-    singularity = ['singularity', 'run', '--cleanenv', '--home', '/casa/host/home']
-    if cwd:
+    singularity = ['singularity', 'run']
+    if singularity_has_option('--cleanenv'):
+        singularity.append('--cleanenv')
+    if cwd and singularity_has_option('--pwd'):
         singularity += ['--pwd', cwd]
     
     if root:
@@ -133,33 +218,64 @@ def run(config, command, gui, root, cwd, env, image, container_options,
             shutil.copy(xauthority,
                         osp.join(config['directory'], 'host/home/.Xauthority'))
     
+    home_mount = False
+    homedir = os.path.expanduser('~')
     for dest, source in config.get('mounts', {}).items():
         source = source.format(**config)
         source = osp.expandvars(source)
         dest = dest.format(**config)
         dest = osp.expandvars(dest)
         singularity += ['--bind', '%s:%s' % (source, dest)]
-        
+        if source == homedir:
+            home_mount = True
+    if not home_mount and singularity_major_version() > 2:
+        # singularity 3 doesn't mount the home directory automatically.
+        singularity += ['--bind', homedir]
+
     tmp_env = dict(config.get('env', {}))
     if gui:
         tmp_env.update(config.get('gui_env', {}))
     if env is not None:
         tmp_env.update(env)
-    
+
+    singularity_home = None
+
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
     for name, value in tmp_env.items():
-        if name == 'HOME':
-            continue  # cannot be specified this way any longer.
         value = value.format(**config)
         value = osp.expandvars(value)
-        container_env['SINGULARITYENV_' + name] = value
-        
+        if name == 'HOME':
+            singularity_home = value
+        else:
+            container_env['SINGULARITYENV_' + name] = value
+
+    default_casa_home = '/casa/host/home'
+    if singularity_home is None:
+        singularity_home = default_casa_home
+
+    if singularity_has_option('--home'):
+        # In singularity >= 3.0 host home directory is mounted
+        # and configured (e.g. in environment variables) if no
+        # option is given.
+        singularity += ['--home', singularity_home]
+    else:
+        container_env['SINGULARITYENV_HOME'] = singularity_home
+
+    # The following code may prevent containers to run on some system
+    # handle ~/.ssh
+    #ssh_dir = osp.join(homedir, '.ssh')
+    #if osp.isdir(ssh_dir):
+        #singularity += [
+            #'--bind',
+            #'%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
+
     container_options = config.get('container_options', []) + (container_options or [])
+
     if cwd:
         for i, opt in enumerate(container_options):
-            if opt == '--pwd':
+            if opt == '--pwd' and singularity_has_option('--pwd'):
                 container_options = container_options[:i] + container_options[i+2:]
                 break
     if gui:
@@ -167,22 +283,37 @@ def run(config, command, gui, root, cwd, env, image, container_options,
         if gui_options:
             container_options += [osp.expandvars(i) for i in gui_options]
         # handle --nv option, if a nvidia device is found
-        if ('--nv' not in container_options and 
-            os.path.exists('/dev/nvidiactl') and
-            '--no-nv' not in container_options):
+        if ('--nv' not in container_options and
+            opengl in ('auto', 'nv') and os.path.exists('/dev/nvidiactl') and
+            '--no-nv' not in container_options and
+            singularity_has_option('--nv')):
             container_options.append('--nv')
         # remove --no-nv which is not a singularity option
         if '--no-nv' in container_options:
             container_options.remove('--no-nv')
+        # handle --softgl option
+        if '--softgl' in container_options:
+            # remove it, it's a fake option not for singularity
+            container_options.remove('--softgl')
+            if opengl == 'auto':
+                # force software mode
+                opengl = 'software'
+        if opengl in ('software', ):
+            # activate mesa path in enrypoint
+            container_env['SINGULARITYENV_SOFTWARE_OPENGL'] = '1'
+            # this variable avoids to use "funny" transparent visuals
+            container_env['SINGULARITYENV_XLIB_SKIP_ARGB_VISUALS'] = '1'
+
     if 'SINGULARITYENV_PS1' not in container_env \
             and not [x for x in container_options if x.startswith('PS1=')] \
-            and singularity_version() >= [3, 6]:
+            and singularity_has_option('--env'):
         # the prompt with singularity 3 is ugly and cannot be overriden in the
         # .bashrc of the container.
         container_options += ['--env',
-                              b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
+                              br'PS1=\[\033[33m\]\u@\h \$\[\033[0m\] ']
 
     singularity += container_options
+
     if image is None:
         image = config.get('image')
         if image is None:
@@ -201,7 +332,7 @@ def run(config, command, gui, root, cwd, env, image, container_options,
             v = container_env[n]
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
-    check_call(singularity, env=container_env)
+    return subprocess.call(singularity, env=container_env)
 
 
 

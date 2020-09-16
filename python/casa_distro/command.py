@@ -40,7 +40,10 @@ def get_doc(command, indent=''):
     paragraphs = []
     cargs = inspect.getargspec(command)
     defaults = dict((i + '_default', j) for i, j in zip(cargs.args[-len(cargs.defaults or ()):], cargs.defaults or ()))
-    doc = command.__doc__.format(**defaults)
+    if command.__doc__ is None:
+        doc = ''
+    else:
+        doc = command.__doc__.format(**defaults)
     
     
     lines = doc.split('\n')
@@ -105,7 +108,7 @@ Commands:
             # Split the docstring in two to remove parameters documentation
             # The docstring is supposed to follow the Numpy style docstring
             # see https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
-            command_doc = re.split('\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
+            command_doc = re.split(r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
             commands_summary.append('    ' + '-' * len(command))
             commands_summary.append('    ' + command)
             commands_summary.append('    ' + '-' * len(command))
@@ -122,7 +125,6 @@ def main():
 
     parser = argparse.ArgumentParser(add_help=False)
 
-    parser.add_argument('-r', '--repository', default=None)
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('--version', action='version',
                         version='casa-distro version: %s' % __version__)
@@ -148,14 +150,8 @@ def main():
     # Get command argument specification
     cargs = inspect.getargspec(command)
 
-    if options.repository:
-        kwargs['build_workflows_repository'] = options.repository
-        from casa_distro import defaults
-        # change the global repository dir
-        defaults.default_build_workflow_repository = options.repository
-        
     if options.verbose and 'verbose' in cargs.args:
-        kwargs['verbose'] = sys.stdout
+        kwargs['verbose'] = 'yes'
         
     allows_kwargs = True
     for i in options.command_options:

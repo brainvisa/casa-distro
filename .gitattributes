@@ -1,0 +1,10 @@
+# Warn about whitespace errors
+* whitespace="trailing-space,tab-in-indent"
+Makefile whitespace="trailing-space"
+
+# Normalize end-of-line for files that Git detects to be text
+* text=auto
+
+*.md diff=markdown whitespace="-blank-at-eol"
+*.py diff=python
+*.sh eol=lf

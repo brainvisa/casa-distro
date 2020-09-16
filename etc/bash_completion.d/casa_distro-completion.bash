@@ -30,11 +30,11 @@ function _complete_casa_distro_option_()
     local SHARE_DIRS="${SHARE} ${CASA_DEFAULT_REPOSITORY}/share ${HOME}/.config/casa-distro ${HOME}/.casa-distro"
 
     case "$opt" in
-    distro|distro_name|distro_source)
+    distro)
         local distro
         if [ ! -d "$SHARE" ]; then
             # no share dir (zip distrib): use builtin list
-            distro="brainvisa opensource cati_platform"
+            distro="brainvisa opensource cati_platform web cea"
         fi
         for d in ${SHARE_DIRS}; do
             if [ -d "$d/distro" ]; then
@@ -46,7 +46,7 @@ function _complete_casa_distro_option_()
         COMPREPLY=($(compgen -W "$distro" -- "${word}"))
         ;;
     branch)
-        COMPREPLY=($(compgen -W "bug_fix trunk" -- "${word}"))
+        COMPREPLY=($(compgen -W "master integration latest_releasse release_candidate" -- "${word}"))
         ;;
     system)
         local sys
@@ -63,8 +63,22 @@ function _complete_casa_distro_option_()
     container_type)
         COMPREPLY=($(compgen -W "singularity docker virtualbox" -- "${word}"))
         ;;
+    name)
+        local names=`casa_distro list base_directory=$CASA_DEFAULT_REPOSITORY | grep -E -v '^(  [a-z])'`
+        COMPREPLY=($(compgen -W "$names" -- "${word}"))
+        ;;
     container_image|container_test_image)
         local images=$CASA_DEFAULT_REPOSITORY/*.simg
+        COMPREPLY=($(compgen -W "$images" -- "${word}"))
+        ;;
+    image)
+        # take existing singularity images
+        local images=$CASA_DEFAULT_REPOSITORY/*.sif
+#         for f in $images
+#         do
+#             local b=$(basename "$f")
+#             local nimages="$nimages ${b:0:-4}"
+#         done
         COMPREPLY=($(compgen -W "$images" -- "${word}"))
         ;;
     image_names)
@@ -107,14 +121,26 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
+    gui)
+        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
+        ;;
+    opengl)
+        COMPREPLY=($(compgen -W "auto nv container software" -- "${word}"))
+        ;;
     verbose)
         COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
         ;;
-    build_workflows_repository)
+    force)
+        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
+        ;;
+    root)
+        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
+        ;;
+    base_directory)
         COMPREPLY=($(compgen -d -- "${word}"))
         ;;
-    command)
-        COMPREPLY=($(compgen -c -W "host workflow" -- "${word}"))
+    type)
+        COMPREPLY=($(compgen -W "run dev system" -- "${word}"))
         ;;
     esac
 }
@@ -211,7 +237,7 @@ function _complete_casa_distro_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help create list update update_image shell run mrun bv_maker create_writable_image root_shell delete clean_images"
+    local cmd_list="help distro list list_images setup setup_dev shell update pull_image run mrun bv_maker delete clean_images"
     local opt_list="-r --repository -h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -253,6 +279,15 @@ function _complete_casa_distro_()
              || { [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = ":" ] \
                   && [ "${COMP_WORDS[$(( COMP_CWORD - 4 ))]}" = "image_names" ];}; then
             # in image_names option, after : sign
+            _complete_casa_distro_image_names_tag_
+            return
+        fi
+
+        if { [ "$word" = ":" ] \
+             && [ "${COMP_WORDS[$(( COMP_CWORD - 3 ))]}" = "image" ]; } \
+             || { [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = ":" ] \
+                  && [ "${COMP_WORDS[$(( COMP_CWORD - 4 ))]}" = "image" ];}; then
+            # in image option, after : sign
             _complete_casa_distro_image_names_tag_
             return
         fi
@@ -267,38 +302,40 @@ function _complete_casa_distro_()
             COMP_CWORD=$(( COMP_CWORD - 1 ))
             _complete_bv_maker_
             ;;
-        create)
-            COMPREPLY=($(compgen -W "distro_source= distro_name= container_type= container_image= container_test_image= branch= system= not_override= build_workflows_repository= verbose=" -- "${word}"))
+#         distro)
+#             ;;
+        setup)
+            COMPREPLY=($(compgen -W "distro= version= name= container_type= image= writable= system= base_directory= url= output= verbose=" -- "${word}"))
             ;;
-        create_writable_image)
-            COMPREPLY=($(compgen -W "singularity_image= distro= branch= system= build_workflows_repository= verbose=" -- "${word}"))
+        setup_dev)
+            COMPREPLY=($(compgen -W "distro= name= container_type= image= writable= branch= system= base_directory= url= output= verbose=" -- "${word}"))
             ;;
         list)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= verbose=" -- "${word}"))
+            ;;
+        list_images)
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= image= base_directory= verbose=" -- "${word}"))
             ;;
         mrun)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= gui= interactive= tmp_container= container_image= cwd= env= container_options= verbose= conf=" -- "${word}"))
-            ;;
-        root_shell)
-            COMPREPLY=($(compgen -W "singularity_image= distro= branch= system= build_workflows_repository= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         run)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= gui= interactive= tmp_container= container_image= cwd= env= container_options= verbose= conf=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         shell)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= gui= interactive= tmp_container= container_image= cwd= env= container_options= verbose= conf=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         update)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= verbose= command=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= writable= verbose=" -- "${word}"))
             ;;
-        update_image)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= verbose=" -- "${word}"))
+        pull_image)
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= image= url= force= verbose=" -- "${word}"))
             ;;
         delete)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= interactive=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= interactive=" -- "${word}"))
             ;;
         clean_images)
-            COMPREPLY=($(compgen -W "build_workflows_repository= image_names= verbose= interactive=" -- "${word}"))
+            COMPREPLY=($(compgen -W "base_directory= image_names= verbose= interactive=" -- "${word}"))
             ;;
         esac
         ;;
@@ -311,7 +348,7 @@ function _complete_casa_distro_admin_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help package_casa_distro publish_casa_distro create_release_plan update_release_plan html_release_plan create_latest_release create_docker update_docker publish_docker create_singularity publish_singularity publish_build_workflows"
+    local cmd_list="help download_image create_base_image publish_base_image create_user_image"
     local opt_list="-r --repository -h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -349,9 +386,9 @@ function _complete_casa_distro_admin_()
         fi
 
         if { [ "$word" = ":" ] \
-             && [ "${COMP_WORDS[$(( COMP_CWORD - 3 ))]}" = "image_names" ]; } \
+             && [ "${COMP_WORDS[$(( COMP_CWORD - 3 ))]}" = "image" ]; } \
              || { [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = ":" ] \
-                  && [ "${COMP_WORDS[$(( COMP_CWORD - 4 ))]}" = "image_names" ];}; then
+                  && [ "${COMP_WORDS[$(( COMP_CWORD - 4 ))]}" = "image" ];}; then
             # in image_names option, after : sign
             _complete_casa_distro_image_names_tag_
             return
@@ -361,35 +398,17 @@ function _complete_casa_distro_admin_()
         help)
             COMPREPLY=($(compgen -W "$cmd_list" -- "${word}"))
             ;;
-        package_casa_distro)
-            COMPREPLY=($(compgen -W "build_workflows_repository=" -- "${word}"))
+        download_image)
+            COMPREPLY=($(compgen -W "type= filename= url= output= container_type= verbose=" -- "${word}"))
             ;;
-        publish_casa_distro)
-            COMPREPLY=($(compgen -W "build_workflows_repository= repository_server= repository_server_directory= login= verbose=" -- "${word}"))
+        create_base_image)
+            COMPREPLY=($(compgen -W "type= name= base= output= container_type= memory= disk_size= gui= cleanup= verbose=" -- "${word}"))
             ;;
-        create_release_plan|update_release_plan)
-            COMPREPLY=($(compgen -W "components= build_workflows_repository= verbose=" -- "${word}"))
+        publish_base_image)
+            COMPREPLY=($(compgen -W "type= image= container_type= verbose=" -- "${word}"))
             ;;
-        html_release_plan)
-            COMPREPLY=($(compgen -W "login= password= build_workflows_repository= verbose=" -- "${word}"))
-            ;;
-        create_latest_release)
-            COMPREPLY=($(compgen -W "build_workflows_repository= dry= ignore_warning= verbose=" -- "${word}"))
-            ;;
-        create_docker)
-            COMPREPLY=($(compgen -W "image_names= verbose=" -- "${word}"))
-            ;;
-        update_docker|publish_docker)
-            COMPREPLY=($(compgen -W "image_names= verbose=" -- "${word}"))
-            ;;
-        create_singularity)
-            COMPREPLY=($(compgen -W "image_names= build_workflows_repository= verbose=" -- "${word}"))
-            ;;
-        publish_singularity)
-            COMPREPLY=($(compgen -W "image_names= build_workflows_repository= repository_server= repository_server_directory= login= verbose=" -- "${word}"))
-            ;;
-        publish_build_workflows)
-            COMPREPLY=($(compgen -W "distro= branch= system= build_workflows_repository= repository_server= repository_server_directory= login= verbose=" -- "${word}"))
+        create_user_image)
+            COMPREPLY=($(compgen -W "version= name= distro= system= environment_name= container_type= base_directory= install= generate= upload= verbose=" -- "${word}"))
             ;;
         esac
         ;;

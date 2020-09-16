@@ -40,5 +40,6 @@ build_dependencies=(
     libpcl-dev  # for python-pcl
 
     # Build dependencies of SIP/PyQt
+    libqt5svg5-dev  # qtconsole needs PyQt5.QtSvg
     qtwebengine5-dev  # for PyQt
 )

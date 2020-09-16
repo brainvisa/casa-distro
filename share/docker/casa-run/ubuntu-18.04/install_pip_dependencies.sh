@@ -80,16 +80,17 @@ $PIP2 install 'scikit-learn<0.21'
 # $PIP2 install python-pcl
 
 # IPython/Jupyter: only a very specific combination of versions works correctly
-# for our purposes (the APT versions supplied by Ubuntu 18.04 DO NOT work):
-#
+# for our purposes:
 # 1. qtconsole in BrainVISA and Anatomist;
 # 2. notebook-based tests (e.g. pyaims-tests).
-$PIP2 install -U 'pyzmq<18.1'
-$PIP2 install -U 'ipython<6.0'
-$PIP2 install jupyter
-$PIP2 install jupyter_client
-$PIP2 install 'qtconsole<4.5'
-$PIP2 install -U 'nbsphinx<0.5'
+#
+# The versions below were tested successfully (the APT versions supplied by
+# Ubuntu 18.04 DO NOT work).
+$PIP2 install -U 'ipython~=5.9.0' 'ipykernel~=4.10.1' 'tornado~=4.5.3' \
+                 'jupyter~=1.0.0' 'jupyter_client~=5.3.4' \
+                 'pyzmq~=18.0.2' 'qtconsole~=4.4.4'
+
 # sphinx 1.7 has bugs
-$PIP2 install -U "sphinx<1.7"
-$PIP2 install 'sphinx-gallery<0.4'
+$PIP2 install -U 'sphinx~=1.6.7'
+$PIP2 install 'nbsphinx~=0.4.3'
+$PIP2 install 'sphinx-gallery~=0.3.1'

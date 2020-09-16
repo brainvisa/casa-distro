@@ -1,0 +1,12 @@
+{
+    "casa_distro_compatibility": "3.0",
+    "name": "cati_platform",
+    "description": "This distro contains internal CATI software.",
+    "systems": ["ubuntu-18.04"],
+    "container_image": "cati/cati_platform:%(system)s",
+    "container_volumes": {
+        "%(build_workflow_dir)s/cati/qualicati/database": "/cati/qualicati/database",
+        "%(build_workflow_dir)s/cati/qualicati/save": "/cati/qualicati/save",
+        "%(build_workflow_dir)s/cati/qualicati/database_debug": "/cati/qualicati/database_debug"
+    }
+}
