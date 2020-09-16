@@ -36,7 +36,7 @@ def verbose_file(verbose, openmode='w+'):
         # Try to open file from given string
         try:
             verbose = open(verbose, openmode)
-        except:
+        except IOError:
             return None
 
     if ((sys.version_info[0] >= 3 and 

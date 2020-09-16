@@ -101,7 +101,7 @@ def stdout_progress(url, pos, size, speed, block, count):
     term_width = 79
     try:
         term_width = int(subprocess.check_output(['stty', 'size']).split()[1]) - 1
-    except:
+    except subprocess.CalledProcessError:
         term_width = 80
     url_width = term_width - 30
     if pos > (1<<30):

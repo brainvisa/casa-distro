@@ -254,7 +254,7 @@ def update_build_workflow(build_workflow_directory, verbose=None,
         script_file += '.bat'
         with open(script_file, 'w') as f:
             f.write('''@setlocal
-@"%s" "%s" \%*
+@"%s" "%s" \\%*
 @endlocal''' % (sys.executable, casa_distro_path))
     else:
         # unix: bash script

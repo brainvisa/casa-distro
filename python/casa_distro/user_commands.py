@@ -670,7 +670,7 @@ def run(type=None, distro=None, branch=None, system=None,
         env_list = parse_list(env)
         try:
             env = dict(e.split('=') for e in env_list)
-        except:
+        except ValueError:
             raise ValueError('env syntax error. Should be in the shape '
                              '"VAR1=value1,VAR2=value2" etc.')
     command = args_list

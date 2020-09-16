@@ -310,7 +310,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         # the prompt with singularity 3 is ugly and cannot be overriden in the
         # .bashrc of the container.
         container_options += ['--env',
-                              b'PS1=\[\\033[33m\]\u@\h \$\[\\033[0m\] ']
+                              br'PS1=\[\033[33m\]\u@\h \$\[\033[0m\] ']
 
     singularity += container_options
 

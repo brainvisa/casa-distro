@@ -108,7 +108,7 @@ Commands:
             # Split the docstring in two to remove parameters documentation
             # The docstring is supposed to follow the Numpy style docstring
             # see https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
-            command_doc = re.split('\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
+            command_doc = re.split(r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
             commands_summary.append('    ' + '-' * len(command))
             commands_summary.append('    ' + command)
             commands_summary.append('    ' + '-' * len(command))
