@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
+import os
+osp = os.path
+
+mode = 'build'
+
+casa_build = os.environ.get('CASA_%s' % mode.upper())
+casa_hostdir = os.environ.get('CASA_HOST_DIR')
+
+if not casa_build or not casa_hostdir:
+    raise RuntimeError('we don\'t seem to be inside a container, we should.')
+
+
+exclude_programs = set([
+    'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin',
+    'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py',
+])
+
+out_dir = osp.normpath(osp.join(casa_build, '..', 'host_bin'))
+print('out_dir:', out_dir)
+if not osp.isdir(out_dir):
+    os.mkdir(out_dir)
+
+for exe in os.listdir(osp.join(casa_build, 'bin')):
+    if exe in exclude_programs:
+        print('exclude:', exe)
+        continue
+    #print(exe)
+    out_file = osp.join(out_dir, exe)
+    print(out_file)
+    with open(out_file, 'w') as f:
+        print('''#!/bin/sh
+directory="$0"
+[ -L "$directory" ] && directory="`readlink -f \"$directory\"`"
+command="`basename \"$directory\"`"
+directory=$(dirname "$directory")
+directory="`cd \"$directory\";pwd`"
+container_dir=$(dirname "$directory")
+casa_env_dir=$(dirname "$container_dir")
+casa_distro_dir=$(dirname "$casa_env_dir")
+container_dir="$container_dir/%s/bin"
+casa_env_name=$(basename $casa_env_dir)
+casa_distro="$container_dir/casa_distro"
+if [ -x "$casa_distro" -a -z "$CASA_HOST_DIR" ]; then
+    exec "$casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
+else
+    exec "$container_dir/$command" "$@"
+fi
+
+''' % mode, file=f)
+
