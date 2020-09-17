@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import os
+import sys
 osp = os.path
 
 mode = 'build'
@@ -12,6 +13,19 @@ casa_install = os.environ.get('CASA_INSTALL')
 if casa_install and osp.exists(osp.join(casa_install, 'bin', 'bv_env')):
     # installed binaries exist, use them
     mode = 'install'
+
+if '-h' in sys.argv[1:]:
+    print(sys.argv[0], '[-h]')
+    print('build run scripts for Casa-distro / BrainVisa executables to ease '
+          'their use from outside the container')
+    print('''This script should be run from inside a casa-distro container, in a developer environment. It creates a directory /casa/host/host_bin where it will write a script for every executable in the build environment. Each of these scripts can be invoked from *outside the container* and will take care of running the right casa-distro container and call the executable.
+    Incidentally the scripts can also be called from inside the container, and in this situation will not run another container but call the executable directly.
+
+    There are 2 modes: "build" and "install", because executables may be found either in the install directory (/casa/host/install/bin) or in the build directory (/casa/host/build/bin) and the scripts have to call one of them. The rule is that if there are any executables in the *install* directory, it will switch to "install" mode, otherwise use the "build" mode.
+
+    The scripts are sh shell scripts, thus to be used from outside the container, the host machine must have a sh/bash shell installed, which is OK on any linux or Mac host, but not necessarily on a Windows host.
+''')
+    sys.exit(0)
 
 casa_build = os.environ.get('CASA_%s' % mode.upper())
 casa_hostdir = os.environ.get('CASA_HOST_DIR')
