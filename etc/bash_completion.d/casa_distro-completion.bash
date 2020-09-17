@@ -297,13 +297,14 @@ function _complete_casa_distro_()
             COMPREPLY=($(compgen -W "$cmd_list" -- "${word}"))
             ;;
         bv_maker)
+            # use casa-distro options first
+            COMPREPLY1=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             # delegate to bv_maker completion
             COMP_WORDS=("${COMP_WORDS[@]:1}")
             COMP_CWORD=$(( COMP_CWORD - 1 ))
             _complete_bv_maker_
+            COMPREPLY=( "${COMPREPLY1[@]}" "${COMPREPLY[@]}" )
             ;;
-#         distro)
-#             ;;
         setup)
             COMPREPLY=($(compgen -W "distro= version= name= container_type= image= writable= system= base_directory= url= output= verbose=" -- "${word}"))
             ;;

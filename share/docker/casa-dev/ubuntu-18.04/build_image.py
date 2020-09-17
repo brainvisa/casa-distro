@@ -33,9 +33,9 @@ def install(base_dir, builder, verbose):
                       '/usr/local/bin')
     builder.run_root('chmod a+rx /usr/local/bin/askpass-bioproj.sh')
 
-    builder.copy_user(
-        osp.realpath(osp.join(base_dir, 'list-shared-libs-paths.sh')),
-                    '/casa/')
+    builder.copy_user(osp.realpath(osp.join(base_dir,
+                                            'list-shared-libs-paths.sh')),
+                      '/casa/')
     builder.run_user('chmod a+rx /casa/list-shared-libs-paths.sh')
 
     if verbose:

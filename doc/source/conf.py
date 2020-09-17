@@ -118,7 +118,7 @@ exclude_patterns = [
     "_themes/scikit-learn/static/ML_MAPS_README.rst",
     '_build',
     '**.ipynb_checkpoints'
-]+ templates_path
+] + templates_path
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None

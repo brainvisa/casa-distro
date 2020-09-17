@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, division, print_function
 
 import datetime
 from fnmatch import fnmatchcase
@@ -115,22 +115,22 @@ def create_base_image(type,
                       gui='no',
                       cleanup='yes',
                       verbose=True):
-    """
-    Create a new virtual image
+    """Create a new virtual image
 
     Parameters
     ----------
     type
-        type of image to create. Either "system" for a base system image, or "run"
-        for an image used in a user environment, or "dev" for a developer image.
+        type of image to create. Either "system" for a base system image, or
+        "run" for an image used in a user environment, or "dev" for a developer
+        image.
 
     name
         default={name_default}
         name of the virtual image (no other image must have the same name).
 
     base
-        Source file use to buld the image. The default value depends on image type and
-        container type.
+        Source file use to buld the image. The default value depends on image
+        type and container type.
 
     output
         default={output_default}
@@ -138,31 +138,38 @@ def create_base_image(type,
 
     container_type
         default={container_type_default}
-        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker".
 
     memory
         default={memory_default}
-        For vbox container type only. Size in MiB of memory allocated for virtual machine.
+        For vbox container type only. Size in MiB of memory allocated for
+        virtual machine.
 
     disk_size
         default={disk_size_default}
-        For vbox container type only. Size in MiB of maximum disk size of virtual machine.
+        For vbox container type only. Size in MiB of maximum disk size of
+        virtual machine.
 
     gui
         default={gui_default}
-        For vbox container type only. If value is "yes", "true" or "1", display VirtualBox window.
+        For vbox container type only. If value is "yes", "true" or "1", display
+        VirtualBox window.
 
     cleanup
         default={cleanup_default}
-        If "no", "false" or "0", do not cleanup after a failure during image building. This may
-        allow to debug a problem after the failure. For instance, with Singularity one can use a
-        command like :
-          sudo singularity run --writable /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
+
+        If "no", "false" or "0", do not cleanup after a failure during image
+        building. This may allow to debug a problem after the failure. For
+        instance, with Singularity one can use a command like :
+          sudo singularity run --writable
+          /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
 
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
-     """
+
+    """
     verbose = verbose_file(verbose)
     gui = boolean_value(gui)
     cleanup = boolean_value(cleanup)
@@ -181,14 +188,17 @@ def create_base_image(type,
 
     if base is None:
         if type == 'system':
-            base = osp.join(default_build_workflow_repository, 'ubuntu-*.{extension}').format(
-                extension=origin_extension)
+            base = osp.join(
+                default_build_workflow_repository,
+                'ubuntu-*.{extension}'.format(extension=origin_extension))
         elif type == 'run':
-            base = osp.join(default_build_workflow_repository, 'casa-system-ubuntu-*.{extension}').format(
-                extension=extension)
+            base = osp.join(
+                default_build_workflow_repository,
+                'casa-system-ubuntu-*.{extension}'.format(extension=extension))
         else:
-            base = osp.join(default_build_workflow_repository, 'casa-run-ubuntu-*.{extension}').format(
-                extension=extension)
+            base = osp.join(
+                default_build_workflow_repository,
+                'casa-run-ubuntu-*.{extension}'.format(extension=extension))
 
     if not osp.exists(base):
         base_pattern = osp.expandvars(osp.expanduser(base))
@@ -276,15 +286,15 @@ def publish_base_image(type,
                            'casa-{type}-*.{extension}'),
                        container_type='singularity',
                        verbose=True):
-    """
-    Upload an image to BrainVISA web site.
+    """Upload an image to BrainVISA web site.
 
     Parameters
     ----------
 
     type
-        type of image to publish. Either "system" for a base system image, or "run"
-        for an image used in a user environment, or "dev" for a developer image.
+        type of image to publish. Either "system" for a base system image, or
+        "run" for an image used in a user environment, or "dev" for a developer
+        image.
 
     image
         default={image_default}
@@ -292,11 +302,13 @@ def publish_base_image(type,
 
     container_type
         default={container_type_default}
-        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker".
 
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
+
     """
     verbose = verbose_file(verbose)
     if container_type == 'singularity':
@@ -327,36 +339,41 @@ def publish_base_image(type,
 
     check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                 metadata_file, image,
-                'brainvisa@brainvisa.info:prod/www/casa-distro/%s/' % container_type])
+                'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
+                % container_type])
 
 
 @command
-def create_user_image(version,
-                      name='{distro}-{version}',
-                      base_image='{base_directory}/casa-run-{system}{extension}',
-                      distro=None,
-                      system=None,
-                      environment_name=None,
-                      container_type='singularity',
-                      output=osp.join(
-                          default_build_workflow_repository,
-                          'releases', '{name}{extension}'),
-                      base_directory=casa_distro_directory(),
-                      install='yes',
-                      generate='yes',
-                      upload='no',
-                      verbose=True):
-    """
-    Create a run image given a development environment.
+def create_user_image(
+        version,
+        name='{distro}-{version}',
+        base_image='{base_directory}/casa-run-{system}{extension}',
+        distro=None,
+        system=None,
+        environment_name=None,
+        container_type='singularity',
+        output=osp.join(
+            default_build_workflow_repository,
+            'releases', '{name}{extension}'),
+        base_directory=casa_distro_directory(),
+        install='yes',
+        generate='yes',
+        upload='no',
+        verbose=True):
+    """Create a run image given a development environment.
     The development environment is selected among existing ones its
     distro and system or simply by its name. Only developement environments
     using the master branch are considered.
     This command can perform three steps. Each step can be ignored by setting
     the corresponding option to "no" :
 
-    - install: perform an installation of the development environment into its installation directory. This modify the development environment by updating its installation directory.
+    - install: perform an installation of the development environment into its
+      installation directory. This modify the development environment by
+      updating its installation directory.
 
-    - generate: generate a new image for the run environment. The ne image is based on base_image and the installation directory of the development environment is copied into the image in /casa/install.
+    - generate: generate a new image for the run environment. The ne image is
+      based on base_image and the installation directory of the development
+      environment is copied into the image in /casa/install.
 
     - upload: upload the run image on BrainVISA web site.
 
@@ -376,7 +393,8 @@ def create_user_image(version,
         If given, select environment by its name.
     container_type
         default={container_type_default}
-        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker".
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -395,6 +413,7 @@ def create_user_image(version,
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
+
     """
     install = check_boolean('install', install)
     generate = check_boolean('generate', generate)
@@ -456,12 +475,11 @@ def create_user_image(version,
     metadata_file = output + '.json'
 
     if generate:
-        msg = module.create_user_image(
-            base_image=base_image,
-                    dev_config=config,
-                    output=output,
-                    base_directory=base_directory,
-                    verbose=verbose)
+        msg = module.create_user_image(base_image=base_image,
+                                       dev_config=config,
+                                       output=output,
+                                       base_directory=base_directory,
+                                       verbose=verbose)
         if msg:
             print(msg)
 

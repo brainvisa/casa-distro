@@ -1,25 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, division, print_function
 
 import glob
 import json
-import os
 import os.path as osp
 import sys
-import subprocess
-import tempfile
-import time
-import traceback
 
 from casa_distro import (environment,
                          six)
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
-                                  default_repository_server,
-                                  default_repository_server_directory,
-                                  default_repository_login,
-                                  default_environment_type,
-                                  default_distro,
                                   default_branch,
                                   default_download_url)
 from casa_distro.environment import (casa_distro_directory,
@@ -32,9 +22,6 @@ from casa_distro.environment import (casa_distro_directory,
                                      select_environment,
                                      iter_images,
                                      update_container_image)
-from casa_distro.build_workflow import (merge_config,
-                                        update_build_workflow,
-                                        delete_build_workflow)
 from casa_distro.log import verbose_file
 
 
@@ -68,7 +55,6 @@ def display_summary(status):
 
     global_failed = False
     first_start = None
-    last_stop = None
     for (d, b, s), (es, bwf_dir) in six.iteritems(status):
         status = es.get_status_mapped()
         if status != '':
@@ -82,7 +68,6 @@ def display_summary(status):
                     % start[:5]
             stop = es.stop_time
             if stop:
-                last_stop = stop
                 message += ', stopped: %04d/%02d/%02d %02d:%02d' \
                     % stop[:5]
             messages.append(message)
@@ -185,8 +170,7 @@ def setup_dev(distro=None,
               # vm_memory='8192',
               # vm_disk_size='131072',
               verbose=True):
-    """
-    Create a new developer environment
+    """Create a new developer environment
 
     Parameters
     ----------
@@ -199,28 +183,29 @@ def setup_dev(distro=None,
         only to reset configuration files to their default values.
     branch
         default={branch_default}
-        Name of the source branch to use for dev environments. Either "latest_release",
-        "master" or "integration".
+        Name of the source branch to use for dev environments. Either
+        "latest_release", "master" or "integration".
     system
-        System to use with this environment. By default, it uses the first supported
-        system of the selected distro.
+        System to use with this environment. By default, it uses the first
+        supported system of the selected distro.
     name
         default={name_default}
-        Name of the environment. No other environment must have the same name (including
-        non developer environments).
+        Name of the environment. No other environment must have the same name
+        (including non developer environments).
         This name may be used later to select the environment to run.
     container_type
         default={container_type_default}
-        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
-        If not given try to gues according to installed container software in the
-        following order : Singularity, VirtualBox and Docker.
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker". If not given try to gues according to installed container
+        software in the following order : Singularity, VirtualBox and Docker.
     writable
-        size of a writable file system that can be used to make environement specific
-        modification to the container file system. The size can be written in bytes as
-        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M",
-        or in gygabytes with suffix "G". If size is not 0, this will create an
-        overlay.img file in the base environment directory. This file will contain the
-        any modification done to the container file system.
+        size of a writable file system that can be used to make environement
+        specific modification to the container file system. The size can be
+        written in bytes as an integer, or in kilobytes with suffix "K", or in
+        megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+        not 0, this will create an overlay.img file in the base environment
+        directory. This file will contain the any modification done to the
+        container file system.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -236,6 +221,7 @@ def setup_dev(distro=None,
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
+
     """
     verbose = verbose_file(verbose)
 
@@ -281,8 +267,10 @@ def setup_dev(distro=None,
         system = distro['systems'][0]
 
     if system not in distro['systems']:
-        raise ValueError('The system {0} is not supported by the distro {1}. Please select one of the following systems: {2}'.format(
-            system, distro['name'], ', '.join(distro['systems'])))
+        raise ValueError('The system {0} is not supported by the distro {1}. '
+                         'Please select one of the following systems: {2}'
+                         .format(system, distro['name'],
+                                 ', '.join(distro['systems'])))
     if verbose:
         print('System:', system,
               file=verbose)
@@ -369,8 +357,7 @@ def setup(distro=None,
           # vm_memory='8192',
           # vm_disk_size='131072',
           verbose=True):
-    """
-    Create a new user environment
+    """Create a new user environment
 
     Parameters
     ----------
@@ -382,27 +369,28 @@ def setup(distro=None,
         new environment. If the environment already exists, distro must be set
         only to reset configuration files to their default values.
     version
-        version of the distro to use. By default the release with highest version
-        is selected.
+        version of the distro to use. By default the release with highest
+        version is selected.
     system
         System to use inside this environment.
     name
         default={name_default}
-        Name of the environment. No other environment must have the same name (including
-        developer environments).
+        Name of the environment. No other environment must have the same name
+        (including developer environments).
         This name may be used later to select the environment to run.
     container_type
         default={container_type_default}
-        Type of virtual appliance to use. Either "singularity", "vbox" or "docker".
-        If not given try to gues according to installed container software in the
-        following order : Singularity, VirtualBox and Docker.
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker". If not given try to gues according to installed container
+        software in the following order : Singularity, VirtualBox and Docker.
     writable
-        size of a writable file system that can be used to make environement specific
-        modification to the container file system. The size can be written in bytes as
-        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M",
-        or in gygabytes with suffix "G". If size is not 0, this will create an
-        overlay.img file in the base environment directory. This file will contain the
-        any modification done to the container file system.
+        size of a writable file system that can be used to make environement
+        specific modification to the container file system. The size can be
+        written in bytes as an integer, or in kilobytes with suffix "K", or in
+        megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+        not 0, this will create an overlay.img file in the base environment
+        directory. This file will contain the any modification done to the
+        container file system.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -418,6 +406,7 @@ def setup(distro=None,
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
+
     """
     verbose = verbose_file(verbose)
 
@@ -448,19 +437,22 @@ def setup(distro=None,
 
     if distro is None or version is None or system is None:
         selected = None
-        for metadata_file in glob.glob(osp.join(base_directory, 'run', '*.json')):
+        for metadata_file in glob.glob(osp.join(base_directory,
+                                                'run', '*.json')):
             metadata = json.load(open(metadata_file))
-            if ((distro is None or distro == metadata['distro']) and
-                (version is None or version == metadata['version']) and
-                    (system is None or system == metadata['system'])):
+            if ((distro is None or distro == metadata['distro'])
+                and (version is None or version == metadata['version'])
+                    and (system is None or system == metadata['system'])):
                 if selected:
                     raise ValueError(
-                        'Several releases found. Please adjust, distro, version and system to select only one')
+                        'Several releases found. Please adjust, distro, '
+                        'version and system to select only one')
                 metadata['image'] = metadata_file[:metadata_file.rfind('.')]
                 selected = metadata
         if selected is None:
             raise ValueError(
-                'No release found. Please adjust, distro, version and system to select one')
+                'No release found. Please adjust, distro, version and system '
+                'to select one')
         distro = selected['distro']
         version = selected['version']
         system = selected['version']
@@ -537,8 +529,7 @@ def setup(distro=None,
 def list_command(type=None, distro=None, branch=None, system=None, name=None,
                  base_directory=casa_distro_directory(),
                  verbose=None):
-    '''
-    List (eventually selected) run or dev environments created by "setup" command.
+    '''List run or dev environments created by "setup"/"setup_dev" command.
 
     Parameters
     ----------
@@ -559,6 +550,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
+
     '''
     verbose = verbose_file(verbose)
     for config in iter_environments(base_directory,
@@ -568,7 +560,8 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
                                     system=system,
                                     name=name):
         print(config['name'])
-        for i in ('type', 'distro', 'branch', 'version', 'system', 'container_type', 'image'):
+        for i in ('type', 'distro', 'branch', 'version', 'system',
+                  'container_type', 'image'):
             v = config.get(i)
             if v is not None:
                 print('  %s:' % i, config[i])
@@ -701,8 +694,7 @@ def update(type=None, distro=None, branch=None, system=None, name=None,
            base_directory=casa_distro_directory(),
            writable=None,
            verbose=None):
-    """
-    Update an existing environment.
+    """Update an existing environment.
 
     This command allows a user to change some parameters of an existing
     environment. At the moment only the 'writable' parameter can be changed
@@ -722,16 +714,18 @@ def update(type=None, distro=None, branch=None, system=None, name=None,
         default={base_directory_default}
         Directory where images and environments are stored
     writable
-        size of a writable file system that can be used to make environement specific
-        modification to the container file system. The size can be written in bytes as
-        an integer, or in kilobytes with suffix "K", or in megabytes qith suffix "M",
-        or in gygabytes with suffix "G". If size is not 0, this will create or resize an
-        overlay.img file in the base environment directory. This file will contain the
-        any modification done to the container file system. If size is 0, the overlay.img
-        file is deleted and all its content is lost.
+        size of a writable file system that can be used to make environement
+        specific modification to the container file system. The size can be
+        written in bytes as an integer, or in kilobytes with suffix "K", or in
+        megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+        not 0, this will create or resize an overlay.img file in the base
+        environment directory. This file will contain the any modification done
+        to the container file system. If size is 0, the overlay.img file is
+        deleted and all its content is lost.
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
+
     """
     verbose = verbose_file(verbose)
     config = select_environment(base_directory,
@@ -752,9 +746,9 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
                image='*', base_directory=casa_distro_directory(),
                url=default_download_url + '/{container_type}',
                force=False, verbose=None):
-    '''Update the container images. By default all images that are used by at least
-    one environment are updated. There are two ways of selecting the image(s)
-    to be downloaded:
+    '''Update the container images. By default all images that are used by at
+    least one environment are updated. There are two ways of selecting the
+    image(s) to be downloaded:
 
     1. filtered by environment, using the 'name' selector, or a combination of
        'distro', 'branch', and 'system'.
@@ -774,16 +768,16 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
         only to reset configuration files to their default values.
     branch
         default=None
-        Name of the source branch to use for dev environments. Either "latest_release",
-        "master" or "integration".
+        Name of the source branch to use for dev environments. Either
+        "latest_release", "master" or "integration".
     system
         default=None
-        System to use with this environment. By default, it uses the first supported
-        system of the selected distro.
+        System to use with this environment. By default, it uses the first
+        supported system of the selected distro.
     name
         default=None
-        Name of the environment. No other environment must have the same name (including
-        non developer environments).
+        Name of the environment. No other environment must have the same name
+        (including non developer environments).
         This name may be used later to select the environment to run.
     base_directory
         default={base_directory_default}
@@ -796,7 +790,8 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
         URL where to download image if it is not found.
     force
         default=False
-        force re-download of images even if they are locally present and up-to-date.
+        force re-download of images even if they are locally present and
+        up-to-date.
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
@@ -985,7 +980,7 @@ def clean_images(build_workflows_repository=default_build_workflow_repository,
     Delete singularity images which are no longer used in any build workflow,
     or those listed in image_names.
     '''
-    images_to_keep = {}
+    # images_to_keep = {}
     # for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
     #                                             distro='*', branch='*',
     #                                             system='*'):
