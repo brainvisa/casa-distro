@@ -23,7 +23,13 @@ if '-h' in sys.argv[1:]:
 
     There are 2 modes: "build" and "install", because executables may be found either in the install directory (/casa/host/install/bin) or in the build directory (/casa/host/build/bin) and the scripts have to call one of them. The rule is that if there are any executables in the *install* directory, it will switch to "install" mode, otherwise use the "build" mode.
 
-    The scripts are sh shell scripts, thus to be used from outside the container, the host machine must have a sh/bash shell installed, which is OK on any linux or Mac host, but not necessarily on a Windows host.
+    The scripts in /casa/host/host_bin are sh shell scripts, thus to be used from outside the container, the host machine must have a sh/bash shell installed, which is OK on any linux or Mac host.
+
+    For Windows hosts, casa_build_host_links also creates a set of .bat run scripts in /casa/host/win_bin, which do the same but in a .bat language so that windows machines understand them natively.
+
+    Note that in the scripts, casa_distro is called without any particular options (gui, opengl, etc), so all needed options must be configured in the environment config (/casa/host/conf/casa_distro.json).
+
+    After running this script, it is possible to set the host PATH to point to the host_bin/ (or win_bin/ for windows) directory of the environment to run commands.
 ''')
     sys.exit(0)
 
@@ -42,9 +48,12 @@ exclude_programs = set([
 ])
 
 out_dir = osp.normpath(osp.join(casa_build, '..', 'host_bin'))
+win_dir = osp.normpath(osp.join(casa_build, '..', 'win_bin'))
 print('out_dir:', out_dir)
 if not osp.isdir(out_dir):
     os.mkdir(out_dir)
+if not osp.isdir(win_dir):
+    os.mkdir(win_dir)
 
 for exe in os.listdir(osp.join(casa_build, 'bin')):
     if exe in exclude_programs:
@@ -74,4 +83,23 @@ else
 fi
 
 ''' % mode, file=f)
+
+    # build windows .bat script for windows hosts
+    out_file = osp.join(win_dir, exe + '.bat')
+    print(out_file)
+    with open(out_file, 'w') as f:
+        os.chmod(out_file, 0o755)
+        print(r'''@setlocal
+@set directory="%~d0%~p0"
+@set command="%~n0.exe"
+@set casa_env_dir="%directory%\..\.."
+@for %%F in ("%casa_env_dir%) do set casa_env_name=%%~nF
+@set container_dir="%casa_env_dir%\{mode}\bin"
+@set casa_distro="%container_dir%\casa_distro"
+@set casa_distro_dir="%casa_env_dir%\.."
+@if exist "%casa_distro%" (
+  @"python.exe" "%casa_distro%" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
+@endlocal
+'''.format(mode=mode), file=f)
 
