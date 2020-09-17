@@ -9,8 +9,8 @@ osp = os.path
 
 mode = 'build'
 
-casa_install = os.environ.get('CASA_INSTALL')
-if casa_install and osp.exists(osp.join(casa_install, 'bin', 'bv_env')):
+casa_install = '/casa/install'
+if osp.exists(osp.join(casa_install, 'bin', 'bv_env')):
     # installed binaries exist, use them
     mode = 'install'
 
@@ -21,7 +21,8 @@ if '-h' in sys.argv[1:]:
     print('''This script should be run from inside a casa-distro container, in a developer environment. It creates a directory /casa/host/host_bin where it will write a script for every executable in the build environment. Each of these scripts can be invoked from *outside the container* and will take care of running the right casa-distro container and call the executable.
     Incidentally the scripts can also be called from inside the container, and in this situation will not run another container but call the executable directly.
 
-    There are 2 modes: "build" and "install", because executables may be found either in the install directory (/casa/host/install/bin) or in the build directory (/casa/host/build/bin) and the scripts have to call one of them. The rule is that if there are any executables in the *install* directory, it will switch to "install" mode, otherwise use the "build" mode.
+    There are 2 modes: "build" and "install", because executables may be found either in the install directory (/casa/install/bin) or in the build directory (/casa/host/build/bin) and the scripts have to call one of them. The rule is that if there are any executables in the *install* directory, it will switch to "install" mode, otherwise use the "build" mode.
+    The current mode here is: %s
 
     The scripts in /casa/host/host_bin are sh shell scripts, thus to be used from outside the container, the host machine must have a sh/bash shell installed, which is OK on any linux or Mac host.
 
@@ -30,10 +31,17 @@ if '-h' in sys.argv[1:]:
     Note that in the scripts, casa_distro is called without any particular options (gui, opengl, etc), so all needed options must be configured in the environment config (/casa/host/conf/casa_distro.json).
 
     After running this script, it is possible to set the host PATH to point to the host_bin/ (or win_bin/ for windows) directory of the environment to run commands.
-''')
+''' % mode)
     sys.exit(0)
 
-casa_build = os.environ.get('CASA_%s' % mode.upper())
+if mode == 'install':
+    casa_build = '/casa/install'
+    container_bin_dir = 'install/bin'
+else:
+    casa_build = os.environ.get('CASA_%s' % mode.upper())
+    container_bin_dir = 'host/build/bin'
+
+host_dir = '/casa/host'
 casa_hostdir = os.environ.get('CASA_HOST_DIR')
 
 if not casa_build or not casa_hostdir:
@@ -47,8 +55,8 @@ exclude_programs = set([
     'bv_wine_regedit',
 ])
 
-out_dir = osp.normpath(osp.join(casa_build, '..', 'host_bin'))
-win_dir = osp.normpath(osp.join(casa_build, '..', 'win_bin'))
+out_dir = osp.join(host_dir, 'host_bin')
+win_dir = osp.join(host_dir, 'win_bin')
 print('out_dir:', out_dir)
 if not osp.isdir(out_dir):
     os.mkdir(out_dir)
@@ -68,21 +76,27 @@ for exe in os.listdir(osp.join(casa_build, 'bin')):
 directory="$0"
 [ -L "$directory" ] && directory="`readlink -f \"$directory\"`"
 command="`basename \"$directory\"`"
-directory=$(dirname "$directory")
-directory="`cd \"$directory\";pwd`"
-container_dir=$(dirname "$directory")
-casa_env_dir=$(dirname "$container_dir")
+bin_directory=$(dirname "$directory")
+bin_directory="`cd \"$bin_directory\";pwd`"
+host_dir=$(dirname "$bin_directory")
+casa_env_dir=$(dirname "$host_dir")
 casa_distro_dir=$(dirname "$casa_env_dir")
-container_dir="$container_dir/%s/bin"
+host_container_dir="$casa_env_dir/{bin_dir}"
+container_dir="/casa/{bin_dir}"
 casa_env_name=$(basename $casa_env_dir)
-casa_distro="$container_dir/casa_distro"
-if [ -x "$casa_distro" -a -z "$CASA_HOST_DIR" ]; then
+casa_distro="$host_container_dir/casa_distro"
+if [ -n "$CASA_HOST_DIR" ]; then
+    # inside container: direct run
+    exec "$container_dir/$command" "$@"
+elif [ -x "$casa_distro" ]; then
+    # outside of container, and casa-distro can be found in the container
     exec "$casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
 else
-    exec "$container_dir/$command" "$@"
+    # casa_distro is installed outside of the container, use the PATH
+    exec "casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
 fi
 
-''' % mode, file=f)
+'''.format(bin_dir=container_bin_dir), file=f)
 
     # build windows .bat script for windows hosts
     out_file = osp.join(win_dir, exe + '.bat')
@@ -90,16 +104,21 @@ fi
     with open(out_file, 'w') as f:
         os.chmod(out_file, 0o755)
         print(r'''@setlocal
-@set directory="%~d0%~p0"
+@set bin_directory="%~d0%~p0"
 @set command="%~n0.exe"
-@set casa_env_dir="%directory%\..\.."
+@set host_dir=
+@set casa_env_dir="%bin_directory%\..\.."
 @for %%F in ("%casa_env_dir%) do set casa_env_name=%%~nF
-@set container_dir="%casa_env_dir%\{mode}\bin"
-@set casa_distro="%container_dir%\casa_distro"
+@set container_dir="/casa/{bin_dir}"
 @set casa_distro_dir="%casa_env_dir%\.."
+@set host_container_dir="%casa_env_dir%\{bin_dir}"
+@set casa_distro="%host_container_dir%\casa_distro"
 @if exist "%casa_distro%" (
   @"python.exe" "%casa_distro%" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
 )
+@else (
+  @"python.exe" "-m" "casa_distro" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
 @endlocal
-'''.format(mode=mode), file=f)
+'''.format(bin_dir=container_bin_dir), file=f)
 
