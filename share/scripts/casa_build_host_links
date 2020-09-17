@@ -8,6 +8,11 @@ osp = os.path
 
 mode = 'build'
 
+casa_install = os.environ.get('CASA_INSTALL')
+if casa_install and osp.exists(osp.join(casa_install, 'bin', 'bv_env')):
+    # installed binaries exist, use them
+    mode = 'install'
+
 casa_build = os.environ.get('CASA_%s' % mode.upper())
 casa_hostdir = os.environ.get('CASA_HOST_DIR')
 
@@ -17,7 +22,9 @@ if not casa_build or not casa_hostdir:
 
 exclude_programs = set([
     'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin',
-    'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py',
+    'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py', 'bv_env_host',
+    'bv_env_test', 'bv_unenv', 'bv_unenv.sh', 'bv_unit_test',
+    'bv_wine_regedit',
 ])
 
 out_dir = osp.normpath(osp.join(casa_build, '..', 'host_bin'))
@@ -33,6 +40,7 @@ for exe in os.listdir(osp.join(casa_build, 'bin')):
     out_file = osp.join(out_dir, exe)
     print(out_file)
     with open(out_file, 'w') as f:
+        os.chmod(out_file, 0o755)
         print('''#!/bin/sh
 directory="$0"
 [ -L "$directory" ] && directory="`readlink -f \"$directory\"`"
