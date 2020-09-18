@@ -636,6 +636,9 @@ def run(type=None, distro=None, branch=None, system=None,
     name
         If given, select environment by its name. It replaces type, distro,
         branch and system and is shorter to select one.
+    version
+        If given, select environment by its version (only applicable to user
+        environments, not dev)
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -905,6 +908,7 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
 
 @command
 def shell(type=None, distro=None, branch=None, system=None, name=None,
+          version=None,
           base_directory=casa_distro_directory(),
           gui=True,
           opengl="auto",
@@ -918,6 +922,7 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
     '''
     run(type=type, distro=distro, branch=branch, system=system,
         name=name,
+        version=version,
         base_directory=base_directory,
         gui=gui,
         opengl=opengl,
@@ -931,14 +936,18 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def mrun(distro='*', branch='*', system='*', name=None,
+def mrun(type=None, distro=None, branch=None, system=None, name=None,
+         version=None,
          base_directory=casa_distro_directory(),
          gui=True,
          opengl="auto",
          root=False,
-         interactive=False, tmp_container=True,
-         container_image=None, cwd=None, env=None, container_options=[],
-         args_list=[], verbose=None, conf='dev'):
+         cwd=None,
+         env=None,
+         image=None,
+         container_options=[],
+         args_list=[],
+         verbose=None):
     '''
     Start any command in one or several container with the given
     repository configuration. By default, command is executed in
@@ -949,71 +958,107 @@ def mrun(distro='*', branch='*', system='*', name=None,
 
         casa_distro mrun bv_maker system=ubuntu-*
 
-    The "conf" parameter may address an additional config dictionary within the
-    casa_distro.json config file. Typically, a test config may use a different
-    system image (casa-test images), or options, or mounted directories.
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    name
+        If given, select environment by its name. It replaces type, distro,
+        branch and system and is shorter to select one.
+    version
+        If given, select environment by its version (only applicable to user
+        environments, not dev)
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    gui
+        default={gui_default}
+        If "no", "false" or "0", command is not using a graphical user
+        interface (GUI). Nothing is done to connect the container to a
+        graphical interface. This option may be necessary in context where
+        a graphical interface is not available.
+    opengl
+        default={opengl_default}
+        Setup different ways of trying to use OpenGL 3D rendering and GPU.
+        "auto", "container", "nv", or "software".
+        * "auto": performs auto-detection: same as "nv" if an NVidia device is
+        detected on a host linux system, otherwise same as "container", unless
+        we detect a case where that is known to fail (in which case we would
+        use "software").
+        * "container": passes no special options to Singularity: the mesa
+        installed in the container is used
+        * "nv" tries to mount the proprietary NVidia driver of the host (linux)
+        system in the container
+        * "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
+        rendering. This solution is the slowest but is a fallback when no other
+        solution works.
+    root
+        default={root_default}
+        If "yes", "true" or "1", start execution as system administrator. For
+        Singularity container, this requires administrator privileges on host
+        system.
+    cwd
+        default={cwd_default}
+        Set current working directory to the given value before launching
+        the command.
+    env
+        Comma separated list of environment variables to pass to the command.
+        Each variable must have the form name=value.
+    image
+        Force usage of a specific virtual image instead of the one defined
+        in the environment configuration.
+    container_options
+        Comma separated list of options to add to the command line used to
+        call the container system.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
     '''
-    # build_workflows = list(iter_build_workflow(build_workflows_repository,
-    #                                            distro=distro,
-    #                                            branch=branch,
-    #                                            system=system))
-    # if not build_workflows:
-    #     print('Cannot find requested build workflow.',
-    #           'You can list existing workflows using:\n'
-    #           '    casa_distro list\n'
-    #           'Or create new one using:\n'
-    #           '    casa_distro create ...',
-    #           file=sys.stderr)
-    #     return 1
 
-    # if isinstance(container_options, six.string_types) \
-    #         and len(container_options) != 0:
-    #     container_options = parse_string(container_options)
-    # if isinstance(env, six.string_types) \
-    #         and len(env) != 0:
-    #     env_list = parse_string(env)
-    #     try:
-    #         env = dict(e.split('=') for e in env_list)
-    #     except:
-    #         raise ValueError('env syntax error. Should be in the shape '
-    #                          '"VAR1=value1 VAR2=value2" etc.')
+    verbose = verbose_file(verbose)
+    gui = check_boolean('gui', gui)
+    root = check_boolean('root', root)
+    if container_options:
+        container_options = parse_list(container_options)
+    if env:
+        env_list = parse_list(env)
+        try:
+            env = dict(e.split('=') for e in env_list)
+        except ValueError:
+            raise ValueError('env syntax error. Should be in the shape '
+                             '"VAR1=value1,VAR2=value2" etc.')
+    command = args_list
+    res = []
 
-    # status = {}
-    # global_failed = False
+    for config in iter_environments(base_directory,
+                                    type=type,
+                                    distro=distro,
+                                    branch=branch,
+                                    system=system,
+                                    name=name,
+                                    version=version):
 
-    # for d, b, s, bwf_dir in build_workflows:
-    #     es = ExecutionStatus(start_time = time.localtime())
-    #     status[(d, b, s)] = (es, bwf_dir)
-    #     try:
-    #         command = args_list
-    #         bwf_directory = osp.join(build_workflows_repository, '%s' % d,
-    #                                 '%s_%s' % (b, s))
-    #         run_container(bwf_directory, command=command, gui=gui,
-    #                     interactive=interactive, tmp_container=tmp_container,
-    #                     container_image=container_image, cwd=cwd,
-    #                     env=env,
-    #                     container_options=container_options, verbose=verbose,
-    #                     conf=conf)
-    #         es.stop_time = time.localtime()
-    #         es.error_code = 0
-    #         es.status = 'succeeded'
+        res.append(run_container(config,
+                                 command=command,
+                                 gui=gui,
+                                 opengl=opengl,
+                                 root=root,
+                                 cwd=cwd,
+                                 env=env,
+                                 image=image,
+                                 container_options=container_options,
+                                 base_directory=base_directory,
+                                 verbose=verbose))
 
-    #     except subprocess.CalledProcessError:
-    #         global_failed = True
-    #         es.stop_time = time.localtime()
-    #         es.exception = traceback.format_exc()
-    #         es.error_code = 1
-    #         es.status = 'failed'
-
-    #     except KeyboardInterrupt:
-    #         global_failed = True
-    #         es.stop_time = time.localtime()
-    #         es.error_code = 1
-    #         es.status = 'interrupted'
-    #         break
-
-    # display_summary(status)
-    # return global_failed
+    if len([r != 0 for r in res]) == 0:
+        return 0
+    return res
 
 
 @command
@@ -1027,6 +1072,60 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
     '''
     Start a bv_maker in the configured container with the given repository
     configuration.
+
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    name
+        If given, select environment by its name. It replaces type, distro,
+        branch and system and is shorter to select one.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    gui
+        default={gui_default}
+        If "no", "false" or "0", command is not using a graphical user
+        interface (GUI). Nothing is done to connect the container to a
+        graphical interface. This option may be necessary in context where
+        a graphical interface is not available.
+    opengl
+        default={opengl_default}
+        Setup different ways of trying to use OpenGL 3D rendering and GPU.
+        "auto", "container", "nv", or "software".
+        * "auto": performs auto-detection: same as "nv" if an NVidia device is
+        detected on a host linux system, otherwise same as "container", unless
+        we detect a case where that is known to fail (in which case we would
+        use "software").
+        * "container": passes no special options to Singularity: the mesa
+        installed in the container is used
+        * "nv" tries to mount the proprietary NVidia driver of the host (linux)
+        system in the container
+        * "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
+        rendering. This solution is the slowest but is a fallback when no other
+        solution works.
+    cwd
+        default={cwd_default}
+        Set current working directory to the given value before launching
+        the command.
+    env
+        Comma separated list of environment variables to pass to the command.
+        Each variable must have the form name=value.
+    image
+        Force usage of a specific virtual image instead of the one defined
+        in the environment configuration.
+    container_options
+        Comma separated list of options to add to the command line used to
+        call the container system.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
     '''
     args_list = ['bv_maker'] + args_list
     return run(type=type, distro=distro, branch=branch, system=system,
