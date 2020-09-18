@@ -429,7 +429,8 @@ def create_user_image(
                                 distro=distro,
                                 branch='master',
                                 system=system,
-                                name=environment_name)
+                                name=environment_name,
+                                container_type=container_type)
     name = name.format(version=version, **config)
     kwargs = config.copy()
     kwargs.pop('name', None)
@@ -456,10 +457,30 @@ def create_user_image(
 
     if install:
         # TODO check the return code
+        try:
+            # determine cpu count
+            import joblib  # might not be installed
+            cpu_opt = ['-j%d' % joblib.cpu_count()]
+        except ImportError:
+            cpu_opt = []
+        # make install-runtime hangs somewhere when used with parallel options
         run_container(config=config,
                       command=['make',
                                'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-runtime'],
+                               'install-runtime'],  # + cpu_opt,
+                      gui=False,
+                      opengl="auto",
+                      root=False,
+                      cwd='/casa/host/build',
+                      env={},
+                      image=None,
+                      container_options=None,
+                      base_directory=base_directory,
+                      verbose=verbose)
+        run_container(config=config,
+                      command=['make',
+                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                               'install-doc'] + cpu_opt,
                       gui=False,
                       opengl="auto",
                       root=False,
@@ -491,6 +512,6 @@ def create_user_image(
 
     if upload:
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
-            '{container_type}'.format(*config)
+            '{container_type}'.format(**metadata)
         check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                     metadata_file, output, url])
