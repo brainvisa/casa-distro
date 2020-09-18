@@ -145,11 +145,11 @@ def create_image(base, base_metadata,
         processors and memory)
         '''
     elif type in ('run', 'dev'):
-        # if base:
-        #     vbox_import_image(base, name, output,
-        #                       verbose=verbose,
-        #                       memory=memory,
-        #                       disk_size=disk_size)
+        if base:
+            vbox_import_image(base, name, output,
+                              verbose=verbose,
+                              memory=memory,
+                              disk_size=disk_size)
         vbox = VBoxMachine(name)
         vbox.install(build_file=build_file,
                      verbose=verbose,
@@ -167,14 +167,14 @@ def create_user_image(base_image,
     install_dir = osp.join(dev_config['directory'], 'host', 'install')
     vm_name = osp.splitext(osp.basename(output))[0]
     vm = VBoxMachine(vm_name)
-    # if vm.exists():
-    #     raise RuntimeError(
-    #         "VirtualBox already has a VM named {0}. Use the following "
-    #         "command to remove it : VBoxManage unregistervm '{0}'. Add the "
-    #         "-delete option to remove associated files (be sure of what you "
-    #         "do). If it is running, you can switch it off with : VBoxManage "
-    #         "controlvm '{0}' poweroff".format(vm_name))
-    # vbox_import_image(base_image, vm_name, output, verbose=verbose)
+    if vm.exists():
+        raise RuntimeError(
+            "VirtualBox already has a VM named {0}. Use the following "
+            "command to remove it : VBoxManage unregistervm '{0}'. Add the "
+            "-delete option to remove associated files (be sure of what you "
+            "do). If it is running, you can switch it off with : VBoxManage "
+            "controlvm '{0}' poweroff".format(vm_name))
+    vbox_import_image(base_image, vm_name, output, verbose=verbose)
     vm.start_and_wait(verbose=verbose)
     if verbose:
         six.print_('Copying', install_dir, 'to /casa/install in VM',
