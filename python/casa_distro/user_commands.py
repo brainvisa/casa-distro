@@ -5,6 +5,7 @@ import glob
 import json
 import os.path as osp
 import sys
+import shutil
 
 from casa_distro import (environment,
                          six)
@@ -797,9 +798,7 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
         supported system of the selected distro.
     name
         default=None
-        Name of the environment. No other environment must have the same name
-        (including non developer environments).
-        This name may be used later to select the environment to run.
+        Name of the environment.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -1016,3 +1015,68 @@ def clean_images(build_workflows_repository=default_build_workflow_repository,
 
     # clean_singularity_images(build_workflows_repository, image_names,
     #                          images_to_keep, verbose, interactive)
+    pass
+
+
+@command
+def delete(type=None, distro=None, branch=None, system=None, name=None,
+           base_directory=casa_distro_directory(),
+           interactive=True):
+    """Delete an existing environment.
+
+    The whole environment directory will be removed and forgotten.
+
+    Use with care.
+
+    Image files will be left untouched - use clean_images for this.
+
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    name
+        Name of the environment.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    interactive
+        default={interactive_default}
+        if true (or 1, or yes), ask confirmation interactively for each
+        selected environement.
+    """
+    interactive = check_boolean('interactive', interactive)
+    if not interactive and type is None and distro is None and system is None \
+            and name is None:
+        raise RuntimeError(
+            'Refusing to delete all environments without confirmation. '
+            'Either use interactive=True, or provide an explicit pattern for '
+            'environment selection parameters')
+
+    if six.PY3:
+        interactive_input = input
+    else:
+        interactive_input = raw_input  # noqa F821
+
+    for config in iter_environments(base_directory,
+                                    type=type,
+                                    distro=distro,
+                                    branch=branch,
+                                    system=system,
+                                    name=name):
+        if interactive:
+            confirm = interactive_input(
+                'delete environment %s [y/N]: ' % config['name'])
+            print(confirm)
+            if confirm not in ('y', 'yes', 'Y', 'YES'):
+                print('skip.')
+                continue
+        print('deleting environment %s' % config['name'])
+        directory = config['directory']
+        print('rm -rf "%s"' % directory)
+        shutil.rmtree(directory)
