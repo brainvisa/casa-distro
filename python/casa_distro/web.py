@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-import os
-
 try:
     # Python 2 imports
-    from urllib import urlopen, urlretrieve
+    from urllib import urlopen
     from HTMLParser import HTMLParser
 except ImportError:
     # Python 3 imports
-    from urllib.request import urlopen, urlretrieve
+    from urllib.request import urlopen
     from html.parser import HTMLParser
 
 

@@ -112,14 +112,13 @@ def download_file_internal(url, dest, timeout=10., callback=None,
             except socket.timeout:
                 # print('*** timeout ***')
                 # print('resume at:', dl_len)
-                if size == 0:
-                    s = 10000000000
                 headers = {'Range': 'bytes=%d-%d' % (dl_len, size)}
                 new_url = Request(url, headers=headers)
                 input = urlopen(new_url, timeout=timeout)
         if callback:
             callback(base_url, dl_len, size, speed, block, cbk_count)
             print()
+
 
 _term_width = 79
 _term_width_timestamp = 0
@@ -180,10 +179,10 @@ def stdout_progress(url, pos, size, speed, block, count):
     else:
         timestr = '%ds' % int(time_left)
 
-    l = len(url)
-    if l > url_width:
+    length = len(url)
+    if length > url_width:
         dl = len(url) - url_width
-        decal = l - url_width - abs(count % (dl * 2) - dl)
+        decal = length - url_width - abs(count % (dl * 2) - dl)
         url = url[decal:decal + url_width]
     msg = '%s   %s / %s, %s' % (url, posstr, szstr, spstr)
     if _term_width - url_width > 30:

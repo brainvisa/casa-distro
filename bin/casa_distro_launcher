@@ -3,10 +3,8 @@
 
 import sys
 import json
-import os
 import subprocess
 
-from soma.wip.application.api import Application
 from soma.qt_gui.qt_backend import Qt
 from soma.qt_gui.qt_backend.QtCore import pyqtSignal
 
@@ -96,7 +94,8 @@ class MountManager(Qt.QWidget):
         self._mount_table.horizontalHeader().setSectionResizeMode(
             1, Qt.QHeaderView.Stretch)
 
-        for idx, (host, container) in enumerate(self.conf.get('mounts', {}).items()):
+        for idx, (host, container) in enumerate(
+                self.conf.get('mounts', {}).items()):
             self._mount_table.setItem(idx, 0, Qt.QTableWidgetItem(host))
             # First col not editable
             self._mount_table.item(idx, 0).setFlags(
@@ -130,9 +129,11 @@ class MountManager(Qt.QWidget):
             self._mount_table.setRowCount(self._mount_table.rowCount() + 1)
             host_path = host_mount_choice.selectedFiles()[0]
             self._mount_table.setItem(
-                self._mount_table.rowCount() - 1, 0, Qt.QTableWidgetItem(host_path))
+                self._mount_table.rowCount() - 1, 0,
+                Qt.QTableWidgetItem(host_path))
             self._mount_table.setItem(
-                self._mount_table.rowCount() - 1, 1, Qt.QTableWidgetItem(''))
+                self._mount_table.rowCount() - 1, 1,
+                Qt.QTableWidgetItem(''))
             self.conf.get('mounts', {})[host_path] = ''
             self.check_all_mounts()
 
@@ -141,7 +142,8 @@ class MountManager(Qt.QWidget):
             self.modified = True
             self.valueChanged.emit()
             rows = sorted(
-                list(set([item.row() for item in self._mount_table.selectedItems()])), reverse=True)
+                set(item.row() for item in self._mount_table.selectedItems()),
+                reverse=True)
             for row in rows:
                 host_path = self._mount_table.item(row, 0).text()
                 del self.conf.get('mounts', {})[host_path]
@@ -152,7 +154,9 @@ class MountManager(Qt.QWidget):
             return True
 
     def _value_modified(self, row, col):
-        if not getattr(self._mount_table.item(row, 0), 'text', None) or not getattr(self._mount_table.item(row, 1), 'text', None):
+        if (not getattr(self._mount_table.item(row, 0), 'text', None)
+            or not getattr(self._mount_table.item(row, 1),
+                           'text', None)):
             return
         host = self._mount_table.item(row, 0).text()
         cont = self._mount_table.item(row, 1).text()
@@ -167,7 +171,9 @@ class MountManager(Qt.QWidget):
         in_container = []
 
         for idx in range(self._mount_table.rowCount()):
-            if not getattr(self._mount_table.item(idx, 0), 'text', None) or not getattr(self._mount_table.item(idx, 1), 'text', None):
+            if (not getattr(self._mount_table.item(idx, 0), 'text', None)
+                or not getattr(self._mount_table.item(idx, 1),
+                               'text', None)):
                 self._mount_table.blockSignals(False)
                 return None
             host = self._mount_table.item(idx, 0).text()

@@ -14,7 +14,6 @@ import tempfile
 from casa_distro import (share_directories,
                          singularity,
                          vbox)
-from casa_distro.build_workflow import prepare_home  # should be moved here
 from casa_distro.web import url_listdir, urlopen
 from casa_distro import downloader
 
@@ -92,7 +91,8 @@ def copytree(src, dst, symlinks=False, ignore=None):
     try:
         shutil.copystat(src, dst)
     except OSError as why:
-        if shutil.WindowsError is not None and isinstance(why, shutil.WindowsError):
+        if (shutil.WindowsError is not None
+                and isinstance(why, shutil.WindowsError)):
             # Copying file access times may fail on Windows
             pass
         else:
@@ -157,8 +157,7 @@ def update_config(config, update):
 
 
 def find_in_path(file):
-    '''
-    Look for a file in a series of directories contained in ``PATH`` environment variable.
+    '''Look for a file in directories of the ``PATH`` environment variable.
     '''
     path = os.environ.get('PATH').split(os.pathsep)
     for i in path:
@@ -171,7 +170,8 @@ def find_in_path(file):
 
 def ext3_file_size(filename):
     block_size = block_count = None
-    for line in subprocess.check_output(['dumpe2fs', filename], stderr=subprocess.STDOUT).split('\n'):
+    for line in subprocess.check_output(['dumpe2fs', filename],
+                                        stderr=subprocess.STDOUT).split('\n'):
         if line.startswith('Block count'):
             block_count = int(line.rsplit(None, 1)[-1])
         elif line.startswith('Block size'):
@@ -245,6 +245,7 @@ def select_distro(distro):
             distro['directory'] = directory
             return distro
     raise ValueError('Invalid distro: {0}'.format(distro))
+
 
 _casa_distro_directory = None
 
@@ -441,13 +442,13 @@ def select_environment(base_directory, **kwargs):
     """
     Select a single distro given its name or an existing distro directory.
     """
-    l = list(iter_environments(base_directory, **kwargs))
-    if len(l) == 1:
-        return l[0]
-    if len(l) > 1:
+    env_list = list(iter_environments(base_directory, **kwargs))
+    if len(env_list) == 1:
+        return env_list[0]
+    if len(env_list) > 1:
         raise ValueError(
             'Several distros found, use a more selective criterion: {0}'
-            .format(', '.join(i['name'] for i in l))
+            .format(', '.join(i['name'] for i in env_list))
         )
     raise ValueError('Cannot find any distro to perform requested action')
 
@@ -549,8 +550,9 @@ def setup_dev(metadata,
         print('\nThis file is a shell script that must set the variables '
               'SVN_USERNAME and SVN_PASSWORD. Do not forget to properly quote '
               'the values if they contains special characters.')
-        print('For instance, the file could contain the two following lines (replacing '
-              '"your_login" and "your_password" by appropriate values:\n')
+        print('For instance, the file could contain the two following lines '
+              '(replacing "your_login" and "your_password" by appropriate '
+              'values:\n')
         print("SVN_USERNAME='your_login'")
         print("SVN_PASSWORD='your_password'\n")
         print('If you are only using open-source projects, you can use the '
@@ -589,21 +591,21 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     Return the exit code of the command, or raise an exception if the command
     cannot be run.
     """
-    env_directory = config['directory']
+    # env_directory = config['directory']
     # if config.get('user_specific_home'):
-        # env_relative_subdirectory = osp.normcase(
-            # osp.abspath(env_directory)).lstrip(os.sep)
-        # home_path = os.path.join(
-            # os.path.expanduser('~'), '.config', 'casa-distro',
-            # env_relative_subdirectory, 'home')
-        # config.setdefault('mounts', {})
-        # config['mounts']['/casa/home'] = home_path
-        # if not os.path.exists(home_path):
-            # In case of user-specific home directories, the home dir has not
-            # been initialized at the creation of the build-workflow, so it
-            # needs to be done at first launch.
-            # os.makedirs(home_path)
-            # prepare_home(env_directory, home_path)
+    #     env_relative_subdirectory = osp.normcase(
+    #         osp.abspath(env_directory)).lstrip(os.sep)
+    #     home_path = os.path.join(
+    #         os.path.expanduser('~'), '.config', 'casa-distro',
+    #         env_relative_subdirectory, 'home')
+    #     config.setdefault('mounts', {})
+    #     config['mounts']['/casa/home'] = home_path
+    #     if not os.path.exists(home_path):
+    #         In case of user-specific home directories, the home dir has not
+    #         been initialized at the creation of the build-workflow, so it
+    #         needs to be done at first launch.
+    #         os.makedirs(home_path)
+    #         prepare_home(env_directory, home_path)
 
     container_type = config.get('container_type')
     if container_type == 'singularity':

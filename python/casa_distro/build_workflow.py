@@ -2,20 +2,16 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import copy
 from fnmatch import fnmatch
-import sys
+import glob
+import json
 import os
 import os.path as osp
-import glob
 import shutil
-import json
-import copy
+import sys
 
-from casa_distro.defaults import default_system
 from casa_distro import six
-from casa_distro import share_directories
-from casa_distro.log import verbose_file
-from casa_distro.docker import run_docker, update_docker_image
 
 
 def update_dict_recursively(dict_to_update, dict_to_read):
@@ -37,7 +33,8 @@ def iter_environments(build_workflows_repository,
                       branch='*',
                       system='*'):
     for i in sorted(glob.glob(osp.join(build_workflows_repository, distro,
-                                       '%s_%s' % (branch, system), 'host', 'conf'))):
+                                       '%s_%s' % (branch, system),
+                                       'host', 'conf'))):
         env_json = osp.join(i, 'casa_distro.json')
         if os.path.exists(env_json):
             env_conf = json.load(open(env_json))
@@ -51,7 +48,7 @@ def iter_environments(build_workflows_repository,
 
 def find_in_path(file):
     '''
-    Look for a file in a series of directories contained in ``PATH`` environment variable.
+    Look for a file in directories of the ``PATH`` environment variable.
     '''
     path = os.environ.get('PATH').split(os.pathsep)
     for i in path:
@@ -136,7 +133,8 @@ def copytree(src, dst, symlinks=False, ignore=None):
     try:
         shutil.copystat(src, dst)
     except OSError as why:
-        if shutil.WindowsError is not None and isinstance(why, shutil.WindowsError):
+        if shutil.WindowsError is not None and isinstance(why,
+                                                          shutil.WindowsError):
             # Copying file access times may fail on Windows
             pass
         else:
@@ -191,8 +189,9 @@ def check_svn_secret(bwf_dir, warn_type='NOTE'):
         print('\nThis file is a shell script that must set the variables '
               'SVN_USERNAME and SVN_PASSWORD. Do not forget to properly quote '
               'the values if they contains special characters.')
-        print('For instance, the file could contain the two following lines (replacing '
-              '"your_login" and "your_password" by appropriate values:\n')
+        print('For instance, the file could contain the two following lines '
+              '(replacing "your_login" and "your_password" by appropriate '
+              'values:\n')
         print("SVN_USERNAME='your_login'")
         print("SVN_PASSWORD='your_password'\n")
         print('If you are only using open-source projects, you can use the '
@@ -256,7 +255,7 @@ def update_build_workflow(build_workflow_directory, verbose=None,
         script_file += '.bat'
         with open(script_file, 'w') as f:
             f.write('''@setlocal
-@"%s" "%s" \\%*
+@"%s" "%s" %%*
 @endlocal''' % (sys.executable, casa_distro_path))
     else:
         # unix: bash script
@@ -312,7 +311,8 @@ alias ll='ls -als'
     # run_container(
     #     build_workflow_directory,
     #     ['bash', '-c',
-    #      'type git-lfs > /dev/null 2>&1 && git lfs install || echo "not using git-lfs"'],
+    #      'type git-lfs > /dev/null 2>&1 && git lfs install '
+    #      '|| echo "not using git-lfs"'],
     #     verbose=verbose)
 
 

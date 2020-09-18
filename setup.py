@@ -3,7 +3,6 @@ from __future__ import absolute_import, print_function
 
 import os
 import sys
-from glob import glob
 from setuptools import find_packages, setup
 
 packages = find_packages('python')
@@ -32,8 +31,8 @@ for base, dirs, files in os.walk(distro_dir):
             ),
             [os.path.join(base[len(here) + 1:], i) for i in files]
         ])
-from pprint import pprint
-pprint(data_files)
+# from pprint import pprint
+# pprint(data_files)
 
 setup(
     name=release_info['NAME'],

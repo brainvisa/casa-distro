@@ -2,17 +2,14 @@
 
 from __future__ import absolute_import, division, print_function
 
-import errno
-import json
 import os
 import os.path as osp
+import re
 import shutil
 import subprocess
 from subprocess import check_call, check_output, call
 import sys
 import tempfile
-import stat
-import re
 
 from casa_distro import six
 from casa_distro.log import verbose_file
@@ -252,7 +249,6 @@ def create_docker_images(image_name_filters=['*'],
     error = False
     to_clean = []
     try:
-        sorted_images = []
         for images_dict in find_docker_image_files():
             base_directory = tempfile.mkdtemp()
             try:
@@ -266,8 +262,9 @@ def create_docker_images(image_name_filters=['*'],
                     image_name = apply_template_parameters(
                         image_source['name'], template_parameters)
 
-                    image_tags = [apply_template_parameters(i, template_parameters)
-                                  for i in image_source['tags']]
+                    image_tags = [
+                        apply_template_parameters(i, template_parameters)
+                        for i in image_source['tags']]
                     target_directory = osp.join(
                         base_directory, image_name, image_tags[-1])
                     os.makedirs(target_directory)
@@ -293,7 +290,8 @@ def create_docker_images(image_name_filters=['*'],
                     image_full_name = 'cati/%s:%s' % (
                         image_name, image_tags[-1])
 
-                    if not image_name_match(image_full_name, image_name_filters):
+                    if not image_name_match(image_full_name,
+                                            image_name_filters):
                         continue
                     image_file_count += 1
 
@@ -335,8 +333,8 @@ def create_docker_images(image_name_filters=['*'],
                         src = 'cati/%s:%s' % (image_name, image_tags[-1])
                         dst = 'cati/%s:%s' % (image_name, tag)
                         print('Creating tag', dst, 'from', src)
-                        # I do not know how to create a tag of an existing image with
-                        # docker-py, therefore I use subprocess
+                        # I do not know how to create a tag of an existing
+                        # image with docker-py, therefore I use subprocess
                         check_call(['docker', 'tag', src, dst])
                     print('-' * 40)
                 if error:
@@ -361,7 +359,6 @@ def publish_docker_images(image_name_filters=['*']):
 
     image_file_count = 0
     for images_dict in find_docker_image_files():
-        base_directory = tempfile.mkdtemp()
         source_directory, filename = osp.split(images_dict['filename'])
         for image_source in images_dict['image_sources']:
             template_parameters = {
@@ -455,9 +452,9 @@ if __name__ == '__main__':
     args = []
     kwargs = {}
     for i in sys.argv[2:]:
-        l = i.split('=', 1)
-        if len(l) == 2:
-            kwargs[l[0]] = l[1]
+        lst = i.split('=', 1)
+        if len(lst) == 2:
+            kwargs[lst[0]] = lst[1]
         else:
             args.append(i)
     function(*args, **kwargs)

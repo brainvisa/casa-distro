@@ -22,7 +22,8 @@ long_description = """
 Custom Project
 =============
 
-[custom project] is a great project to illustrate how to build and share a custom project within CASA environment."""
+[custom project] is a great project to illustrate how to build and share a
+custom project within CASA environment."""
 
 # Main setup parameters
 NAME = "custom_project"

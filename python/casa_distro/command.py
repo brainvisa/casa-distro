@@ -2,19 +2,14 @@
 from __future__ import absolute_import, division, print_function
 
 import argparse
-import sys
-import zipfile
-import tempfile
-import shutil
+from collections import OrderedDict
+from functools import partial
+import inspect
 import os
 import os.path as osp
-import inspect
-from collections import OrderedDict
-import textwrap
 import re
-from functools import partial
+import sys
 
-from casa_distro.defaults import default_build_workflow_repository
 from casa_distro.info import __version__
 from casa_distro.log import boolean_value
 from casa_distro import six
@@ -26,6 +21,7 @@ def check_boolean(name, value):
         raise ValueError(
             'Invalid boolean value for {0}: {1}'.format(name, value))
     return result
+
 
 commands = OrderedDict()
 
@@ -68,21 +64,16 @@ def help(command=None):
         print(command_help)
     else:
         executable = osp.basename(sys.argv[0])
-        global_help = '''Casa_distro is the BrainVISA suite distribution swiss knife.
+        global_help = '''\
+Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro for more information
 
 Version : {version}
 
-usage: {executable} [-r REPOSITORY] [-v] [--version] <command> [<command parameters>...]
+usage: {executable} [-v] [--version] <command> [<command parameters>...]
 
 optional arguments:
-    -r REPOSITORY, --repository REPOSITORY
-                    Path of the directory containing virtual images and configured
-                    environments.
-                    (default={default_repository}) This base directory
-                    may also be specified via an environment variable:
-                    CASA_DEFAULT_REPOSITORY
     -v, --verbose   Display as much information as possible.
     --version       Display casa-distro version number and exit.
     -h, --help      Display help message and exit.
@@ -91,8 +82,7 @@ optional arguments:
 
 Commands:
 '''.format(executable=executable,
-           version=__version__,
-           default_repository=default_build_workflow_repository)
+           version=__version__)
 
         commands_summary = [global_help]
         for command in commands:
@@ -149,9 +139,9 @@ def main():
 
     allows_kwargs = True
     for i in options.command_options:
-        l = i.split('=', 1)
-        if allows_kwargs and len(l) == 2:
-            kwargs[l[0]] = l[1]
+        lst = i.split('=', 1)
+        if allows_kwargs and len(lst) == 2:
+            kwargs[lst[0]] = lst[1]
         elif i == '--':
             allows_kwargs = False
         else:

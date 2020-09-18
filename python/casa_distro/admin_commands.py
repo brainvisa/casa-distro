@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 from fnmatch import fnmatchcase
-from getpass import getpass
 import glob
 import json
 import os
@@ -11,19 +10,10 @@ import os.path as osp
 from pprint import pprint
 import re
 from subprocess import check_call
-import sys
-import tempfile
 
-from casa_distro.build_workflow import iter_environments
-from casa_distro.info import __version__ as casa_distro_version
-from casa_distro.info import version_major, version_minor
 
-from casa_distro import six
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
-                                  default_repository_server,
-                                  default_repository_server_directory,
-                                  default_repository_login,
                                   default_download_url,
                                   default_system)
 from casa_distro.environment import (casa_distro_directory,
@@ -34,7 +24,7 @@ from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
 from casa_distro.hash import file_hash
-from casa_distro.web import url_listdir, urlretrieve, urlopen
+from casa_distro.web import url_listdir
 
 
 _true_str = re.compile('^(?:yes|true|y|1)$', re.I)
@@ -107,8 +97,8 @@ def download_image(type,
 def create_base_image(type,
                       name='casa-{type}-{system}',
                       base=None,
-                      output=osp.join(
-                      default_build_workflow_repository, '{name}.{extension}'),
+                      output=osp.join(default_build_workflow_repository,
+                                      '{name}.{extension}'),
                       container_type='singularity',
                       memory='8192',
                       disk_size='131072',

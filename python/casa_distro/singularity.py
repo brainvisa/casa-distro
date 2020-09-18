@@ -1,22 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-import fnmatch
-import json
-import glob
 import os
 import os.path as osp
 import re
 import shutil
 import subprocess
 import tempfile
-import sys
-
-from casa_distro import six
-from casa_distro.hash import file_hash, check_hash
-from casa_distro.defaults import default_download_url
-from casa_distro.log import verbose_file
-from . import downloader
 
 
 class RecipeBuilder:
@@ -49,14 +39,16 @@ class RecipeBuilder:
         Copy a file in VM as root
         '''
         self.sections.setdefault('files', []).append(
-            '%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
+            '%s %s' % (source_file,
+                       dest_dir + '/' + osp.basename(source_file)))
 
     def copy_user(self, source_file, dest_dir):
         '''
         Copy a file in VM as self.user
         '''
         self.sections.setdefault('files', []).append(
-            '%s %s' % (source_file, dest_dir + '/' + osp.basename(source_file)))
+            '%s %s' % (source_file,
+                       dest_dir + '/' + osp.basename(source_file)))
 
     def write(self, file):
         for section, lines in self.sections.items():
@@ -295,10 +287,10 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         if gui_options:
             container_options += [osp.expandvars(i) for i in gui_options]
         # handle --nv option, if a nvidia device is found
-        if ('--nv' not in container_options and
-            opengl in ('auto', 'nv') and os.path.exists('/dev/nvidiactl') and
-            '--no-nv' not in container_options and
-                singularity_has_option('--nv')):
+        if ('--nv' not in container_options
+            and opengl in ('auto', 'nv') and os.path.exists('/dev/nvidiactl')
+            and '--no-nv' not in container_options
+                and singularity_has_option('--nv')):
             container_options.append('--nv')
         # remove --no-nv which is not a singularity option
         if '--no-nv' in container_options:

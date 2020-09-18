@@ -18,6 +18,6 @@ except ImportError:
                              'python'))
     from casa_distro.command import main
 
-from casa_distro import admin_commands
+from casa_distro import admin_commands  # noqa: F401, E402
 
 main()
