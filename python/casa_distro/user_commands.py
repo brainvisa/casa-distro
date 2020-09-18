@@ -10,8 +10,7 @@ import shutil
 from casa_distro import (environment,
                          six)
 from casa_distro.command import command, check_boolean
-from casa_distro.defaults import (default_build_workflow_repository,
-                                  default_branch,
+from casa_distro.defaults import (default_branch,
                                   default_download_url)
 from casa_distro.environment import (casa_distro_directory,
                                      find_in_path,
@@ -22,9 +21,15 @@ from casa_distro.environment import (casa_distro_directory,
                                      select_distro,
                                      select_environment,
                                      iter_images,
-                                     update_container_image)
+                                     update_container_image,
+                                     delete_image)
 from casa_distro.log import verbose_file
 from casa_distro.info import __version__
+
+if six.PY3:
+    interactive_input = input
+else:
+    interactive_input = raw_input  # noqa F821
 
 
 def size_to_string(full_size):
@@ -846,6 +851,50 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
 def list_images(distro=None, branch=None, system=None, name=None, type=None,
                 image='*', base_directory=casa_distro_directory(),
                 verbose=None):
+    '''List the locally installed container images.
+    There are two ways of selecting the image(s):
+
+    1. filtered by environment, using the 'name' selector, or a combination of
+       'distro', 'branch', and 'system'.
+
+    2. directly specifying a full image name, e.g.:
+
+           casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+
+    Parameters
+    ----------
+    distro
+        default=None
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    branch
+        default=None
+        Name of the source branch to use for dev environments. Either
+        "latest_release", "master" or "integration".
+    system
+        default=None
+        System to use with this environment. By default, it uses the first
+        supported system of the selected distro.
+    name
+        default=None
+        Name of the environment.
+    type
+        default=None
+        image type (run, dev, user)
+    image
+        default="*"
+        Location of the virtual image for this environement.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+
+    '''
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
                                         system=system, name=name, type=type,
@@ -883,7 +932,7 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
 
 @command
 def mrun(distro='*', branch='*', system='*', name=None,
-         build_workflows_repository=default_build_workflow_repository,
+         base_directory=casa_distro_directory(),
          gui=True,
          opengl="auto",
          root=False,
@@ -994,35 +1043,87 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def clean_images(build_workflows_repository=default_build_workflow_repository,
-                 image_names='*', verbose=False, interactive=True):
+def clean_images(distro=None, branch=None, system=None, name=None, type=None,
+                 image=None, verbose=False,
+                 base_directory=casa_distro_directory(), interactive=True):
     '''
     Delete singularity images which are no longer used in any build workflow,
-    or those listed in image_names.
-    '''
-    # images_to_keep = {}
-    # for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-    #                                             distro='*', branch='*',
-    #                                             system='*'):
-    #     casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
-    #                                           'casa_distro.json')))
-    #     confs = set(['dev'])
-    #     confs.update(casa_distro.get('alt_configs', {}).keys())
-    #     for conf in confs:
-    #         wfconf = merge_config(casa_distro, conf)
-    #         images_to_keep.setdefault(wfconf['container_type'], set()).add(
-    #             wfconf['container_image'])
+    or those listed in the "image" parameter.
+    There are two ways of selecting the image(s):
 
-    # clean_singularity_images(build_workflows_repository, image_names,
-    #                          images_to_keep, verbose, interactive)
-    pass
+    1. filtered by environment, using the 'name' selector, or a combination of
+       'distro', 'branch', and 'system'.
+
+    2. directly specifying a full image name, e.g.:
+
+           casa_distro clean_images image=casa-run-ubuntu-18.04.sif
+
+    Parameters
+    ----------
+    distro
+        default=None
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    branch
+        default=None
+        Name of the source branch to use for dev environments. Either
+        "latest_release", "master" or "integration".
+    system
+        default=None
+        System to use with this environment. By default, it uses the first
+        supported system of the selected distro.
+    name
+        default=None
+        Name of the environment.
+    type
+        default=None
+        image type (run, dev, user)
+    image
+        default=None
+        Location of the virtual image for this environement.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    interactive
+        default={interactive_default}
+        ask confirmation before deleting an image
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+
+    '''
+
+    images_to_update = list(iter_images(base_directory=base_directory,
+                                        distro=distro, branch=branch,
+                                        system=system, name=name, type=type,
+                                        image=image))
+
+    print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
+
+    for container_type, image_name \
+            in iter_images(base_directory=base_directory,
+                           distro=distro, branch=branch,
+                           system=system, name=name, type=type,
+                           image=image):
+        if interactive:
+            confirm = interactive_input(
+                'delete image %s : %s [y/N]: ' % (container_type, image_name))
+            if confirm not in ('y', 'yes', 'Y', 'YES'):
+                print('skip.')
+                continue
+        print('deleting image %s' % image_name)
+        delete_image(container_type, image_name)
 
 
 @command
 def delete(type=None, distro=None, branch=None, system=None, name=None,
            base_directory=casa_distro_directory(),
            interactive=True):
-    """Delete an existing environment.
+    """
+    Delete an existing environment.
 
     The whole environment directory will be removed and forgotten.
 
@@ -1058,11 +1159,6 @@ def delete(type=None, distro=None, branch=None, system=None, name=None,
             'Either use interactive=True, or provide an explicit pattern for '
             'environment selection parameters')
 
-    if six.PY3:
-        interactive_input = input
-    else:
-        interactive_input = raw_input  # noqa F821
-
     for config in iter_environments(base_directory,
                                     type=type,
                                     distro=distro,
@@ -1072,7 +1168,6 @@ def delete(type=None, distro=None, branch=None, system=None, name=None,
         if interactive:
             confirm = interactive_input(
                 'delete environment %s [y/N]: ' % config['name'])
-            print(confirm)
             if confirm not in ('y', 'yes', 'Y', 'YES'):
                 print('skip.')
                 continue

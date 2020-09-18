@@ -323,7 +323,7 @@ function _complete_casa_distro_()
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= interactive=" -- "${word}"))
             ;;
         clean_images)
-            COMPREPLY=($(compgen -W "base_directory= image_names= verbose= interactive=" -- "${word}"))
+            COMPREPLY=($(compgen -W "base_directory= image= distro= branch= system= name= type= verbose= interactive=" -- "${word}"))
             ;;
         esac
         ;;
