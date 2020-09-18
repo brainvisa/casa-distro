@@ -56,14 +56,14 @@ function get_c_flags() {
             __flags="${__pkg_config_result}"
         else
             __flags="-I${CROSSBUILD_INSTALL_PREFIX}/$l/include"
-        fi 
+        fi
 
         if [ -z "${__result}" ]; then
             __result="${__flags}"
         else
             __result="${__result} ${__flags}"
         fi
-        
+
     done
 
     if [ "${__split_flags}" = "1" ]; then
@@ -94,21 +94,21 @@ function get_link_flags() {
             __flags="${__pkg_config_result}"
         else
             __flags="-L${CROSSBUILD_INSTALL_PREFIX}/$l/lib"
-        fi 
+        fi
 
         if [ -z "${__result}" ]; then
             __result="${__flags}"
         else
             __result="${__result} ${__flags}"
         fi
-        
+
     done
 
 
     if [ "${__split_flags}" = "1" ]; then
         echo "${__result}" | sed 's/-L/-L /g' | sed -r 's/\(\s\)+/ /g'
     else
-        echo "${__result}"        
+        echo "${__result}"
     fi
 
     __split_flags=
@@ -119,10 +119,10 @@ function get_link_flags() {
 }
 
 function download() {
-    
+
     # check if download type was specified as first argument
     __download_type="sources"
-    for __d in "sources" "i686" "x86_64"; do 
+    for __d in "sources" "i686" "x86_64"; do
         if [ "$1" == "${__d}" ]; then
             __download_type="pkg/$1"
             shift;
@@ -132,7 +132,7 @@ function download() {
 
     __file_name="$(basename $1)"
 
-    # if mirror url is set, we use it 
+    # if mirror url is set, we use it
     if [ -z "${__mirror_url}" ]; then
         __url="$1"
     else
@@ -347,22 +347,22 @@ __sys_packages=(apt-utils autoconf automake autopoint bash bison bzip2
 __build_packages=(wine mingw64 python)
 
 __build_libs=(libiconv zlib libxml2 expat hdf5 gettext sqlite libsigcpp freetype
-              libregex boost blitz libffi libjpegturbo libtiff libpng libmng 
-              fontconfig glib openjpeg jpegxr gdkpixbuf pixman cairo openslide 
+              libregex boost blitz libffi libjpegturbo libtiff libpng libmng
+              fontconfig glib openjpeg jpegxr gdkpixbuf pixman cairo openslide
               dcmtk netcdf minc libsvm qt qwt5 yaml qtifw)
 
-__build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six 
+__build_python_mods=(python_wheel python_pip python_sip python_pyqt python_six
                      python_subprocess32 python_numpy python_scipy python_traits
                      python_dateutil python_pytz python_pyparsing python_cycler
                      python_singledispatch python_tornado python_certifi
                      python_backports_abc python_nose python_cairo
                      python_configobj python_matplotlib python_crypto
                      python_paramiko python_pyro python_pil python_dicom
-                     python_yaml python_xmltodict python_markupsafe 
-                     python_jinja2 python_pygments python_docutils 
+                     python_yaml python_xmltodict python_markupsafe
+                     python_jinja2 python_pygments python_docutils
                      python_pockets python_sphinx python_sphinx_napoleon
-                     python_pandas python_sqlalchemy python_larkparser 
-                     python_cython python_pyzmq python_h5py python_dipy 
+                     python_pandas python_sqlalchemy python_larkparser
+                     python_cython python_pyzmq python_h5py python_dipy
                      python_sklearn python_nibabel python_xlrd python_xlwt)
 
 if [ -z "${CROSSBUILD_INSTALL_PREFIX}" ]; then
@@ -418,7 +418,7 @@ find_program(CMAKE_Fortran_COMPILER NAMES \${COMPILER_PREFIX}-gfortran)
 set(CMAKE_FIND_ROOT_PATH /usr/\${COMPILER_PREFIX} \${CMAKE_FIND_ROOT_PATH})
 
 # adjust the default behaviour of the FIND_XXX() commands:
-# search headers and libraries in the target environment, search 
+# search headers and libraries in the target environment, search
 # programs in the host environment
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
@@ -457,10 +457,10 @@ try:
     from configparser               import RawConfigParser, NoOptionError
 except:
     from ConfigParser               import RawConfigParser, NoOptionError
-    
+
 def get_section(line):
    e = line.index(']')
-   
+
    return (line[line.index('[')+1:e], line[e+1:])
 
 class RegistryFileReader(object):
@@ -471,39 +471,39 @@ class RegistryFileReader(object):
         self.tags = dict()
         self.__initialized_section = False
         self.__cur_section = 'global'
-    
+
     def __start_section(self, line):
         k, t = get_section(line)
         #print('__start_section, k', k, 't', t)
         self.__cur_section = k
         self.tags[k] = t
-    
+
     def __add_comment(self, line):
         #print('__add_comment', line, 'for section', self.__cur_section)
         self.comments.setdefault(self.__cur_section, []).append(line)
-        
+
     def readline(self):
-        
+
         if not self.__initialized_section:
             self.__initialized_section = True
             return '[%s]\\n' % self.__cur_section
-        
+
         line = self.fp.readline()
         if not self.head:
             self.head = line
             return ';;'
-            
+
         l = line.strip()
-        
+
         if l.startswith('['):
             self.__start_section(line)
-        
+
         elif l.startswith('#') or l.startswith(';;'):
             self.__add_comment(line)
-            
+
         else:
             line.replace(':', ':')
-        
+
         return line
 
 class RegistryFileWriter(object):
@@ -512,23 +512,23 @@ class RegistryFileWriter(object):
         self.head = head
         self.tags = tags
         self.comments = comments
-        
+
     def write(self, line):
         l = line.strip()
-        
+
         if l.startswith('['):
             k, t = get_section(line)
-            
+
             if len(t.strip()) == 0:
                 t = self.tags.get(k)
-                
+
             if k == 'global':
                 line = self.head + '\\n'
             else:
                 if len(t.strip()) > 0:
                     line = line[:-1] + t + line[-1]
             self.fp.write(line[:-1])
-                
+
             # Write comment lines for section
             for c in self.comments.get(k, []):
                 self.fp.write(c)
@@ -536,12 +536,12 @@ class RegistryFileWriter(object):
             line = line.replace(" = ", "=", 1)
             if line.strip().endswith("="):
                 line = line[:-1] + "\\"\\"" + line[-1]
-                
+
             self.fp.write(line)
 
 class RegistryFileParser(RawConfigParser):
     import re
-    
+
     OPTCRE = re.compile(
     r'(?P<option>[^=\\s][^=]*)'              # very permissive!
     r'\\s*(?P<vi>[:=])\\s*'                   # any number of space/tab,
@@ -559,73 +559,73 @@ class RegistryFileParser(RawConfigParser):
                                               # space/tab
         r'(?P<value>.*))?$'                   # everything up to eol
         )
-    
+
     def __init__(self):
         RawConfigParser.__init__(self)
         self.optionxform = str
         self.__head = None
         self.__comments = dict()
         self.__tags = dict()
-    
+
     def read(self, f):
         registry_reader = RegistryFileReader(open(f))
         self.readfp(registry_reader)
         self.__head = registry_reader.head
         self.__comments = registry_reader.comments
         self.__tags = registry_reader.tags
-  
+
     def write(self, f):
         RawConfigParser.write(self, RegistryFileWriter(f,
                                                        self.__head,
-                                                       self.__tags, 
+                                                       self.__tags,
                                                        self.__comments))
-        
+
     def get_value_list(self, section, value):
         v = self.get(section, value)
         # Find starting and ending double quotes
         s = v.find('"')
         e = v.find('"', s + 1)
-        
+
         if s == -1:
             s = v.find(':')
             t, v = (v[:s - 1], v[s + 1:])
-        
+
         elif s == 0:
             t = None
-            
+
         else:
             t, v = (v[:s - 1], v[s:])
-            
+
         if t == 'str(2)' or t is None:
             return eval(v).split(';')
-        
+
         else:
             raise RuntimeError('Registry value with type %s [section: %s, value: %s] is '
                                'not supported yet' % (t, section, value))
-        
+
     def set_value_list(self, key, value, data):
-        
+
         d = '"' + string.join(data, ';') + '"'
         return self.set(key, value, d)
 
 def split_value_path(value_path, parse_root = True):
     l = value_path.split('\\\\')
-    
+
     offset = 0 if parse_root else 1
     registry_root = l[0] if parse_root else None
     section = l[1 - offset:-1] if len(l) > (2 - offset) else ''
-    
+
     # Remove leading and trailing \\
     if len(section) > 0 and section[0] == '':
       section = section[1:]
     if section[-1] == '':
       section = section[:-1]
     value = l[-1] if len(l) > (1 - offset) else None
-    
+
     return (registry_root, '\\\\'.join(section), value)
 
 def get_registry_file(registry_root):
-    if registry_root in ('HKLM', 'HKEY_LOCAL_MACHINE', 
+    if registry_root in ('HKLM', 'HKEY_LOCAL_MACHINE',
                          'HKCR', 'HKEY_CLASSES_ROOT'):
         return 'system.reg'
     elif registry_root in ('HKCU', 'HKEY_CURRENT_USER',
@@ -642,20 +642,20 @@ def add_to_list(lst, value, prepend = True, unique = True):
         lst = [value] + lst
     else:
         lst = lst + [value]
-        
+
     unique_values = set()
     result = []
-    
+
     for v in lst:
         if not unique or v not in unique_values:
             unique_values.add(v)
             result.append(v)
-            
+
     return result
 
 def registry_normalize(value):
     return value.replace('\\\\', r'\\\\')
-    
+
 #---------------------------------------------------------------------------
 # Default values
 #---------------------------------------------------------------------------
@@ -663,7 +663,7 @@ wine_prefix = os.environ.get('WINEPREFIX')
 casa_deps = os.environ.get('CASA_DEPS')
 crossbuild_install_prefix = os.environ.get('CROSSBUILD_INSTALL_PREFIX')
 wine_dir = wine_prefix if wine_prefix \\
-           else os.path.join(os.environ.get('HOME'), '.wine')               
+           else os.path.join(os.environ.get('HOME'), '.wine')
 prefix_default = casa_deps if casa_deps else crossbuild_install_prefix
 registry_file_default = None
 registry_action_default = 'set'
@@ -675,15 +675,15 @@ value_default = ''
 #---------------------------------------------------------------------------
 if __name__ == '__main__':
     import string
-    from argparse                   import ArgumentParser                             
-    
+    from argparse                   import ArgumentParser
+
     #---------------------------------------------------------------------------
     # Argument parser initialization
     #---------------------------------------------------------------------------
     description = '''
     Update registry with missing pathes.
     '''
-    
+
     parser = ArgumentParser( description = description )
 
     parser.add_argument(
@@ -694,7 +694,7 @@ if __name__ == '__main__':
         metavar = 'REGISTRY_FILE',
         default = registry_file_default
     )
-    
+
     parser.add_argument(
         '-p', '--prefix',
         dest = 'prefix',
@@ -703,7 +703,7 @@ if __name__ == '__main__':
         metavar = 'PREFIX',
         default = prefix_default
     )
-    
+
     parser.add_argument(
         '-r', '--registry-action',
         dest = 'registry_action',
@@ -712,7 +712,7 @@ if __name__ == '__main__':
         metavar = 'REGISTRY_ACTION',
         default = registry_action_default
     )
-    
+
     parser.add_argument(
         '--value-path',
         dest = 'value_path',
@@ -721,7 +721,7 @@ if __name__ == '__main__':
         metavar = 'VALUE_PATH',
         default = value_path_default
     )
-        
+
     parser.add_argument(
         '--value',
         dest = 'value',
@@ -730,19 +730,19 @@ if __name__ == '__main__':
         metavar = 'VALUE',
         default = value_default
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.registry_action not in ('set', 'append', 'prepend'):
         raise RuntimeError('Registry action %s is not supported. Only set, ' \\
                            'append and prepend are currently available ' \\
                            'actions' % args.registry_action)
-    
+
     if not args.value_path or not len(args.value_path.strip()) > 0:
-        raise RuntimeError('Value path to edit must be given')        
-    
+        raise RuntimeError('Value path to edit must be given')
+
     registry_root, section, value = split_value_path(args.value_path.strip())
-    #print('==== info from ', args.value_path.strip(), 
+    #print('==== info from ', args.value_path.strip(),
     #      'root', registry_root, 'section', section, 'value', value)
     section = registry_normalize(section)
     if not args.registry_file:
@@ -750,44 +750,44 @@ if __name__ == '__main__':
         registry_file = os.path.join(wine_dir, registry_file)
     else:
         registry_file = args.registry_file
-    
-    
+
+
     parser = RegistryFileParser()
     parser.read(registry_file)
-    
+
     if args.registry_action == 'set':
         try:
             registry_value = parser.get(section, '"%s"' % value)
         except NoOptionError:
             registry_value = '**not defined**'
-            
-        #print('==== read value', registry_value, 'from', args.value_path, 'in', 
+
+        #print('==== read value', registry_value, 'from', args.value_path, 'in',
         #      registry_file)
-        parser.set(section, 
+        parser.set(section,
                    '"' + value + '"',
                    '"' + registry_normalize(args.value) + '"')
         print('Wine registry updated,', value, 'set to', args.value)
-              
+
     elif args.registry_action in ('prepend', 'append'):
         try:
             registry_list = parser.get_value_list(section, '"%s"' % value)
         except NoOptionError:
             # Option was not defined, create it
             registry_list = []
-            
-        new_registry_list = add_to_list(registry_list, 
+
+        new_registry_list = add_to_list(registry_list,
                                         args.value,
-                                        prepend = (args.registry_action 
+                                        prepend = (args.registry_action
                                                    == 'prepend'))
         #print('==== setting value', new_registry_list, 'to',
         #      args.value_path, 'in', registry_file)
-        parser.set(section, 
+        parser.set(section,
                    '"' + value + '"',
                    '"' + registry_normalize(';'.join(new_registry_list)) + '"')
-        print('Wine registry updated,', value, 'set to', 
+        print('Wine registry updated,', value, 'set to',
               ';'.join(new_registry_list))
     parser.write(open(registry_file, 'wb'))
-    
+
 EOF
 chmod +x update_registry_path
 
@@ -872,12 +872,12 @@ WINDOWS_OS_ARCH="$(${__wine_cmd} cmd /c 'wmic os get osarchitecture' | grep '\-b
 
 if [ "${__update_registry_path}" = "1" ]; then
     # Update registry path to append install prefix, this will be necessary for
-    # Windows programs to run (for example PyQt configuration is read using an 
+    # Windows programs to run (for example PyQt configuration is read using an
     # executable linked with the Qt dlls. It is necessary to kill wineserver
     # before doing changes in registry file because wineserver can save the
     # registry at any time.
     wineserver -k -w
-    
+
     # Add binary prefix to the registry
     ${__build_dir}/update_registry_path \
         --registry-action 'prepend' \
@@ -886,8 +886,8 @@ if [ "${__update_registry_path}" = "1" ]; then
 fi
 
 # Define variables
-# Use pkg-config instead of ${__toolchain}-pkg-config, 
-# because on Ubuntu 14.04, it does not allow to use 
+# Use pkg-config instead of ${__toolchain}-pkg-config,
+# because on Ubuntu 14.04, it does not allow to use
 # PKG_CONFIG_PATH variable
 export PATH=${CROSSBUILD_INSTALL_PREFIX}/bin:${PATH}
 export PKG_CONFIG=$(which pkg-config)
@@ -1086,10 +1086,10 @@ if [ "${PYTHON}"  == "1" ]; then
         /L*v python-${PYTHON_VERSION}-install.log \
         /qn TARGETDIR=${PYTHON_INSTALL_PREFIX_WINE} ALLUSERS=1 \
         || exit 1
-        
+
         if [ -d "${WINDOWS_INSTALL_PREFIX}" ]; then
-            # I do not understand why, but under ubuntu 14.04 64-bits, python installer 64-bits installs 
-            # python dll in ${WINDOWS_INSTALL_PREFIX}/system32 whereas python installer 32-bits installs 
+            # I do not understand why, but under ubuntu 14.04 64-bits, python installer 64-bits installs
+            # python dll in ${WINDOWS_INSTALL_PREFIX}/system32 whereas python installer 32-bits installs
             # python dll in ${WINDOWS_INSTALL_PREFIX}/syswow64
             if [ "${WINDOWS_OS_ARCH}" == "32-bit" ] && [ "${__arch}" == "x86_64" ]; then
                 PYTHON_WIN_SYS_DIR=${WINDOWS_INSTALL_PREFIX}/syswow64
@@ -1099,7 +1099,7 @@ if [ "${PYTHON}"  == "1" ]; then
             cp -f "${PYTHON_WIN_SYS_DIR}/python${PYTHON_VERSION_MINOR//./}.dll" ${PYTHON_INSTALL_PREFIX}/DLLs
         fi
         pushd ${CROSSBUILD_INSTALL_PREFIX}
-        
+
         ln -fs python-${PYTHON_VERSION} python
         pushd python-${PYTHON_VERSION};
             ln -fs python.exe python${PYTHON_VERSION_MAJOR}.exe;
@@ -1117,21 +1117,21 @@ if [ "${PYTHON}"  == "1" ]; then
         # Add links to python scripts
         popd
     fi
-    
+
     if [ "${__update_registry_path}" = "1" ]; then
         # Update registry path to append install prefix, this will be necessary for
-        # Windows programs to run (for example PyQt configuration is read using an 
+        # Windows programs to run (for example PyQt configuration is read using an
         # executable linked with the Qt dlls. It is necessary to kill wineserver
         # before doing changes in registry file because wineserver can save the
         # registry at any time.
         wineserver -k -w
-        
+
         # Add binary prefix to the registry
         ${__build_dir}/update_registry_path \
             --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\PYTHONHOME" \
             --value "${CROSSBUILD_INSTALL_PREFIX_WINE}\\python"
     fi
-    
+
     if [ "${__fix_python_scripts}" == "1" ]; then
         for __script in easy_install.exe easy_install-${PYTHON_VERSION_MINOR}.exe; do
             fix_python_script ${PYTHON_INSTALL_PREFIX}/Scripts/${__script}
@@ -1159,13 +1159,13 @@ if [ "${LIBICONV}"  == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/libiconv-${LIBICONV_VERSION}.tar.gz
         pushd ${__build_dir}/libiconv-${LIBICONV_VERSION}
-        
+
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBICONV_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1197,12 +1197,12 @@ if [ "${ZLIB}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/zlib-${ZLIB_VERSION}.tar.gz
         pushd ${__build_dir}/zlib-${ZLIB_VERSION}
-        
+
         cmake -DCMAKE_INSTALL_PREFIX=${ZLIB_INSTALL_PREFIX} \
               -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
               -DCMAKE_CROSSCOMPILING=ON \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1240,7 +1240,7 @@ if [ "${BZIP2}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/bzip2-${BZIP2_VERSION}.tar.gz
         pushd ${__build_dir}/bzip2-${BZIP2_VERSION}
-        
+
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
@@ -1280,14 +1280,14 @@ if [ "${LIBXML2}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/libxml2-sources-${LIBXML2_VERSION}.tar.gz
         pushd ${__build_dir}/libxml2-${LIBXML2_VERSION}
-        
+
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBXML2_INSTALL_PREFIX} \
                 --with-python=${PYTHON_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1327,24 +1327,24 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile.in Makefile.in
 --- Makefile.in	2016-09-27 17:14:25.945876843 +0200
 +++ Makefile.in	2016-09-27 17:14:28.977876607 +0200
 @@ -79,7 +79,7 @@
- 
+
  install: xmlwf/xmlwf@EXEEXT@ installlib
  	\$(mkinstalldirs) \$(DESTDIR)\$(bindir) \$(DESTDIR)\$(man1dir)
 -	\$(LIBTOOL) --mode=install \$(INSTALL_PROGRAM) xmlwf/xmlwf@EXEEXT@ \$(DESTDIR)\$(bindir)/xmlwf
 +	\$(LIBTOOL) --mode=install \$(INSTALL_PROGRAM) xmlwf/xmlwf@EXEEXT@ \$(DESTDIR)\$(bindir)/xmlwf@EXEEXT@
  	\$(INSTALL_DATA) \$(MANFILE) \$(DESTDIR)\$(man1dir)
- 
+
  installlib: \$(LIBRARY) \$(APIHEADER) expat.pc
 EOF
         patch -f -N -i expat-${EXPAT_VERSION}.patch -p0 \
         || exit 1
-        
+
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${EXPAT_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1382,95 +1382,95 @@ if [ "${HDF5}" == "1" ]; then
         # The problem is that TRY_RUN is used and executable can not be run
         # on build platform, so we need to set test values manually
         cat << EOF > ${__build_dir}/hdf5-${HDF5_VERSION}-cache.cmake
-SET( HAVE_IOEO_EXITCODE 
+SET( HAVE_IOEO_EXITCODE
      "1"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( HDF5_PRINTF_LL_TEST_RUN 
+SET( HDF5_PRINTF_LL_TEST_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( HDF5_PRINTF_LL_TEST_RUN__TRYRUN_OUTPUT 
+SET( HDF5_PRINTF_LL_TEST_RUN__TRYRUN_OUTPUT
      "PRINTF_LL_WIDTH=[ll]"
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_LDOUBLE_TO_INTEGER_WORKS_RUN 
+SET( H5_LDOUBLE_TO_INTEGER_WORKS_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_LDOUBLE_TO_INTEGER_WORKS_RUN__TRYRUN_OUTPUT 
+SET( H5_LDOUBLE_TO_INTEGER_WORKS_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_ULONG_TO_FLOAT_ACCURATE_RUN 
+SET( H5_ULONG_TO_FLOAT_ACCURATE_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_ULONG_TO_FLOAT_ACCURATE_RUN__TRYRUN_OUTPUT 
+SET( H5_ULONG_TO_FLOAT_ACCURATE_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_ULONG_TO_FP_BOTTOM_BIT_ACCURATE_RUN 
+SET( H5_ULONG_TO_FP_BOTTOM_BIT_ACCURATE_RUN
      "1"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_ULONG_TO_FP_BOTTOM_BIT_ACCURATE_RUN__TRYRUN_OUTPUT 
+SET( H5_ULONG_TO_FP_BOTTOM_BIT_ACCURATE_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_FP_TO_ULLONG_ACCURATE_RUN 
+SET( H5_FP_TO_ULLONG_ACCURATE_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_FP_TO_ULLONG_ACCURATE_RUN__TRYRUN_OUTPUT 
+SET( H5_FP_TO_ULLONG_ACCURATE_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_LDOUBLE_TO_UINT_ACCURATE_RUN 
+SET( H5_LDOUBLE_TO_UINT_ACCURATE_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_LDOUBLE_TO_UINT_ACCURATE_RUN__TRYRUN_OUTPUT 
+SET( H5_LDOUBLE_TO_UINT_ACCURATE_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_ULLONG_TO_LDOUBLE_PRECISION_RUN 
+SET( H5_ULLONG_TO_LDOUBLE_PRECISION_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_ULLONG_TO_LDOUBLE_PRECISION_RUN__TRYRUN_OUTPUT 
+SET( H5_ULLONG_TO_LDOUBLE_PRECISION_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_FP_TO_INTEGER_OVERFLOW_WORKS_RUN 
+SET( H5_FP_TO_INTEGER_OVERFLOW_WORKS_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_FP_TO_INTEGER_OVERFLOW_WORKS_RUN__TRYRUN_OUTPUT 
+SET( H5_FP_TO_INTEGER_OVERFLOW_WORKS_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_LDOUBLE_TO_LLONG_ACCURATE_RUN 
+SET( H5_LDOUBLE_TO_LLONG_ACCURATE_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_LDOUBLE_TO_LLONG_ACCURATE_RUN__TRYRUN_OUTPUT 
+SET( H5_LDOUBLE_TO_LLONG_ACCURATE_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_LLONG_TO_LDOUBLE_CORRECT_RUN 
+SET( H5_LLONG_TO_LDOUBLE_CORRECT_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_LLONG_TO_LDOUBLE_CORRECT_RUN__TRYRUN_OUTPUT 
+SET( H5_LLONG_TO_LDOUBLE_CORRECT_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
-SET( H5_NO_ALIGNMENT_RESTRICTIONS_RUN 
+SET( H5_NO_ALIGNMENT_RESTRICTIONS_RUN
      "0"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
-SET( H5_NO_ALIGNMENT_RESTRICTIONS_RUN__TRYRUN_OUTPUT 
+SET( H5_NO_ALIGNMENT_RESTRICTIONS_RUN__TRYRUN_OUTPUT
      ""
      CACHE STRING "Output from TRY_RUN" FORCE)
 
@@ -1482,7 +1482,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines config/cmake/HDFMacros.c
 +++ config/cmake/HDFMacros.cmake    2016-09-30 17:23:11.019851626 +0200
 @@ -109,14 +109,14 @@
    )
-   
+
    #----- Use MSVC Naming conventions for Shared Libraries
 -  IF (MINGW AND \${libtype} MATCHES "SHARED")
 +  IF (MINGW AND (\${libtype} MATCHES "SHARED") AND (NOT CMAKE_CROSSCOMPILING))
@@ -1494,7 +1494,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines config/cmake/HDFMacros.c
      )
 -  ENDIF (MINGW AND \${libtype} MATCHES "SHARED")
 +  ENDIF (MINGW AND (\${libtype} MATCHES "SHARED") AND (NOT CMAKE_CROSSCOMPILING))
- 
+
  ENDMACRO (HDF_SET_LIB_OPTIONS)
 
 diff -NurB --strip-trailing-cr --suppress-common-lines src/CMakeLists.txt src/CMakeLists.txt
@@ -1509,7 +1509,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines src/CMakeLists.txt src/CM
 +    COMMAND \${CMAKE_CROSSCOMPILING_RUN_COMMAND} \${CMD} > \${HDF5_BINARY_DIR}/H5Tinit.c
      DEPENDS H5detect
  )
- 
+
 @@ -634,8 +633,7 @@
  SET (CMD \$<TARGET_FILE:H5make_libsettings>)
  ADD_CUSTOM_COMMAND (
@@ -1520,7 +1520,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines src/CMakeLists.txt src/CM
      DEPENDS H5make_libsettings
      WORKING_DIRECTORY \${HDF5_BINARY_DIR}
  )
- 
+
 EOF
         patch -f -N -i hdf5-${HDF5_VERSION}.patch -p0 \
         || exit 1
@@ -1542,7 +1542,7 @@ EOF
               -DCMAKE_CXX_STANDARD_LIBRARIES="-lws2_32 -lnetapi32 -lwsock32" \
               . \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1576,7 +1576,7 @@ if [ "${GETTEXT}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/gettext-${GETTEXT_VERSION}.tar.gz
         pushd ${__build_dir}/gettext-${GETTEXT_VERSION}
-        
+
         # Generate patch to build shared library
         cat << EOF > gettext-${GETTEXT_VERSION}.patch
 diff -NurwB --strip-trailing-cr --suppress-common-lines gettext-runtime/intl/printf.c gettext-runtime/intl/printf.c
@@ -1585,7 +1585,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines gettext-runtime/intl/pri
 @@ -308,7 +308,7 @@
  #include "asnprintf.c"
  #endif
- 
+
 -# if HAVE_DECL__SNWPRINTF
 +# if HAVE_DECL__SNWPRINTF || WIN32
     /* Windows.  The function vswprintf() has a different signature than
@@ -1603,7 +1603,7 @@ EOF
                 --host=${__toolchain} \
                 --prefix=${GETTEXT_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1636,7 +1636,7 @@ if [ "${SQLITE}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/sqlite-autoconf-${SQLITE_VERSION_STD}.tar.gz
         pushd ${__build_dir}/sqlite-autoconf-${SQLITE_VERSION_STD}
-        
+
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
@@ -1644,7 +1644,7 @@ if [ "${SQLITE}" == "1" ]; then
                 --with-python=${PYTHON_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1684,7 +1684,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines sigc++/signal_base.h sig
 @@ -21,6 +21,9 @@
  #ifndef _SIGC_SIGNAL_BASE_H_
  #define _SIGC_SIGNAL_BASE_H_
- 
+
 +#include <cstddef>
 +#include <cstdlib>
 +#include <cstring>
@@ -1700,7 +1700,7 @@ EOF
                 --host=${__toolchain} \
                 --prefix=${LIBSIGCPP_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1733,15 +1733,15 @@ if [ "${FREETYPE}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/freetype-${FREETYPE_VERSION}.tar.gz
         pushd ${__build_dir}/freetype-${FREETYPE_VERSION}
-        
+
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${FREETYPE_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
-        
+
         pushd ${CROSSBUILD_INSTALL_PREFIX}
         rm -f freetype && ln -fs freetype-${FREETYPE_VERSION} freetype
         pushd bin;ln -fs ../freetype/bin/*.* ./;popd
@@ -1772,13 +1772,13 @@ if [ "${LIBREGEX}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/mingw-libgnurx-${LIBREGEX_VERSION}-src.tar.gz
         pushd ${__build_dir}/mingw-libgnurx-${LIBREGEX_VERSION}
-        
+
         ./configure \
                 --build=${__buildtype} \
                 --host=${__toolchain} \
                 --prefix=${LIBREGEX_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} || exit 1
         make -j${__build_proc_num} install || exit 1
 
@@ -1853,24 +1853,24 @@ if [ "${BLITZ}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/blitz-${BLITZ_VERSION}.tar.gz
         pushd ${__build_dir}/blitz-${BLITZ_VERSION}
-        
+
         # Generate patch to build shared library
         cat << EOF > blitz-${BLITZ_VERSION}.patch
 --- lib/Makefile.am     2016-07-12 12:03:20.838004325 +0200
 +++ lib/Makefile.am     2016-07-12 12:01:02.501982180 +0200
 @@ -5,6 +5,7 @@
  EXTRA_DIST = readme.txt
- 
+
  AM_CPPFLAGS = -I\$(top_srcdir) -I\$(top_builddir) \$(BOOST_CPPFLAGS)
 +AM_LDFLAGS = -no-undefined
- 
+
  lib_LTLIBRARIES = libblitz.la
  libblitz_la_SOURCES = \$(top_srcdir)/src/globals.cpp
 EOF
 
         patch -f -N -i blitz-${BLITZ_VERSION}.patch -p0 \
         || exit 1
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -1882,7 +1882,7 @@ EOF
                 --prefix=${BLITZ_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -1959,7 +1959,7 @@ if [ "${LIBJPEG}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/jpegsrc.v${LIBJPEG_VERSION}.tar.gz
         pushd ${__build_dir}/jpeg-${LIBJPEG_VERSION}
-        
+
         mkdir -p ${LIBJPEG_INSTALL_PREFIX}/bin \
                  ${LIBJPEG_INSTALL_PREFIX}/lib \
                  ${LIBJPEG_INSTALL_PREFIX}/include \
@@ -1986,7 +1986,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines makefile.cfg makefile.cfg
 +A = dll
 +IMP = dll.a
 +EXE = .exe
- 
+
  # Library version ID; libtool uses this for the shared library version number.
  # Note: we suggest this match the macro of the same name in jpeglib.h.
 @@ -54,7 +57,7 @@
@@ -2000,56 +2000,56 @@ diff -NurB --strip-trailing-cr --suppress-common-lines makefile.cfg makefile.cfg
  # directory creation command
 @@ -133,7 +136,7 @@
  TROBJECTS= jpegtran.\$(O) rdswitch.\$(O) cdjpeg.\$(O) transupp.\$(O)
- 
- 
+
+
 -all: @A2K_DEPS@ libjpeg.\$(A) cjpeg djpeg jpegtran rdjpgcom wrjpgcom
 +all: @A2K_DEPS@ \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A) cjpeg\$(EXE) djpeg\$(EXE) jpegtran\$(EXE) rdjpgcom\$(EXE) wrjpgcom\$(EXE)
- 
+
  # Special compilation rules to support ansi2knr and libtool.
  .SUFFIXES: .lo .la
 @@ -161,6 +164,11 @@
  # the library:
- 
+
  # without libtool:
 +jpeg\$(JPEG_LIB_VERSION).dll: @A2K_DEPS@ \$(LIBOBJECTS)
 +	\$(RM) jpeg\$(JPEG_LIB_VERSION).dll libjpeg.dll.a
 +	\$(LN) -shared -o jpeg\$(JPEG_LIB_VERSION).dll \$(LDFLAGS) \$(LIBOBJECTS) -Wl,--out-implib,libjpeg.dll.a
-+	
++
 +# without libtool:
  libjpeg.a: @A2K_DEPS@ \$(LIBOBJECTS)
  	\$(RM) libjpeg.a
  	\$(AR) libjpeg.a  \$(LIBOBJECTS)
 @@ -173,37 +181,38 @@
- 
+
  # sample programs:
- 
+
 -cjpeg: \$(COBJECTS) libjpeg.\$(A)
 -	\$(LN) \$(LDFLAGS) -o cjpeg \$(COBJECTS) libjpeg.\$(A) \$(LDLIBS)
 +cjpeg\$(EXE): \$(COBJECTS) \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A)
 +	\$(LN) \$(LDFLAGS) -o cjpeg\$(EXE) \$(COBJECTS) \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A) \$(LDLIBS)
- 
+
 -djpeg: \$(DOBJECTS) libjpeg.\$(A)
 -	\$(LN) \$(LDFLAGS) -o djpeg \$(DOBJECTS) libjpeg.\$(A) \$(LDLIBS)
 +djpeg\$(EXE): \$(DOBJECTS) \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A)
 +	\$(LN) \$(LDFLAGS) -o djpeg\$(EXE) \$(DOBJECTS) \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A) \$(LDLIBS)
- 
+
 -jpegtran: \$(TROBJECTS) libjpeg.\$(A)
 -	\$(LN) \$(LDFLAGS) -o jpegtran \$(TROBJECTS) libjpeg.\$(A) \$(LDLIBS)
 +jpegtran\$(EXE): \$(TROBJECTS) \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A)
 +	\$(LN) \$(LDFLAGS) -o jpegtran\$(EXE) \$(TROBJECTS) \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A) \$(LDLIBS)
- 
+
 -rdjpgcom: rdjpgcom.\$(O)
 -	\$(LN) \$(LDFLAGS) -o rdjpgcom rdjpgcom.\$(O) \$(LDLIBS)
 +rdjpgcom\$(EXE): rdjpgcom.\$(O)
 +	\$(LN) \$(LDFLAGS) -o rdjpgcom\$(EXE) rdjpgcom.\$(O) \$(LDLIBS)
- 
+
 -wrjpgcom: wrjpgcom.\$(O)
 -	\$(LN) \$(LDFLAGS) -o wrjpgcom wrjpgcom.\$(O) \$(LDLIBS)
 +wrjpgcom\$(EXE): wrjpgcom.\$(O)
 +	\$(LN) \$(LDFLAGS) -o wrjpgcom\$(EXE) wrjpgcom.\$(O) \$(LDLIBS)
- 
+
  # Installation rules:
- 
+
 -install: cjpeg djpeg jpegtran rdjpgcom wrjpgcom @FORCE_INSTALL_LIB@
 -	\$(INSTALL_PROGRAM) cjpeg \$(bindir)/\$(binprefix)cjpeg
 -	\$(INSTALL_PROGRAM) djpeg \$(bindir)/\$(binprefix)djpeg
@@ -2067,18 +2067,18 @@ diff -NurB --strip-trailing-cr --suppress-common-lines makefile.cfg makefile.cfg
  	\$(INSTALL_DATA) \$(srcdir)/jpegtran.1 \$(mandir)/\$(manprefix)jpegtran.\$(manext)
  	\$(INSTALL_DATA) \$(srcdir)/rdjpgcom.1 \$(mandir)/\$(manprefix)rdjpgcom.\$(manext)
  	\$(INSTALL_DATA) \$(srcdir)/wrjpgcom.1 \$(mandir)/\$(manprefix)wrjpgcom.\$(manext)
- 
+
 -install-lib: libjpeg.\$(A) install-headers
 -	\$(INSTALL_LIB) libjpeg.\$(A) \$(libdir)/\$(binprefix)libjpeg.\$(A)
 +install-lib: \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A) install-headers
 +	\$(INSTALL_LIB) \$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A) \$(bindir)/\$(libprefix)jpeg\$(JPEG_LIB_VERSION).\$(A)
 +	\$(INSTALL_LIB) libjpeg.\$(IMP) \$(libdir)/libjpeg.\$(IMP)
- 
+
  install-headers: jconfig.h
  	\$(INSTALL_DATA) jconfig.h \$(includedir)/jconfig.h
 @@ -212,22 +221,22 @@
  	\$(INSTALL_DATA) \$(srcdir)/jerror.h \$(includedir)/jerror.h
- 
+
  clean:
 -	\$(RM) *.o *.lo libjpeg.a libjpeg.la
 -	\$(RM) cjpeg djpeg jpegtran rdjpgcom wrjpgcom
@@ -2086,10 +2086,10 @@ diff -NurB --strip-trailing-cr --suppress-common-lines makefile.cfg makefile.cfg
 +	\$(RM) cjpeg\$(EXE) djpeg\$(EXE) jpegtran\$(EXE) rdjpgcom\$(EXE) wrjpgcom\$(EXE)
  	\$(RM) ansi2knr core testout* config.log config.status
  	\$(RM) -r knr .libs _libs
- 
+
  distclean: clean
  	\$(RM) Makefile jconfig.h libtool config.cache
- 
+
 -test: cjpeg djpeg jpegtran
 +test: cjpeg\$(EXE) djpeg\$(EXE) jpegtran\$(EXE)
  	\$(RM) testout*
@@ -2119,7 +2119,7 @@ EOF
                 --host=${__toolchain} \
                 --prefix=${LIBJPEG_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2161,7 +2161,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines jmorecfg.h jmorecfg.h
 +++ jmorecfg.h  2017-11-23 15:42:43.621993416 +0100
 @@ -229,7 +229,7 @@
   */
- 
+
  #ifndef HAVE_BOOLEAN
 -typedef int boolean;
 +typedef unsigned char boolean;
@@ -2178,7 +2178,7 @@ EOF
                 --host=${__toolchain} \
                 --prefix=${LIBJPEGTURBO_INSTALL_PREFIX} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2212,7 +2212,7 @@ if [ "${LIBTIFF}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/tiff-${LIBTIFF_VERSION}.tar.gz
         pushd ${__build_dir}/tiff-${LIBTIFF_VERSION}
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -2224,7 +2224,7 @@ if [ "${LIBTIFF}" == "1" ]; then
                 --prefix=${LIBTIFF_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2279,7 +2279,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeList
 +foreach(d \${DIR_DEFS})
 +    set(definitions "\${definitions} -D\${d}")
 +endforeach()
- 
+
  configure_file(\${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpng.pc.in
    \${CMAKE_CURRENT_BINARY_DIR}/libpng.pc)
 EOF
@@ -2334,13 +2334,13 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeList
 @@ -384,7 +384,7 @@
  #---------------- SHARED -------------
  IF(BUILD_SHARED_LIBS)
- 
+
 - IF(WIN32)
 + IF(WIN32 AND NOT CMAKE_CROSSCOMPILING)
  #-DMNG_BUILD_DLL or -DMNG_DLL or  -DMNG_USE_DLL : cnf. libmng_types.h
    ADD_DEFINITIONS(-DMNG_BUILD_DLL)
   ENDIF(WIN32)
-  
+
 @@ -434,7 +434,7 @@
  #
  ENDIF(BUILD_SHARED_LIBS)
@@ -2353,7 +2353,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeList
 @@ -456,7 +456,7 @@
   INSTALL(FILES  \${CMAKE_CURRENT_BINARY_DIR}/libmng.pc DESTINATION
      \${MNG_INSTALL_PKGCONFIG_DIR} )
- 
+
 -ENDIF(UNIX)
 +ENDIF(UNIX OR CMAKE_CROSSCOMPILING)
  #
@@ -2371,7 +2371,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines libmng_types.h libmng_ty
 +#include <stdio.h>
  #include <jpeglib.h>
  #endif /* MNG_INCLUDE_IJG6B */
- 
+
 EOF
         patch -f -N -i libmng-${LIBMNG_VERSION}.patch -p0 \
         || exit 1
@@ -2415,7 +2415,7 @@ if [ "${FONTCONFIG}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/fontconfig-${FONTCONFIG_VERSION}.tar.gz
         pushd ${__build_dir}/fontconfig-${FONTCONFIG_VERSION}
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -2428,7 +2428,7 @@ if [ "${FONTCONFIG}" == "1" ]; then
                 --prefix=${FONTCONFIG_INSTALL_PREFIX} \
                 --with-freetype-config=${FREETYPE_INSTALL_PREFIX}/bin/freetype-config \
         || exit 1
-        
+
         # Fontconfig fails to install using multi processors
         make -j${__build_proc_num} || exit 1
         make install || exit 1
@@ -2485,7 +2485,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines glib/gatomic.c glib/gato
 @@ -519,6 +519,16 @@
  #define InterlockedXor(a,b) _gInterlockedXor(a,b)
  #endif
- 
+
 +/* mingw32 does not have MemoryBarrier.
 + * MemoryBarrier may be defined as a macro or a function.
 + * Just make a failsafe version for ourselves. */
@@ -2509,7 +2509,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines glib/tests/fileutils.c g
 @@ -32,13 +32,11 @@
  #define G_STDIO_NO_WRAP_ON_UNIX
  #include <glib/gstdio.h>
- 
+
 -#ifdef G_OS_UNIX
  #include <unistd.h>
  #include <sys/types.h>
@@ -2538,7 +2538,7 @@ EOF
                 --with-python=${PYTHON_HOST_COMMAND} \
                 --enable-shared \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2565,7 +2565,7 @@ if [ "${OPENJPEG}" == "1" ]; then
         if [ "$__use_cea_mirror" = "1" ]; then
             # It was necessary to rename the original file because its name did
             # not contain anything to know that it provides openjpeg. It is
-            # necessary to have particular case where cea mirror file name 
+            # necessary to have particular case where cea mirror file name
             # is not the same as original file name.
             download "${__mirror_url}/sources/openjpeg-${OPENJPEG_VERSION}.tar.gz"
         else
@@ -2580,14 +2580,14 @@ if [ "${OPENJPEG}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/openjpeg-${OPENJPEG_VERSION}.tar.gz
         pushd ${__build_dir}/openjpeg-version.${OPENJPEG_VERSION}
-        
+
         cmake \
             -DCMAKE_INSTALL_PREFIX=${OPENJPEG_INSTALL_PREFIX} \
             -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
             -DCMAKE_CROSSCOMPILING=ON \
             -DBUILD_PKGCONFIG_FILES=ON \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2613,7 +2613,7 @@ if [ "${JPEGXR}" == "1" ]; then
         if [ "$__use_cea_mirror" = "1" ]; then
             # It was necessary to rename the original file because its name did
             # not contain anything to know that it provides jxrlib. It is
-            # necessary to have particular case where cea mirror file name 
+            # necessary to have particular case where cea mirror file name
             # is not the same as original file name.
             download "${__mirror_url}/sources/jxrlib-${JPEGXR_VERSION}.zip"
         else
@@ -2640,7 +2640,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines libjxr.pc.in libjxr.pc.i
 @@ -9,4 +9,4 @@
  Version: %(JXR_VERSION)s
  Libs: -L\${libdir} -ljpegxr -ljxrglue
- Libs.private: -lm 
+ Libs.private: -lm
 -Cflags: -I\${includedir}/libjxr/common -I\${includedir}/libjxr/image/x86 -I\${includedir}/libjxr/image -I\${includedir}/libjxr/glue -I\${includedir}/libjxr/test -D__ANSI__ -DDISABLE_PERF_MEASUREMENT %(JXR_ENDIAN)s
 +Cflags: -I\${includedir}/libjxr/common -I\${includedir}/libjxr/image/x86 -I\${includedir}/libjxr/image -I\${includedir}/libjxr/glue -I\${includedir}/libjxr/test -D__ANSI__ -DDISABLE_PERF_MEASUREMENT %(JXR_ENDIAN)s %(JXR_ARCH)s %(JXR_CROSS_COMPILING)s
 
@@ -2650,29 +2650,29 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines jxrgluelib/JXRMeta.h jxr
 @@ -111,6 +110,12 @@
  #define __out_win   __out
  #endif
- 
+
 +#ifdef CROSS_COMPILING
 +#define __in_ecount(size)
 +#define __out_ecount(size)
 +#define __in
 +#define __out
 +#endif
- 
+
  //================================================================
- 
+
 diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
 --- Makefile	2016-11-02 12:08:23.574742441 +0100
 +++ Makefile	2016-11-02 12:25:53.790174830 +0100
 @@ -29,7 +29,9 @@
  ##
  build: all
- 
+
 +ifndef CC
  CC=cc
 +endif
- 
+
  JXR_VERSION=1.1
- 
+
 @@ -49,6 +51,14 @@
  PICFLAG=
  endif
@@ -2680,7 +2680,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
 +ifeq (\$(ARCH), x86_64)
 +ARCH_FLAG=-D__LP64__
 +endif
-+ 
++
 +ifneq (\$(CROSS_COMPILING),)
 +CROSS_COMPILING_FLAG=-DCROSS_COMPILING
 +endif
@@ -2689,7 +2689,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
  ENDIANFLAG=-D_BIG__ENDIAN_
  else
 @@ -65,10 +71,18 @@
- 
+
  CD=cd
  MK_DIR=mkdir -p
 -CFLAGS=-I. -Icommon/include -I\$(DIR_SYS) \$(ENDIANFLAG) -D__ANSI__ -DDISABLE_PERF_MEASUREMENT -w \$(PICFLAG) -O
@@ -2702,92 +2702,92 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
 +ifndef SHARED_LIB_EXT
 +SHARED_LIB_EXT=.so
 +endif
- 
+
 -STATIC_LIBRARIES=\$(DIR_BUILD)/libjxrglue.a \$(DIR_BUILD)/libjpegxr.a
 -SHARED_LIBRARIES=\$(DIR_BUILD)/libjxrglue.so \$(DIR_BUILD)/libjpegxr.so
 +STATIC_LIBRARIES=\$(DIR_BUILD)/libjxrglue\$(STATIC_LIB_EXT) \$(DIR_BUILD)/libjpegxr\$(STATIC_LIB_EXT)
 +SHARED_LIBRARIES=\$(DIR_BUILD)/libjxrglue\$(SHARED_LIB_EXT) \$(DIR_BUILD)/libjpegxr\$(SHARED_LIB_EXT)
- 
+
  ifneq (\$(SHARED),)
  LIBRARIES=\$(SHARED_LIBRARIES)
 @@ -76,7 +90,7 @@
  LIBRARIES=\$(STATIC_LIBRARIES)
  endif
- 
+
 -LIBS=-L\$(DIR_BUILD) \$(shell echo \$(LIBRARIES) | sed -e 's%\$(DIR_BUILD)/lib\\([^ ]*\\)\\.\\(a\\|so\\)%-l\\1%g') -lm
 +LIBS=-L\$(DIR_BUILD) \$(shell echo \$(LIBRARIES) | sed -e 's%\$(DIR_BUILD)/lib\\([^ ]*\\)\\(\$(STATIC_LIB_EXT)\\|\$(SHARED_LIB_EXT)\\)%-l\\1%g') -lm
- 
+
  ##--------------------------------
  ##
 @@ -118,14 +132,14 @@
  ## JPEG XR library
  ##
- 
+
 -\$(DIR_BUILD)/libjpegxr.a: \$(OBJ_ENC) \$(OBJ_DEC) \$(OBJ_SYS)
 +\$(DIR_BUILD)/libjpegxr\$(STATIC_LIB_EXT): \$(OBJ_ENC) \$(OBJ_DEC) \$(OBJ_SYS)
  	\$(MK_DIR) \$(@D)
  	ar rvu \$@ \$(OBJ_ENC) \$(OBJ_DEC) \$(OBJ_SYS)
  	ranlib \$@
- 
+
 -\$(DIR_BUILD)/libjpegxr.so: \$(OBJ_ENC) \$(OBJ_DEC) \$(OBJ_SYS)
 +\$(DIR_BUILD)/libjpegxr\$(SHARED_LIB_EXT): \$(OBJ_ENC) \$(OBJ_DEC) \$(OBJ_SYS)
  	\$(MK_DIR) \$(@D)
 -	\$(CC) -shared \$? -o \$@
 +	\$(CC) -shared \$? -Wl,--no-undefined -o \$@
- 
+
  ##--------------------------------
  ##
 @@ -156,14 +170,14 @@
  ## JPEG XR Glue library
  ##
- 
+
 -\$(DIR_BUILD)/libjxrglue.a: \$(OBJ_GLUE) \$(OBJ_TEST)
 +\$(DIR_BUILD)/libjxrglue\$(STATIC_LIB_EXT): \$(OBJ_GLUE) \$(OBJ_TEST)
  	\$(MK_DIR) \$(@D)
  	ar rvu \$@ \$(OBJ_GLUE) \$(OBJ_TEST)
  	ranlib \$@
- 
+
 -\$(DIR_BUILD)/libjxrglue.so: \$(OBJ_GLUE) \$(OBJ_TEST)
 +\$(DIR_BUILD)/libjxrglue\$(SHARED_LIB_EXT): \$(OBJ_GLUE) \$(OBJ_TEST) \$(DIR_BUILD)/libjpegxr\$(SHARED_LIB_EXT)
  	\$(MK_DIR) \$(@D)
 -	\$(CC) -shared \$? -o \$@
 +	\$(CC) -shared \$? -Wl,--no-undefined -o \$@
- 
+
  ##--------------------------------
  ##
 @@ -171,7 +185,7 @@
  ##
  ENCAPP=JxrEncApp
- 
+
 -\$(DIR_BUILD)/\$(ENCAPP): \$(DIR_SRC)/\$(DIR_EXEC)/\$(ENCAPP).c \$(LIBRARIES)
 +\$(DIR_BUILD)/\$(ENCAPP)\${EXE_EXT}: \$(DIR_SRC)/\$(DIR_EXEC)/\$(ENCAPP).c \$(LIBRARIES)
  	\$(MK_DIR) \$(@D)
  	\$(CC) \$< -o \$@ \$(CFLAGS) -I\$(DIR_GLUE) -I\$(DIR_TEST) \$(LIBS)
- 
+
 @@ -182,7 +196,7 @@
- 
+
  DECAPP=JxrDecApp
- 
+
 -\$(DIR_BUILD)/\$(DECAPP): \$(DIR_SRC)/\$(DIR_EXEC)/\$(DECAPP).c \$(LIBRARIES)
 +\$(DIR_BUILD)/\$(DECAPP)\${EXE_EXT}: \$(DIR_SRC)/\$(DIR_EXEC)/\$(DECAPP).c \$(LIBRARIES)
  	\$(MK_DIR) \$(@D)
  	\$(CC) \$< -o \$@ \$(CFLAGS) -I\$(DIR_GLUE) -I\$(DIR_TEST) \$(LIBS)
- 
+
 @@ -190,19 +204,19 @@
  ##
  ## JPEG XR library
  ##
 -all: \$(DIR_BUILD)/\$(ENCAPP) \$(DIR_BUILD)/\$(DECAPP) \$(LIBRARIES)
 +all: \$(DIR_BUILD)/\$(ENCAPP)\${EXE_EXT} \$(DIR_BUILD)/\$(DECAPP)\${EXE_EXT} \$(LIBRARIES)
- 
+
  clean:
 -	rm -rf \$(DIR_BUILD)/*App \$(DIR_BUILD)/*.o \$(DIR_BUILD)/libj*.a \$(DIR_BUILD)/libj*.so \$(DIR_BUILD)/libjxr.pc
 +	rm -rf \$(DIR_BUILD)/*App \$(DIR_BUILD)/*.o \$(DIR_BUILD)/libj*\$(STATIC_LIB_EXT) \$(DIR_BUILD)/libj*\$(SHARED_LIB_EXT) \$(DIR_BUILD)/libjxr.pc
- 
+
  \$(DIR_BUILD)/libjxr.pc: \$(DIR_SRC)/libjxr.pc.in
 -	@python -c 'import os; d = { "DIR_INSTALL": "\$(DIR_INSTALL)", "JXR_VERSION": "\$(JXR_VERSION)", "JXR_ENDIAN": "\$(ENDIANFLAG)" }; fin = open("\$<", "r"); fout = open("\$@", "w+"); fout.writelines( [ l % d for l in fin.readlines()])'
 +	@python -c 'import os; d = { "DIR_INSTALL": "\$(DIR_INSTALL)", "JXR_VERSION": "\$(JXR_VERSION)", "JXR_ENDIAN": "\$(ENDIANFLAG)", "JXR_ARCH": "\$(ARCH_FLAG)", "JXR_CROSS_COMPILING": "\$(CROSS_COMPILING_FLAG)" }; fin = open("\$<", "r"); fout = open("\$@", "w+"); fout.writelines( [ l % d for l in fin.readlines()])'
- 
+
  install: all \$(DIR_BUILD)/libjxr.pc
  	install -d \$(DIR_INSTALL)/lib/pkgconfig \$(DIR_INSTALL)/bin \$(DIR_INSTALL)/include/libjxr/common  \$(DIR_INSTALL)/include/libjxr/image/x86 \$(DIR_INSTALL)/include/libjxr/glue \$(DIR_INSTALL)/include/libjxr/test \$(DIR_INSTALL)/share/doc/jxr-\$(JXR_VERSION)
  	install \$(LIBRARIES) \$(DIR_INSTALL)/lib
@@ -2805,7 +2805,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines image/sys/strcodec.c ima
 @@ -281,7 +281,7 @@
      pWS->SetPos = SetPosWS_File;
      pWS->GetPos = GetPosWS_File;
- 
+
 -#ifdef WIN32
 +#if (defined(WIN32) && !defined(CROSS_COMPILING))
      FailIf(0 != fopen_s(&pWS->state.file.pFile, szFilename, szMode), WMP_errFileIO);
@@ -2816,7 +2816,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines image/sys/strcodec.h ima
 --- image/sys/strcodec.h    2016-07-20 11:23:46.531236337 +0200
 +++ image/sys/strcodec.h    2016-07-20 11:08:09.466383242 +0200
 @@ -57,7 +57,7 @@
- 
+
  //================================================================
  //#ifdef WIN32
 -#if defined(WIN32) && !defined(UNDER_CE)   // WIN32 seems to be defined always in VS2005 for ARM platform
@@ -2825,9 +2825,9 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines image/sys/strcodec.h ima
  #include "..\\x86\\x86.h"
  #endif
 @@ -450,6 +450,10 @@
- 
+
      struct WMPStream ** ppWStream;
- 
+
 +#ifdef CROSS_COMPILING
 +#define TCHAR char
 +#endif
@@ -2851,7 +2851,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines image/sys/strcodec.c ima
  // other platform
 
 EOF
-        # It is necessary to convert carriage return because the package content 
+        # It is necessary to convert carriage return because the package content
         # is in windows conventions (i.e.: carriage return is \r\n, not only \n)
         dos2unix image/sys/ansi.h \
                  image/sys/strcodec.h \
@@ -2859,7 +2859,7 @@ EOF
                  jxrgluelib/JXRMeta.h \
                  Makefile \
                  libjxr.pc.in
-        
+
         patch -f -N -i jxrlib-${JPEGXR_VERSION}.patch -p0 \
         || exit 1
 
@@ -2895,7 +2895,7 @@ if [ "${JASPER}" == "1" ]; then
         if [ "$__use_cea_mirror" = "1" ]; then
             # It was necessary to rename the original file because its name did
             # not contain anything to know that it provides jasper. It is
-            # necessary to have particular case where cea mirror file name 
+            # necessary to have particular case where cea mirror file name
             # is not the same as original file name.
             download "${__mirror_url}/sources/jasper-${JASPER_VERSION}.tar.gz"
         else
@@ -2922,7 +2922,7 @@ if [ "${JASPER}" == "1" ]; then
                 --prefix=${JASPER_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -2955,7 +2955,7 @@ if [ "${GDKPIXBUF}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/gdk-pixbuf-${GDKPIXBUF_VERSION}.tar.xz
         pushd ${__build_dir}/gdk-pixbuf-${GDKPIXBUF_VERSION}
-        
+
         # Generate patch to build shared library
         cat << EOF > gdk-pixbuf-${GDKPIXBUF_VERSION}.patch
 diff -NurwB --strip-trailing-cr --suppress-common-lines gdk-pixbuf/io-png.c gdk-pixbuf/io-png.c
@@ -2970,7 +2970,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines gdk-pixbuf/io-png.c gdk-
  	png_init_io (png_ptr, f);
 +#endif
  	png_read_info (png_ptr, info_ptr);
- 
+
          if (!setup_png_transformations(png_ptr, info_ptr, error, &w, &h, &ctype)) {
 @@ -1001,7 +1002,9 @@
                                   png_save_to_callback_write_func,
@@ -2980,14 +2980,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines gdk-pixbuf/io-png.c gdk-
                 png_init_io (png_ptr, f);
 +#endif
         }
- 
+
         if (compression >= 0)
 
 EOF
 
         patch -f -N -i gdk-pixbuf-${GDKPIXBUF_VERSION}.patch -p0 \
         || exit 1
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3000,7 +3000,7 @@ EOF
                 --enable-shared \
                 PKG_CONFIG=${PKG_CONFIG} \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3041,7 +3041,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines test/utils.c test/utils.
 @@ -510,8 +510,9 @@
      if (!(info_struct = png_create_info_struct (write_struct)))
  	goto out2;
- 
+
 +#ifdef PNG_STDIO_SUPPORTED
      png_init_io (write_struct, f);
 -
@@ -3053,7 +3053,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines test/utils.c test/utils.
 EOF
         patch -f -N -i pixman-${PIXMAN_VERSION}.patch -p0 \
         || exit 1
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3065,7 +3065,7 @@ EOF
                 --prefix=${PIXMAN_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3098,7 +3098,7 @@ if [ "${CAIRO}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/cairo-${CAIRO_VERSION}.tar.xz
         pushd ${__build_dir}/cairo-${CAIRO_VERSION}
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3114,7 +3114,7 @@ if [ "${CAIRO}" == "1" ]; then
                 --enable-xlib-xcb=no \
                 --enable-pthread=no \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3140,7 +3140,7 @@ if [ "${OPENSLIDE}" == "1" ]; then
         if [ "$__use_cea_mirror" = "1" ]; then
             # It was necessary to rename the original file because its name did
             # not contain anything to know that it provides openslide. It is
-            # necessary to have particular case where cea mirror file name 
+            # necessary to have particular case where cea mirror file name
             # is not the same as original file name.
             download "${__mirror_url}/sources/openslide-${OPENSLIDE_VERSION}.tar.gz"
         else
@@ -3155,7 +3155,7 @@ if [ "${OPENSLIDE}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/openslide-${OPENSLIDE_VERSION}.tar.gz
         pushd ${__build_dir}/openslide-master
-        
+
         cat << EOF > openslide-${OPENSLIDE_VERSION}.patch
 diff -NurB --strip-trailing-cr --suppress-common-lines Makefile.am Makefile.am
 --- Makefile.am	2017-07-23 23:00:28.915949037 +0200
@@ -3166,13 +3166,13 @@ diff -NurB --strip-trailing-cr --suppress-common-lines Makefile.am Makefile.am
  	@\$(MAKE) \$(AM_MAKEFLAGS) src/make-tables\$(EXEEXT)
 -	\$(AM_V_GEN)src/make-tables\$(EXEEXT) "\$@"
 +	\$(AM_V_GEN)\$(COMMAND_PREFIX) src/make-tables\$(EXEEXT) "\$@"
- 
+
  if WINDOWS_RESOURCES
  src_libopenslide_la_SOURCES += src/openslide-dll.rc
 EOF
         patch -f -N -i openslide-${OPENSLIDE_VERSION}.patch -p0 \
         || exit 1
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3184,7 +3184,7 @@ EOF
                 --prefix=${OPENSLIDE_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
-        
+
         COMMAND_PREFIX=${__wine_cmd} \
         make -j${__build_proc_num} install || exit 1
 
@@ -3252,7 +3252,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeList
 +    SET(CMAKE_CXX_STANDARD_LIBRARIES "\${CMAKE_CXX_STANDARD_LIBRARIES} -l\${WIN32_LIB}" )
 +  ENDFOREACH()
 +  SET(CMAKE_CXX_FLAGS "-fpermissive \${CMAKE_CXX_FLAGS}")
-+  
++
    # settings for Borland C++
    IF(CMAKE_CXX_COMPILER MATCHES bcc32)
      # to be checked: further settings required?
@@ -3260,7 +3260,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmpstat/libsrc/CMakeLis
 --- dcmpstat/libsrc/CMakeLists.txt  2016-07-27 17:42:30.268570055 +0200
 +++ dcmpstat/libsrc/CMakeLists.txt  2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmpstat)
 +
@@ -3272,7 +3272,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmdata/libsrc/CMakeList
 --- dcmdata/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 +++ dcmdata/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmdata)
 +
@@ -3284,7 +3284,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmdata/libi2d/CMakeList
 --- dcmdata/libi2d/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 +++ dcmdata/libi2d/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} libi2d)
 +
@@ -3296,7 +3296,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmimgle/libsrc/CMakeLis
 --- dcmimgle/libsrc/CMakeLists.txt  2016-07-27 17:42:30.268570055 +0200
 +++ dcmimgle/libsrc/CMakeLists.txt  2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmimgle)
 +
@@ -3308,7 +3308,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmjpls/libsrc/CMakeList
 --- dcmjpls/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 +++ dcmjpls/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 @@ -6,3 +6,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmjpls)
 +
@@ -3320,7 +3320,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmjpeg/libsrc/CMakeList
 --- dcmjpeg/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 +++ dcmjpeg/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 @@ -6,3 +6,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmjpeg)
 +
@@ -3332,7 +3332,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmnet/libsrc/CMakeLists
 --- dcmnet/libsrc/CMakeLists.txt    2016-07-27 17:42:30.268570055 +0200
 +++ dcmnet/libsrc/CMakeLists.txt    2016-07-27 17:42:30.272570054 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmnet)
 +
@@ -3344,7 +3344,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmqrdb/libsrc/CMakeList
 --- dcmqrdb/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 +++ dcmqrdb/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmqrdb)
 +
@@ -3356,7 +3356,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmwlm/libsrc/CMakeLists
 --- dcmwlm/libsrc/CMakeLists.txt    2016-07-27 17:42:30.268570055 +0200
 +++ dcmwlm/libsrc/CMakeLists.txt    2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmwlm)
 +
@@ -3368,7 +3368,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmsign/libsrc/CMakeList
 --- dcmsign/libsrc/CMakeLists.txt   2016-07-27 17:42:30.268570055 +0200
 +++ dcmsign/libsrc/CMakeLists.txt   2016-07-27 17:42:30.272570054 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmdsig)
 +
@@ -3380,7 +3380,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmimage/libsrc/CMakeLis
 --- dcmimage/libsrc/CMakeLists.txt  2016-07-27 17:42:30.268570055 +0200
 +++ dcmimage/libsrc/CMakeLists.txt  2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmimage)
 +
@@ -3392,7 +3392,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmtls/libsrc/CMakeLists
 --- dcmtls/libsrc/CMakeLists.txt    2016-07-27 17:42:30.268570055 +0200
 +++ dcmtls/libsrc/CMakeLists.txt    2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmtls)
 +
@@ -3404,7 +3404,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines oflog/libsrc/CMakeLists.
 --- oflog/libsrc/CMakeLists.txt 2016-07-27 17:42:30.268570055 +0200
 +++ oflog/libsrc/CMakeLists.txt 2016-07-27 17:42:30.268570055 +0200
 @@ -10,3 +10,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} oflog)
 +
@@ -3416,7 +3416,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines dcmsr/libsrc/CMakeLists.
 --- dcmsr/libsrc/CMakeLists.txt 2016-07-27 17:42:30.268570055 +0200
 +++ dcmsr/libsrc/CMakeLists.txt 2016-07-27 17:42:30.268570055 +0200
 @@ -3,3 +3,8 @@
- 
+
  # declare installation files
  INSTALL_TARGETS(\${INSTALL_LIBDIR} dcmsr)
 +
@@ -3429,14 +3429,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMake/osconfig.h.in CMak
 +++ CMake/osconfig.h.in       2016-09-04 22:07:29.231895567 +0200
 @@ -677,7 +677,10 @@
  #define PACKAGE_VERSION_SUFFIX "@DCMTK_PACKAGE_VERSION_SUFFIX@"
- 
+
  /* Define to the version number of this package. */
 -#define PACKAGE_VERSION_NUMBER "@DCMTK_PACKAGE_VERSION_NUMBER@"
 +#define PACKAGE_VERSION_NUMBER @DCMTK_PACKAGE_VERSION_NUMBER@
 +
 +/* Define to the version number string of this package. */
 +#define PACKAGE_VERSION_NUMBER_STRING "@DCMTK_PACKAGE_VERSION_NUMBER@"
- 
+
  /* Define path separator */
  #define PATH_SEPARATOR '@PATH_SEPARATOR@'
 diff -Nruwb dcmdata/include/dcmtk/dcmdata/dcuid.h dcmdata/include/dcmtk/dcmdata/dcuid.h
@@ -3444,11 +3444,11 @@ diff -Nruwb dcmdata/include/dcmtk/dcmdata/dcuid.h dcmdata/include/dcmtk/dcmdata/
 +++ dcmdata/include/dcmtk/dcmdata/dcuid.h       2016-09-04 22:31:28.442635450 +0200
 @@ -171,10 +171,10 @@
   */
- 
+
  /// implementation version name for this version of the toolkit
 -#define OFFIS_DTK_IMPLEMENTATION_VERSION_NAME   "OFFIS_DCMTK_" PACKAGE_VERSION_NUMBER
 +#define OFFIS_DTK_IMPLEMENTATION_VERSION_NAME   "OFFIS_DCMTK_" PACKAGE_VERSION_NUMBER_STRING
- 
+
  /// implementation version name for this version of the toolkit, used for files received in "bit preserving" mode
 -#define OFFIS_DTK_IMPLEMENTATION_VERSION_NAME2  "OFFIS_DCMBP_" PACKAGE_VERSION_NUMBER
 +#define OFFIS_DTK_IMPLEMENTATION_VERSION_NAME2  "OFFIS_DCMBP_" PACKAGE_VERSION_NUMBER_STRING
@@ -3456,7 +3456,7 @@ EOF
 
         patch -f -N -i dcmtk-${DCMTK_VERSION}.patch -p0 \
         || exit 1
-        
+
         cmake -DCMAKE_INSTALL_PREFIX=${DCMTK_INSTALL_PREFIX} \
               -DCMAKE_FIND_ROOT_PATH=${CROSSBUILD_INSTALL_PREFIX} \
               -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
@@ -3511,34 +3511,34 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines man4/netcdf-f90.texi man
  group will be copied to this character array. The name will be less
  than NF90_MAX_NAME in length.
 -@item
- 
+
  @end table
- 
+
 @@ -6979,7 +6978,7 @@
  @node FORTRAN 77 to Fortran 90 Transition Guide, Combined Index, Summary of Fortran 90 Interface, Top
  @appendix Appendix B - FORTRAN 77 to Fortran 90 Transition Guide
- 
--@unnumberedsubsec The new Fortran 90 interface 
-+@unnumberedsec The new Fortran 90 interface 
- 
+
+-@unnumberedsubsec The new Fortran 90 interface
++@unnumberedsec The new Fortran 90 interface
+
  The Fortran 90 interface to the netCDF library closely follows the
  FORTRAN 77 interface. In most cases, function and constant names and
 @@ -7001,7 +7000,7 @@
  versions may be implemented entirely in Fortran 90, adding additional
  error checking possibilities.
- 
--@unnumberedsubsec Changes to Inquiry functions 
-+@unnumberedsec Changes to Inquiry functions 
- 
+
+-@unnumberedsubsec Changes to Inquiry functions
++@unnumberedsec Changes to Inquiry functions
+
  In the Fortran 90 interface there are two inquiry functions each for
  dimensions, variables, and attributes, and a single inquiry function
 @@ -7035,7 +7034,7 @@
   INTEGER FUNCTION  NF_INQ_ATTNAME    (NCID, VARID, ATTNUM, name)
  @end example
- 
--@unnumberedsubsec Changes to put and get function 
-+@unnumberedsec Changes to put and get function 
- 
+
+-@unnumberedsubsec Changes to put and get function
++@unnumberedsec Changes to put and get function
+
  The biggest simplification in the Fortran 90 is in the nf90_put_var
  and nf90_get_var functions. Both functions are overloaded: the values
 
@@ -3550,22 +3550,22 @@ diff -NurB --strip-trailing-cr --suppress-common-lines libdispatch/v2i.c libdisp
  #include <stdarg.h>
  #include "netcdf.h"
 +#include "nc.h"
- 
+
  /* The subroutines in error.c emit no messages unless NC_VERBOSE bit
   * is on.  They call exit() when NC_FATAL bit is on. */
 @@ -38,7 +39,7 @@
   * any additional cost was lost in measurement variation.
   */
- 
+
 -# include "onstack.h"
 +# include "../libsrc/onstack.h"
- 
+
  static size_t
  nvdims(int ncid, int varid)
 EOF
         patch -f -N -i netcdf-${NETCDF_VERSION}.patch -p0 \
         || exit 1
-        
+
         libtoolize --force \
         && aclocal \
         && autoheader \
@@ -3579,7 +3579,7 @@ EOF
                 --enable-dll \
                 --disable-fortran-type-check \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3619,34 +3619,34 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines progs/CMakeLists.txt pro
 +++ progs/CMakeLists.txt    2016-10-03 10:41:26.611522473 +0200
 @@ -188,12 +188,22 @@
   DEPENDS \${CMAKE_CURRENT_SOURCE_DIR}/mincpik/mincpik.in)
- 
- 
+
+
 -INSTALL(FILES
 -  \${CMAKE_CURRENT_BINARY_DIR}/minchistory
 -  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ  WORLD_EXECUTE WORLD_READ
 -   DESTINATION bin )
 +INSTALL(FILES \${CMAKE_CURRENT_BINARY_DIR}/minchistory
 +        DESTINATION bin
-+        PERMISSIONS OWNER_EXECUTE 
-+                    OWNER_WRITE 
-+                    OWNER_READ 
-+                    GROUP_EXECUTE 
-+                    GROUP_READ  
-+                    WORLD_EXECUTE 
++        PERMISSIONS OWNER_EXECUTE
++                    OWNER_WRITE
++                    OWNER_READ
++                    GROUP_EXECUTE
++                    GROUP_READ
++                    WORLD_EXECUTE
 +                    WORLD_READ )
- 
+
 -INSTALL(PROGRAMS
 -  \${CMAKE_CURRENT_BINARY_DIR}/mincpik
 -  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ  WORLD_EXECUTE WORLD_READ
 -   DESTINATION bin )
 +INSTALL(PROGRAMS \${CMAKE_CURRENT_BINARY_DIR}/mincpik
 +        DESTINATION bin
-+        PERMISSIONS OWNER_EXECUTE 
-+                    OWNER_WRITE 
-+                    OWNER_READ 
-+                    GROUP_EXECUTE 
-+                    GROUP_READ     
-+                    WORLD_EXECUTE 
++        PERMISSIONS OWNER_EXECUTE
++                    OWNER_WRITE
++                    OWNER_READ
++                    GROUP_EXECUTE
++                    GROUP_READ
++                    WORLD_EXECUTE
 +                    WORLD_READ )
 diff -NurwB --strip-trailing-cr --suppress-common-lines libsrc/minc_convenience.c libsrc/minc_convenience.c
 --- libsrc/minc_convenience.c   2016-10-03 16:25:12.791989614 +0200
@@ -3654,17 +3654,17 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines libsrc/minc_convenience.
 @@ -159,6 +159,10 @@
  #include <unistd.h>             /* for getpid() */
  #endif /* HAVE_UNISTD_H */
- 
+
 +#if WIN32
 +#include <winsock2.h>
 +#endif
 +
  /* Private functions */
- PRIVATE int MI_create_dim_variable(int cdfid, char *name, 
+ PRIVATE int MI_create_dim_variable(int cdfid, char *name,
                                     nc_type datatype, int ndims);
 @@ -1501,7 +1505,7 @@
- 
- 
+
+
      time(&now);
 -#ifdef _MSC_VER
 +#if defined(_MSC_VER) || defined(WIN32)
@@ -3676,9 +3676,9 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeList
 --- CMakeLists.txt  2016-10-03 17:39:10.978733514 +0200
 +++ CMakeLists.txt  2016-10-03 17:44:58.094678288 +0200
 @@ -317,8 +317,14 @@
- 
+
  ADD_DEPENDENCIES(\${VOLUME_IO_LIBRARY} \${MINC2_LIBRARY})
- 
+
 -INSTALL(TARGETS \${MINC2_LIBRARY}     \${LIBRARY_INSTALL} DESTINATION lib)
 -INSTALL(TARGETS \${VOLUME_IO_LIBRARY} \${LIBRARY_INSTALL} DESTINATION lib)
 +INSTALL(TARGETS \${MINC2_LIBRARY}
@@ -3691,14 +3691,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines CMakeLists.txt CMakeList
 +        ARCHIVE DESTINATION lib)
  INSTALL(FILES   \${minc_HEADERS}      DESTINATION  include  )
  INSTALL(FILES   \${volume_io_HEADERS} DESTINATION include/volume_io)
- 
+
 
 diff -NurwB --strip-trailing-cr --suppress-common-lines conversion/dcm2mnc/minc_file.c conversion/dcm2mnc/minc_file.c
 --- conversion/dcm2mnc/minc_file.c  2016-10-03 17:22:44.926912844 +0200
 +++ conversion/dcm2mnc/minc_file.c  2016-10-03 17:24:34.250890709 +0200
 @@ -375,7 +375,11 @@
          strcat(full_path, temp_name);
- 
+
          if (strlen(full_path) != 0) {
 +#ifdef WIN32
 +            if (mkdir(full_path) && G.Debug) {
@@ -3720,7 +3720,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines conversion/Acr_nema/dico
 +#define sleep Sleep
 +#define SIGALRM SIGTERM
 +#endif
- 
+
  #include <stdio.h>
  #include <stdlib.h>
  #include <unistd.h>
@@ -3739,13 +3739,13 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines conversion/Acr_nema/dico
 @@ -507,9 +514,11 @@
        return FALSE;
     }
- 
+
 +#ifndef WIN32
     /* Ignore SIGPIPES in case the output connection gets closed when
        we are doing output. */
     (void) signal(SIGPIPE, SIG_IGN);
 +#endif
- 
+
     return TRUE;
  }
 
@@ -3755,7 +3755,7 @@ EOF
 
         mkdir -p build
         pushd build
-        
+
         cmake -DCMAKE_INSTALL_PREFIX=${MINC_INSTALL_PREFIX} \
               -DCMAKE_TOOLCHAIN_FILE=${__build_dir}/toolchain-${__toolchain}.cmake \
               -DCMAKE_CROSSCOMPILING=ON \
@@ -3772,7 +3772,7 @@ EOF
         || exit 1
 
         make -j${__build_proc_num} install || exit 1
-        
+
         popd
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -3822,7 +3822,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
  CFLAGS = -Wall -Wconversion -O3 -fPIC
  SHVER = 2
  OS = \$(shell uname)
- 
+
 -all: svm-train svm-predict svm-scale
 +ifeq ("\$(TARGET_OS)", "Windows")
 +	EXE_SUFFIX = .exe
@@ -3848,7 +3848,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
 +endif
 +
 +all: svm-train\$(EXE_SUFFIX) svm-predict\$(EXE_SUFFIX) svm-scale\$(EXE_SUFFIX)
- 
+
  lib: svm.o
 -	if [ "\$(OS)" = "Darwin" ]; then \\
 -		SHARED_LIB_FLAG="-dynamiclib -W1,-install_name,libsvm.so.\$(SHVER)"; \\
@@ -3881,19 +3881,19 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines Makefile Makefile
 +		 svm-scale\$(EXE_SUFFIX) \\
 +		 \$(SHARED_LIB_NAME) \\
 +		 \$(IMP_LIB_NAME)
-+	
++
 +install-svm-predict: svm-predict\$(EXE_SUFFIX)
 +	\$(MKDIR) \$(INSTALL_BIN_PREFIX); \\
 +	\$(INSTALL) \\
 +		svm-predict\$(EXE_SUFFIX) \\
 +		\$(INSTALL_BIN_PREFIX)
-+	
++
 +install-svm-train: svm-train\$(EXE_SUFFIX)
 +	\$(MKDIR) \$(INSTALL_BIN_PREFIX); \\
 +	\$(INSTALL) \\
 +		svm-train\$(EXE_SUFFIX) \\
 +		\$(INSTALL_BIN_PREFIX)
-+	
++
 +install-svm-scale: svm-scale\$(EXE_SUFFIX)
 +	\$(MKDIR) \$(INSTALL_BIN_PREFIX); \\
 +	\$(INSTALL) \\
@@ -3995,7 +3995,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines mkspecs/win32-g++/qmake.c
 -	QMAKE_DEL_DIR		= rmdir
 -    QMAKE_CHK_DIR_EXISTS	= if not exist
  }
- 
+
  QMAKE_MOC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}moc\$\${EXE_SUFFIX}
 
 diff -NurwB --strip-trailing-cr --suppress-common-lines src/3rdparty/webkit/Source/WebKit/qt/tests/hybridPixmap/hybridPixmap.pro src/3rdparty/webkit/Source/WebKit/qt/tests/hybridPixmap/hybridPixmap.pro
@@ -4013,7 +4013,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/gui/dialogs/dialogs.
 @@ -89,7 +89,8 @@
  wince*|symbian: FORMS += dialogs/qfiledialog_embedded.ui
  else: FORMS += dialogs/qfiledialog.ui
- 
+
 -INCLUDEPATH += \$\$PWD
 +INCLUDEPATH += \$\$PWD \\
 +               \$\$PWD/..
@@ -4029,7 +4029,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/activeqt/container/c
  !wince*:LIBS    += -luser32 -lgdi32 -ladvapi32
  win32-g++*:LIBS += -luuid
 +UI_HEADERS_DIR = ../../../include/ActiveQt
- 
+
  HEADERS =   ../control/qaxaggregated.h \\
              qaxbase.h \\
 diff -NurwB --strip-trailing-cr --suppress-common-lines src/activeqt/control/qaxserverbase.cpp src/activeqt/control/qaxserverbase.cpp
@@ -4048,8 +4048,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/activeqt/control/qax
      m_currentExtent = qt.widget->size();
 @@ -4069,12 +4067,12 @@
  }
- 
- 
+
+
 -#ifdef QT_DLL // avoid conflict with symbol in static lib
 +//#ifdef QT_DLL // avoid conflict with symbol in static lib
  bool qt_sendSpontaneousEvent(QObject *o, QEvent *e)
@@ -4058,7 +4058,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/activeqt/control/qax
  }
 -#endif
 +//#endif
- 
+
  /*
      Tries to set the size of the control.
 
@@ -4068,10 +4068,10 @@ diff -NurB --strip-trailing-cr --suppress-common-lines tools/activeqt/testcon/ma
 @@ -42,6 +42,7 @@
  #ifndef MAINWINDOW_H
  #define MAINWINDOW_H
- 
+
 +#include <QtCore/qglobal.h>
  #include "ui_mainwindow.h"
- 
+
  QT_BEGIN_NAMESPACE
 
 diff -NurwB --strip-trailing-cr --suppress-common-lines tools/linguist/shared/profileevaluator.cpp tools/linguist/shared/profileevaluator.cpp
@@ -4092,11 +4092,11 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines examples/help/contextsen
 +++ examples/help/contextsensitivehelp/contextsensitivehelp.pro 2016-09-16 12:23:52.833284234 +0200
 @@ -1,5 +1,7 @@
  TEMPLATE = app
- 
+
 +INCLUDEPATH += \$\$PWD
 +
  CONFIG += help
- 
+
  SOURCES += main.cpp \\
 
 diff -NurwB --strip-trailing-cr --suppress-common-lines examples/ipc/ipc.pro examples/ipc/ipc.pro
@@ -4108,7 +4108,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines examples/ipc/ipc.pro exa
 -!vxworks:!qnx:SUBDIRS = sharedmemory
 +!vxworks:!qnx:SUBDIRS = sharedmemory
  !wince*: SUBDIRS += localfortuneserver localfortuneclient
- 
+
  # install
 diff -NurwB --strip-trailing-cr --suppress-common-lines demos/browser/browser.pro demos/browser/browser.pro
 --- demos/browser/browser.pro   2016-09-06 11:32:14.229502420 +0200
@@ -4116,17 +4116,17 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines demos/browser/browser.pr
 @@ -63,6 +63,8 @@
      xbel.cpp \\
      main.cpp
- 
+
 +INCLUDEPATH += \$\$PWD
 +
  RESOURCES += data/data.qrc htmls/htmls.qrc
- 
+
  build_all:!build_pass {
 EOF
         patch -f -N -i qt-${QT_VERSION}.patch -p0 \
         || exit 1
 
-        # It is necessary to unset toolchain for qmake build otherwise -platform 
+        # It is necessary to unset toolchain for qmake build otherwise -platform
         # parameter is overriden and qmake build fails
         unset_toolchain
 
@@ -4142,7 +4142,7 @@ EOF
         #-qt-libjpeg
         #-debug-and-release
         #-dbus
-        
+
         ./configure \
                 -opensource \
                 -confirm-license \
@@ -4177,7 +4177,7 @@ EOF
 
         make -j${__build_proc_num} || exit 1
         make -j${__build_proc_num} install || exit 1
-        
+
         # Set toolchain again
         set_toolchain
 
@@ -4187,7 +4187,7 @@ EOF
 Prefix = ..
 Plugins = plugins
 EOF
-       
+
         rm -f qt && ln -fs qt-${QT_VERSION} qt
         pushd bin;ln -fs ../qt/bin/*.* ./;popd
         pushd lib;ln -fs ../qt/lib/*.* ./;popd
@@ -4196,11 +4196,11 @@ EOF
         popd
         popd
     fi
-   
+
     if [ "${__update_registry_path}" = "1" ]; then
         # Update registry path to append qt plugin path..
         wineserver -k -w
-        
+
         # Add binary prefix to the registry
         ${__build_dir}/update_registry_path \
             --value-path "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment\\QT_PLUGIN_PATH" \
@@ -4235,12 +4235,12 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qwtconfig.pri qwtconfig.p
 +++ qwtconfig.pri	2016-12-09 23:59:35.869977694 +0100
 @@ -12,7 +12,7 @@
  }
- 
+
  win32 {
 -    INSTALLBASE    = C:/Qwt-\$\$VERSION
 +    INSTALLBASE    = ${QWT5_INSTALL_PREFIX}
  }
- 
+
  target.path    = $$INSTALLBASE/lib
 
 EOF
@@ -4303,7 +4303,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines include/yaml.h include/ya
 +++ include/yaml.h  2017-01-25 11:19:10.621665846 +0100
 @@ -27,13 +27,7 @@
  /** The public API declaration. */
- 
+
  #ifdef _WIN32
 -#   if defined(YAML_DECLARE_STATIC)
 -#       define  YAML_DECLARE(type)  type
@@ -4332,7 +4332,7 @@ EOF
                 --prefix=${YAML_INSTALL_PREFIX} \
                 --enable-shared \
         || exit 1
-        
+
         make -j${__build_proc_num} install || exit 1
 
         pushd ${CROSSBUILD_INSTALL_PREFIX}
@@ -4361,7 +4361,7 @@ if [ "${QTIFW}" == "1" ]; then
         if [ "$__use_cea_mirror" = "1" ]; then
             # It was necessary to rename the original file because its name did
             # not contain anything to know that it provides openslide. It is
-            # necessary to have particular case where cea mirror file name 
+            # necessary to have particular case where cea mirror file name
             # is not the same as original file name.
             download "i686" \
                      "${__mirror_url}/QtInstallerFramework-win-x86-${QTIFW_VERSION}.exe"
@@ -4486,7 +4486,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 +# Cross compile example for i686-w64-mingw32-g++:
 +#   configure -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 +#
- 
+
  MAKEFILE_GENERATOR	= MINGW
 +
 +load(device_config)
@@ -4499,10 +4499,10 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 -DEFINES			+= UNICODE QT_LARGEFILE_SUPPORT
 +DEFINES			+= UNICODE
  QMAKE_COMPILER_DEFINES  += __GNUC__ WIN32
- 
+
  QMAKE_EXT_OBJ           = .o
 +QMAKE_EXT_RES           = _res.o
- 
+
 -QMAKE_CC		= gcc
 +QMAKE_CC		= \$\${CROSS_COMPILE}gcc
  QMAKE_LEX		= flex
@@ -4512,14 +4512,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 -QMAKE_CFLAGS		=
 +QMAKE_CFLAGS		= -pipe
  QMAKE_CFLAGS_DEPS	= -M
--QMAKE_CFLAGS_WARN_ON	= -Wall 
+-QMAKE_CFLAGS_WARN_ON	= -Wall
 +QMAKE_CFLAGS_WARN_ON	= -Wall -Wextra
  QMAKE_CFLAGS_WARN_OFF	= -w
  QMAKE_CFLAGS_RELEASE	= -O2
  QMAKE_CFLAGS_DEBUG	= -g
  QMAKE_CFLAGS_YACC	= -Wno-unused -Wno-parentheses
 -QMAKE_CFLAGS_THREAD	= -mthreads
- 
+
 -QMAKE_CXX		= g++
 +QMAKE_CXX		= \$\${CROSS_COMPILE}g++
  QMAKE_CXXFLAGS		= \$\$QMAKE_CFLAGS
@@ -4532,12 +4532,12 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 -QMAKE_CXXFLAGS_EXCEPTIONS_ON = -fexceptions
 +QMAKE_CXXFLAGS_EXCEPTIONS_ON = -fexceptions -mthreads
  QMAKE_CXXFLAGS_EXCEPTIONS_OFF = -fno-exceptions
- 
+
  QMAKE_INCDIR		=
 @@ -50,8 +58,11 @@
  QMAKE_RUN_CXX		= \$(CXX) -c \$(CXXFLAGS) \$(INCPATH) -o \$obj \$src
  QMAKE_RUN_CXX_IMP	= \$(CXX) -c \$(CXXFLAGS) \$(INCPATH) -o \$@ \$<
- 
+
 -QMAKE_LINK		= g++
 -QMAKE_LFLAGS		= -mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc
 +QMAKE_LINK		= \$\${CROSS_COMPILE}g++
@@ -4554,8 +4554,8 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
  QMAKE_LINK_OBJECT_SCRIPT= object_script
 +QMAKE_PREFIX_STATICLIB  = lib
 +QMAKE_EXTENSION_STATICLIB = a
- 
- 
+
+
  QMAKE_LIBS		=
 -QMAKE_LIBS_CORE         = -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32 -lws2_32
 -QMAKE_LIBS_GUI          = -lgdi32 -lcomdlg32 -loleaut32 -limm32 -lwinmm -lwinspool -lws2_32 -lole32 -luuid -luser32
@@ -4566,7 +4566,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 +QMAKE_LIBS_OPENGL       = -lglu32 -lopengl32 -lgdi32 -luser32
  QMAKE_LIBS_COMPAT       = -ladvapi32 -lshell32 -lcomdlg32 -luser32 -lgdi32 -lws2_32
  QMAKE_LIBS_QT_ENTRY     = -lmingw32 -lqtmain
- 
+
 -MINGW_IN_SHELL = \$\$(MINGW_IN_SHELL)
 -isEqual(MINGW_IN_SHELL, 1) {
 +MINGW_IN_SHELL      = 1
@@ -4594,7 +4594,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 -QMAKE_UIC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}uic.exe
 -QMAKE_IDC		= \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}idc.exe
 +QMAKE_CHK_DIR_EXISTS = test -d
- 
+
 -QMAKE_IDL		= midl
 -QMAKE_LIB		= ar -ru
 -QMAKE_RC		= windres
@@ -4602,12 +4602,12 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines specs/win32-g++ specs/wi
 +QMAKE_UIC		= ${__wine_cmd} \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}uic\$\${EXE_SUFFIX}
 +QMAKE_IDC		= ${__wine_cmd} \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}idc\$\${EXE_SUFFIX}
 +QMAKE_RCC		= ${__wine_cmd} \$\$[QT_INSTALL_BINS]\$\${DIR_SEPARATOR}rcc\$\${EXE_SUFFIX}
- 
+
 +QMAKE_IDL		= midl
 +QMAKE_LIB		= \$\${CROSS_COMPILE}ar -ru
 +QMAKE_RC		= \$\${CROSS_COMPILE}windres
  QMAKE_ZIP		= zip -r -9
- 
+
 -QMAKE_STRIP		= strip
 +QMAKE_STRIP		= \$\${CROSS_COMPILE}strip
  QMAKE_STRIPFLAGS_LIB 	+= --strip-unneeded
@@ -4619,18 +4619,18 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines siputils.py siputils.py
 @@ -91,6 +90,11 @@
          """
          self._macros = macros
- 
+
 +    def target_platform(self):
 +        return self.platform.strip().split('-', 1)[0]
-+    
++
 +    def build_platform(self):
 +        return sys.platform
- 
+
  class _UniqueList:
      """A limited list that ensures all its elements are unique.
 @@ -321,7 +325,7 @@
          self.extra_libs = []
- 
+
          # Get these once and make them available to sub-classes.
 -        if sys.platform == "win32":
 +        if configuration.build_platform() == "win32":
@@ -4640,22 +4640,22 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines siputils.py siputils.py
 @@ -440,12 +444,12 @@
              incdir.append(self.config.py_inc_dir)
              incdir.append(self.config.py_conf_inc_dir)
- 
+
 -            if sys.platform == "cygwin":
 +            if self.config.build_platform() == "cygwin":
                  libdir.append(self.config.py_lib_dir)
- 
+
                  py_lib = "python%u.%u" % ((self.config.py_version >> 16), ((self.config.py_version >> 8) & 0xff))
                  libs.append(self.platform_lib(py_lib))
 -            elif sys.platform == "win32":
 +            elif self.config.build_platform() == "win32":
                  libdir.append(self.config.py_lib_dir)
- 
+
                  py_lib = "python%u%u" % ((self.config.py_version >> 16), ((self.config.py_version >> 8) & 0xff))
 @@ -696,7 +700,7 @@
                      lib = self._qt_module_to_lib(mod)
                      libs.append(self.platform_lib(lib, self._is_framework(mod)))
- 
+
 -                    if sys.platform == "win32":
 +                    if self.config.build_platform() == "win32":
                          # On Windows the dependent libraries seem to be in
@@ -4663,7 +4663,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines siputils.py siputils.py
                          # inter-dependencies between Qt libraries don't seem to
 @@ -854,7 +858,7 @@
          lib += self._infix
- 
+
          if self._debug:
 -            if sys.platform == "win32":
 +            if self.config.build_platform() == "win32":
@@ -4671,9 +4671,9 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines siputils.py siputils.py
              elif sys.platform == "darwin":
                  if not self._is_framework(mname):
 @@ -864,7 +868,7 @@
- 
+
          qt5_rename = False
- 
+
 -        if sys.platform == "win32" and "shared" in self.config.qt_winconfig.split():
 +        if self.config.target_platform() == "win32" and "shared" in self.config.qt_winconfig.split():
              if (mname in ("QtCore", "QtDeclarative", "QtDesigner", "QtGui",
@@ -4686,15 +4686,15 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines siputils.py siputils.py
 -        elif sys.platform.startswith("linux") and qt_version >= 0x050000:
 +        elif self.config.target_platform().startswith("linux") and qt_version >= 0x050000:
              qt5_rename = True
- 
+
          if qt5_rename:
 @@ -1188,6 +1192,7 @@
- 
+
          libs.extend(self.optional_list("LIBS"))
- 
+
 +        mfile.write("CROSS_COMPILE = %s\\n" % self.optional_string("CROSS_COMPILE"))
          mfile.write("CPPFLAGS = %s\\n" % ' '.join(cppflags))
- 
+
          mfile.write("CFLAGS = %s\\n" % self.optional_string("CFLAGS"))
 @@ -1303,12 +1308,12 @@
          strip is set if the files should be stripped after been installed.
@@ -4703,26 +4703,26 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines siputils.py siputils.py
 -        if self.generator == "UNIX":
 +        if self.generator == "UNIX" or self.config.build_platform().startswith("linux"):
              dst = "\$(DESTDIR)" + dst
- 
+
          mfile.write("\\t@%s %s " % (self.chkdir, _quote(dst)))
- 
+
 -        if self.generator == "UNIX":
 +        if self.generator == "UNIX" or self.config.build_platform().startswith("linux"):
              mfile.write("|| ")
- 
+
          mfile.write("%s %s\\n" % (self.mkdir, _quote(dst)))
 @@ -1505,10 +1511,10 @@
          else:
              self._entry_point = "init%s" % self._target
- 
+
 -        if sys.platform != "win32" and static:
 +        if self.config.target_platform() != "win32" and static:
              self._target = "lib" + self._target
- 
+
 -        if sys.platform == "win32" and debug:
 +        if self.config.target_platform() == "win32" and debug:
              self._target = self._target + "_d"
- 
+
      def finalise(self):
 @@ -1625,16 +1631,16 @@
          mfile is the file object.
@@ -4748,50 +4748,50 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines siputils.py siputils.py
 @@ -1838,10 +1844,10 @@
          # The name of the executable.
          self._target, _ = os.path.splitext(source)
- 
+
 -        if sys.platform in ("win32", "cygwin"):
 +        if self.config.target_platform() in ("win32", "cygwin"):
              exe = self._target + ".exe"
          else:
 -            exe = self._target
 +            exe = self._target + self.optional_string("EXE_SUFFIX")
- 
+
          self.ready()
- 
+
 @@ -1946,8 +1952,10 @@
- 
+
          target = self._build["target"]
- 
+
 -        if sys.platform in ("win32", "cygwin"):
 +        if self.config.target_platform() in ("win32", "cygwin"):
              target = target + ".exe"
 +        else:
 +            target = target + self.optional_string("EXE_SUFFIX")
- 
+
          mfile.write("TARGET = %s\\n" % target)
          mfile.write("OFILES = %s\\n" % self._build["objects"])
 @@ -2632,12 +2639,19 @@
- 
+
      Returns the platform specific name of the wrapper.
      """
 -    if sys.platform == "win32":
 +    sipcfg = Configuration()
 +    if "win32" in (sys.platform, sipcfg.target_platform()):
          wrapper = wrapper + ".bat"
- 
+
      wf = open(wrapper, "w")
- 
+
 -    if sys.platform == "win32":
 +    if "win32" in (sys.platform, sipcfg.target_platform()):
 +        if sys.platform != sipcfg.target_platform():
-+            # We are cross compiling so we do not know the location of the 
++            # We are cross compiling so we do not know the location of the
 +            # target python executable
 +            exe = "python.exe"
-+            
++
 +        else:
 -        exe = sys.executable
 +            exe = sys.executable
- 
+
          if gui:
 diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.py
 --- configure.py	2016-09-12 15:20:39.639626460 +0200
@@ -4804,7 +4804,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 +default_pyincdir = None
 +default_pyconfincdir = None
 +default_pylibdir = None
- 
+
  # The names of build macros extracted from the platform specific configuration
  # files.
 @@ -77,7 +81,9 @@
@@ -4823,7 +4823,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
      global default_sipincdir, default_sipsipdir
 +    global default_pyversion, default_pyincdir, default_pyconfincdir, \\
 +           default_pylibdir
- 
+
      # Set the platform specific default specification.
      platdefaults = {
 @@ -176,7 +184,10 @@
@@ -4835,13 +4835,13 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 +    default_pyincdir  = plat_py_inc_dir
 +    default_pyconfincdir  = plat_py_conf_inc_dir
 +    default_pylibdir  = plat_py_lib_dir
- 
+
  def inform_user():
      """Tell the user the option values that are going to be used.
 @@ -266,21 +277,26 @@
      """
      siputils.inform("Creating %s..." % module)
- 
+
 +    if opts.platform.startswith('win32'):
 +        exe_suffix = '.exe'
 +    else:
@@ -4873,17 +4873,17 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 @@ -353,6 +364,9 @@
      def store_abspath(option, opt_str, value, parser):
          setattr(parser.values, option.dest, os.path.abspath(value))
- 
+
 +    def store_version(option, opt_str, value, parser):
 +        setattr(parser.values, option.dest, int(value, 16))
-+        
++
      p = optparse.OptionParser(usage="python %prog [opts] [macro=value] "
              "[macro+=value]", version=sip_version_str)
- 
+
 @@ -396,6 +410,32 @@
                          "binaries [default: %s]" % default_sdk)
          p.add_option_group(g)
- 
+
 +    # Python.
 +    g = optparse.OptionGroup(p, title="Python")
 +    #g.add_option("--pybindir", action="callback",
@@ -4906,7 +4906,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 +    g.add_option("--pyconfincdir", action="callback",
 +            default=default_pyconfincdir, type="string", metavar="DIR",
 +            dest="pyconfincdir", callback=store_abspath, help="where PYTHON "
-+            "configuration headers can be found [default: %s]" 
++            "configuration headers can be found [default: %s]"
 +            % default_pyconfincdir)
 +    p.add_option_group(g)
 +
@@ -4942,7 +4942,7 @@ EOF
         || exit 1
 
         make -j${__build_proc_num} install || exit 1
-        
+
         pushd ${CROSSBUILD_INSTALL_PREFIX}
         pushd bin;ln -fs ../python/sip.exe ./;popd
         pushd include;ln -fs ../python/include/sip.h ./;popd
@@ -4981,36 +4981,36 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 @@ -70,6 +70,10 @@
  dbuslibdirs = []
  dbuslibs = []
- 
+
 +# Command prefix can be used to run target os (wine for instance)
 +# in cross compilation cases
 +cmd_prefix = os.environ.get('COMMAND_PREFIX')
 +
- 
+
  # Under Windows qmake and the Qt DLLs must be on the system PATH otherwise the
  # dynamic linker won't be able to resolve the symbols.  On other systems we
 @@ -383,7 +387,7 @@
              check_module("QtDesigner", "QExtensionFactory",
                      "new QExtensionFactory()")
- 
+
 -        check_module("QAxContainer", "qaxobject.h", "new QAxObject()")
 +        check_module("QAxContainer", "qaxobject.h", "new QAxObject()", extra_libs = ["uuid", "ole32", "oleaut32"])
- 
+
          if os.path.isdir(os.path.join(src_dir, "dbus")):
              check_dbus()
 @@ -662,7 +666,7 @@
          """
          qpy_dir = os.path.join("qpy", mname)
- 
+
 -        if sys.platform == 'win32':
 +        if 'win32' in (sys.platform, target_platform):
              if opts.debug:
                  qpy_lib_dir = os.path.join(qpy_dir, "debug")
              else:
 @@ -957,7 +961,7 @@
- 
+
              abi = getattr(sys, 'abiflags', '')
- 
+
 -            if sys.platform == 'win32':
 +            if 'win32' in (sys.platform, target_platform):
                  # Use abiflags in case it is supported in a future version.
@@ -5019,19 +5019,19 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 @@ -1387,7 +1391,11 @@
      """
      sipconfig.inform("Checking to see if the dbus support module should be built...")
- 
+
 -    sout = get_command_stdout("pkg-config --cflags-only-I --libs dbus-1")
 +    pkg_config = sipcfg.build_macros().get('PKG_CONFIG', 'pkg-config')
-+    pkg_config_path = sipcfg.build_macros().get('PKG_CONFIG_PATH', 
++    pkg_config_path = sipcfg.build_macros().get('PKG_CONFIG_PATH',
 +                                                os.environ.get('PKG_CONFIG_PATH'))
 +    sout = get_command_stdout(pkg_config + "--cflags-only-I --libs dbus-1",
 +                              envvars = {'PKG_CONFIG_PATH':pkg_config_path})
      iflags = sout.read().strip()
- 
+
      if not iflags:
 @@ -1511,7 +1519,7 @@
          sip_flags.append("PyQt_Deprecated_5_0")
- 
+
      # Handle the platform tag.
 -    if sys.platform == 'win32':
 +    if 'win32' in (sys.platform, target_platform):
@@ -5044,46 +5044,46 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
          sip_flags.append("-x")
 -        sip_flags.append(xf)
 +        sip_flags.append(xf.strip())
- 
+
      if verstag:
          sip_flags.append("-t")
 @@ -1656,6 +1664,8 @@
- 
+
      # Build the SIP command line.
      argv = ['"' + sipcfg.sip_bin + '"', '-w']
 +    if cmd_prefix:
 +        argv = [cmd_prefix] + argv
- 
+
      if opts.no_timestamp:
          argv.append("-T")
 @@ -1927,6 +1937,10 @@
      names.append("INCDIR_QT")
      names.append("LIBDIR_QT")
      names.append("MOC")
-+    
++
 +    # Add pkg-config macros to the default
 +    names.append("PKG_CONFIG")
 +    names.append("PKG_CONFIG_PATH")
- 
+
      properties = {
          "QT_INSTALL_BINS":      qt_bindir,
 @@ -1954,6 +1968,12 @@
- 
+
          macros["MOC"] = default_moc
- 
+
 +    # pkg-config
 +    if macros.get("PKG_CONFIG", "") == "":
 +        macros["PKG_CONFIG"] = os.environ.get("PKG_CONFIG")
 +    if macros.get("PKG_CONFIG_PATH", "") == "":
 +        macros["PKG_CONFIG_PATH"] = os.environ.get("PKG_CONFIG_PATH")
-+        
++
      return macros
- 
- 
+
+
 @@ -2024,7 +2044,7 @@
      out_file = app + ".out"
      qmake_args = fix_qmake_args("-o " + make_file)
- 
+
 -    if sys.platform == 'win32':
 +    if 'win32' in (sys.platform, target_platform):
          if opts.debug:
@@ -5099,7 +5099,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
      else:
          make = "make"
 @@ -2201,7 +2221,10 @@
- 
+
      # Create the output file, first making sure it doesn't exist.
      remove_file(out_file)
 -    run_command(exe_file)
@@ -5107,13 +5107,13 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 +    if cmd_prefix:
 +        cmd = [cmd_prefix] + cmd
 +    run_command(' '.join(cmd))
- 
+
      if not os.access(out_file, os.F_OK):
          sipconfig.error("%s failed to create %s. Make sure your Qt installation is correct." % (exe_file, out_file))
 @@ -2215,24 +2238,24 @@
      global qt_pluginsdir
      global qt_version, qt_edition, qt_licensee, qt_shared, qt_xfeatures
- 
+
 -    qt_dir = lines[0]
 -    qt_incdir = lines[1]
 -    qt_libdir = lines[2]
@@ -5138,27 +5138,27 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 +    qt_licensee = lines[9].strip()
 +    qt_shared = lines[10].strip()
 +    qt_xfeatures = [l.strip() for l in lines[11:]]
- 
+
      if opts.assume_shared:
          qt_shared = "shared"
- 
+
      # 'Nokia' is the value that is used by Maemo's version of Qt.
 -    if qt_licensee in ('Open Source', 'Nokia'):
 +    if qt_licensee.strip() in ('Open Source', 'Nokia'):
          qt_licensee = None
- 
+
      try:
 @@ -2281,12 +2304,15 @@
      if sipcfg.sip_version < sip_min_version:
          sipconfig.error("This version of PyQt requires SIP v%s or later" % sipconfig.version_to_string(sip_min_version))
- 
+
 -    global opts
 +    global opts, target_platform
- 
+
      # Parse the command line.
      p = create_optparser()
      opts, args = p.parse_args()
- 
+
 +    if 'win32' in os.environ.get('QMAKESPEC', ''):
 +        target_platform = 'win32'
 +
@@ -5168,18 +5168,18 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines configure.py configure.p
 
 EOF
 
-        if [ "${__arch}" == "x86_64" ]; then 
+        if [ "${__arch}" == "x86_64" ]; then
             # Add missing flags to build qpy library
             cat << EOF >> pyqt-${PYTHON_PYQT_VERSION}.patch
 diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDesigner/qpydesigner.pro qpy/QtDesigner/qpydesigner.pro
 --- qpy/QtDesigner/qpydesigner.pro  2017-09-22 13:42:26.513100698 +0200
 +++ qpy/QtDesigner/qpydesigner.pro  2017-09-22 14:52:35.545003919 +0200
 @@ -36,6 +36,7 @@
- 
+
  TARGET      = qpydesigner
  TEMPLATE    = lib
 +DEFINES     += MS_WIN64
- 
+
  HEADERS   = \\
              qpydesignercontainerextension.h \\
 diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtCore/qpycore.pro qpy/QtCore/qpycore.pro
@@ -5191,7 +5191,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtCore/qpycore.pro qp
  TEMPLATE    = lib
 -DEFINES     += QT_DISABLE_DEPRECATED_BEFORE=0x040900
 +DEFINES     += QT_DISABLE_DEPRECATED_BEFORE=0x040900 MS_WIN64
- 
+
  # Python's type system relies on type punning.
  !win32: QMAKE_CXXFLAGS += -fno-strict-aliasing
 diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDeclarative/qpydeclarative.pro qpy/QtDeclarative/qpydeclarative.pro
@@ -5202,7 +5202,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDeclarative/qpydecl
  TARGET      = qpydeclarative
  TEMPLATE    = lib
 +DEFINES     += MS_WIN64
- 
+
  SOURCES   = \\
              qpydeclarative_chimera_helpers.cpp \\
 diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtGui/qpygui.pro qpy/QtGui/qpygui.pro
@@ -5213,7 +5213,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtGui/qpygui.pro qpy/
  TARGET      = qpygui
  TEMPLATE    = lib
 +DEFINES     += MS_WIN64
- 
+
  HEADERS   = \\
              qpytextobject.h
 diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtOpenGL/qpyopengl.pro qpy/QtOpenGL/qpyopengl.pro
@@ -5224,7 +5224,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtOpenGL/qpyopengl.pr
  TARGET      = qpyopengl
  TEMPLATE    = lib
 +DEFINES     += MS_WIN64
- 
+
  SOURCES   = \\
              qpyopengl_attribute_array.cpp \\
 diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDBus/qpydbus.pro qpy/QtDBus/qpydbus.pro
@@ -5235,13 +5235,13 @@ diff -NurB --strip-trailing-cr --suppress-common-lines qpy/QtDBus/qpydbus.pro qp
  TARGET      = qpydbus
  TEMPLATE    = lib
 +DEFINES     += MS_WIN64
- 
+
  SOURCES   = \\
              qpydbus_chimera_helpers.cpp \\
 
 EOF
         fi
-        
+
         patch -f -N -i pyqt-${PYTHON_PYQT_VERSION}.patch -p0 \
         || exit 1
 
@@ -5269,13 +5269,13 @@ EOF
                     EXTENSION_SHLIB="pyd" \
                     CROSS_COMPILE="${__toolchain}-" \
         || exit 1
-        
+
         # First we need to build qpy, because dependencies
         # are not set between sip modules and qpy modules
         # doing so allows us to use multiple processors
         make -j${__build_proc_num} -C qpy || exit 1
         make -j${__build_proc_num} install || exit 1
-        
+
         pushd ${CROSSBUILD_INSTALL_PREFIX}
         pushd bin;ln -fs ../python/pylupdate4.exe \
                          ../python/pyrcc4.exe \
@@ -5505,7 +5505,7 @@ if [ "${PYTHON_TRAITS}" == "1" ]; then
         if [ "$__use_cea_mirror" = "1" ]; then
             # It was necessary to rename the original file because its name did
             # not contain anything to know that it provides traits. It is
-            # necessary to have particular case where cea mirror file name 
+            # necessary to have particular case where cea mirror file name
             # is not the same as original file name.
             download "${__mirror_url}/sources/traits-${PYTHON_TRAITS_VERSION}.tar.gz"
         else
@@ -5530,7 +5530,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 --- setup.py    2016-10-30 00:57:32.946567170 +0200
 +++ setup.py    2016-10-30 01:11:05.733426423 +0200
 @@ -3,7 +3,24 @@
- 
+
  from os.path import join
  from setuptools import setup, Extension, find_packages
 +try:
@@ -5539,7 +5539,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    pass
 +else:
 +    pep425tags.get_abi_tag = lambda: 'none'
- 
+
 +from distutils import sysconfig
 +def _init_posix():
 +    """Initialize the module as appropriate for POSIX systems."""
@@ -5551,7 +5551,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    sysconfig._config_vars['EXE'] = '.exe'
 +
 +sysconfig._init_posix = _init_posix
- 
+
  d = {}
  execfile(join('traits', '__init__.py'), d)
 
@@ -5694,7 +5694,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +++ setup.py    2016-11-10 16:37:29.541112684 +0100
 @@ -1,6 +1,16 @@
  #!/usr/bin/env python
- 
+
  """Setup script for the pyparsing module distribution."""
 +try:
 +    from wheel import pep425tags
@@ -5708,7 +5708,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +except ImportError:
 -from distutils.core import setup
 +    from distutils.core import setup
- 
+
  import sys
 
 EOF
@@ -6095,7 +6095,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +++ setup.py	2016-12-02 16:07:39.286860050 +0100
 @@ -1,11 +1,34 @@
  #!/usr/bin/env python
- 
+
 -import distutils.core      as dic
 +try:
 +    from wheel import pep425tags
@@ -6108,13 +6108,13 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    import setuptools      as dic
 +except ImportError:
 +    import distutils.core      as dic
-+    
++
  import distutils.dir_util  as dut
  import distutils.file_util as fut
  import io
  import subprocess
  import sys
-+ 
++
 +from distutils import sysconfig
 +def _init_posix():
 +    """Initialize the module as appropriate for POSIX systems."""
@@ -6126,7 +6126,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    sysconfig._config_vars['EXE'] = '.exe'
 +
 +sysconfig._init_posix = _init_posix
- 
+
  pycairo_version        = '1.8.8'
  cairo_version_required = '1.8.8'
 @@ -105,6 +128,8 @@
@@ -6194,7 +6194,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +++ setup.py    2016-12-02 23:38:12.884985593 +0100
 @@ -9,7 +9,18 @@
  # http://www.voidspace.org.uk/python/license.shtml
- 
+
  import sys
 +try:
 +    from wheel import pep425tags
@@ -6210,7 +6210,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    from distutils.core import setup
 +
  from configobj import __version__ as VERSION
- 
+
  NAME = 'configobj'
 
 EOF
@@ -6268,7 +6268,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setupext.py setupext.py
 --- setupext.py 2016-12-06 12:26:09.281730613 +0100
 +++ setupext.py 2016-12-06 12:26:17.353734338 +0100
 @@ -711,29 +711,42 @@
- 
+
      @staticmethod
      def include_dirs_hook():
 -        if sys.version_info[0] >= 3:
@@ -6307,7 +6307,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setupext.py setupext.py
 +                warnings.warn(
 +                    "The C headers for numpy could not be found. "
 +                    "You may need to install the development package")
- 
+
 -        ext = Extension('test', [])
 -        ext.include_dirs.append(numpy.get_include())
 -        if not has_include_file(
@@ -6316,7 +6316,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setupext.py setupext.py
 -                "The C headers for numpy could not be found. "
 -                "You may need to install the development package")
 +            return [numpy.get_include()]
-+        
++
 +        else:
 +            ext = Extension('test', [])
 +            ext.include_dirs.append(numpy_include_dir)
@@ -6325,10 +6325,10 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setupext.py setupext.py
 +                warnings.warn(
 +                    "The C headers for numpy could not be found. "
 +                    "You may need to install the development package")
- 
+
 -        return [numpy.get_include()]
 +            return [numpy_include_dir]
- 
+
      def check(self):
          min_version = extract_versions()['__version__numpy__']
 
@@ -6337,13 +6337,13 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_backend_agg.cpp src
 +++ src/_backend_agg.cpp    2016-12-06 15:53:09.566918368 +0100
 @@ -2124,13 +2124,14 @@
      args.verify_length(1);
- 
+
      FILE *fp = NULL;
 +    mpl_off_t offset;
      Py::Object py_fileobj = Py::Object(args[0]);
      PyObject* py_file = NULL;
      bool close_file = false;
- 
+
      if (py_fileobj.isString())
      {
 -        if ((py_file = npy_PyFile_OpenFile(py_fileobj.ptr(), (char *)"wb")) == NULL) {
@@ -6354,7 +6354,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_backend_agg.cpp src
 @@ -2139,28 +2140,28 @@
          py_file = py_fileobj.ptr();
      }
- 
+
 -    if ((fp = npy_PyFile_Dup(py_file, (char *)"wb")))
 +    if ((fp = mpl_PyFile_Dup(py_file, (char *)"wb", &offset)))
      {
@@ -6364,21 +6364,21 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_backend_agg.cpp src
 +            if (mpl_PyFile_DupClose(py_file, fp, offset)) {
                throw Py::RuntimeError("Error closing dupe file handle");
              }
- 
+
              if (close_file) {
 -                npy_PyFile_CloseFile(py_file);
 +                mpl_PyFile_CloseFile(py_file);
                  Py_DECREF(py_file);
              }
- 
+
              throw Py::RuntimeError("Error writing to file");
          }
- 
+
 -        if (npy_PyFile_DupClose(py_file, fp)) {
 +        if (mpl_PyFile_DupClose(py_file, fp, offset)) {
            throw Py::RuntimeError("Error closing dupe file handle");
          }
- 
+
          if (close_file) {
 -            npy_PyFile_CloseFile(py_file);
 +            mpl_PyFile_CloseFile(py_file);
@@ -6391,7 +6391,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
 @@ -1,24 +1,67 @@
  #ifndef __FILE_COMPAT_H__
  #define __FILE_COMPAT_H__
- 
+
 -#include "numpy/npy_3kcompat.h"
 +#include <Python.h>
 +#include <stdio.h>
@@ -6437,14 +6437,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
 +        #error Unsupported size for type off_t
 +    #endif
 +#endif
- 
+
 -#if NPY_API_VERSION < 0x4 /* corresponds to Numpy 1.5 */
  /*
   * PyFile_* compatibility
   */
 -#if defined(NPY_PY3K)
 +#if PY3K
- 
+
  /*
   * Get a FILE* handle to the file represented by the Python object
   */
@@ -6507,7 +6507,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
 +    }
      return handle;
  }
- 
+
 @@ -68,14 +128,35 @@
   * Close the dup-ed file handle, and seek the Python one to the current position
   */
@@ -6524,7 +6524,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
 +
 +    /* Close the FILE* handle */
      fclose(handle);
- 
+
 -    ret = PyObject_CallMethod(file, "seek", NPY_SSIZE_T_PYFMT "i", position, 0);
 +    /* Restore original file handle position, in order to not confuse
 +       Python-side data structures */
@@ -6549,7 +6549,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
      }
 @@ -84,7 +165,7 @@
  }
- 
+
  static NPY_INLINE int
 -npy_PyFile_Check(PyObject *file)
 +mpl_PyFile_Check(PyObject *file)
@@ -6557,17 +6557,17 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
      int fd;
      fd = PyObject_AsFileDescriptor(file);
 @@ -97,13 +178,14 @@
- 
+
  #else
- 
+
 -#define npy_PyFile_Dup(file, mode) PyFile_AsFile(file)
 -#define npy_PyFile_DupClose(file, handle) (0)
 +#define mpl_PyFile_Dup(file, mode, orig_pos_p) PyFile_AsFile(file)
 +#define mpl_PyFile_DupClose(file, handle, orig_pos) (0)
 +#define mpl_PyFile_Check PyFile_Check
- 
+
  #endif
- 
+
  static NPY_INLINE PyObject*
 -npy_PyFile_OpenFile(PyObject *filename, const char *mode)
 +mpl_PyFile_OpenFile(PyObject *filename, const char *mode)
@@ -6577,7 +6577,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
 @@ -113,12 +195,8 @@
      return PyObject_CallFunction(open, "Os", filename, mode);
  }
- 
+
 -#endif /* NPY_API_VERSION < 0x4 */
 -
 -#if NPY_API_VERSION < 0x7 /* corresponds to Numpy 1.7 */
@@ -6587,23 +6587,23 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/file_compat.h src/fi
 +mpl_PyFile_CloseFile(PyObject *file)
  {
      PyObject *ret;
- 
+
 @@ -130,6 +208,8 @@
      return 0;
  }
- 
+
 -#endif /* NPY_API_VERSION < 0x7 */
 +#ifdef __cplusplus
 +}
 +#endif
- 
+
  #endif /* ifndef __FILE_COMPAT_H__ */
 diff -NurwB --strip-trailing-cr --suppress-common-lines src/_png.cpp src/_png.cpp
 --- src/_png.cpp    2016-12-06 15:29:14.187583475 +0100
 +++ src/_png.cpp    2016-12-06 15:53:09.566918368 +0100
 @@ -105,6 +105,7 @@
      args.verify_length(4, 5);
- 
+
      FILE *fp = NULL;
 +    mpl_off_t offset;
      bool close_file = false;
@@ -6621,14 +6621,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_png.cpp src/_png.cp
 @@ -144,7 +145,7 @@
          py_file = py_fileobj.ptr();
      }
- 
+
 -    if ((fp = npy_PyFile_Dup(py_file, (char *)"wb")))
 +    if ((fp = mpl_PyFile_Dup(py_file, (char *)"wb", &offset)))
      {
          close_dup_file = true;
      }
 @@ -240,14 +241,14 @@
- 
+
          if (close_dup_file)
          {
 -            if (npy_PyFile_DupClose(py_file, fp)) {
@@ -6636,7 +6636,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_png.cpp src/_png.cp
                throw Py::RuntimeError("Error closing dupe file handle");
              }
          }
- 
+
          if (close_file)
          {
 -            npy_PyFile_CloseFile(py_file);
@@ -6653,14 +6653,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_png.cpp src/_png.cp
            throw Py::RuntimeError("Error closing dupe file handle");
          }
      }
- 
+
      if (close_file)
      {
 -        npy_PyFile_CloseFile(py_file);
 +        mpl_PyFile_CloseFile(py_file);
          Py_DECREF(py_file);
      }
- 
+
 @@ -312,13 +313,14 @@
  {
      png_byte header[8];   // 8 is the maximum size that can be checked
@@ -6669,7 +6669,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_png.cpp src/_png.cp
      bool close_file = false;
      bool close_dup_file = false;
      PyObject *py_file = NULL;
- 
+
      if (py_fileobj.isString())
      {
 -        if ((py_file = npy_PyFile_OpenFile(py_fileobj.ptr(), (char *)"rb")) == NULL) {
@@ -6680,7 +6680,7 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_png.cpp src/_png.cp
 @@ -326,7 +328,7 @@
          py_file = py_fileobj.ptr();
      }
- 
+
 -    if ((fp = npy_PyFile_Dup(py_file, "rb")))
 +    if ((fp = mpl_PyFile_Dup(py_file, "rb", &offset)))
      {
@@ -6695,14 +6695,14 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines src/_png.cpp src/_png.cp
            throw Py::RuntimeError("Error closing dupe file handle");
          }
      }
- 
+
      if (close_file)
      {
 -        npy_PyFile_CloseFile(py_file);
 +        mpl_PyFile_CloseFile(py_file);
          Py_DECREF(py_file);
      }
- 
+
 diff -NurwB --strip-trailing-cr --suppress-common-lines src/ft2font.cpp src/ft2font.cpp
 diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 --- setup.py    2016-12-06 11:52:07.984818935 +0100
@@ -6729,9 +6729,9 @@ diff -NurwB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    sysconfig._config_vars['EXE'] = '.exe'
 +
 +sysconfig._init_posix = _init_posix
- 
+
  import sys
- 
+
 
  # distutils is breaking our sdists for files in symlinked dirs.
 diff -NurwB --strip-trailing-cr --suppress-common-lines setup.cfg setup.cfg
@@ -6866,16 +6866,16 @@ if [ "${PYTHON_CRYPTO}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/pycrypto-${PYTHON_CRYPTO_VERSION}.tar.gz
         pushd ${__build_dir}/pycrypto-${PYTHON_CRYPTO_VERSION}
-        
+
         # Generate patch to build shared library
         cat << EOF > pycrypto-${PYTHON_CRYPTO_VERSION}.patch
 diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 --- setup.py	2017-07-24 09:37:13.000000000 +0000
 +++ setup.py	2017-07-24 09:39:06.000000000 +0000
 @@ -36,7 +36,18 @@
- 
+
  __revision__ = "\$Id\$"
- 
+
 -from distutils import core
 +try:
 +    from wheel import pep425tags
@@ -6888,7 +6888,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    import setuptools as core
 +except ImportError:
 +    from distutils import core
-+    
++
  from distutils.ccompiler import new_compiler
  from distutils.core import Extension, Command
  from distutils.command.build import build
@@ -6897,7 +6897,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
  import os, sys, re
  import struct
 +import sys
-+ 
++
 +from distutils import sysconfig
 +def _init_posix():
 +    """Initialize the module as appropriate for POSIX systems."""
@@ -6909,7 +6909,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    sysconfig._config_vars['EXE'] = '.exe'
 +
 +sysconfig._init_posix = _init_posix
- 
+
  if sys.version[0:1] == '1':
      raise RuntimeError ("The Python Cryptography Toolkit requires "
 @@ -271,7 +295,12 @@
@@ -6934,21 +6934,21 @@ diff -NurB --strip-trailing-cr --suppress-common-lines src/block_template.c src/
  #include "config.h"
  #endif
 +#undef malloc
-+     
++
 +#include <sys/types.h>
 +
 +void *malloc ();
 +
 +/* Allocate an N-byte block of memory from the heap.
 +   If N is zero, allocate a 1-byte block.  */
-+    
++
 +void* rpl_malloc (size_t n)
 +{
 +  if (n == 0)
 +    n = 1;
 +  return malloc (n);
 +}
- 
+
  #ifdef _HAVE_STDC_HEADERS
  #include <string.h>
 
@@ -6960,24 +6960,24 @@ diff -NurB --strip-trailing-cr --suppress-common-lines src/stream_template.c src
  #include "config.h"
  #endif
 +#undef malloc
-+     
++
 +#include <sys/types.h>
 +
 +void *malloc ();
 +
 +/* Allocate an N-byte block of memory from the heap.
 +   If N is zero, allocate a 1-byte block.  */
-+    
++
 +void* rpl_malloc (size_t n)
 +{
 +  if (n == 0)
 +    n = 1;
 +  return malloc (n);
 +}
- 
+
  #ifdef _HAVE_STDC_HEADERS
  #include <string.h>
- 
+
 EOF
         patch -f -N -i pycrypto-${PYTHON_CRYPTO_VERSION}.patch -p0 \
         || exit 1
@@ -7076,7 +7076,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 @@ -3,7 +3,19 @@
  # Pyro setup script
  #
- 
+
 -from distutils.core import setup
 +try:
 +    from wheel import pep425tags
@@ -7087,10 +7087,10 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +
 +try:
 +	from setuptools import setup
-+	
++
 +except ImportError:
 +	from distutils.core import setup
-+    
++
  import sys,os,glob
  import sets
 
@@ -7143,7 +7143,7 @@ if [ "${PYTHON_PIL}" == "1" ]; then
     fi
 
     if [ "${__install}" == "1" ]; then
- 
+
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
@@ -7240,11 +7240,11 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 --- setup.py    2017-01-23 17:40:41.267444147 +0100
 +++ setup.py    2017-01-23 17:42:30.255593067 +0100
 @@ -60,9 +60,34 @@
- 
- 
+
+
  import sys, os.path
-+    
- 
++
+
  from distutils import log
 -from distutils.core import setup, Command
 +
@@ -7257,10 +7257,10 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +
 +try:
 +   from setuptools import setup, Command
-+   
++
 +except ImportError:
 +   from distutils.core import setup, Command
-+   
++
 +from distutils import sysconfig
 +def _init_posix():
 +    """Initialize the module as appropriate for POSIX systems."""
@@ -7281,15 +7281,15 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.cfg setup.cfg
 +++ setup.cfg   2017-01-25 12:01:02.393979263 +0100
 @@ -4,10 +4,10 @@
  [build_ext]
- 
+
  # List of directories to search for 'yaml.h' (separated by ':').
 -#include_dirs=/usr/local/include:../../include
 +include_dirs=${YAML_INSTALL_PREFIX}/include
- 
+
  # List of directories to search for 'libyaml.a' (separated by ':').
 -#library_dirs=/usr/local/lib:../../lib
 +library_dirs=${YAML_INSTALL_PREFIX}/lib
- 
+
  # An alternative compiler to build the extention.
  #compiler=mingw32
 
@@ -7297,7 +7297,7 @@ EOF
 
         patch -f -N -i python-yaml-${PYTHON_YAML_VERSION}.patch -p0 \
         || exit 1
-        
+
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
         CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS} $(get_c_flags ${PYTHON_YAML_DEPENDENCIES})" \
@@ -7340,7 +7340,7 @@ if [ "${PYTHON_XMLTODICT}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/xmltodict-${PYTHON_XMLTODICT_VERSION}.tar.gz
         pushd ${__build_dir}/xmltodict-${PYTHON_XMLTODICT_VERSION}
-        
+
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
         CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
@@ -7349,7 +7349,7 @@ if [ "${PYTHON_XMLTODICT}" == "1" ]; then
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
         || exit 1
-        
+
         popd
 
         # Install using target python
@@ -7401,7 +7401,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +    pep425tags.get_abi_tag = lambda: 'none'
 +
  from setuptools import setup, Extension, Feature
-+   
++
 +from distutils import sysconfig
 +def _init_posix():
 +    """Initialize the module as appropriate for POSIX systems."""
@@ -7423,7 +7423,7 @@ EOF
         patch -f -N -i python-markupsafe-${PYTHON_MARKUPSAFE_VERSION}.patch -p0 \
         || exit 1
 
-        
+
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
         CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
@@ -7432,7 +7432,7 @@ EOF
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
         || exit 1
-        
+
         popd
 
         # Install using target python
@@ -7475,7 +7475,7 @@ if [ "${PYTHON_JINJA2}" == "1" ]; then
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
         || exit 1
-        
+
         popd
 
         # Install using target python
@@ -7509,7 +7509,7 @@ if [ "${PYTHON_PYGMENTS}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/Pygments-${PYTHON_PYGMENTS_VERSION}.tar.gz
         pushd ${__build_dir}/Pygments-${PYTHON_PYGMENTS_VERSION}
-        
+
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
         CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
@@ -7518,7 +7518,7 @@ if [ "${PYTHON_PYGMENTS}" == "1" ]; then
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
         || exit 1
-        
+
         popd
 
         # Install using target python
@@ -7703,7 +7703,7 @@ if [ "${PYTHON_NIBABEL}" == "1" ]; then
     if [ "${__install}" == "1" ]; then
         tar xvf ${__download_dir}/nibabel-${PYTHON_NIBABEL_VERSION}.tar.gz
         pushd ${__build_dir}/nibabel-${PYTHON_NIBABEL_VERSION}
-        
+
         PYTHONXCPREFIX=${PYTHON_INSTALL_PREFIX} \
         CROSS_COMPILE="${__toolchain}-" \
         CPPFLAGS="${CPPFLAGS} ${PYTHON_CPPFLAGS}" \
@@ -7712,7 +7712,7 @@ if [ "${PYTHON_NIBABEL}" == "1" ]; then
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
         || exit 1
-        
+
         popd
 
         # Install using target python
@@ -7774,7 +7774,7 @@ if [ "${PYTHON_XLWT}" == "1" ]; then
     fi
 
     if [ "${__install}" == "1" ]; then
-    
+
         # Install using target python
         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
@@ -7784,62 +7784,62 @@ if [ "${PYTHON_XLWT}" == "1" ]; then
     fi
 fi
 
-# 
+#
 # # ------------------------------------------------------------------------------
 # # nipype
 # # ------------------------------------------------------------------------------
 # PYTHON_NIPYPE_VERSION=1.0.4
 # PYTHON_NIPYPE_SOURCE_URL=https://files.pythonhosted.org/packages/d9/f0/008aa42c3bd42d101cfcd5418643364a4b3dd2322de3e8b3d6c644ae0fb0/nipype-${PYTHON_NIPYPE_VERSION}-py2.py3-none-any.whl
-# 
+#
 # if [ "${PYTHON_NIPYPE}" == "1" ]; then
 #     echo "============================== PYTHON_NIPYPE =============================="
 #     if [ "${__download}" == "1" ]; then
 #         download ${PYTHON_NIPYPE_SOURCE_URL}
 #     fi
-# 
+#
 #     if [ "${__remove_before_install}" == "1"  ]; then
 #         # Uninstall using target python
 #         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
 #         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
 #                                     -m pip uninstall -y nipype
 #     fi
-# 
+#
 #     if [ "${__install}" == "1" ]; then
 #          # Install using target python
 #         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
 #         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
 #                     -m pip install "$(winepath -w ${__download_dir}/nipype-${PYTHON_NIPYPE_VERSION}-py2.py3-none-any.whl)" \
 #         || exit 1
-# 
+#
 #     fi
 # fi
-# 
+#
 # # ------------------------------------------------------------------------------
 # # jupyter
 # # ------------------------------------------------------------------------------
 # PYTHON_JUPYTER_VERSION=1.0.0
 # PYTHON_JUPYTER_SOURCE_URL=https://files.pythonhosted.org/packages/d9/f0/008aa42c3bd42d101cfcd5418643364a4b3dd2322de3e8b3d6c644ae0fb0/jupyter-${PYTHON_JUPYTER_VERSION}-py2.py3-none-any.whl
-# 
+#
 # if [ "${PYTHON_JUPYTER}" == "1" ]; then
 #     echo "============================== PYTHON_JUPYTER =============================="
 #     if [ "${__download}" == "1" ]; then
 #         download ${PYTHON_JUPYTER_SOURCE_URL}
 #     fi
-# 
+#
 #     if [ "${__remove_before_install}" == "1"  ]; then
 #         # Uninstall using target python
 #         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
 #         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
 #                                     -m pip uninstall -y jupyter
 #     fi
-# 
+#
 #     if [ "${__install}" == "1" ]; then
 #          # Install using target python
 #         PYTHONHOME=${PYTHON_INSTALL_PREFIX} \
 #         ${__wine_cmd} ${PYTHON_INSTALL_PREFIX}/python.exe \
 #                     -m pip install "$(winepath -w ${__download_dir}/jupyter-${PYTHON_JUPYTER_VERSION}-py2.py3-none-any.whl)" \
 #         || exit 1
-# 
+#
 #     fi
 # fi
 
@@ -7888,7 +7888,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +
 +except ImportError:
      from distutils.core import setup, Command
-+    
++
 +from distutils import sysconfig
 +def _init_posix():
 +    """Initialize the module as appropriate for POSIX systems."""
@@ -7919,7 +7919,7 @@ EOF
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel \
         || exit 1
-        
+
         popd
 
         # Install using target python
@@ -8104,7 +8104,7 @@ diff -NurB --strip-trailing-cr --suppress-common-lines setup.py setup.py
 +
 +except ImportError:
 +     from distutils.core import setup, Command
-+    
++
 +from distutils import sysconfig
 +def _init_posix():
 +    """Initialize the module as appropriate for POSIX systems."""
@@ -8134,7 +8134,7 @@ EOF
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
         || exit 1
-        
+
         popd
 
         # Install using target python
@@ -8172,7 +8172,7 @@ if [ "${PYTHON_LARKPARSER}" == "1" ]; then
         LDSHARED="${CC} -shared" \
         ${PYTHON_HOST_COMMAND} setup.py build -x bdist_wheel --plat-name ${PYTHON_WIN_ARCH_SUFFIX} \
         || exit 1
-        
+
         popd
 
         # Install using target python

@@ -19,7 +19,7 @@ What is Casa-Distro ?
 ---------------------
 
 It's a cross-platform environment which is used by user to install/use BrainVisa and CATI environment, and by developer to provide a common working development environment for BrainVISA and CATI tools. It avoids the manual installation of required development software and libraries, which can cause the use of different versions on different systems.
-It was not unusual to discover difference of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment. 
+It was not unusual to discover difference of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment.
 
 
 Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual applicance to host the compilation system. casa_distro supports two container technologies, `Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ and one virtual machine technology : `VirtualBox <https://www.virtualbox.org/>`_.
@@ -90,22 +90,22 @@ These two images are distributed using three technologies:
 .. -  **<count>:** is a number starting at 1 and incremented whenever
 ..              it is necessary to publish two releases on the same day.
 
-             
+
 What is a distribution
 ++++++++++++++++++++++
 
 A distribution (or distro) is a selection of software components that
 can be shared with collaborators. All the distro are compiled, tested
-and packaged the same way and at the same time. But each distro have its 
-own software content, targeted audience and license agreement. At the 
-time of this writing, the following distros are planned to be technically 
+and packaged the same way and at the same time. But each distro have its
+own software content, targeted audience and license agreement. At the
+time of this writing, the following distros are planned to be technically
 managed by CASA :
 
 -  **brainvisa**: the historical BrainVISA distribution. It combines
    open source and close source software. It can be downloaded by anyone
    and used freely for non profit research.
--  **cati_platform**: this distro contains the software necessary to 
-   operate CATI platform. It is managed by CATI and distributed only to 
+-  **cati_platform**: this distro contains the software necessary to
+   operate CATI platform. It is managed by CATI and distributed only to
    CATI members.
 -  **cea**: this distribution is based on the BrainVISA distribution but
    contains also some toolboxes that are not distributed to the whole
@@ -128,7 +128,7 @@ It has been chosen to use a classical version numbering convention :
    incompatibilities.
 -  **<patch>:** is a number that is increased whenever routine
    modifications are done.
-   
+
 Distribution creation
 +++++++++++++++++++++
 
@@ -147,7 +147,7 @@ The creation of a distribution is a four steps process :
 All these steps are done by CASA admin team using ``casa_distro`` command. The
 release plan is discussed with distros managers and eventually modified before
 being applied. The current status of the release plan can be found on a
-`BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_. 
+`BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_.
 
 Environment
 -----------
@@ -196,23 +196,23 @@ III - Installation and setup
 Requirements
 ------------
 
-To use Casa-Distro, a user (or rather a developer) must have a system with 
+To use Casa-Distro, a user (or rather a developer) must have a system with
 the following characteristics:
 
 * Either `Singularity <https://www.sylabs.io/>`_ or
   `Docker <https://www.docker.com>`_ must be installed and setup for the user
-  on the building system. These container technologies only runs 
-  on reasonably recent Linux systems, recent Mac systems, and Windows. 
+  on the building system. These container technologies only runs
+  on reasonably recent Linux systems, recent Mac systems, and Windows.
 * Python >= 2.7 is necessary  run the ``casa_distro`` command.
 * Git may be used to download casa-distro *the first time you use it* (see later, `Install latest release`_), but generally Python and its ``pip`` command are enough.
 
 The rest takes place inside containers, so are normally not restructed by the building system, (as long as it has enough memory and disk space).
 
-Since Casa-Distro 3.0, Singularity >= 3.0 is needed. 
-Singularity v3 is not available as an apt package on Ubuntu, it is necessary to download 
-sources and to compile it. 
+Since Casa-Distro 3.0, Singularity >= 3.0 is needed.
+Singularity v3 is not available as an apt package on Ubuntu, it is necessary to download
+sources and to compile it.
 
-It requires Go to be installed. 
+It requires Go to be installed.
 You can follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
 
 For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
@@ -412,4 +412,3 @@ Remember that software run that way live in a container, which is more or less i
 .. toctree::
 
     quickstart
-

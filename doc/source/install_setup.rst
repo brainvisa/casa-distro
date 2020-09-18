@@ -526,4 +526,3 @@ Graphical commands (brainvisa, anatomist, others...) should run through a X11 se
 
     to enable other users / apps to use the graphical server (this will start Xquartz, if not already running). Note that this command needs to be run again each time the Xquartz server is stopped / restarted.
 * now graphical applications should run inside singularity containers. 3D hardware is not used however, rendering is using a software rendering, so it is not fast.
-

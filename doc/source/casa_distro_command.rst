@@ -332,5 +332,3 @@ They are specified as entries in an ``alt_configs`` sub-directory in the json co
             }
         }
     }
-
-

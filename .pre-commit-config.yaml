@@ -10,9 +10,9 @@ repos:
     -   id: check-xml
     -   id: check-yaml
     -   id: debug-statements
+    -   id: end-of-file-fixer
     -   id: fix-encoding-pragma
-    # -   id: end-of-file-fixer    # not ready to enforce it yet
-    # -   id: trailing-whitespace  # not ready to enforce it yet
+    -   id: trailing-whitespace
 
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.3

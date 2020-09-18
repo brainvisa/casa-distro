@@ -10,9 +10,9 @@ Quickstart Tutorial
 What is Casa-Distro ?
 ---------------------
 
-Casa-Distro is a cross-paltform ready-to-use environment which is used to install BranVisa and CATI environment. It avoids manual installation of required softwares and librairies. 
+Casa-Distro is a cross-paltform ready-to-use environment which is used to install BranVisa and CATI environment. It avoids manual installation of required softwares and librairies.
 
-This is possible by the use of virtualization technology to create a virtual applicance. 
+This is possible by the use of virtualization technology to create a virtual applicance.
 
 Casa-Distro supports a container technology, `Singularity <https://www.sylabs.io/>`_ and a virtual machine technology : `VirtualBox <https://www.virtualbox.org/>`_.
 
@@ -29,11 +29,11 @@ Casa-Distro supports a container technology, `Singularity <https://www.sylabs.io
 
 Installation with singularity
 -----------------------------
-To use Casa-Distro with **singularity**, a user must have a system with 
+To use Casa-Distro with **singularity**, a user must have a system with
 the following characteristics:
 
 
-* `Singularity v3 <https://www.sylabs.io/>`_ must be installed and setup for 
+* `Singularity v3 <https://www.sylabs.io/>`_ must be installed and setup for
   the use on the building system. To install Singularity on Debian based Linux systems (such as Ubuntu), follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
 
 * Python >= 2.7 is necessary to run the ``casa_distro`` command. Python is usually installed on most Linux distributions. To check its installation, open a terminal and type: ``python`` (you can leave the interpreter using `<ctrl>-D` or by typing `exit()`. If it is not installed, do it (https://python.org).
@@ -94,4 +94,3 @@ Notes
 .. note:: Singularity on Mac
 
     Singularity for Mac is available as a beta at the time this document is written. It somewhat works but we sometimes ended up with a "silent" virtual machine which seems to do just nothing. But it should work in principle, and sometimes does ;)
-
