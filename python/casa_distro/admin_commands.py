@@ -14,8 +14,7 @@ from subprocess import check_call
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
-                                  default_download_url,
-                                  default_system)
+                                  default_download_url)
 from casa_distro.environment import (casa_distro_directory,
                                      run_container,
                                      select_environment,
@@ -231,7 +230,6 @@ def create_base_image(type,
         build_file = osp.join(casa_docker, 'build_image.py')
         open(build_file)  # raise appropriate exception if file does not exist
 
-        
     metadata_output = output + '.json'
     metadata = {
         'name': name,
