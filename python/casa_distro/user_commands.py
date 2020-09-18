@@ -23,6 +23,7 @@ from casa_distro.environment import (casa_distro_directory,
                                      iter_images,
                                      update_container_image)
 from casa_distro.log import verbose_file
+from casa_distro.info import __version__
 
 
 def size_to_string(full_size):
@@ -521,6 +522,26 @@ def setup(distro=None,
                       output=output,
                       verbose=verbose)
 
+    # run the script to generate run scripts from the host system
+    casa_distro_version = '.'.join(__version__.split('.')[:2])
+    script = 'python /casa/install/share/casa-distro-%s/scripts/' \
+        'casa_build_host_links' % casa_distro_version
+    if osp.exists(osp.join(base_directory, name,
+                           '/install/share/casa-distro-%s/scripts/'
+                           'casa_build_host_links' % casa_distro_version)):
+        run(distro=distro, branch=None, system=system,
+            name=name, version=version,
+            base_directory=base_directory,
+            gui=False,
+            opengl="auto",
+            root=False,
+            cwd='/casa/host/home',
+            env=None,
+            image=image,
+            container_options=None,
+            args_list=['python', script],
+            verbose=None)
+
 
 # "list" cannot be used as a function name in Python. Therefore, the
 # command name in the command-line is not the same as the corresponding
@@ -580,7 +601,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
 
 @command
 def run(type=None, distro=None, branch=None, system=None,
-        name=None,
+        name=None, version=None,
         base_directory=casa_distro_directory(),
         gui=True,
         opengl="auto",
@@ -664,7 +685,8 @@ def run(type=None, distro=None, branch=None, system=None,
                                 distro=distro,
                                 branch=branch,
                                 system=system,
-                                name=name)
+                                name=name,
+                                version=version)
     if container_options:
         container_options = parse_list(container_options)
     if env:

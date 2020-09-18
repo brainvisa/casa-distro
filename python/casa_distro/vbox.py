@@ -145,11 +145,11 @@ def create_image(base, base_metadata,
         processors and memory)
         '''
     elif type in ('run', 'dev'):
-        if base:
-            vbox_import_image(base, name, output,
-                              verbose=verbose,
-                              memory=memory,
-                              disk_size=disk_size)
+        #if base:
+            #vbox_import_image(base, name, output,
+                              #verbose=verbose,
+                              #memory=memory,
+                              #disk_size=disk_size)
         vbox = VBoxMachine(name)
         vbox.install(build_file=build_file,
                      verbose=verbose,
@@ -260,8 +260,8 @@ class VBoxMachine:
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
-                print('Starting', self.name, 'and waiting for it to be ready',
-                      file=verbose, flush=True)
+                six.print_('Starting', self.name, 'and waiting for it to be ready',
+                          file=verbose, flush=True)
             self.start(gui=gui)
             command = self._run_user_command('echo')
             for i in range(attempts):
@@ -326,14 +326,30 @@ class VBoxMachine:
         '''
         Copy a file in VM as root
         '''
-        vbox_manage(['guestcontrol', '--username', 'root',
-                     '--password', self.root_password, self.name, 'copyto',
-                     '--target-directory', self.tmp_dir, source_file])
-        f = os.path.basename(source_file)
-        self.run_root('cp --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" '
-                      '&& rm "{tmp}/{f}"'.format(tmp=self.tmp_dir,
-                                                 f=f,
-                                                 dest=dest_dir))
+        # There is a problem with the mode of the files copied with
+        # VBoxManage copyto as root. Therefore, the copy is done on
+        # a temporary location and then copied at their final location
+        # without preserving the mode.
+        if osp.isdir(source_file):
+            dest = osp.join(self.tmp_dir, osp.basename(source_file))
+            self.run_root('mkdir "{dest}"'.format(dest=dest))
+            vbox_manage(['guestcontrol', '--username', 'root',
+                        '--password', self.root_password, self.name, 'copyto',
+                        '--recursive', source_file, dest])
+            f = os.path.basename(source_file)
+            self.run_root('cp -r --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" '
+                          '&& rm -r "{tmp}/{f}"'.format(tmp=self.tmp_dir,
+                                                        f=f,
+                                                        dest=dest_dir))
+        else:
+            vbox_manage(['guestcontrol', '--username', 'root',
+                        '--password', self.root_password, self.name, 'copyto',
+                        '--target-directory', self.tmp_dir, source_file])
+            f = os.path.basename(source_file)
+            self.run_root('cp --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" '
+                          '&& rm "{tmp}/{f}"'.format(tmp=self.tmp_dir,
+                                                     f=f,
+                                                     dest=dest_dir))
 
     def copy_user(self, source, dest_dir):
         '''

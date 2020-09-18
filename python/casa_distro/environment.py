@@ -399,7 +399,7 @@ def update_container_image(container_type, image_name, url, force=False,
     metadata_file = '%s.json' % image_name
     metadata = json.loads(
         urlopen('%s.json' % remote_image).read().decode('utf-8'))
-    if new_only and osp.exists(metadata_file):
+    if new_only and osp.exists(metadata_file) and osp.exists(image_name):
         print('image %s already exists.' % image, file=verbose)
         return  # don't update
     if not force and osp.exists(metadata_file):

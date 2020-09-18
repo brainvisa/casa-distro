@@ -180,7 +180,7 @@ def create_base_image(type,
         if type == 'system':
             base = osp.join(
                 default_build_workflow_repository,
-                'ubuntu-*.{extension}'.format(extension=origin_extension))
+                '*ubuntu-*.{extension}'.format(extension=origin_extension))
         elif type == 'run':
             base = osp.join(
                 default_build_workflow_repository,
@@ -208,7 +208,13 @@ def create_base_image(type,
         base_metadata = json.load(open(base + '.json'))
     else:
         base_metadata = {}
-    system = base_metadata.get('system', default_system)
+    system = base_metadata.get('system')
+    if system is None:
+        distro, version = osp.basename(base).split('-')[:2]
+        if 'ubuntu' in distro:
+            distro = 'ubuntu'
+        version = '.'.join(version.split('.')[:2])
+        system = '%s-%s' % (distro, version)
 
     name = name.format(type=type, system=system)
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
@@ -225,6 +231,7 @@ def create_base_image(type,
         build_file = osp.join(casa_docker, 'build_image.py')
         open(build_file)  # raise appropriate exception if file does not exist
 
+        
     metadata_output = output + '.json'
     metadata = {
         'name': name,
