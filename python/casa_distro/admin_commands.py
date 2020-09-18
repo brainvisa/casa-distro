@@ -473,6 +473,9 @@ def create_user_image(
     metadata_file = output + '.json'
 
     if generate:
+        output_dir = osp.dirname(output)
+        if not osp.exists(output_dir):
+            os.makedirs(output_dir)
         msg = module.create_user_image(base_image=base_image,
                                        dev_config=config,
                                        output=output,
@@ -488,6 +491,6 @@ def create_user_image(
 
     if upload:
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
-            '{container_type}'.format(config)
+            '{container_type}'.format(*config)
         check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                     metadata_file, output, url])
