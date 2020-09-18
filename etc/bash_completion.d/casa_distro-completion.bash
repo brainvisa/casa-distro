@@ -63,15 +63,11 @@ function _complete_casa_distro_option_()
     container_type)
         COMPREPLY=($(compgen -W "singularity docker virtualbox" -- "${word}"))
         ;;
-    name)
+    name|environment_name)
         local names=`casa_distro list base_directory=$CASA_DEFAULT_REPOSITORY | grep -E -v '^(  [a-z])'`
         COMPREPLY=($(compgen -W "$names" -- "${word}"))
         ;;
-    container_image|container_test_image)
-        local images=$CASA_DEFAULT_REPOSITORY/*.simg
-        COMPREPLY=($(compgen -W "$images" -- "${word}"))
-        ;;
-    image)
+    image|base_image)
         # take existing singularity images
         local images=$CASA_DEFAULT_REPOSITORY/*.sif
 #         for f in $images
@@ -409,7 +405,7 @@ function _complete_casa_distro_admin_()
             COMPREPLY=($(compgen -W "type= image= container_type= verbose=" -- "${word}"))
             ;;
         create_user_image)
-            COMPREPLY=($(compgen -W "version= name= distro= system= environment_name= container_type= base_directory= install= generate= upload= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "version= name= base_image= distro= system= environment_name= container_type= base_directory= install= generate= upload= verbose=" -- "${word}"))
             ;;
         esac
         ;;

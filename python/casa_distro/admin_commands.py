@@ -380,6 +380,9 @@ def create_user_image(
     name
         default={name_default}
         Name given to the created image.
+    base_image
+        default={base_image_default}
+        Name of the "run" image used to generate the new user image
     distro
         If given, select environment having the given distro name.
     system
@@ -484,6 +487,7 @@ def create_user_image(
         json.dump(metadata, open(metadata_file, 'w'), indent=4)
 
     if upload:
+        url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
+            '{container_type}'.format(config)
         check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                    metadata_file, output,
-                    'brainvisa@brainvisa.info:prod/www/casa-distro/releases/'])
+                    metadata_file, output, url])
