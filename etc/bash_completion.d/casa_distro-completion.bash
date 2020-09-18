@@ -117,20 +117,11 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
-    gui)
-        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
+    gui|verbose|force|root|install|generate|upload|interactive)
+        COMPREPLY=($(compgen -W "True False true false 1 0 yes no Yes No" -- "${word}"))
         ;;
     opengl)
         COMPREPLY=($(compgen -W "auto nv container software" -- "${word}"))
-        ;;
-    verbose)
-        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
-        ;;
-    force)
-        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
-        ;;
-    root)
-        COMPREPLY=($(compgen -W "True False 1 0" -- "${word}"))
         ;;
     base_directory)
         COMPREPLY=($(compgen -d -- "${word}"))
@@ -332,7 +323,7 @@ function _complete_casa_distro_()
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= interactive=" -- "${word}"))
             ;;
         clean_images)
-            COMPREPLY=($(compgen -W "base_directory= image_names= verbose= interactive=" -- "${word}"))
+            COMPREPLY=($(compgen -W "base_directory= image= distro= branch= system= name= type= verbose= interactive=" -- "${word}"))
             ;;
         esac
         ;;

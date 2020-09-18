@@ -141,6 +141,7 @@ brainvisa_python_runtime_dependencies=(
     python-traits
     python-xmltodict
     python-yaml
+    python-joblib
 
     # These packages used to be installed with PIP, presumably because they
     # depend on NumPy, but it seems that they do not depend on a particular ABI

@@ -13,26 +13,28 @@ What is CASA ?
 
 CASA = `CATI <http://cati-neuroimaging.com>`_ + `BrainVISA <http://brainvisa.info>`_
 
-When these two projects decided to use the same development and software delivery environment, the name CASA was choosen to name this environment.
+When these two projects decided to use the same development and software delivery environment, the name CASA was chosen to name this environment.
 
 What is Casa-Distro ?
 ---------------------
 
-It's a cross-platform environment which is used by user to install/use BrainVisa and CATI environment, and by developer to provide a common working development environment for BrainVISA and CATI tools. It avoids the manual installation of required development software and libraries, which can cause the use of different versions on different systems.
-It was not unusual to discover difference of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment.
+**Short answer:** it's the way to run BrainVISA software in a containerized environment or a virtual machine.
 
+**Longer answer:**
+
+It's a cross-platform environment which is used by users to install/use BrainVisa and CATI environments, and by developers to provide a common working development environment for BrainVISA and CATI tools. It avoids the manual installation of required development software and libraries, which can cause the use of different versions on different systems.
+It was not unusual to discover differences of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment.
 
 Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual applicance to host the compilation system. casa_distro supports two container technologies, `Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ and one virtual machine technology : `VirtualBox <https://www.virtualbox.org/>`_.
 
-Casa-distro project is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It contains all tools to create and publish the virtual images as well as tools for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
+.. Casa-distro project is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It contains all tools to create and publish the virtual images as well as tools for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
 
-  Use cases
-  ---------
+.. Use cases
+.. ---------
 
-..
-  * I develop toolboxes, I need to build and release them as binary compatible with the official BrainVisa distrtibutions
-  * I am a contributor of Cati/BrainVisa environment, and need to get started quickly
-  * I am release maintainer of BrainVisa and need to produce a new release yesterday
+..   * I develop toolboxes, I need to build and release them as binary compatible with the official BrainVisa distrtibutions
+..   * I am a contributor of Cati/BrainVisa environment, and need to get started quickly
+..   * I am release maintainer of BrainVisa and need to produce a new release yesterday
 
 +----------+------------------------+---------+-------------+
 |          | Singularity            | Docker  | VirtualBox  |
@@ -129,25 +131,25 @@ It has been chosen to use a classical version numbering convention :
 -  **<patch>:** is a number that is increased whenever routine
    modifications are done.
 
-Distribution creation
-+++++++++++++++++++++
-
-The creation of a distribution is a four steps process :
-
-#. **Create release plan:** selection of the software components that
-   are going to be upgraded in the next release of the distribution.
-#. **Apply release plan:** update the version of generic branches
-   (*latest\_release*, *bug\_fix* and *trunk*) in the source code of all
-   projects according to the release plan.
-#. **Compilation, testing and packaging:** creation of environments,
-   tests execution and packages creation for the new distribution.
-#. **Distribution deployment:** make distributions and packages
-   available for users.
-
-All these steps are done by CASA admin team using ``casa_distro`` command. The
-release plan is discussed with distros managers and eventually modified before
-being applied. The current status of the release plan can be found on a
-`BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_.
+.. Distribution creation
+.. +++++++++++++++++++++
+..
+.. The creation of a distribution is a four steps process :
+..
+.. #. **Create release plan:** selection of the software components that
+..    are going to be upgraded in the next release of the distribution.
+.. #. **Apply release plan:** update the version of generic branches
+..    (*latest\_release*, *bug\_fix* and *trunk*) in the source code of all
+..    projects according to the release plan.
+.. #. **Compilation, testing and packaging:** creation of environments,
+..    tests execution and packages creation for the new distribution.
+.. #. **Distribution deployment:** make distributions and packages
+..    available for users.
+..
+.. All these steps are done by CASA admin team using ``casa_distro`` command. The
+.. release plan is discussed with distros managers and eventually modified before
+.. being applied. The current status of the release plan can be found on a
+.. `BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_.
 
 Environment
 -----------
@@ -193,29 +195,31 @@ The hardware representation of an environment is a set of directories:
 III - Installation and setup
 ========================================
 
-Requirements
-------------
+.. Requirements
+.. ------------
+..
+.. To use Casa-Distro, a user (or rather a developer) must have a system with
+.. the following characteristics:
+..
+.. * Either `Singularity <https://www.sylabs.io/>`_ or
+..   `Docker <https://www.docker.com>`_ must be installed and setup for the user
+..   on the building system. These container technologies only runs
+..   on reasonably recent Linux systems, recent Mac systems, and Windows.
+.. * Python >= 2.7 is necessary  run the ``casa_distro`` command.
+.. * Git may be used to download casa-distro *the first time you use it* (see later, `Install latest release`_), but generally Python and its ``pip`` command are enough.
+..
+.. The rest takes place inside containers, so are normally not restructed by the building system, (as long as it has enough memory and disk space).
+..
+.. Since Casa-Distro 3.0, Singularity >= 3.0 is needed.
+.. Singularity v3 is not available as an apt package on Ubuntu, it is necessary to download
+.. sources and to compile it.
+..
+.. It requires Go to be installed.
+.. You can follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
+..
+.. For more details about installation, setup, and troubleshooting, see
 
-To use Casa-Distro, a user (or rather a developer) must have a system with
-the following characteristics:
-
-* Either `Singularity <https://www.sylabs.io/>`_ or
-  `Docker <https://www.docker.com>`_ must be installed and setup for the user
-  on the building system. These container technologies only runs
-  on reasonably recent Linux systems, recent Mac systems, and Windows.
-* Python >= 2.7 is necessary  run the ``casa_distro`` command.
-* Git may be used to download casa-distro *the first time you use it* (see later, `Install latest release`_), but generally Python and its ``pip`` command are enough.
-
-The rest takes place inside containers, so are normally not restructed by the building system, (as long as it has enough memory and disk space).
-
-Since Casa-Distro 3.0, Singularity >= 3.0 is needed.
-Singularity v3 is not available as an apt package on Ubuntu, it is necessary to download
-sources and to compile it.
-
-It requires Go to be installed.
-You can follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
-
-For more details about installation, setup, and troubleshooting, see :doc:`install_setup`
+see: :doc:`install_setup`
 
 
 Install with python

@@ -438,6 +438,24 @@ def update_container_image(container_type, image_name, url, force=False,
     os.rename(tmp_metadata_file, metadata_file)
 
 
+def delete_image(container_type, image_name):
+    """
+    Delete a container image files
+    """
+    if container_type in ('singularity', 'vbox'):
+        if not os.path.isabs(image_name) and not osp.exists(image_name):
+            image_name = osp.join(casa_distro_directory(), image_name)
+        if os.path.exists(image_name):
+            os.unlink(image_name)
+        metadata = '%s.json' % image_name
+        if os.path.exists(metadata):
+            os.unlink(metadata)
+    elif container_type == 'docker':
+        raise NotImplementedError('docker case not implemented yet.')
+    else:
+        raise ValueError('unknown container type: %s' % container_type)
+
+
 def select_environment(base_directory, **kwargs):
     """
     Select a single distro given its name or an existing distro directory.

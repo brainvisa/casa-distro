@@ -5,7 +5,65 @@ from __future__ import print_function
 
 import os
 import sys
+from casa_distro import __version__
 osp = os.path
+
+
+def build_run_script(out_file, container_bin_dir):
+    print(out_file)
+    with open(out_file, 'w') as f:
+        os.chmod(out_file, 0o755)
+        print('''#!/bin/sh
+directory="$0"
+[ -L "$directory" ] && directory="`readlink -f \"$directory\"`"
+command="`basename \"$directory\"`"
+bin_directory=$(dirname "$directory")
+bin_directory="`cd \"$bin_directory\";pwd`"
+host_dir=$(dirname "$bin_directory")
+casa_env_dir=$(dirname "$host_dir")
+casa_distro_dir=$(dirname "$casa_env_dir")
+host_container_dir="$casa_env_dir/{bin_dir}"
+container_dir="/casa/{bin_dir}"
+casa_env_name=$(basename $casa_env_dir)
+casa_distro="$host_container_dir/casa_distro"
+if [ -n "$CASA_HOST_DIR" ]; then
+    # inside container: direct run
+    exec "$container_dir/$command" "$@"
+elif [ -x "$casa_distro" ]; then
+    # outside of container, and casa-distro can be found in the container
+    exec "$casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
+else
+    # casa_distro is installed outside of the container, use the PATH
+    exec "casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
+fi
+
+'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+
+    # build windows .bat script for windows hosts
+    exe = osp.basename(out_file)
+    out_file = osp.join(win_dir, exe + '.bat')
+    print(out_file)
+    with open(out_file, 'w') as f:
+        os.chmod(out_file, 0o755)
+        print(r'''@setlocal
+@set bin_directory="%~d0%~p0"
+@set command="%~n0.exe"
+@set host_dir=
+@set casa_env_dir="%bin_directory%\..\.."
+@for %%F in ("%casa_env_dir%) do set casa_env_name=%%~nF
+@set container_dir="/casa/{bin_dir}"
+@set casa_distro_dir="%casa_env_dir%\.."
+@set host_container_dir="%casa_env_dir%\{bin_dir}"
+@set casa_distro="%host_container_dir%\casa_distro"
+@if exist "%casa_distro%" (
+  @"python.exe" "%casa_distro%" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
+@else (
+  @"python.exe" "-m" "casa_distro" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
+@endlocal
+'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+
 
 mode = 'build'
 
@@ -86,55 +144,15 @@ for exe in os.listdir(osp.join(casa_build, 'bin')):
         continue
     # print(exe)
     out_file = osp.join(out_dir, exe)
-    print(out_file)
-    with open(out_file, 'w') as f:
-        os.chmod(out_file, 0o755)
-        print('''#!/bin/sh
-directory="$0"
-[ -L "$directory" ] && directory="`readlink -f \"$directory\"`"
-command="`basename \"$directory\"`"
-bin_directory=$(dirname "$directory")
-bin_directory="`cd \"$bin_directory\";pwd`"
-host_dir=$(dirname "$bin_directory")
-casa_env_dir=$(dirname "$host_dir")
-casa_distro_dir=$(dirname "$casa_env_dir")
-host_container_dir="$casa_env_dir/{bin_dir}"
-container_dir="/casa/{bin_dir}"
-casa_env_name=$(basename $casa_env_dir)
-casa_distro="$host_container_dir/casa_distro"
-if [ -n "$CASA_HOST_DIR" ]; then
-    # inside container: direct run
-    exec "$container_dir/$command" "$@"
-elif [ -x "$casa_distro" ]; then
-    # outside of container, and casa-distro can be found in the container
-    exec "$casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
-else
-    # casa_distro is installed outside of the container, use the PATH
-    exec "casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
-fi
+    build_run_script(out_file, container_bin_dir)
 
-'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+# custom scripts
+version = '.'.join(__version__.split('.')[:2])
 
-    # build windows .bat script for windows hosts
-    out_file = osp.join(win_dir, exe + '.bat')
-    print(out_file)
-    with open(out_file, 'w') as f:
-        os.chmod(out_file, 0o755)
-        print(r'''@setlocal
-@set bin_directory="%~d0%~p0"
-@set command="%~n0.exe"
-@set host_dir=
-@set casa_env_dir="%bin_directory%\..\.."
-@for %%F in ("%casa_env_dir%) do set casa_env_name=%%~nF
-@set container_dir="/casa/{bin_dir}"
-@set casa_distro_dir="%casa_env_dir%\.."
-@set host_container_dir="%casa_env_dir%\{bin_dir}"
-@set casa_distro="%host_container_dir%\casa_distro"
-@if exist "%casa_distro%" (
-  @"python.exe" "%casa_distro%" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
-)
-@else (
-  @"python.exe" "-m" "casa_distro" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
-)
-@endlocal
-'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+custom_scripts = ['share/casa_distro-%s/scripts/casa_distro_launcher', ]
+
+for exe in custom_scripts:
+    out_file = osp.join(out_dir, osp.basename(exe))
+    exe_file = osp.join(casa_build, exe)
+    if osp.exists(exe_file):
+        build_run_script(out_file, osp.join('/casa', osp.dirname(exe)))

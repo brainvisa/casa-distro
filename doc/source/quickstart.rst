@@ -62,14 +62,48 @@ the following characteristics:
 
 * Run programs from the container
 
-  The `casa_distro` command accepts `run` or `shell` as sub-commands, they both allow to run programs installed inside the container, for instance:
+  There are several ways actually:
 
-  .. code-block:: bash
+  1. The simplest way, from a Unix host machine (or windows with a bash shell):
 
-      casa_distro run brainvisa
-      casa_distro run anatomist
-      casa_distro run AimsFileInfo -h
-      casa_distro shell
+    * Add to the ``PATH`` environment variable the directory containing run scripts
+
+      .. code-block:: bash
+
+          # this line could be in a ~/.bashrc or ~/.bash_profile script
+          export PATH="$HOME/casa_distro/brainvisa-5.0/host/host_bin:$PATH"
+
+    * then call the programs like if they were on the host machine:
+
+      .. code-block:: bash
+
+          # run programs
+          AimsFileInfo --info
+
+  2. Similar, from a Windows host machine:
+
+    * add the directory containing the run scripts in the ``%PATH%`` environment variable (can be done globally in the user / machine settings):
+
+      .. code-block:: bat
+
+          set PATH=%HOMEDRIVE%%HOMEPATH%\casa_distro\brainvisa-5.0\host\win_bin;%PATH%
+
+    * run the programs from a cmd shell:
+
+      .. code-block:: bat
+
+          AimsFileInfo --info
+
+  3. Using ``casa_distro`` or ``bv`` interface to containers:
+
+    The ``casa_distro`` command accepts ``run`` or ``shell`` as sub-commands, they both allow to run programs installed inside the container, for instance:
+
+    .. code-block:: bash
+
+        casa_distro run brainvisa
+        casa_distro run anatomist
+        casa_distro run AimsFileInfo -h
+        casa_distro shell
 
 Installation with VirtualBox
 ----------------------------

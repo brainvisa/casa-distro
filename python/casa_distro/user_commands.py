@@ -5,12 +5,12 @@ import glob
 import json
 import os.path as osp
 import sys
+import shutil
 
 from casa_distro import (environment,
                          six)
 from casa_distro.command import command, check_boolean
-from casa_distro.defaults import (default_build_workflow_repository,
-                                  default_branch,
+from casa_distro.defaults import (default_branch,
                                   default_download_url)
 from casa_distro.environment import (casa_distro_directory,
                                      find_in_path,
@@ -21,9 +21,15 @@ from casa_distro.environment import (casa_distro_directory,
                                      select_distro,
                                      select_environment,
                                      iter_images,
-                                     update_container_image)
+                                     update_container_image,
+                                     delete_image)
 from casa_distro.log import verbose_file
 from casa_distro.info import __version__
+
+if six.PY3:
+    interactive_input = input
+else:
+    interactive_input = raw_input  # noqa F821
 
 
 def size_to_string(full_size):
@@ -524,23 +530,22 @@ def setup(distro=None,
 
     # run the script to generate run scripts from the host system
     casa_distro_version = '.'.join(__version__.split('.')[:2])
-    script = 'python /casa/install/share/casa-distro-%s/scripts/' \
+    script = '/casa/install/share/casa-distro-%s/scripts/' \
         'casa_build_host_links' % casa_distro_version
-    if osp.exists(osp.join(base_directory, name,
-                           '/install/share/casa-distro-%s/scripts/'
-                           'casa_build_host_links' % casa_distro_version)):
-        run(distro=distro, branch=None, system=system,
-            name=name, version=version,
-            base_directory=base_directory,
-            gui=False,
-            opengl="auto",
-            root=False,
-            cwd='/casa/host/home',
-            env=None,
-            image=image,
-            container_options=None,
-            args_list=['python', script],
-            verbose=None)
+    run(distro=distro, branch=None, system=system,
+        name=name, version=version,
+        base_directory=base_directory,
+        gui=False,
+        opengl="auto",
+        root=False,
+        cwd='/casa/host/home',
+        env=None,
+        image=image,
+        container_options=None,
+        args_list=['bash', '-c',
+                   'if [ -f "{script}" ]; then '
+                   'python "{script}"; fi'.format(script=script)],
+        verbose=None)
 
 
 # "list" cannot be used as a function name in Python. Therefore, the
@@ -631,6 +636,9 @@ def run(type=None, distro=None, branch=None, system=None,
     name
         If given, select environment by its name. It replaces type, distro,
         branch and system and is shorter to select one.
+    version
+        If given, select environment by its version (only applicable to user
+        environments, not dev)
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -798,9 +806,7 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
         supported system of the selected distro.
     name
         default=None
-        Name of the environment. No other environment must have the same name
-        (including non developer environments).
-        This name may be used later to select the environment to run.
+        Name of the environment.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -848,6 +854,50 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
 def list_images(distro=None, branch=None, system=None, name=None, type=None,
                 image='*', base_directory=casa_distro_directory(),
                 verbose=None):
+    '''List the locally installed container images.
+    There are two ways of selecting the image(s):
+
+    1. filtered by environment, using the 'name' selector, or a combination of
+       'distro', 'branch', and 'system'.
+
+    2. directly specifying a full image name, e.g.:
+
+           casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+
+    Parameters
+    ----------
+    distro
+        default=None
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    branch
+        default=None
+        Name of the source branch to use for dev environments. Either
+        "latest_release", "master" or "integration".
+    system
+        default=None
+        System to use with this environment. By default, it uses the first
+        supported system of the selected distro.
+    name
+        default=None
+        Name of the environment.
+    type
+        default=None
+        image type (run, dev, user)
+    image
+        default="*"
+        Location of the virtual image for this environement.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+
+    '''
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
                                         system=system, name=name, type=type,
@@ -858,6 +908,7 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
 
 @command
 def shell(type=None, distro=None, branch=None, system=None, name=None,
+          version=None,
           base_directory=casa_distro_directory(),
           gui=True,
           opengl="auto",
@@ -871,6 +922,7 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
     '''
     run(type=type, distro=distro, branch=branch, system=system,
         name=name,
+        version=version,
         base_directory=base_directory,
         gui=gui,
         opengl=opengl,
@@ -884,14 +936,18 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def mrun(distro='*', branch='*', system='*', name=None,
-         build_workflows_repository=default_build_workflow_repository,
+def mrun(type=None, distro=None, branch=None, system=None, name=None,
+         version=None,
+         base_directory=casa_distro_directory(),
          gui=True,
          opengl="auto",
          root=False,
-         interactive=False, tmp_container=True,
-         container_image=None, cwd=None, env=None, container_options=[],
-         args_list=[], verbose=None, conf='dev'):
+         cwd=None,
+         env=None,
+         image=None,
+         container_options=[],
+         args_list=[],
+         verbose=None):
     '''
     Start any command in one or several container with the given
     repository configuration. By default, command is executed in
@@ -902,71 +958,107 @@ def mrun(distro='*', branch='*', system='*', name=None,
 
         casa_distro mrun bv_maker system=ubuntu-*
 
-    The "conf" parameter may address an additional config dictionary within the
-    casa_distro.json config file. Typically, a test config may use a different
-    system image (casa-test images), or options, or mounted directories.
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    name
+        If given, select environment by its name. It replaces type, distro,
+        branch and system and is shorter to select one.
+    version
+        If given, select environment by its version (only applicable to user
+        environments, not dev)
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    gui
+        default={gui_default}
+        If "no", "false" or "0", command is not using a graphical user
+        interface (GUI). Nothing is done to connect the container to a
+        graphical interface. This option may be necessary in context where
+        a graphical interface is not available.
+    opengl
+        default={opengl_default}
+        Setup different ways of trying to use OpenGL 3D rendering and GPU.
+        "auto", "container", "nv", or "software".
+        * "auto": performs auto-detection: same as "nv" if an NVidia device is
+        detected on a host linux system, otherwise same as "container", unless
+        we detect a case where that is known to fail (in which case we would
+        use "software").
+        * "container": passes no special options to Singularity: the mesa
+        installed in the container is used
+        * "nv" tries to mount the proprietary NVidia driver of the host (linux)
+        system in the container
+        * "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
+        rendering. This solution is the slowest but is a fallback when no other
+        solution works.
+    root
+        default={root_default}
+        If "yes", "true" or "1", start execution as system administrator. For
+        Singularity container, this requires administrator privileges on host
+        system.
+    cwd
+        default={cwd_default}
+        Set current working directory to the given value before launching
+        the command.
+    env
+        Comma separated list of environment variables to pass to the command.
+        Each variable must have the form name=value.
+    image
+        Force usage of a specific virtual image instead of the one defined
+        in the environment configuration.
+    container_options
+        Comma separated list of options to add to the command line used to
+        call the container system.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
     '''
-    # build_workflows = list(iter_build_workflow(build_workflows_repository,
-    #                                            distro=distro,
-    #                                            branch=branch,
-    #                                            system=system))
-    # if not build_workflows:
-    #     print('Cannot find requested build workflow.',
-    #           'You can list existing workflows using:\n'
-    #           '    casa_distro list\n'
-    #           'Or create new one using:\n'
-    #           '    casa_distro create ...',
-    #           file=sys.stderr)
-    #     return 1
 
-    # if isinstance(container_options, six.string_types) \
-    #         and len(container_options) != 0:
-    #     container_options = parse_string(container_options)
-    # if isinstance(env, six.string_types) \
-    #         and len(env) != 0:
-    #     env_list = parse_string(env)
-    #     try:
-    #         env = dict(e.split('=') for e in env_list)
-    #     except:
-    #         raise ValueError('env syntax error. Should be in the shape '
-    #                          '"VAR1=value1 VAR2=value2" etc.')
+    verbose = verbose_file(verbose)
+    gui = check_boolean('gui', gui)
+    root = check_boolean('root', root)
+    if container_options:
+        container_options = parse_list(container_options)
+    if env:
+        env_list = parse_list(env)
+        try:
+            env = dict(e.split('=') for e in env_list)
+        except ValueError:
+            raise ValueError('env syntax error. Should be in the shape '
+                             '"VAR1=value1,VAR2=value2" etc.')
+    command = args_list
+    res = []
 
-    # status = {}
-    # global_failed = False
+    for config in iter_environments(base_directory,
+                                    type=type,
+                                    distro=distro,
+                                    branch=branch,
+                                    system=system,
+                                    name=name,
+                                    version=version):
 
-    # for d, b, s, bwf_dir in build_workflows:
-    #     es = ExecutionStatus(start_time = time.localtime())
-    #     status[(d, b, s)] = (es, bwf_dir)
-    #     try:
-    #         command = args_list
-    #         bwf_directory = osp.join(build_workflows_repository, '%s' % d,
-    #                                 '%s_%s' % (b, s))
-    #         run_container(bwf_directory, command=command, gui=gui,
-    #                     interactive=interactive, tmp_container=tmp_container,
-    #                     container_image=container_image, cwd=cwd,
-    #                     env=env,
-    #                     container_options=container_options, verbose=verbose,
-    #                     conf=conf)
-    #         es.stop_time = time.localtime()
-    #         es.error_code = 0
-    #         es.status = 'succeeded'
+        res.append(run_container(config,
+                                 command=command,
+                                 gui=gui,
+                                 opengl=opengl,
+                                 root=root,
+                                 cwd=cwd,
+                                 env=env,
+                                 image=image,
+                                 container_options=container_options,
+                                 base_directory=base_directory,
+                                 verbose=verbose))
 
-    #     except subprocess.CalledProcessError:
-    #         global_failed = True
-    #         es.stop_time = time.localtime()
-    #         es.exception = traceback.format_exc()
-    #         es.error_code = 1
-    #         es.status = 'failed'
-
-    #     except KeyboardInterrupt:
-    #         global_failed = True
-    #         es.stop_time = time.localtime()
-    #         es.error_code = 1
-    #         es.status = 'interrupted'
-    #         break
-
-    # display_summary(status)
-    # return global_failed
+    if len([r != 0 for r in res]) == 0:
+        return 0
+    return res
 
 
 @command
@@ -980,6 +1072,60 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
     '''
     Start a bv_maker in the configured container with the given repository
     configuration.
+
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    name
+        If given, select environment by its name. It replaces type, distro,
+        branch and system and is shorter to select one.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    gui
+        default={gui_default}
+        If "no", "false" or "0", command is not using a graphical user
+        interface (GUI). Nothing is done to connect the container to a
+        graphical interface. This option may be necessary in context where
+        a graphical interface is not available.
+    opengl
+        default={opengl_default}
+        Setup different ways of trying to use OpenGL 3D rendering and GPU.
+        "auto", "container", "nv", or "software".
+        * "auto": performs auto-detection: same as "nv" if an NVidia device is
+        detected on a host linux system, otherwise same as "container", unless
+        we detect a case where that is known to fail (in which case we would
+        use "software").
+        * "container": passes no special options to Singularity: the mesa
+        installed in the container is used
+        * "nv" tries to mount the proprietary NVidia driver of the host (linux)
+        system in the container
+        * "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
+        rendering. This solution is the slowest but is a fallback when no other
+        solution works.
+    cwd
+        default={cwd_default}
+        Set current working directory to the given value before launching
+        the command.
+    env
+        Comma separated list of environment variables to pass to the command.
+        Each variable must have the form name=value.
+    image
+        Force usage of a specific virtual image instead of the one defined
+        in the environment configuration.
+    container_options
+        Comma separated list of options to add to the command line used to
+        call the container system.
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
     '''
     args_list = ['bv_maker'] + args_list
     return run(type=type, distro=distro, branch=branch, system=system,
@@ -996,24 +1142,135 @@ def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def clean_images(build_workflows_repository=default_build_workflow_repository,
-                 image_names='*', verbose=False, interactive=True):
+def clean_images(distro=None, branch=None, system=None, name=None, type=None,
+                 image=None, verbose=False,
+                 base_directory=casa_distro_directory(), interactive=True):
     '''
     Delete singularity images which are no longer used in any build workflow,
-    or those listed in image_names.
-    '''
-    # images_to_keep = {}
-    # for d, b, s, bwf_dir in iter_build_workflow(build_workflows_repository,
-    #                                             distro='*', branch='*',
-    #                                             system='*'):
-    #     casa_distro = json.load(open(osp.join(bwf_dir, 'conf',
-    #                                           'casa_distro.json')))
-    #     confs = set(['dev'])
-    #     confs.update(casa_distro.get('alt_configs', {}).keys())
-    #     for conf in confs:
-    #         wfconf = merge_config(casa_distro, conf)
-    #         images_to_keep.setdefault(wfconf['container_type'], set()).add(
-    #             wfconf['container_image'])
+    or those listed in the "image" parameter.
+    There are two ways of selecting the image(s):
 
-    # clean_singularity_images(build_workflows_repository, image_names,
-    #                          images_to_keep, verbose, interactive)
+    1. filtered by environment, using the 'name' selector, or a combination of
+       'distro', 'branch', and 'system'.
+
+    2. directly specifying a full image name, e.g.:
+
+           casa_distro clean_images image=casa-run-ubuntu-18.04.sif
+
+    Parameters
+    ----------
+    distro
+        default=None
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    branch
+        default=None
+        Name of the source branch to use for dev environments. Either
+        "latest_release", "master" or "integration".
+    system
+        default=None
+        System to use with this environment. By default, it uses the first
+        supported system of the selected distro.
+    name
+        default=None
+        Name of the environment.
+    type
+        default=None
+        image type (run, dev, user)
+    image
+        default=None
+        Location of the virtual image for this environement.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    interactive
+        default={interactive_default}
+        ask confirmation before deleting an image
+    verbose
+        default={verbose_default}
+        Print more detailed information if value is "yes", "true" or "1".
+
+    '''
+
+    images_to_update = list(iter_images(base_directory=base_directory,
+                                        distro=distro, branch=branch,
+                                        system=system, name=name, type=type,
+                                        image=image))
+
+    print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
+
+    for container_type, image_name \
+            in iter_images(base_directory=base_directory,
+                           distro=distro, branch=branch,
+                           system=system, name=name, type=type,
+                           image=image):
+        if interactive:
+            confirm = interactive_input(
+                'delete image %s : %s [y/N]: ' % (container_type, image_name))
+            if confirm not in ('y', 'yes', 'Y', 'YES'):
+                print('skip.')
+                continue
+        print('deleting image %s' % image_name)
+        delete_image(container_type, image_name)
+
+
+@command
+def delete(type=None, distro=None, branch=None, system=None, name=None,
+           base_directory=casa_distro_directory(),
+           interactive=True):
+    """
+    Delete an existing environment.
+
+    The whole environment directory will be removed and forgotten.
+
+    Use with care.
+
+    Image files will be left untouched - use clean_images for this.
+
+    Parameters
+    ----------
+    type
+        If given, select environment having the given type.
+    distro
+        If given, select environment having the given distro name.
+    branch
+        If given, select environment having the given branch.
+    system
+        If given, select environments having the given system name.
+    name
+        Name of the environment.
+    base_directory
+        default={base_directory_default}
+        Directory where images and environments are stored
+    interactive
+        default={interactive_default}
+        if true (or 1, or yes), ask confirmation interactively for each
+        selected environement.
+    """
+    interactive = check_boolean('interactive', interactive)
+    if not interactive and type is None and distro is None and system is None \
+            and name is None:
+        raise RuntimeError(
+            'Refusing to delete all environments without confirmation. '
+            'Either use interactive=True, or provide an explicit pattern for '
+            'environment selection parameters')
+
+    for config in iter_environments(base_directory,
+                                    type=type,
+                                    distro=distro,
+                                    branch=branch,
+                                    system=system,
+                                    name=name):
+        if interactive:
+            confirm = interactive_input(
+                'delete environment %s [y/N]: ' % config['name'])
+            if confirm not in ('y', 'yes', 'Y', 'YES'):
+                print('skip.')
+                continue
+        print('deleting environment %s' % config['name'])
+        directory = config['directory']
+        print('rm -rf "%s"' % directory)
+        shutil.rmtree(directory)
