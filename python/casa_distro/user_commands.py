@@ -524,23 +524,22 @@ def setup(distro=None,
 
     # run the script to generate run scripts from the host system
     casa_distro_version = '.'.join(__version__.split('.')[:2])
-    script = 'python /casa/install/share/casa-distro-%s/scripts/' \
+    script = '/casa/install/share/casa-distro-%s/scripts/' \
         'casa_build_host_links' % casa_distro_version
-    if osp.exists(osp.join(base_directory, name,
-                           '/install/share/casa-distro-%s/scripts/'
-                           'casa_build_host_links' % casa_distro_version)):
-        run(distro=distro, branch=None, system=system,
-            name=name, version=version,
-            base_directory=base_directory,
-            gui=False,
-            opengl="auto",
-            root=False,
-            cwd='/casa/host/home',
-            env=None,
-            image=image,
-            container_options=None,
-            args_list=['python', script],
-            verbose=None)
+    run(distro=distro, branch=None, system=system,
+        name=name, version=version,
+        base_directory=base_directory,
+        gui=False,
+        opengl="auto",
+        root=False,
+        cwd='/casa/host/home',
+        env=None,
+        image=image,
+        container_options=None,
+        args_list=['bash', '-c',
+                   'if [ -f "{script}" ]; then '
+                   'python "{script}"; fi'.format(script=script)],
+        verbose=None)
 
 
 # "list" cannot be used as a function name in Python. Therefore, the
