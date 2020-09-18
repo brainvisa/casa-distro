@@ -622,7 +622,6 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     branch = config.get('branch')
     if branch:
         env['CASA_BRANCH'] = bv_maker_branches[branch]
-        print('!', branch)
     return module.run(config,
                       command=command,
                       gui=gui,

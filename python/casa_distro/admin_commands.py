@@ -488,6 +488,6 @@ def create_user_image(
 
     if upload:
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
-            '{container_type}'.format(config)
+            '{container_type}'.format(**metadata)
         check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                     metadata_file, output, url])
