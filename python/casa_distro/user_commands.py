@@ -1062,7 +1062,7 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def bv_maker(type=None, distro=None, branch=None, system=None, name=None,
+def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
              base_directory=casa_distro_directory(),
              gui=False,
              opengl="auto",
