@@ -478,7 +478,7 @@ def write_environment_homedir(output):
     bashrc = osp.join(home, '.bashrc')
     if not osp.exists(bashrc):
         with open(bashrc, 'w') as f:
-            print('''
+            print(r'''
 if [ -f /etc/profile ]; then
     . /etc/profile
 fi
@@ -500,7 +500,7 @@ elif [ -d "/casa/install/etc/bash_completion.d" ]; then
     done
 fi
 
-export PS1='\\[^[[33m\\]\\u@\\h \\$\\[^[[0m\\] '
+export PS1="\[\033[33m\]\u@\h \$\[\033[0m\] "
 
 ''', file=f)
 

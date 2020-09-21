@@ -61,7 +61,7 @@ function _complete_casa_distro_option_()
         COMPREPLY=($(compgen -W "$sys" -- "${word}"))
         ;;
     container_type)
-        COMPREPLY=($(compgen -W "singularity docker virtualbox" -- "${word}"))
+        COMPREPLY=($(compgen -W "singularity docker vbox" -- "${word}"))
         ;;
     name|environment_name)
         local names=`casa_distro list base_directory=$CASA_DEFAULT_REPOSITORY | grep -E -v '^(  [a-z])'`
