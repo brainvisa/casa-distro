@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# the beta of singularity 3.3 for Mac doesn't pass envars in any way
+# (no --env option, --home doesn't work, SINGULARITYENV_something vars
+# are not transmitted). We work around this using a mount and a bash
+# script. Bidouille bidouille... ;)
+if [ -f "/casa/mac_bug/init.sh" ]; then
+    . /casa/mac_bug/init.sh
+fi
+
 # Use the software-only mesa library install in /usr/local/lib as a fallback
 # (singularity puts the path to nvidia libraries in LD_LIBRARY_PATH).
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}${LD_LIBRARY_PATH+:}/usr/local/lib

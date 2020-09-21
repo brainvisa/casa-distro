@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import os.path as osp
+import sys
 import re
 import shutil
 import subprocess
@@ -201,6 +202,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     """
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
+    temps = []
+
     singularity = ['singularity', 'run']
     if singularity_has_option('--cleanenv'):
         singularity.append('--cleanenv')
@@ -316,6 +319,28 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         container_options += ['--env',
                               br'PS1=\[\033[33m\]\u@\h \$\[\033[0m\] ']
 
+    if singularity_version()[:3] == [3, 3, 0] and sys.platform == 'darwin':
+        # the beta of singularity 3.3 for Mac doesn't pass envars in any way
+        # (no --env option, --home doesn't work, SINGULARITYENV_something vars
+        # are not transmitted). We work around this using a mount and a bash
+        # script. Bidouille bidouille... ;)
+        tmpdir = tempfile.mkdtemp(prefix='casa_singularity')
+        script = osp.join(tmpdir, 'init.sh')
+        forbidden = set(['HOME', 'SINGULARITYENV_HOME', 'PWD', 'PATH',
+                         'LD_LIBRARY_PATH'])
+        with open(script, 'w') as f:
+            print('#!/bin/bash\n', file=f)
+            for var, value in container_env.items():
+                if var not in forbidden:
+                    if var.startswith('SINGULARITYENV_'):
+                        print('export %s="%s"' % (var[15:], value), file=f)
+                    else:
+                        print('export %s="%s"' % (var, value), file=f)
+            # --home does not work either
+            print('export HOME=%s' % singularity_home, file=f)
+        container_options += ['--bind', '%s:/casa/mac_bug' % tmpdir]
+        temps.append(tmpdir)
+
     singularity += container_options
 
     if image is None:
@@ -338,7 +363,12 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             v = container_env[n]
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
-    return subprocess.call(singularity, env=container_env)
+
+    try:
+        return subprocess.call(singularity, env=container_env)
+    finally:
+        for temp in temps:
+            shutil.rmtree(temp)
 
 
 def setup(type, distro, branch, system, name, base_directory, image,
