@@ -9,6 +9,35 @@ from casa_distro import __version__
 osp = os.path
 
 
+def build_win_run_script(out_file, container_bin_dir):
+    # (windows has no native singularity implementation, for now)
+    # build windows .bat script for windows hosts
+    exe = osp.basename(out_file)
+    win_dir = osp.join(osp.dirname(osp.dirname(out_file)), 'win_bin')
+    out_file = osp.join(win_dir, exe + '.bat')
+    print(out_file)
+    with open(out_file, 'w') as f:
+        os.chmod(out_file, 0o755)
+        print(r'''@setlocal
+@set bin_directory="%~d0%~p0"
+@set command="%~n0.exe"
+@set host_dir=
+@set casa_env_dir="%bin_directory%\..\.."
+@for %%F in ("%casa_env_dir%) do set casa_env_name=%%~nF
+@set container_dir="/casa/{bin_dir}"
+@set casa_distro_dir="%casa_env_dir%\.."
+@set host_container_dir="%casa_env_dir%\{bin_dir}"
+@set casa_distro="%host_container_dir%\casa_distro"
+@if exist "%casa_distro%" (
+    @"python.exe" "%casa_distro%" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
+@else (
+    @"python.exe" "-m" "casa_distro" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
+@endlocal
+'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+
+
 def build_run_script(out_file, container_bin_dir):
     print(out_file)
     with open(out_file, 'w') as f:
@@ -39,30 +68,8 @@ fi
 
 '''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
 
-    # build windows .bat script for windows hosts
-    exe = osp.basename(out_file)
-    out_file = osp.join(win_dir, exe + '.bat')
-    print(out_file)
-    with open(out_file, 'w') as f:
-        os.chmod(out_file, 0o755)
-        print(r'''@setlocal
-@set bin_directory="%~d0%~p0"
-@set command="%~n0.exe"
-@set host_dir=
-@set casa_env_dir="%bin_directory%\..\.."
-@for %%F in ("%casa_env_dir%) do set casa_env_name=%%~nF
-@set container_dir="/casa/{bin_dir}"
-@set casa_distro_dir="%casa_env_dir%\.."
-@set host_container_dir="%casa_env_dir%\{bin_dir}"
-@set casa_distro="%host_container_dir%\casa_distro"
-@if exist "%casa_distro%" (
-  @"python.exe" "%casa_distro%" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
-)
-@else (
-  @"python.exe" "-m" "casa_distro" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
-)
-@endlocal
-'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+    # (windows has no native singularity implementation, for now)
+    # build_win_run_script(out_file, container_bin_dir)
 
 
 mode = 'build'
@@ -96,18 +103,20 @@ if '-h' in sys.argv[1:]:
     from outside the container, the host machine must have a sh/bash shell
     installed, which is OK on any linux or Mac host.
 
-    For Windows hosts, casa_build_host_links also creates a set of .bat run
-    scripts in /casa/host/win_bin, which do the same but in a .bat language so
-    that windows machines understand them natively.
-
     Note that in the scripts, casa_distro is called without any particular
     options (gui, opengl, etc), so all needed options must be configured in the
     environment config (/casa/host/conf/casa_distro.json).
 
     After running this script, it is possible to set the host PATH to point to
-    the host_bin/ (or win_bin/ for windows) directory of the environment to run
+    the host_bin/ directory of the environment to run
     commands. ''' % mode)
     sys.exit(0)
+
+# '''
+#     For Windows hosts, casa_build_host_links also creates a set of .bat run
+#     scripts in /casa/host/win_bin, which do the same but in a .bat language
+#     so that windows machines understand them natively.
+# '''
 
 if mode == 'install':
     casa_build = '/casa/install'
@@ -131,12 +140,11 @@ exclude_programs = set([
 ])
 
 out_dir = osp.join(host_dir, 'host_bin')
-win_dir = osp.join(host_dir, 'win_bin')
-print('out_dir:', out_dir)
+# win_dir = osp.join(host_dir, 'win_bin')
 if not osp.isdir(out_dir):
     os.mkdir(out_dir)
-if not osp.isdir(win_dir):
-    os.mkdir(win_dir)
+# if not osp.isdir(win_dir):
+    # os.mkdir(win_dir)
 
 for exe in os.listdir(osp.join(casa_build, 'bin')):
     if exe in exclude_programs:
