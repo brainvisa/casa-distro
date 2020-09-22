@@ -94,6 +94,7 @@ $PIP3 install -U 'ipython~=5.9.0' 'ipykernel~=4.10.1' 'tornado~=4.5.3' \
 
 $PIP3 install 'nbsphinx~=0.4.3'
 $PIP3 install 'sphinx-gallery~=0.3.1'
+$PIP3 install -U 'pygments<3'
 
 
 # Re-install Python 2 packages whose binaries have been overwritten by
