@@ -327,7 +327,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         tmpdir = tempfile.mkdtemp(prefix='casa_singularity')
         script = osp.join(tmpdir, 'init.sh')
         forbidden = set(['HOME', 'SINGULARITYENV_HOME', 'PWD', 'PATH',
-                         'LD_LIBRARY_PATH'])
+                         'LD_LIBRARY_PATH', 'PYTHONPATH'])
         with open(script, 'w') as f:
             print('#!/bin/bash\n', file=f)
             for var, value in container_env.items():
