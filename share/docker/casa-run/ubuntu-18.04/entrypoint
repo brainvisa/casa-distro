@@ -4,8 +4,8 @@
 # (no --env option, --home doesn't work, SINGULARITYENV_something vars
 # are not transmitted). We work around this using a mount and a bash
 # script. Bidouille bidouille... ;)
-if [ -f "/casa/mac_bug/init.sh" ]; then
-    . /casa/mac_bug/init.sh
+if [ -f "/casa/start_scripts/init.sh" ]; then
+    . /casa/start_scripts/init.sh
 fi
 
 # Use the software-only mesa library install in /usr/local/lib as a fallback

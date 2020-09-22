@@ -338,7 +338,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
                         print('export %s="%s"' % (var, value), file=f)
             # --home does not work either
             print('export HOME=%s' % singularity_home, file=f)
-        container_options += ['--bind', '%s:/casa/mac_bug' % tmpdir]
+        container_options += ['--bind', '%s:/casa/start_scripts' % tmpdir]
         temps.append(tmpdir)
 
     singularity += container_options
