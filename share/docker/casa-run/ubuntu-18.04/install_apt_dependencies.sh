@@ -105,6 +105,11 @@ generally_useful_packages=(
     unzip
     wget
     xz-utils
+    lxterminal
+    leafpad
+    gpicview
+    vim
+    nano
 )
 
 # Dependencies of headless Anatomist
