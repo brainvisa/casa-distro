@@ -312,12 +312,16 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             container_env['SINGULARITYENV_XLIB_SKIP_ARGB_VISUALS'] = '1'
 
     if 'SINGULARITYENV_PS1' not in container_env \
-            and not [x for x in container_options if x.startswith('PS1=')] \
-            and singularity_has_option('--env'):
+            and not [x for x in container_options if x.startswith('PS1=')]:
         # the prompt with singularity 3 is ugly and cannot be overriden in the
         # .bashrc of the container.
-        container_options += ['--env',
-                              br'PS1=\[\033[33m\]\u@\h \$\[\033[0m\] ']
+        ps1 = br'\[\033[33m\]\u@\h \$\[\033[0m\] '
+        if singularity_has_option('--env'):
+            container_options += ['--env', 'PS1=%s' % ps1]
+        else:
+            container_env['SINGULARITYENV_PS1'] = ps1
+            if 'PS1' in container_env:
+                del container_env['PS1']
 
     if singularity_version()[:3] == [3, 3, 0] and sys.platform == 'darwin':
         # the beta of singularity 3.3 for Mac doesn't pass envars in any way
