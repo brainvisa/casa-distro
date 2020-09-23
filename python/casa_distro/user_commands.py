@@ -213,9 +213,7 @@ def setup_dev(distro=None,
         not 0, this will create an overlay.img file in the base environment
         directory. This file will contain the any modification done to the
         container file system.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     image
         default={image_default}
         Location of the virtual image for this environement.
@@ -230,6 +228,7 @@ def setup_dev(distro=None,
         Print more detailed information if value is "yes", "true" or "1".
 
     """
+
     verbose = verbose_file(verbose)
 
     if not container_type:
@@ -398,9 +397,7 @@ def setup(distro=None,
         not 0, this will create an overlay.img file in the base environment
         directory. This file will contain the any modification done to the
         container file system.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     image
         default={image_default}
         Location of the virtual image for this environement.
@@ -570,9 +567,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
     name
         If given, select environment by its name. It replaces type, distro,
         branch and system and is shorter to select one.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
@@ -621,69 +616,25 @@ def run(type=None, distro=None, branch=None, system=None,
     Start any command in a selected run or dev environment
 
     example:
-        casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+        casa_distro branch=master ls -als /casa
 
     Parameters
     ----------
-    type
-        If given, select environment having the given type.
-    distro
-        If given, select environment having the given distro name.
-    branch
-        If given, select environment having the given branch.
-    system
-        If given, select environments having the given system name.
-    name
-        If given, select environment by its name. It replaces type, distro,
-        branch and system and is shorter to select one.
-    version
-        If given, select environment by its version (only applicable to user
-        environments, not dev)
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
-    gui
-        default={gui_default}
-        If "no", "false" or "0", command is not using a graphical user
-        interface (GUI). Nothing is done to connect the container to a
-        graphical interface. This option may be necessary in context where
-        a graphical interface is not available.
-    opengl
-        default={opengl_default}
-        Setup different ways of trying to use OpenGL 3D rendering and GPU.
-        "auto", "container", "nv", or "software".
-        * "auto": performs auto-detection: same as "nv" if an NVidia device is
-        detected on a host linux system, otherwise same as "container", unless
-        we detect a case where that is known to fail (in which case we would
-        use "software").
-        * "container": passes no special options to Singularity: the mesa
-        installed in the container is used
-        * "nv" tries to mount the proprietary NVidia driver of the host (linux)
-        system in the container
-        * "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
-        rendering. This solution is the slowest but is a fallback when no other
-        solution works.
-    root
-        default={root_default}
-        If "yes", "true" or "1", start execution as system administrator. For
-        Singularity container, this requires administrator privileges on host
-        system.
-    cwd
-        default={cwd_default}
-        Set current working directory to the given value before launching
-        the command.
-    env
-        Comma separated list of environment variables to pass to the command.
-        Each variable must have the form name=value.
-    image
-        Force usage of a specific virtual image instead of the one defined
-        in the environment configuration.
-    container_options
-        Comma separated list of options to add to the command line used to
-        call the container system.
-    verbose
-        default={verbose_default}
-        Print more detailed information if value is "yes", "true" or "1".
+    {type}
+    {distro}
+    {branch}
+    {system}
+    {name}
+    {version}
+    {base_directory}
+    {gui}
+    {opengl}
+    {root}
+    {cwd}
+    {env}
+    {image}
+    {container_options}
+    {verbose}
     """
     verbose = verbose_file(verbose)
     gui = check_boolean('gui', gui)
@@ -740,9 +691,7 @@ def update(type=None, distro=None, branch=None, system=None, name=None,
         If given, select environment having the given branch.
     system
         If given, select environments having the given system name.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     writable
         size of a writable file system that can be used to make environement
         specific modification to the container file system. The size can be
@@ -807,9 +756,7 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
     name
         default=None
         Name of the environment.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     image
         default="*"
         Location of the virtual image for this environement.
@@ -890,9 +837,7 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
     image
         default="*"
         Location of the virtual image for this environement.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
@@ -919,6 +864,24 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
     '''
     Start a bash shell in the configured container with the given repository
     configuration.
+
+    Parameters
+    ----------
+    {type}
+    {distro}
+    {branch}
+    {system}
+    {name}
+    {version}
+    {base_directory}
+    {gui}
+    {opengl}
+    {root}
+    {cwd}
+    {env}
+    {image}
+    {container_options}
+    {verbose}
     '''
     run(type=type, distro=distro, branch=branch, system=system,
         name=name,
@@ -974,9 +937,7 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
     version
         If given, select environment by its version (only applicable to user
         environments, not dev)
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     gui
         default={gui_default}
         If "no", "false" or "0", command is not using a graphical user
@@ -1086,9 +1047,7 @@ def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
     name
         If given, select environment by its name. It replaces type, distro,
         branch and system and is shorter to select one.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     gui
         default={gui_default}
         If "no", "false" or "0", command is not using a graphical user
@@ -1183,9 +1142,7 @@ def clean_images(distro=None, branch=None, system=None, name=None, type=None,
     image
         default=None
         Location of the virtual image for this environement.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     interactive
         default={interactive_default}
         ask confirmation before deleting an image
@@ -1242,9 +1199,7 @@ def delete(type=None, distro=None, branch=None, system=None, name=None,
         If given, select environments having the given system name.
     name
         Name of the environment.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     interactive
         default={interactive_default}
         if true (or 1, or yes), ask confirmation interactively for each

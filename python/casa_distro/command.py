@@ -13,6 +13,7 @@ import sys
 from casa_distro.info import __version__
 from casa_distro.log import boolean_value
 from casa_distro import six
+from casa_distro.environment import casa_distro_directory
 
 
 def check_boolean(name, value):
@@ -37,6 +38,71 @@ def command(f, name=None):
     return f
 
 
+param_help = {
+    'base_directory': '''base_directory
+{indent}default={base_directory_default}
+{indent}Directory where images and environments are stored. This parameter
+{indent}can be passed on the commandline, or set via the
+{indent}CASA_DEFAULT_REPOSITORY environment variable.''',
+    'type': '''type
+{indent}If given, select environment having the given type.''',
+    'distro': '''distro
+{indent}If given, select environment having the given distro name.''',
+    'branch': '''branch
+{indent}If given, select environment having the given branch.''',
+    'system': '''system
+{indent}If given, select environments having the given system name.''',
+    'name': '''name
+{indent}If given, select environment by its name. It replaces type, distro,
+{indent}branch and system and is shorter to select one.''',
+    'gui': '''gui
+{indent}default={gui_default}
+{indent}If "no", "false" or "0", command is not using a graphical user
+{indent}interface (GUI). Nothing is done to connect the container to a
+{indent}graphical interface. This option may be necessary in context where
+{indent}a graphical interface is not available.''',
+    'opengl': '''opengl
+{indent}default={opengl_default}
+{indent}Setup different ways of trying to use OpenGL 3D rendering and GPU.
+{indent}"auto", "container", "nv", or "software".
+{indent}* "auto": performs auto-detection: same as "nv" if an NVidia device is
+{indent}detected on a host linux system, otherwise same as "container", unless
+{indent}we detect a case where that is known to fail (in which case we would
+{indent}use "software").
+{indent}* "container": passes no special options to Singularity: the mesa
+{indent}installed in the container is used
+{indent}* "nv" tries to mount the proprietary NVidia driver of the host (linux)
+{indent}system in the container
+{indent}* "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
+{indent}rendering. This solution is the slowest but is a fallback when no other
+{indent}solution works.''',
+    'cwd': '''cwd
+{indent}default={cwd_default}
+{indent}Set current working directory to the given value before launching
+{indent}the command.''',
+    'env': '''env
+{indent}Comma separated list of environment variables to pass to the command.
+{indent}Each variable must have the form name=value.''',
+    'image': '''image
+{indent}Force usage of a specific virtual image instead of the one defined
+{indent}in the environment configuration.''',
+    'container_options': '''container_options
+{indent}Comma separated list of options to add to the command line used to
+{indent}call the container system.''',
+    'verbose': '''verbose
+{indent}default={verbose_default}
+{indent}Print more detailed information if value is "yes", "true" or "1".''',
+    'root': '''root
+{indent}default={root_default}
+{indent}If "yes", "true" or "1", start execution as system administrator. For
+{indent}Singularity container, this requires administrator privileges on host
+{indent}system.''',
+    'version': '''version
+{indent}If given, select environment by its version (only applicable to user
+{indent}environments, not dev)''',
+}
+
+
 def get_doc(command, indent=''):
     doc = inspect.getdoc(command) or ''
 
@@ -45,7 +111,21 @@ def get_doc(command, indent=''):
                 for i, j in zip(cargs.args[-len(cargs.defaults or ()):],
                                 cargs.defaults or ())}
 
-    doc = doc.format(**defaults)
+    executable = osp.basename(sys.argv[0])
+    help_vars = dict(executable=executable,
+                     casa_version=__version__,
+                     base_directory_default=casa_distro_directory(),
+                     indent='    ')
+    help_vars.update(defaults)
+    r = re.compile('{([^}]+)}')
+    keys = set()
+    for text in param_help.values():
+        keys.update(r.findall(text))
+    help_vars.update({k: '' for k in keys if k not in help_vars})
+    help_vars.update({k: v.format(**help_vars)
+                      for k, v in param_help.items()})
+
+    doc = doc.format(**help_vars)
     if indent:
         doc = '\n'.join(indent + line for line in doc.split('\n'))
     return doc
@@ -64,12 +144,26 @@ def help(command=None):
         print(command_help)
     else:
         executable = osp.basename(sys.argv[0])
+
+        help_vars = dict(executable=executable,
+                         casa_version=__version__,
+                         base_directory_default=casa_distro_directory(),
+                         indent='        ')
+        r = re.compile('{([^}]+)}')
+        keys = set()
+        for text in param_help.values():
+            keys.update(r.findall(text))
+        help_vars.update({k: '' for k in keys if k not in help_vars})
+        help_vars.update({k: v.format(**help_vars)
+                          for k, v in param_help.items()})
+
         global_help = '''\
 Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
-See http://brainivsa.info/casa-distro for more information
+See http://brainivsa.info/casa-distro and
+https://github.com/brainvisa/casa-distro for more information
 
-Version : {version}
+Version : {casa_version}
 
 usage: {executable} [-v] [--version] <command> [<command parameters>...]
 
@@ -80,9 +174,13 @@ optional arguments:
                     If used after command name, display only the help of this
                     command.
 
+Common parameters:
+    Most commands accept more or less the same parameters.
+
+    {base_directory}
+
 Commands:
-'''.format(executable=executable,
-           version=__version__)
+'''.format(**help_vars)
 
         commands_summary = [global_help]
         for command in commands:
