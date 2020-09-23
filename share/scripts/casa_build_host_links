@@ -52,19 +52,28 @@ bin_directory="`cd \"$bin_directory\";pwd`"
 host_dir=$(dirname "$bin_directory")
 casa_env_dir=$(dirname "$host_dir")
 casa_distro_dir=$(dirname "$casa_env_dir")
-host_container_dir="$casa_env_dir/{bin_dir}"
-container_dir="/casa/{bin_dir}"
-casa_env_name=$(basename $casa_env_dir)
-casa_distro="$host_container_dir/casa_distro"
+
 if [ -n "$CASA_HOST_DIR" ]; then
     # inside container: direct run
     exec "$container_dir/$command" "$@"
-elif [ -x "$casa_distro" ]; then
-    # outside of container, and casa-distro can be found in the container
-    exec "$casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
 else
-    # casa_distro is installed outside of the container, use the PATH
-    exec "casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
+
+    container_dir="/casa/{bin_dir}"
+    casa_env_name=$(basename $casa_env_dir)
+    casa_distro="$bin_directory/casa_distro"
+    if [ ! -x "$casa_distro" ]; then
+        # casa_distro is not installed in the host_bin dir (should not happen)
+        host_container_dir="$casa_env_dir/{bin_dir}"
+        casa_distro="$host_container_dir/casa_distro"
+    fi
+
+    if [ -x "$casa_distro" ]; then
+        # outside of container, and casa-distro can be found in the container
+        exec "$casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
+    else
+        # casa_distro is installed outside of the container, use the PATH
+        exec "casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
+    fi
 fi
 
 '''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
@@ -92,9 +101,12 @@ def install_bv_casa_distro(out_host_dir, casa_build):
     print('casa_path:', casa_path)
     src_dir = osp.dirname(osp.dirname(casa_path))
 
-    bin_items = ['bin/bv']
-    py_items = ['python/casa_distro/__init__.py',
-                'python/casa_distro/info.py', 'python/casa_distro/bv']
+    # temporarily (until bv command exists...) copy whole casa_distro
+    bin_items = ['bin/casa_distro']
+    py_items = ['python/casa_distro']
+    # bin_items = ['bin/bv']
+    # py_items = ['python/casa_distro/__init__.py',
+    #             'python/casa_distro/info.py', 'python/casa_distro/bv']
 
     bin_fitems = [(osp.join(casa_build, item),
                    osp.join(out_host_dir, 'host_bin', item[4:]))
@@ -104,7 +116,7 @@ def install_bv_casa_distro(out_host_dir, casa_build):
     items = bin_fitems + py_fitems
     for item in items:
         src, dst = item
-        # print('copy:', src, '->', dst)
+        print('copy:', src, '->', dst)
         if not osp.exists(src):
             print(src, 'does not exist')
             continue
@@ -112,7 +124,9 @@ def install_bv_casa_distro(out_host_dir, casa_build):
         if not osp.exists(odir):
             os.makedirs(odir)
         if osp.isdir(src):
-            shutil.copytree(src, odir)
+            if osp.exists(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
         else:
             shutil.copy2(src, dst)
 
