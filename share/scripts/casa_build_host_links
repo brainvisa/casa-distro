@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import os
 import sys
+import shutil
 from casa_distro.info import __version__
 osp = os.path
 
@@ -15,7 +16,7 @@ def build_win_run_script(out_file, container_bin_dir):
     exe = osp.basename(out_file)
     win_dir = osp.join(osp.dirname(osp.dirname(out_file)), 'win_bin')
     out_file = osp.join(win_dir, exe + '.bat')
-    print(out_file)
+    # print(out_file)
     with open(out_file, 'w') as f:
         os.chmod(out_file, 0o755)
         print(r'''@setlocal
@@ -39,7 +40,7 @@ def build_win_run_script(out_file, container_bin_dir):
 
 
 def build_run_script(out_file, container_bin_dir):
-    print(out_file)
+    # print(out_file)
     with open(out_file, 'w') as f:
         os.chmod(out_file, 0o755)
         print('''#!/bin/sh
@@ -70,6 +71,50 @@ fi
 
     # (windows has no native singularity implementation, for now)
     # build_win_run_script(out_file, container_bin_dir)
+
+
+def install_bv_casa_distro(out_host_dir, casa_build):
+    '''
+    Copy the bv executable and needed libraries into a host-readable
+    filesystem, /casa/host/host_bin/ and /casa/host/python/
+
+    Parameters
+    ----------
+    out_host_dir: str
+        output base directory (/casa/host)
+    casa_build: str
+        directory where the software is installed inside the container
+        (/casa/host/build for a dev environment, or /casa/install for a
+        user one)
+    '''
+    import casa_distro
+    casa_path = osp.dirname(casa_distro.__file__)
+    print('casa_path:', casa_path)
+    src_dir = osp.dirname(osp.dirname(casa_path))
+
+    bin_items = ['bin/bv']
+    py_items = ['python/casa_distro/__init__.py',
+                'python/casa_distro/info.py', 'python/casa_distro/bv']
+
+    bin_fitems = [(osp.join(casa_build, item),
+                   osp.join(out_host_dir, 'host_bin', item[4:]))
+                  for item in bin_items]
+    py_fitems = [(osp.join(src_dir, item), osp.join(out_host_dir, item))
+                 for item in py_items]
+    items = bin_fitems + py_fitems
+    for item in items:
+        src, dst = item
+        # print('copy:', src, '->', dst)
+        if not osp.exists(src):
+            print(src, 'does not exist')
+            continue
+        odir = osp.dirname(dst)
+        if not osp.exists(odir):
+            os.makedirs(odir)
+        if osp.isdir(src):
+            shutil.copytree(src, odir)
+        else:
+            shutil.copy2(src, dst)
 
 
 mode = 'build'
@@ -124,6 +169,8 @@ if mode == 'install':
 else:
     casa_build = os.environ.get('CASA_%s' % mode.upper())
     container_bin_dir = 'host/build/bin'
+# container_bin_dir is the (relative) directory of the executables running
+# inside the container. It is relative to /casa.
 
 host_dir = '/casa/host'
 casa_hostdir = os.environ.get('CASA_HOST_DIR')
@@ -131,6 +178,7 @@ casa_hostdir = os.environ.get('CASA_HOST_DIR')
 if not casa_build or not casa_hostdir:
     raise RuntimeError('we don\'t seem to be inside a container, we should.')
 
+install_bv_casa_distro(host_dir, casa_build)
 
 exclude_programs = set([
     'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin',
