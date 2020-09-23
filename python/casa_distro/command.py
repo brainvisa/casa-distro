@@ -45,14 +45,19 @@ param_help = {
 {indent}can be passed on the commandline, or set via the
 {indent}CASA_DEFAULT_REPOSITORY environment variable.''',
     'type': '''type
+{indent}default={type_default}
 {indent}If given, select environment having the given type.''',
     'distro': '''distro
+{indent}default={distro_default}
 {indent}If given, select environment having the given distro name.''',
     'branch': '''branch
+{indent}default={branch_default}
 {indent}If given, select environment having the given branch.''',
     'system': '''system
+{indent}default={system_default}
 {indent}If given, select environments having the given system name.''',
     'name': '''name
+{indent}default={name_default}
 {indent}If given, select environment by its name. It replaces type, distro,
 {indent}branch and system and is shorter to select one.''',
     'gui': '''gui
