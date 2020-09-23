@@ -195,7 +195,15 @@ def create_ext3_file(filename, size):
                            'count={0}'.format(block_count)])
     tmp = tempfile.mkdtemp()
     try:
-        subprocess.check_call(['mkfs.ext3', '-d', tmp, filename])
+        try:
+            subprocess.check_call(['mkfs.ext3', '-d', tmp, filename])
+        except:
+            # -d option doesn't exist in all linuxes
+            subprocess.check_call(['mkfs.ext3', filename])
+            subprocess.check_call(
+                ['sudo', 'bash', '-c',
+                 'mount -t ext3 %s %s && mkdir %s/upper && mkdir %s/work '
+                 '&& umount %s' % (filename, tmp, tmp, tmp, tmp)])
     finally:
         os.rmdir(tmp)
 
