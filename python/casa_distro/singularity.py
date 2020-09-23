@@ -132,7 +132,7 @@ def create_user_image(base_image,
     {environment_directory}/host/install /casa/install
 
 %runscript
-    /casa/install/bin/bv_env "$@"
+    /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
 
 '''.format(base_image=base_image,
            environment_directory=dev_config['directory']))
