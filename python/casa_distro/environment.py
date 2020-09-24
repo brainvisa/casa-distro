@@ -181,7 +181,7 @@ def ext3_file_size(filename):
     return None
 
 
-def create_ext3_file(filename, size):
+def create_ext3_file(filename, size, container_image=None):
     block_size = 1024 * 1024
     block_count = int(size / block_size)
     if size % block_size != 0:
@@ -199,13 +199,38 @@ def create_ext3_file(filename, size):
             subprocess.check_call(['mkfs.ext3', '-d', tmp, filename])
         except:
             # -d option doesn't exist in all linuxes
-            subprocess.check_call(['mkfs.ext3', filename])
-            subprocess.check_call(
-                ['sudo', 'bash', '-c',
-                 'mount -t ext3 %s %s && mkdir %s/upper && mkdir %s/work '
-                 '&& umount %s' % (filename, tmp, tmp, tmp, tmp)])
+            #  maybe a better solution would be to use the downloaded image
+            # (normally containing ubuntu >= 18.04) to create the overlay.
+            # this would work even on mac or windows...
+            print('could not create the overlay filesystem without root '
+                  'permissions on the host system.')
+            done = False
+            if container_image:
+                container_type, image = container_image
+                if container_type == 'singularity':
+                    os.mkdir(osp.join(tmp, 'upper'))
+                    os.mkdir(osp.join(tmp, 'work'))
+                    cmd = ['singularity', 'run', '--bind', '/:/host', image,
+                           'mkfs.ext3', '-d', tmp,
+                           osp.join('/host', osp.relpath(filename, '/'))]
+                    try:
+                        print('trying using the container image')
+                        print(' '.join(cmd))
+                        subprocess.check_call(cmd)
+                        done = True
+                    except Exception as e:
+                        print(e)
+                        print('failed to create the overlay filesystem using '
+                              'the container image.')
+            if not done:
+                print('trying the old way, needing sudo permissions')
+                subprocess.check_call(['mkfs.ext3', filename])
+                subprocess.check_call(
+                    ['sudo', 'bash', '-c',
+                    'mount -t ext3 %s %s && mkdir %s/upper && mkdir %s/work '
+                    '&& umount %s' % (filename, tmp, tmp, tmp, tmp)])
     finally:
-        os.rmdir(tmp)
+        shutil.rmtree(tmp)
 
 
 def resize_ext3_file(filename, size):
@@ -536,7 +561,10 @@ def setup(metadata, writable,
         size = string_to_byte_count(writable)
         if size:
             overlay = osp.join(output, 'overlay.img')
-            create_ext3_file(overlay, size)
+            image_info = None
+            if 'container_type' in metadata and 'image' in metadata:
+                image_info = (metadata['container_type'], metadata['image'])
+            create_ext3_file(overlay, size, image_info)
 
 
 def setup_dev(metadata,
@@ -621,6 +649,9 @@ def update_environment(config, base_directory, writable, verbose):
                 resize_ext3_file(
                     overlay, int(size / 1024) + (1 if size % 1024 else 0))
             else:
+                image_info = None
+                if 'container_type' in config and 'image' in config:
+                    image_info = (config['container_type'], config['image'])
                 create_ext3_file(overlay, size)
         else:
             if os.path.exists(overlay):
