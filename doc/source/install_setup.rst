@@ -399,6 +399,8 @@ To update from changes in the image on server:
   docker pull is208614:5000/casa/system
 
 
+.. _troubleshooting:
+
 Troubleshooting
 ===============
 
@@ -450,38 +452,47 @@ Options are setup in the ``casa_distro.json`` file so you can check and edit the
 
 However it does not seem to work when ssh connections and remote display are involved.
 
+.. _sing_opengl:
+
 with singularity
 ++++++++++++++++
 
-By default OpenGL runs using a software Mesa library. It should work in "most" cases, but in a slow manner. On machines with nvidia graphics cards and nvidia proprietary drivers, singularity has an option ``"--nv"`` to handle it. Casa-distro will try to detect nvidia drivers, and if they are found, will set this option. Contrarily to the docker case above, this detection is done each time a container is started, and the option is hard-coded in options passed by casa_distro to singularity (not editable in the config file).
+There are several ways to use OpenGL in singularity, depending on the host system, the 3D hardware, the X server, the type of user/ssh connection.
 
-There are cases where adding the nvidia option makes things worse (see ssh connections below). If you ever need to disable the nvidia option, you can add an option ``container_options=--no-nv`` to ``run``, ``shell`` and other subcommands:
+Our container images include  a software-only Mesa implementation of OpenGL, which can be used if other solutions fail.
+
+Casa-distro tries to use "reasonable" settings but cannot always detect the best option. Thus the user can control the behavior using the ``opengl`` option in ``casa_distro run``, ``casa_distro shell``, ``casa_distro mrun`` and ``casa_distro bv_maker`` subcommands. This option can take several values: ``auto``, ``container``, ``nv``, or ``software``. The default is, of course, ``auto``.
+
+* ``auto``: performs auto-detection: same as ``nv`` if an NVidia device is
+detected on a host linux system, otherwise same as ``container``, unless
+we detect a case where that is known to fail (in which case we would
+use ``software``).
+* ``container``: passes no special options to Singularity: the mesa
+installed in the container is used
+* ``nv`` tries to mount the proprietary NVidia driver of the host (linux)
+system in the container
+* ``software`` sets ``LD_LIBRARY_PATH`` to use a software-only OpenGL
+rendering. This solution is the slowest but is a fallback when no other
+solution works.
+
+There are cases where the nvidia option makes things worse (see ssh connections below). If you ever need to disable the nvidia option, you can add an option ``opengl=software`` or ``opengl=container`` to ``run``, ``shell`` and other subcommands:
 
 .. code-block:: bash
 
-    casa_distro run container_options=--no-nv glxinfo
+    casa_distro run gui=1 opengl=software glxinfo
 
 If it is OK, you can set this option in the build workflow ``casa_distro.json`` config, under the ``"container_gui_env"`` key::
 
     {
-        "container_env": {
-        # ...
-        },
-        "system": "ubuntu-16.04",
-        "distro_source": "brainvisa",
-        "container_gui_env": {
-            "DISPLAY": "${DISPLAY}"
-        },
-        "container_mounts": {
-        # ...
-        },
-        # ...
+        "casa_distro_compatibility": "3",
+        "name": "brainvida-5.0",
+        "image": "/home/bilbo/casa_distro/brainvisa-5.0.sif",
+        "type": "user",
+        "system": "ubuntu-18.04",
+        "container_type": "singularity",
+        "distro": "brainvisa",
         "container_options": [
-            "--pwd",
-            "/casa/home"
-        ],
-        "container_gui_env": [
-            "--no-nv"
+            "--softgl",
         ],
         # ...
     }
@@ -492,12 +503,14 @@ Via a ssh connection:
         the ``XAUTHORITY`` env variable points to the ``.Xauthority`` file from
         the host user home directory).
     different host:
-        I personally could not make it work using the ``--nv`` option. But
+        I personally could not make it work using the ``nv`` option. But
         actually outside of casa-distro or any container, it doesn't work
         either. Remote GLX rendering has always been a very delicate thing...
 
         It works for me using the software Mesa rendering (slow). So at this point, using casa_distro actually makes it possible to render OpenGL when the host system cannot (or not directly)...
 
+
+.. _mac_sing_troubleshooting:
 
 On MacOS systems
 ----------------
@@ -505,7 +518,9 @@ On MacOS systems
 Singularity is not working, it's just doing nothing
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-We experienced this behaviour on MacOS 10.11 using Singularity Desktop 3.3-beta for Mac. We had to upgrade the system (to 10.15) and then it worked.
+Singularity for Mac is available as a beta at the time this document is written (but with no updates nor news in more than a year). It somewhat works but we sometimes ended up with a "silent" virtual machine which seems to do just nothing. But it should work in principle, and sometimes does ;)
+
+We experienced this behaviour on MacOS 10.11 using Singularity Desktop 3.3-beta for Mac. We had to upgrade the system (to 10.15) and then it worked. But then after a few days became silent again, for certain users, using certain images... but it still worked for our BrainVisa images...
 
 
 GUI is not working in singularity
@@ -525,4 +540,25 @@ Graphical commands (brainvisa, anatomist, others...) should run through a X11 se
         xhost +
 
     to enable other users / apps to use the graphical server (this will start Xquartz, if not already running). Note that this command needs to be run again each time the Xquartz server is stopped / restarted.
+* You should use the ``opengl=software`` option in ``casa_distro`` otherwise 3D will likely crash the programs.
 * now graphical applications should run inside singularity containers. 3D hardware is not used however, rendering is using a software rendering, so it is not fast.
+
+.. _mac_vbox_troubleshooting:
+
+VirtualBox images are crashing when booting
++++++++++++++++++++++++++++++++++++++++++++
+
+I personally had trouble getting the VirtualBox image to actually run on MacOS 10.15. The virtual machine consistently crashed at boot time. After inspecting the logs I found out that the sound card support might be the cause, and I had to use a "fake sound device" in the virtualbox image settings. Then it appeared that all graphics display was notably slow (either 2D and 3D), whatever video / accelerated 3D support options. And icons and fonts in the virtual machine were microscopic, almost impossible to read, and difficult if even possible to configure in the linux desktop. The "zoom factor x2" option in virtualbox was very handy for that, but reduced the actual resolution by a factor of 2 if I understand. Apart from these limitations, the software was running.
+
+
+.. _win_sing_troubleshooting:
+
+On Windows systems
+------------------
+
+Installing Singularity on Windows
++++++++++++++++++++++++++++++++++
+
+* Singularity may be a bit touchy to install on Windows, it needs Windows 10 with linux subsystem (WSL2) plus other internal options (hyper-V something). It's possible, not easy.
+* Once singularity is working, to be able to run graphical programs, a X server must be installed. Several ones exist for Windows, several are free, but most of them do not support hardware-accelerated 3D. `Xming <https://sourceforge.net/projects/xming/>`_ supports hardware acceleration, but has gone commercial. The latest free implementation was released in 2016, and seems to work. Microsoft is possibly working on another implementation.
+

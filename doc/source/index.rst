@@ -2,7 +2,9 @@
 Casa-Distro
 ===========
 
-This page contains informations for developpers. If you want to install simply casa-distro as a user, you can see :doc:`Quickstart page <quickstart>`
+This page contains mainly informations for developpers.
+
+If you want to install simply casa-distro as a user, you can see :doc:`Quickstart page <quickstart>`
 
 
 Overview
@@ -18,7 +20,7 @@ When these two projects decided to use the same development and software deliver
 What is Casa-Distro ?
 ---------------------
 
-**Short answer:** it's the way to run BrainVISA software in a containerized environment or a virtual machine.
+**Short answer:** it's the way to run or develop BrainVISA software in a containerized environment or a virtual machine.
 
 **Longer answer:**
 
@@ -26,6 +28,66 @@ It's a cross-platform environment which is used by users to install/use BrainVis
 It was not unusual to discover differences of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment.
 
 Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual applicance to host the compilation system. casa_distro supports two container technologies, `Singularity <https://www.sylabs.io/>`_ and `Docker <https://www.docker.com>`_ and one virtual machine technology : `VirtualBox <https://www.virtualbox.org/>`_.
+
+**Note**: in version 3.0 the support for Docker has been temporarily dropped (but should come back as soon as possible).
+
+.. role:: grey
+
++----------+-------------------------------------------+---------------+-----------------------------------------+
+|          | Singularity                               | Docker        | VirtualBox                              |
++----------+-------------------------------------------+---------------+-----------------------------------------+
+| Linux    | ✓                                         | :grey:`X`     | ✓                                       |
++----------+-------------------------------------------+---------------+-----------------------------------------+
+| Windows  | (✓ :ref:`(1) <win_sing_troubleshooting>`) | :grey:`\(X\)` | ✓                                       |
++----------+-------------------------------------------+---------------+-----------------------------------------+
+| Mac OS   | ✓ :ref:`(2) <mac_sing_troubleshooting>`   | :grey:`\(X\)` | ✓ :ref:`(3) <mac_vbox_troubleshooting>` |
++----------+-------------------------------------------+---------------+-----------------------------------------+
+
+
+Casa-Distro for users
+=====================
+
+Users will use Casa-Distro to install and run `BrainVISA <http://brainvisa.info>`_ software.
+
+See the :doc:`Quickstart page <quickstart>` for installation instructions.
+
+The containerization allows to have a single binary distribution for all host operating systems and versions.
+
+Once installed, a user can add to his account configuration ``PATH`` environment variable the ``host_bin`` directory of the installed *envrironment*.
+
+Unix bash shells (in ``$HOME/.bashrc`` for instance):
+
+.. code-block:: bash
+
+    export PATH="/home/user/casa_distro/brainvisa-5.0/host/host_bin:$PATH"
+
+This makes the ``bv`` command, and "shortcuts" to all executable commands of the BrainVISA distribution, available. ``bv`` allows to run the container and programs in the container, and handles all needed configuration.
+
+As programs are actually running in a container or a virtual machine (transparently), the user may have to configure additional mount points to actually see his data and working directories from his host machine in the container. This is done graphically, simply using:
+
+.. code-block:: bash
+
+    bv
+
+``bv`` can also be used to run all programs in the container:
+
+.. code-block:: bash
+
+    bv AimsFileInfo -h
+    bv anatomist
+    bv brainvisa
+
+or to open an interactive shell in the container:
+
+.. code-block::
+
+    bv shell
+
+More options may be used. :doc:`See the complete documentation of the bv command <bv_command>`.
+
+
+Casa-Distro for developers
+==========================
 
 .. Casa-distro project is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It contains all tools to create and publish the virtual images as well as tools for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
 
@@ -35,17 +97,6 @@ Therefore, it was decided to create casa-distro to provide a complete developmen
 ..   * I develop toolboxes, I need to build and release them as binary compatible with the official BrainVisa distrtibutions
 ..   * I am a contributor of Cati/BrainVisa environment, and need to get started quickly
 ..   * I am release maintainer of BrainVisa and need to produce a new release yesterday
-
-+----------+------------------------+---------+-------------+
-|          | Singularity            | Docker  | VirtualBox  |
-+----------+------------------------+---------+-------------+
-| Linux    | X                      | X       | X           |
-+----------+------------------------+---------+-------------+
-| Windows  | :ref:`(X (1)) <ref_1>` | \(X\)   | X           |
-+----------+------------------------+---------+-------------+
-| Mac OS   | :ref:`X (2) <ref_2>`   | \(X\)   | X           |
-+----------+------------------------+---------+-------------+
-
 
 
 What Casa-Distro is **not**
@@ -384,6 +435,13 @@ For OpenGL rendering problems may differ between docker and singularity. We trie
 
 Remember that software run that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the file ``container_options`` item in ``<casa_distro_environment>/host/conf/casa_distro.json``.
 
+
+:doc:`bv_command`
+=================
+
+.. toctree::
+
+    bv_command
 
 
 :doc:`casa_distro_command`

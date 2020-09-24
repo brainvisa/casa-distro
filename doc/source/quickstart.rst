@@ -1,8 +1,9 @@
-===========
-Casa-Distro
-===========
+======================
+Casa-Distro quickstart
+======================
 
-This page contains informations to quickly and simply install casa-distro. If you are a developper looking for more details about casa-distro and its installation, you can see :doc:`Casa-Distro overview<index>`
+This page contains informations to quickly and simply install casa-distro, and the `BrainVISA software distribution <http://brainvisa.info>`_ through casa-distro. If you are a developper looking for more details about casa-distro and its installation, you can see :doc:`Casa-Distro overview<index>`
+
 
 Quickstart Tutorial
 ===================
@@ -16,19 +17,26 @@ This is possible by the use of virtualization technology to create a virtual app
 
 Casa-Distro supports a container technology, `Singularity <https://www.sylabs.io/>`_ and a virtual machine technology : `VirtualBox <https://www.virtualbox.org/>`_.
 
-+----------+------------------------+-------------+
-|          | Singularity            | VirtualBox  |
-+----------+------------------------+-------------+
-| Linux    | X                      | X           |
-+----------+------------------------+-------------+
-| Windows  | :ref:`(X (1)) <ref_1>` | X           |
-+----------+------------------------+-------------+
-| Mac OS   | :ref:`X (2) <ref_2>`   | X           |
-+----------+------------------------+-------------+
+Support and installation instructions matrix
+--------------------------------------------
 
++----------+-------------------------------------------------------------+-------------------------------------------------------+
+|          | Singularity                                                 | VirtualBox                                            |
++----------+-------------------------------------------------------------+-------------------------------------------------------+
+| Linux    | :ref:`✓ <sing_linux>`                                       | :ref:`✓ <vbox>`                                       |
++----------+-------------------------------------------------------------+-------------------------------------------------------+
+| Windows  | (:ref:`✓ <sing_win>` :ref:`(1) <win_sing_troubleshooting>`) | :ref:`✓ <vbox>`                                       |
++----------+-------------------------------------------------------------+-------------------------------------------------------+
+| Mac OS   | :ref:`✓ <sing_mac>` :ref:`(2) <mac_sing_troubleshooting>`   | :ref:`✓ <vbox>` :ref:`(3) <mac_vbox_troubleshooting>` |
++----------+-------------------------------------------------------------+-------------------------------------------------------+
+
+.. _sing_linux:
+.. _sing_win:
+.. _sing_mac:
 
 Installation with singularity
 -----------------------------
+
 To use Casa-Distro with **singularity**, a user must have a system with
 the following characteristics:
 
@@ -44,11 +52,11 @@ the following characteristics:
 
   .. code-block:: bash
 
-      pip install casa_distro
+      pip install casa-distro
 
 * Setup an environment
 
-  Once installed, you can use the casa_distro command in your terminal to download a compiled image with open softwares and tools :
+  Once installed, you can use the ``casa_distro`` command in your terminal to download a compiled image with open software and tools :
 
   .. code-block:: bash
 
@@ -96,35 +104,61 @@ the following characteristics:
 
   3. Using ``casa_distro`` or ``bv`` interface to containers:
 
-    The ``casa_distro`` command accepts ``run`` or ``shell`` as sub-commands, they both allow to run programs installed inside the container, for instance:
+    * The ``bv`` command accepts ``shell`` or an executable program name as sub-commands, they both allow to run programs installed inside the container, for instance:
 
-    .. code-block:: bash
+      .. code-block:: bash
 
-        casa_distro run brainvisa
-        casa_distro run anatomist
-        casa_distro run AimsFileInfo -h
-        casa_distro shell
+          bv brainvisa
+          bv anatomist
+          bv AimsFileInfo -h
+          bv shell
+
+      As programs are actually running in a container or a virtual machine (transparently), the user may have to configure additional mount points to actually see his data and working directories from his host machine in the container. This is done graphically, simply using:
+
+      .. code-block:: bash
+
+          bv
+
+      Technically, ``bv`` is a simplified version of ``casa_distro`` which is contained inside a single *environment* (distribution installation) and only allows to run and configure this environment.
+
+    * The ``casa_distro`` command accepts ``run`` or ``shell`` as sub-commands, they both allow to run programs installed inside the container, for instance:
+
+      .. code-block:: bash
+
+          casa_distro run brainvisa
+          casa_distro run anatomist
+          casa_distro run AimsFileInfo -h
+          casa_distro shell
+
+      Compared to ``bv``, ``casa_distro`` allows to handle multiple *environments* (distribution installations) via parameters, and allows to setup (download/install) or remove environments or container images.
+
+      Note that ``bv`` is made available inside each environment (distribution installation) and makes an installation self-contained (it doesn't depend on a global host installation of ``bv`` outside of the environment directory), whereas ``casa_distro`` is cross-environments and thus needs to be installed on the host system. Note also that ``bv`` still depends on Python which still needs to be installed and working on the host machine.
+
+* see the :ref:`troubleshooting` section, especially the :ref:`OpenGL troubleshooting <sing_opengl>`, :ref:`Singularity on Mac <mac_sing_troubleshooting>` and :ref:`Singularity on Windows <win_sing_troubleshooting>` subsections.
+
+.. _vbox:
 
 Installation with VirtualBox
 ----------------------------
 To use Casa-Distro with **VirtualBox**
 
 * `VirtualBox <https://www.virtualbox.org/>`_ must be installed for the user of the system.
-* Download a VirtualBox image from brainvisa.info.fr
+* Download a VirtualBox image from http://brainvisa.info/casa-distro/releases/vbox/
+* start ``virtualbox``
+* in VirtualBox, import the downloaded image - some configuration (memory, CPU, video, sound etc) may be useful for it in VirtualBox.
+* some mount points to the host filesystem can be added to see the host filesystem directories from the VM.
+* start it
+* in the running Linux virtual machine, BrainVISA is installed and configured.  You can open a terminal and type:
+
+  .. code-block:: bash
+
+      AimsFileInfo -h
+      brainvisa
+      anatomist
+
+The virtual machine has a configured user named "brainvisa", with the password "brainvisa", which has ``sudo`` (admin) permissions.
+
+* see the :ref:`troubleshooting` section, especially the :ref:`VirtualBox on Mac <mac_vbox_troubleshooting>` subsection.
 
 
-Notes
------
 
-.. _ref_1:
-
-.. note:: Singularity on Windows
-
-    Singiularity may be a bit touchy to install on Windows, it needs Windows 10 with linux subsystem plus other internal options. It's possible, not easy.
-
-.. _ref_2:
-
-
-.. note:: Singularity on Mac
-
-    Singularity for Mac is available as a beta at the time this document is written. It somewhat works but we sometimes ended up with a "silent" virtual machine which seems to do just nothing. But it should work in principle, and sometimes does ;)
