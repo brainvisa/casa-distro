@@ -3,6 +3,16 @@
 Installation and setup
 ======================
 
+* The :doc:`quickstart` section explains how to install casa-distro and a released, compiled, version of BrainVISA. This is what a "regular user" needs.
+
+* Developers will need access to source and development tools. Thus instead of installing a "user" release of BrainVISA using the ``casa_distro setup`` command, they will rather install a developer image and setup. This is done (once casa-distro is installed) using the command ``casa_distro setup_dev``:
+
+  .. code-block:: bash
+
+      casa_distro setup_dev system=ubuntu-18.04 distro=brainvisa branch=master
+
+  This will setup an :ref:`environment` dedicated to development
+
 #. Install a container or virtual machine on your host system. Currently Singularity and VirtualBox are supported, probably Docker later.
 
 #. If needed, install Python on your host system

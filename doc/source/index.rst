@@ -79,7 +79,7 @@ As programs are actually running in a container or a virtual machine (transparen
 
 or to open an interactive shell in the container:
 
-.. code-block::
+.. code-block:: bash
 
     bv shell
 
@@ -123,7 +123,7 @@ Distributions
 casa-distro distributions
 +++++++++++++++++++++++++
 
-The casa-distro development environment is composed of two virtual images:
+The casa-distro development :ref:`environment` is composed of two virtual images:
 
 - **run image:** this image is used by end users to execute softwares distributed by BrainVISA and CATI. It is a Linux distribution where all the required system dependencies are already installed. This image is ready to be used with one of the casa-distro software distribution (see below).
 - **dev image:** this image is used by developers to build softwares distributed by BrainVISA and CATI. It is based on the run image and adds all dependencies required for building all projects.
@@ -434,6 +434,14 @@ For OpenGL rendering problems may differ between docker and singularity. We trie
     But soma-workflow distributed execution, in its current released version, will not spawn Docker or Singularity (or casa_distro run) in remote processing. We have made modifications in the `github/master branch <https://github.com/neurospin/soma-workflow>`_ (which is included in brainvisa/bug_fix branches) to add support for it. However it needs some additional configuration on server side to specify how to run the containers.
 
 Remember that software run that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the file ``container_options`` item in ``<casa_distro_environment>/host/conf/casa_distro.json``.
+
+
+:doc:`concepts`
+===============
+
+.. toctree::
+
+    concepts
 
 
 :doc:`bv_command`

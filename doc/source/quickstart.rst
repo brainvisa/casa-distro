@@ -2,7 +2,9 @@
 Casa-Distro quickstart
 ======================
 
-This page contains informations to quickly and simply install casa-distro, and the `BrainVISA software distribution <http://brainvisa.info>`_ through casa-distro. If you are a developper looking for more details about casa-distro and its installation, you can see :doc:`Casa-Distro overview<index>`
+This page contains informations to quickly and simply install casa-distro, and the `BrainVISA software distribution <http://brainvisa.info>`_ through casa-distro.
+
+If you are a developper looking for more details about casa-distro and its installation, you can follow the first steps here to install ``casa-distro``, but skip the ``casa_distro setup`` step, then follow the instructions in :doc:`install_setup`.
 
 
 Quickstart Tutorial
@@ -56,7 +58,7 @@ the following characteristics:
 
 * Setup an environment
 
-  Once installed, you can use the ``casa_distro`` command in your terminal to download a compiled image with open software and tools :
+  Once installed, you can use the ``casa_distro`` command in your terminal to download and install a compiled image with open software and tools :
 
   .. code-block:: bash
 
@@ -67,6 +69,8 @@ the following characteristics:
   .. code-block:: bash
 
       casa_distro setup distro=brainvisa version=5.0
+
+  This is the step which will actually install a BrainVISA software distribution.
 
 * Run programs from the container
 
