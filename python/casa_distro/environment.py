@@ -197,7 +197,7 @@ def create_ext3_file(filename, size, container_image=None):
     try:
         try:
             subprocess.check_call(['mkfs.ext3', '-d', tmp, filename])
-        except:
+        except Exception:
             # -d option doesn't exist in all linuxes
             #  maybe a better solution would be to use the downloaded image
             # (normally containing ubuntu >= 18.04) to create the overlay.
@@ -227,8 +227,8 @@ def create_ext3_file(filename, size, container_image=None):
                 subprocess.check_call(['mkfs.ext3', filename])
                 subprocess.check_call(
                     ['sudo', 'bash', '-c',
-                    'mount -t ext3 %s %s && mkdir %s/upper && mkdir %s/work '
-                    '&& umount %s' % (filename, tmp, tmp, tmp, tmp)])
+                     'mount -t ext3 %s %s && mkdir %s/upper && mkdir %s/work '
+                     '&& umount %s' % (filename, tmp, tmp, tmp, tmp)])
     finally:
         shutil.rmtree(tmp)
 
@@ -649,9 +649,6 @@ def update_environment(config, base_directory, writable, verbose):
                 resize_ext3_file(
                     overlay, int(size / 1024) + (1 if size % 1024 else 0))
             else:
-                image_info = None
-                if 'container_type' in config and 'image' in config:
-                    image_info = (config['container_type'], config['image'])
                 create_ext3_file(overlay, size)
         else:
             if os.path.exists(overlay):

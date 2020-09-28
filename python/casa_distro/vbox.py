@@ -181,10 +181,10 @@ def create_user_image(base_image,
                    file=verbose, flush=True)
     vm.run_user('mkdir /casa/install')
     vm.copy_user(install_dir, '/casa')
-    vm.run_user("/bin/sed -i '$a if [ -e /casa/install/bin/bv_env.sh ]\; "
-                "then source /casa/install/bin/bv_env.sh /casa/install\; fi' "
+    vm.run_user("/bin/sed -i '$a if [ -e /casa/install/bin/bv_env.sh ]\\; "
+                "then source /casa/install/bin/bv_env.sh /casa/install\\; fi' "
                 "/home/brainvisa/.bashrc")
-    #vm.remove(verbose=verbose)
+    # vm.remove(verbose=verbose)
 
 
 class VBoxMachine:
@@ -264,8 +264,8 @@ class VBoxMachine:
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
-                six.print_('Starting', self.name, 'and waiting for it to be ready',
-                          file=verbose, flush=True)
+                print('Starting', self.name, 'and waiting for it to be ready',
+                      file=verbose, flush=True)
             self.start(gui=gui)
             command = self._run_user_command('echo')
             for i in range(attempts):

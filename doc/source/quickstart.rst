@@ -163,6 +163,3 @@ To use Casa-Distro with **VirtualBox**
 The virtual machine has a configured user named "brainvisa", with the password "brainvisa", which has ``sudo`` (admin) permissions.
 
 * see the :ref:`troubleshooting` section, especially the :ref:`VirtualBox on Mac <mac_vbox_troubleshooting>` subsection.
-
-
-

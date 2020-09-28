@@ -571,4 +571,3 @@ Installing Singularity on Windows
 
 * Singularity may be a bit touchy to install on Windows, it needs Windows 10 with linux subsystem (WSL2) plus other internal options (hyper-V something). It's possible, not easy.
 * Once singularity is working, to be able to run graphical programs, a X server must be installed. Several ones exist for Windows, several are free, but most of them do not support hardware-accelerated 3D. `Xming <https://sourceforge.net/projects/xming/>`_ supports hardware acceleration, but has gone commercial. The latest free implementation was released in 2016, and seems to work. Microsoft is possibly working on another implementation.
-
