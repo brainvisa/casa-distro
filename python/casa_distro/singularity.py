@@ -315,7 +315,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             and not [x for x in container_options if x.startswith('PS1=')]:
         # the prompt with singularity 3 is ugly and cannot be overriden in the
         # .bashrc of the container.
-        ps1 = br'\[\033[33m\]\u@\h \$\[\033[0m\] '
+        ps1 = r'\[\033[33m\]\u@\h \$\[\033[0m\] '
         if singularity_has_option('--env'):
             container_options += ['--env', 'PS1=%s' % ps1]
         else:
