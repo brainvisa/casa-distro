@@ -370,6 +370,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
 
     try:
         return subprocess.call(singularity, env=container_env)
+    except KeyboardInterrupt:
+        pass  # avoid displaying a stack trace
     finally:
         for temp in temps:
             shutil.rmtree(temp)
