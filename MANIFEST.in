@@ -1,0 +1,20 @@
+# Files needed by casa_distro at runtime
+recursive-include etc *.bash
+recursive-include share/distro *.json
+graft share/scripts
+include share/svn.secret
+
+# Files that are needed only by casa_distro_admin
+exclude bin/casa_distro_admin
+exclude python/casa_distro/admin_commands.py
+prune share/docker
+
+# Development-only stuff
+exclude .editorconfig
+exclude .pre-commit-config.yaml
+exclude tox.ini
+prune tests
+
+# Documentation
+prune custom_project
+prune doc

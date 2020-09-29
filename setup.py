@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 packages = find_packages('python')
 
-scripts = ['bin/casa_distro', 'bin/casa_distro_admin']
+scripts = ['bin/casa_distro']
 
 here = os.path.abspath(os.path.dirname(__file__))
 release_info = {}

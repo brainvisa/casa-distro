@@ -25,3 +25,10 @@ repos:
         name: flake8 under python3
         language_version: python3
         exclude: ^doc/source/sphinxext/
+
+# Not ready yet
+# -   repo: https://github.com/mgedmin/check-manifest
+#     rev: "0.42"  # 0.43 needs recent git (--recurse-submodules option of
+#                  # git ls-files)
+#     hooks:
+#     -   id: check-manifest
