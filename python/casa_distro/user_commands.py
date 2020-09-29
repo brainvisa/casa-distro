@@ -929,9 +929,6 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
 @command
 def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
              base_directory=casa_distro_directory(),
-             gui=False,
-             opengl="auto",
-             cwd=None,
              env=None, image=None, container_options=[], args_list=[],
              verbose=None):
     '''
@@ -946,9 +943,6 @@ def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
     {system}
     {name}
     {base_directory}
-    {gui}
-    {opengl}
-    {cwd}
     {env}
     {image}
     {container_options}
@@ -959,9 +953,8 @@ def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
     return run(type=type, distro=distro, branch=branch, system=system,
                name=name,
                base_directory=base_directory,
-               gui=gui,
-               opengl=opengl,
-               cwd=cwd,
+               gui=False,
+               opengl="container",
                env=env,
                image=image,
                container_options=container_options,
