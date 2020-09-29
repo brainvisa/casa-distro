@@ -921,9 +921,11 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
                                  base_directory=base_directory,
                                  verbose=verbose))
 
-    if len([r != 0 for r in res]) == 0:
+    if all(r == 0 for r in res):
         return 0
-    return res
+    else:
+        sys.stderr.write('Exit codes: {0}\n'.format(res))
+        return max(res)
 
 
 @command
