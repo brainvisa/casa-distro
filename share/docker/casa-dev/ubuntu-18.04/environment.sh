@@ -32,5 +32,7 @@ PATH=${PATH}:/usr/local/bin:/casa/brainvisa-cmake/bin
 LD_LIBRARY_PATH=/casa/host/lib:${LD_LIBRARY_PATH}
 export PATH LD_LIBRARY_PATH
 if [ -f "${CASA_BUILD}/bin/bv_env.sh" ]; then
+    # need to update the path to help bv_env.sh to find out its installation
+    PATH="${CASA_BUILD}/bin:${PATH}"
     . "${CASA_BUILD}/bin/bv_env.sh"
 fi
