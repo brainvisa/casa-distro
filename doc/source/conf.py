@@ -259,11 +259,18 @@ try:
                                   bv_cmake_v.version_minor)
 except ImportError:
     pass
+try:
+    from soma_workflow import info as swf_v
+    swf_version = '%s.%s' % (swf_v.version_major, swf_v.version_minor)
+except ImportError:
+    pass
 
 # Example configuration for intersphinx: refer to the Python standard library.
 # intersphinx_mapping = {'http://docs.python.org/': None}
 
 extlinks = {
-    'bv-cmake': ('../brainvisa-cmake-' + bv_cmake_version + '%s',
+    'bv-cmake': ('../brainvisa-cmake-' + bv_cmake_version + '/%s',
                  'brainvisa cmake '),
+    'soma-workflow': ('../soma-workflow-' + swf_version + '/sphinx/%s',
+                      'Soma-Workflow '),
 }

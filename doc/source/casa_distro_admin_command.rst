@@ -1,6 +1,8 @@
-===============================================
-Creation and publication of casa-distro release
-===============================================
+=============================
+The casa_distro_admin command
+=============================
+
+Creation and publication of casa-distro releases and conainer images.
 
 A casa-distro release is done by a member of the BrainVISA team using the ``casa_distro_admin`` command. This document contains all the steps that are necessary to build and publish all versions of casa-distro images.
 

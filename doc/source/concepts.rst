@@ -89,7 +89,10 @@ environment name
 distro
 ======
 
-The identifier of the *distro*. It represents a set of software handled (installed or built) in the :ref:`environment`. There are a few predefined *distro* in cqsq-distro:
+The identifier of the *distro* (distribution). It represents a set of software handled (installed or built) in the :ref:`environment`. Software distributions managed by casa-distro are composed of many versioned software components
+(more than 50 at the time of this writing).
+
+There are a few predefined *distro* in casa-distro:
 
 * ``opensource``: brainvisa projects subset which are fully open-source and don't need a personal login/password to access the sources repositories. The contain the core libraries and software infrastructure (Aims, Anatomist, Axon, Soma-Workflow, Capsul, and more)
 * ``brainvisa``: all |bv| public distribution

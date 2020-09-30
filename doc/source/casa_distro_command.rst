@@ -1,6 +1,6 @@
-=============================
-Using the casa_distro command
-=============================
+=======================
+The casa_distro command
+=======================
 
 General syntax::
 
