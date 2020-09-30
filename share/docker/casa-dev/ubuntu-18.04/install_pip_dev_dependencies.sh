@@ -113,6 +113,8 @@ $PIP2 uninstall --yes jupyter-console
 $PIP2 uninstall --yes dipy
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
+# used to notify jenkins server
+$PIP2 install "python_jenkins==0.4.16"
 
 # Remove these programs, which hide the Python 2 versions installed by APT.
 sudo rm -f /usr/local/bin/nib-*
