@@ -2,6 +2,8 @@
 The casa_distro command
 =======================
 
+.. highlight:: bash
+
 General syntax::
 
     casa_distro <general options> <subcommand> <subcommand_options>
@@ -14,11 +16,6 @@ General and Common options
 
         casa_distro help
 
-``-r REPOSITORY``:
-    specify the base repository directory containing build workflows (default:
-    ``$HOME/casa_distro``).
-    This base directory may also be specified via an `environment variable <#environment-variables>`_: ``CASA_DEFAULT_REPOSITORY``
-
 ``-v``:
     verbose mode
 
@@ -28,15 +25,27 @@ General and Common options
 Many subcommands need build_workflows selection specifications:
 :ref:`how to specify a workflow <workflow_options>`
 
+Common parameters
+=================
+
+Most commands accept more or less the same parameters.
+
+base_directory:
+    default: ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+
+
 Subcommands
 ===========
 
+----
 help
 ----
 
 print help about casa_distro:
-
-.. highlight:: bash
 
 ::
 
@@ -48,90 +57,595 @@ or print help about a command:
 
     casa_distro help <command>
 
+------
 distro
 ------
 
-List all available distro and provide information for each one.
+List all available :ref:`distro` and provide information for each one.
 
 
+---------
 setup_dev
 ---------
 
 Create a new developer environment
 
+Parameters
+----------
+:ref:`distro`
+    default=None
+
+    Distro used to build this environment. This is typically "brainvisa",
+    "opensource" or "cati_platform". Use "casa_distro distro" to list all
+    currently available distro. Choosing a distro is mandatory to create a
+    new environment. If the environment already exists, distro must be set
+    only to reset configuration files to their default values.
+:ref:`branch`
+    default=latest_release
+
+    Name of the source branch to use for dev environments. Either
+    "latest_release", "master" or "integration".
+:ref:`system`
+    System to use with this environment. By default, it uses the first
+    supported system of the selected distro.
+:ref:`name <env_name>`
+    default={distro}-dev-{system}
+
+    Name of the environment. No other environment must have the same name
+    (including non developer environments).
+    This name may be used later to select the environment to run.
+container_type
+    default=None
+
+    Type of virtual appliance to use. Either "singularity", "vbox" or
+    "docker". If not given try to gues according to installed container
+    software in the following order : Singularity, VirtualBox and Docker.
+writable
+    size of a writable file system that can be used to make environement
+    specific modification to the container file system. The size can be
+    written in bytes as an integer, or in kilobytes with suffix "K", or in
+    megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+    not 0, this will create an overlay.img file in the base environment
+    directory. This file will contain the any modification done to the
+    container file system.
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+:ref:`image`
+    default={base_directory}/casa-dev-{system}{extension}
+
+    Location of the virtual image for this environement.
+url
+    default=http://brainvisa.info/casa-distro/{container_type}
+
+    URL where to download image if it is not found.
+output
+    default={base_directory}/{name}
+
+    Directory where the environement will be stored.
+verbose
+    default=True
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+-----
 setup
 -----
 
 Create a new user environment
 
+Parameters
+----------
+:ref:`distro`
+    default=None
+
+    Distro used to build this environment. This is typically "brainvisa",
+    "opensource" or "cati_platform". Use "casa_distro distro" to list all
+    currently available distro. Choosing a distro is mandatory to create a
+    new environment. If the environment already exists, distro must be set
+    only to reset configuration files to their default values.
+version
+    version of the distro to use. By default the release with highest
+    version is selected.
+:ref:`system`
+    System to use inside this environment.
+:ref:`name <env_name>`
+    default={distro}-{version}
+
+    Name of the environment. No other environment must have the same name
+    (including developer environments).
+    This name may be used later to select the environment to run.
+container_type
+    default=None
+
+    Type of virtual appliance to use. Either "singularity", "vbox" or
+    "docker". If not given try to gues according to installed container
+    software in the following order : Singularity, VirtualBox and Docker.
+writable
+    size of a writable file system that can be used to make environement
+    specific modification to the container file system. The size can be
+    written in bytes as an integer, or in kilobytes with suffix "K", or in
+    megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+    not 0, this will create an overlay.img file in the base environment
+    directory. This file will contain the any modification done to the
+    container file system.
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+:ref:`image`
+    default={base_directory}/{distro}-{version}{extension}
+
+    Location of the virtual image for this environement.
+url
+    default=http://brainvisa.info/casa-distro/releases/{container_type}
+
+    URL where to download image if it is not found.
+output
+    default={base_directory}/{name}
+
+    Directory where the environement will be stored.
+verbose
+    default=True
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+----
 list
 ----
 
-List (eventually selected) run or dev environments created by "setup" command.
+List run or dev environments created by "setup"/"setup_dev" command.
 
+Parameters
+----------
+:ref:`type <env_type>`
+    default=None
+
+    If given, select environment having the given type.
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+:ref:`name <env_name>`
+    default=None
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+verbose
+    default=None
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+---
 run
 ---
 
 Start any command in a selected run or dev environment
 
-
 example::
 
-    casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+    casa_distro branch=master ls -als /casa
 
+Parameters
+----------
+:ref:`type <env_type>`
+    default=None
+
+    If given, select environment having the given type.
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given distro name.
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+:ref:`name <env_name>`
+    default=None
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+version
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+gui
+    default=True
+
+    If ``no``, ``false`` or ``0``, command is not using a graphical user
+    interface (GUI). Nothing is done to connect the container to a
+    graphical interface. This option may be necessary in context where
+    a graphical interface is not available.
+opengl
+    default=auto
+
+    Setup different ways of trying to use OpenGL 3D rendering and GPU.
+    ``auto``, ``container``, ``nv``, or ``software``.
+
+    * ``auto``: performs auto-detection: same as ``nv`` if an NVidia device is detected on a host linux system, otherwise same as ``container``, unless we detect a case where that is known to fail (in which case we would use ``software``).
+    * ``container``: passes no special options to Singularity: the mesa installed in the container is used
+    * ``nv`` tries to mount the proprietary NVidia driver of the host (linux) system in the container
+    * ``software`` sets ``LD_LIBRARY_PATH`` to use a software-only OpenGL rendering. This solution is the slowest but is a fallback when no other solution works.
+root
+    default=False
+
+    If "yes", "true" or "1", start execution as system administrator. For
+    Singularity container, this requires administrator privileges on host
+    system.
+cwd
+    default= ``/casa/host/home``
+
+    Set current working directory to the given value before launching
+    the command.
+env
+    Comma separated list of environment variables to pass to the command.
+    Each variable must have the form name=value.
+:ref:`image`
+    Force usage of a specific virtual image instead of the one defined
+    in the environment configuration.
+container_options
+    Comma separated list of options to add to the command line used to
+    call the container system.
+verbose
+    default=None
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+------
 update
 ------
-
 Update an existing environment.
 
+This command allows a user to change some parameters of an existing
+environment. At the moment only the 'writable' parameter can be changed
+(see below).
 
-example::
+Parameters
+----------
+:ref:`type <env_type>`
+    default=None
 
-    casa_distro -r /home/casa run branch=bug_fix ls -als /casa
+    If given, select environment having the given type.
+:ref:`distro`
+    default=None
 
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+writable
+    size of a writable file system that can be used to make environement
+    specific modification to the container file system. The size can be
+    written in bytes as an integer, or in kilobytes with suffix "K", or in
+    megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+    not 0, this will create or resize an overlay.img file in the base
+    environment directory. This file will contain the any modification done
+    to the container file system. If size is 0, the overlay.img file is
+    deleted and all its content is lost.
+verbose
+    default=None
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+----------
 pull_image
 ----------
-
-Update the container images. By default all images that are used by at least
-one environment are updated. There are two ways of selecting the image(s)
-to be downloaded:
-
+Update the container images. By default all images that are used by at
+least one environment are updated. There are two ways of selecting the
+image(s) to be downloaded:
 
 1. filtered by environment, using the 'name' selector, or a combination of
     'distro', 'branch', and 'system'.
 
+2. directly specifying a full image name, e.g.::
+
+      casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+
+Parameters
+----------
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+:ref:`name <env_name>`
+    default=None
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+:ref:`image`
+    Force usage of a specific virtual image instead of the one defined
+    in the environment configuration.
+url
+    default=http://brainvisa.info/casa-distro/{container_type}
+
+    URL where to download image if it is not found.
+force
+    default=False
+
+    force re-download of images even if they are locally present and
+    up-to-date.
+verbose
+    default=None
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+-----------
+list_images
+-----------
+List the locally installed container images.
+There are two ways of selecting the image(s):
+
+1. filtered by environment, using the 'name' selector, or a combination of
+    'distro', 'branch', and 'system'.
 
 2. directly specifying a full image name, e.g.::
 
-        casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+      casa_distro pull_image image=casa-run-ubuntu-18.04.sif
 
-list_images
------------
+Parameters
+----------
+:ref:`distro`
+    default=None
 
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+:ref:`name <env_name>`
+    default=None
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+:ref:`type <env_type>`
+    default=None
+
+    If given, select environment having the given type.
+:ref:`image`
+    Force usage of a specific virtual image instead of the one defined
+    in the environment configuration.
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+verbose
+    default=None
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+-----
 shell
 -----
-
 Start a bash shell in the configured container with the given repository
 configuration.
 
+Parameters
+----------
+:ref:`type <env_type>`
+    default=None
 
+    If given, select environment having the given type.
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+:ref:`name <env_name>`
+    default=None
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+:ref:`version`
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+gui
+    default=True
+
+    If ``no``, ``false`` or ``0``, command is not using a graphical user
+    interface (GUI). Nothing is done to connect the container to a
+    graphical interface. This option may be necessary in context where
+    a graphical interface is not available.
+opengl
+    default=auto
+
+    Setup different ways of trying to use OpenGL 3D rendering and GPU.
+    ``auto``, ``container``, ``nv``, or ``software``.
+
+    * ``auto``: performs auto-detection: same as ``nv`` if an NVidia device is detected on a host linux system, otherwise same as ``container``, unless we detect a case where that is known to fail (in which case we would use ``software``).
+    * ``container``: passes no special options to Singularity: the mesa installed in the container is used
+    * ``nv`` tries to mount the proprietary NVidia driver of the host (linux) system in the container
+    * ``software`` sets ``LD_LIBRARY_PATH`` to use a software-only OpenGL rendering. This solution is the slowest but is a fallback when no other solution works.
+root
+    default=False
+
+    If "yes", "true" or "1", start execution as system administrator. For
+    Singularity container, this requires administrator privileges on host
+    system.
+cwd
+    default=None
+
+    Set current working directory to the given value before launching
+    the command.
+env
+    Comma separated list of environment variables to pass to the command.
+    Each variable must have the form name=value.
+:ref:`image`
+    Force usage of a specific virtual image instead of the one defined
+    in the environment configuration.
+container_options
+    Comma separated list of options to add to the command line used to
+    call the container system.
+verbose
+    default=None
+
+    Print more detailed information if value is "yes", "true" or "1".
+
+
+----
 mrun
 ----
-
 Start any command in one or several container with the given
 repository configuration. By default, command is executed in
 all existing build workflows.
 
-
 example::
 
     # Launch bv_maker on all build workflows using any version of Ubuntu
+
     casa_distro mrun bv_maker system=ubuntu-*
 
+Parameters
+----------
+:ref:`type <env_type>`
+    default=None
 
-The "conf" parameter may address an additional config dictionary within the
-casa_distro.json config file. Typically, a test config may use a different
-system image (casa-test images), or options, or mounted directories.
+    If given, select environment having the given type.
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+:ref:`name <env_name>`
+    default=None
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+:ref:`version`
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
+base_directory
+    default= ``$HOME/casa_build``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_DEFAULT_REPOSITORY`` environment variable.
+gui
+    default=True
+
+    If ``no``, ``false`` or ``0``, command is not using a graphical user
+    interface (GUI). Nothing is done to connect the container to a
+    graphical interface. This option may be necessary in context where
+    a graphical interface is not available.
+opengl
+    default=auto
+
+    Setup different ways of trying to use OpenGL 3D rendering and GPU.
+    ``auto``, ``container``, ``nv``, or ``software``.
+
+    * ``auto``: performs auto-detection: same as ``nv`` if an NVidia device is detected on a host linux system, otherwise same as ``container``, unless we detect a case where that is known to fail (in which case we would use ``software``).
+    * ``container``: passes no special options to Singularity: the mesa installed in the container is used
+    * ``nv`` tries to mount the proprietary NVidia driver of the host (linux) system in the container
+    * ``software`` sets ``LD_LIBRARY_PATH`` to use a software-only OpenGL rendering. This solution is the slowest but is a fallback when no other solution works.
+root
+    default=False
+
+    If "yes", "true" or "1", start execution as system administrator. For
+    Singularity container, this requires administrator privileges on host
+    system.
+cwd
+    default=None
+
+    Set current working directory to the given value before launching
+    the command.
+env
+    Comma separated list of environment variables to pass to the command.
+    Each variable must have the form name=value.
+:ref:`image`
+    Force usage of a specific virtual image instead of the one defined
+    in the environment configuration.
+container_options
+    Comma separated list of options to add to the command line used to
+    call the container system.
+verbose
+    default=None
+
+    Print more detailed information if value is "yes", "true" or "1".
 
 
 bv_maker
@@ -206,16 +720,16 @@ Workflow specification
 
 .. _conf_option:
 
-Alternative configurations
---------------------------
-
-in `run`_ and `shell`_ commands
-
-::
-
-    conf=test
-
-This selects the appropriate sub-configuration block in the configuration file of the build workflow. See :ref:`alt_configs`
+.. Alternative configurations
+.. --------------------------
+..
+.. in `run`_ and `shell`_ commands
+..
+.. ::
+..
+..     conf=test
+..
+.. This selects the appropriate sub-configuration block in the configuration file of the build workflow. See :ref:`alt_configs`
 
 
 Environment variables

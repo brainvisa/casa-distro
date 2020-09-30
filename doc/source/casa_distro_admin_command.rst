@@ -4,6 +4,27 @@ The casa_distro_admin command
 
 Creation and publication of casa-distro releases and conainer images.
 
+.. Distribution creation
+.. +++++++++++++++++++++
+..
+.. The creation of a distribution is a four steps process :
+..
+.. #. **Create release plan:** selection of the software components that
+..    are going to be upgraded in the next release of the distribution.
+.. #. **Apply release plan:** update the version of generic branches
+..    (*latest\_release*, *bug\_fix* and *trunk*) in the source code of all
+..    projects according to the release plan.
+.. #. **Compilation, testing and packaging:** creation of environments,
+..    tests execution and packages creation for the new distribution.
+.. #. **Distribution deployment:** make distributions and packages
+..    available for users.
+..
+.. All these steps are done by CASA admin team using ``casa_distro`` command. The
+.. release plan is discussed with distros managers and eventually modified before
+.. being applied. The current status of the release plan can be found on a
+.. `BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_.
+
+
 A casa-distro release is done by a member of the BrainVISA team using the ``casa_distro_admin`` command. This document contains all the steps that are necessary to build and publish all versions of casa-distro images.
 
 Creation a base VirtualBox image
