@@ -313,9 +313,10 @@ def iter_environments(base_directory, **filter):
         config['directory'] = directory
         config['mounts'] = {'/casa/host': '{directory}/host'}
         config['env'] = {
-            'CASA_DISTRO': '{name}',
+            'CASA_ENVIRONMENT': '{name}',
             'CASA_SYSTEM': '{system}',
             'CASA_HOST_DIR': '{directory}',
+            'CASA_DISTRO': '{distro}',
         }
         if 'bv_maker_branch' in config:
             config['env']['CASA_BRANCH'] = config['bv_maker_branch']

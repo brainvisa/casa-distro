@@ -253,6 +253,7 @@ latex_documents = [
 # latex_use_modindex = True
 
 bv_cmake_version = '1.0'
+swf_version = '1.0'
 try:
     from brainvisa.maker import version as bv_cmake_v
     bv_cmake_version = '%s.%s' % (bv_cmake_v.version_major,
