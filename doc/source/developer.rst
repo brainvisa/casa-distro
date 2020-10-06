@@ -23,7 +23,7 @@ Installation and setup
 
     git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
 
-  or by downloading a .zip from the github site using the download button or `clicking this link <https://github.com/brainvisa/casa-distro/archive/master.zip>`_.
+..   or by downloading a .zip from the github site using the download button or `clicking this link <https://github.com/brainvisa/casa-distro/archive/master.zip>`_.
 
   Once downloaded, no "install step" is required, you can use the casa_distro command directly::
 
