@@ -16,9 +16,13 @@ if [ "$SOFTWARE_OPENGL" = "1" ]; then
 fi
 export LD_LIBRARY_PATH
 
-# Source the environment that is defined in the casa-dev images, if it exists.
+# Source the environment that is defined in the casa-run and casa-dev images,
+# if they exist.
 if [ -f /casa/environment.sh ]; then
     . /casa/environment.sh
+fi
+if [ -f /casa/dev_environment.sh ]; then
+    . /casa/dev_environment.sh
 fi
 
 # This script runs the command passed as arguments in a sub-process.

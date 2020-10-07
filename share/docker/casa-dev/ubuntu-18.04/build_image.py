@@ -20,9 +20,9 @@ def install(base_dir, builder, verbose):
         builder.copy_root(osp.realpath(osp.join(base_dir, f)), '/opt')
     builder.run_root('chmod +x /opt/*.sh')
 
-    builder.copy_user(osp.join(base_dir, 'environment.sh'),
+    builder.copy_user(osp.join(base_dir, 'dev-environment.sh'),
                       '/casa')
-    builder.run_user('chmod a+rx /casa/environment.sh')
+    builder.run_user('chmod a+rx /casa/dev-environment.sh')
 
     builder.copy_user(osp.realpath(osp.join(base_dir, 'svn.secret')),
                       '/casa/host/conf')

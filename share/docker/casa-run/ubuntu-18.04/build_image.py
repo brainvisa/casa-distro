@@ -46,6 +46,10 @@ def install(base_dir, builder, verbose):
         builder.copy_root(osp.join(base_dir, f), '/opt')
     builder.run_root('chmod +x /opt/*.sh')
 
+    builder.copy_user(osp.join(base_dir, 'environment.sh'),
+                      '/casa')
+    builder.run_user('chmod a+rx /casa/environment.sh')
+
     if verbose:
         six.print_('Copying entrypoint in', builder.name,
                    file=verbose, flush=True)
