@@ -21,8 +21,8 @@ export LD_LIBRARY_PATH
 if [ -f /casa/environment.sh ]; then
     . /casa/environment.sh
 fi
-if [ -f /casa/dev_environment.sh ]; then
-    . /casa/dev_environment.sh
+if [ -f /casa/dev-environment.sh ]; then
+    . /casa/dev-environment.sh
 fi
 
 # This script runs the command passed as arguments in a sub-process.
