@@ -293,10 +293,10 @@ function _complete_casa_distro_()
             COMPREPLY=( "${COMPREPLY1[@]}" "${COMPREPLY[@]}" )
             ;;
         setup)
-            COMPREPLY=($(compgen -W "distro= version= name= container_type= image= writable= system= base_directory= url= output= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "distro= version= name= container_type= image= writable= system= base_directory= url= output= force= verbose=" -- "${word}"))
             ;;
         setup_dev)
-            COMPREPLY=($(compgen -W "distro= name= container_type= image= writable= branch= system= base_directory= url= output= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "distro= name= container_type= image= writable= branch= system= base_directory= url= output= force= verbose=" -- "${word}"))
             ;;
         list)
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= verbose=" -- "${word}"))

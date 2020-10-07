@@ -167,7 +167,7 @@ def distro():
 def setup_dev(distro=None,
               branch=default_branch,
               system=None,
-              name='{distro}-dev-{system}',
+              name='{distro}-{branch}-{system}',
               container_type=None,
               writable=None,
               base_directory=casa_distro_directory(),
@@ -176,6 +176,7 @@ def setup_dev(distro=None,
               output='{base_directory}/{name}',
               # vm_memory='8192',
               # vm_disk_size='131072',
+              force=False,
               verbose=True):
     """Create a new developer environment
 
@@ -223,11 +224,16 @@ def setup_dev(distro=None,
     output
         default={output_default}
         Directory where the environement will be stored.
+    force
+        default=False
+        force overwriting any existing matching environement. By default
+        casa_distro will refuse to overwrite an existing one.
     {verbose}
 
     """
 
     verbose = verbose_file(verbose)
+    force = check_boolean('force', force)
 
     if not container_type:
         if find_in_path('singularity'):
@@ -344,6 +350,7 @@ def setup_dev(distro=None,
                           writable=writable,
                           base_directory=base_directory,
                           output=output,
+                          force=force,
                           verbose=verbose)
 
 
@@ -360,6 +367,7 @@ def setup(distro=None,
           output='{base_directory}/{name}',
           # vm_memory='8192',
           # vm_disk_size='131072',
+          force=False,
           verbose=True):
     """Create a new user environment
 
@@ -405,10 +413,15 @@ def setup(distro=None,
     output
         default={output_default}
         Directory where the environement will be stored.
+    force
+        default=False
+        force overwriting any existing matching environement. By default
+        casa_distro will refuse to overwrite an existing one.
     {verbose}
 
     """
     verbose = verbose_file(verbose)
+    force = check_boolean('force', force)
 
     if not container_type:
         if find_in_path('singularity'):
@@ -519,6 +532,7 @@ def setup(distro=None,
                       writable=writable,
                       base_directory=base_directory,
                       output=output,
+                      force=force,
                       verbose=verbose)
 
     # run the script to generate run scripts from the host system

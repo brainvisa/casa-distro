@@ -540,12 +540,16 @@ export PS1="\[\033[33m\]\u@\h \$\[\033[0m\] "
 
 
 def setup(metadata, writable,
-          base_directory, output, verbose):
+          base_directory, output, force, verbose):
     '''
     Create a new run environment.
 
     '''
 
+    if not force and osp.exists(output):
+        raise ValueError(
+          'The environment "%s" to setup already exists. '
+          'Please choose another name, or use force=True' % metadata['name'])
     environment = {}
     environment.update(metadata)
     environment['casa_distro_compatibility'] = '3'
@@ -573,11 +577,13 @@ def setup_dev(metadata,
               writable,
               base_directory,
               output,
+              force,
               verbose):
     setup(metadata=metadata,
           writable=writable,
           base_directory=base_directory,
           output=output,
+          force=force,
           verbose=verbose)
 
     all_subdirs = ('conf', 'src', 'build', 'install',)
