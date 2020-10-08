@@ -257,6 +257,7 @@ def main():
                 args = []
             result = command(*args, **kwargs)
     except (ValueError, RuntimeError, NotImplementedError) as e:
+        raise
         print('ERROR:', e)
         result = os.EX_USAGE
     sys.exit(result)
