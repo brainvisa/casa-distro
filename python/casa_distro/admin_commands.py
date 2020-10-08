@@ -569,9 +569,11 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     verbose = verbose_file(verbose)
     update_casa_distro = boolean_value(update_casa_distro)
 
+    casa_distro_src = osp.expanduser('~/casa_distro/src')
+    casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
+
     if update_casa_distro:
         # Update casa_distro with git and restart with update_casa_distro=no
-        casa_distro_src = osp.expanduser('~/casa_distro/src')
         print('Update casa_distro in', casa_distro_src)
         subprocess.check_call(['git', '-C', casa_distro_src, 'pull'])
         res = subprocess.call([i for i in sys.argv
@@ -614,8 +616,11 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         run_configs[i] = (config, dev_config)
     dev_configs = list(dev_configs.values())
 
-    # For now just print images and environments
-    print('images:', ' '.join(images))
+    for image in images:
+        print('Update image', image)
+        subprocess.check_call([casa_distro, 'pull_image', 'image={0}'.format(image)])
+
+    # For now just print environments
     for config in dev_configs:
         print('dev:', config['name'])
     for config, dev_config in run_configs:
