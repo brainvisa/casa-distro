@@ -194,6 +194,48 @@ def singularity_has_option(option):
     return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
 
 
+def _guess_opengl_mode():
+    """Guess a working OpenGL configuration for opengl=auto.
+
+    See https://github.com/brainvisa/casa-distro/issues/160 for the rationale
+    behind this heuristic. If it does not work for you, please reopen that
+    issue.
+    """
+    # First, test if the X server is configured for the proprietary NVidia
+    # driver.
+    try:
+        stdoutdata = subprocess.check_output('xdpyinfo', bufsize=-1,
+                                             universal_newlines=True)
+    except OSError:
+        # xdpyinfo cannot be found
+        X_has_nvidia = False
+    except subprocess.CalledProcessError:
+        # xdpyinfo returned an error
+        X_has_nvidia = False
+    else:
+        X_has_nvidia = bool(re.match(r'^\s+NV-GLX\s*$', stdoutdata))
+
+    if X_has_nvidia:
+        if find_executable('nvidia-container-cli'):
+            # This is the option that provides best performance on
+            # NVidia hardware.
+            return 'nv'
+        else:
+            # Although Singularity supports --nv even without
+            # nvidia-container-cli, it has been found to generate random
+            # failures at runtime, see
+            # https://github.com/brainvisa/casa-distro/issues/153. Moreover,
+            # 'container' is not compatible with an NVidia-enabled X server, so
+            # we have to fall back to the software-only libGL that we install
+            # in casa-run images.
+            return 'software'
+    else:
+        # When the X is not using the proprietary NVidia driver, the
+        # in-container DRI-enabled OpenGL libraries seem to work. If we find
+        # corner-cases where they do not, we will need to add a quirk here.
+        return 'container'
+
+
 def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         base_directory, verbose):
     """Run a command in the Singularity container.
@@ -290,28 +332,27 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         gui_options = config.get('container_gui_options', [])
         if gui_options:
             container_options += [osp.expandvars(i) for i in gui_options]
-        # handle --nv option, if a nvidia device is found
-        if ('--nv' not in container_options
-            and opengl in ('auto', 'nv') and os.path.exists('/dev/nvidiactl')
-            and '--no-nv' not in container_options
-                and singularity_has_option('--nv')):
-            if opengl == 'nv' or find_executable('nvidia-container-cli'):
+
+        if opengl == 'auto':
+            opengl = _guess_opengl_mode()
+
+        # These options/environment variables can interfere, unset them.
+        while '--nv' in container_options:
+            container_options.remove('--nv')
+        container_env.pop('SINGULARITYENV_SOFTWARE_OPENGL', None)
+
+        if opengl == 'nv':
+            if '--nv' not in container_options:
                 container_options.append('--nv')
-        # remove --no-nv which is not a singularity option
-        if '--no-nv' in container_options:
-            container_options.remove('--no-nv')
-        # handle --softgl option
-        if '--softgl' in container_options:
-            # remove it, it's a fake option not for singularity
-            container_options.remove('--softgl')
-            if opengl == 'auto':
-                # force software mode
-                opengl = 'software'
-        if opengl in ('software', ):
-            # activate mesa path in enrypoint
+        elif opengl == 'software':
+            # activate mesa path in entrypoint
             container_env['SINGULARITYENV_SOFTWARE_OPENGL'] = '1'
             # this variable avoids to use "funny" transparent visuals
             container_env['SINGULARITYENV_XLIB_SKIP_ARGB_VISUALS'] = '1'
+        elif opengl == 'container':
+            pass  # nothing to do
+        else:
+            raise ValueError('Invalid value for the opengl option')
 
     if 'SINGULARITYENV_PS1' not in container_env \
             and not [x for x in container_options if x.startswith('PS1=')]:
