@@ -213,7 +213,7 @@ def _guess_opengl_mode():
         # xdpyinfo returned an error
         X_has_nvidia = False
     else:
-        X_has_nvidia = bool(re.match(r'^\s+NV-GLX\s*$', stdoutdata))
+        X_has_nvidia = bool(re.search(r'^\s+NV-GLX\s*$', stdoutdata, re.M))
 
     if X_has_nvidia:
         if find_executable('nvidia-container-cli'):
