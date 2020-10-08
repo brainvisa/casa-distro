@@ -194,6 +194,23 @@ def singularity_has_option(option):
     return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
 
 
+def _X_has_proprietary_nvidia():
+    """Test if the X server is configured for the proprietary NVidia driver.
+    """
+    try:
+        with open(os.devnull, 'w') as devnull:
+            stdoutdata = subprocess.check_output('xdpyinfo', bufsize=-1,
+                                                 stderr=devnull,
+                                                 universal_newlines=True)
+    except (OSError, subprocess.CalledProcessError):
+        # xdpyinfo cannot be found or returns an error. Stay on the safe side
+        # by returning False, which triggers the fallback to software
+        # rendering.
+        return False
+    else:
+        return bool(re.search(r'^\s+NV-GLX\s*$', stdoutdata, re.M))
+
+
 def _guess_opengl_mode():
     """Guess a working OpenGL configuration for opengl=auto.
 
@@ -201,38 +218,36 @@ def _guess_opengl_mode():
     behind this heuristic. If it does not work for you, please reopen that
     issue.
     """
-    # First, test if the X server is configured for the proprietary NVidia
-    # driver.
-    try:
-        stdoutdata = subprocess.check_output('xdpyinfo', bufsize=-1,
-                                             universal_newlines=True)
-    except OSError:
-        # xdpyinfo cannot be found
-        X_has_nvidia = False
-    except subprocess.CalledProcessError:
-        # xdpyinfo returned an error
-        X_has_nvidia = False
-    else:
-        X_has_nvidia = bool(re.search(r'^\s+NV-GLX\s*$', stdoutdata, re.M))
-
-    if X_has_nvidia:
+    # Although Singularity supports --nv even without nvidia-container-cli, it
+    # has been found to generate random failures at runtime, see
+    # https://github.com/brainvisa/casa-distro/issues/153.
+    if os.access('/dev/nvidiactl', os.R_OK | os.W_OK):
         if find_executable('nvidia-container-cli'):
-            # This is the option that provides best performance on
-            # NVidia hardware.
+            # This is the option that provides the best graphical performance
+            # on NVidia hardware, and enables the use of CUDA. It seems to work
+            # in all tested configurations (physical X server, CLI, Xvnc,
+            # x2go).
             return 'nv'
         else:
-            # Although Singularity supports --nv even without
-            # nvidia-container-cli, it has been found to generate random
-            # failures at runtime, see
-            # https://github.com/brainvisa/casa-distro/issues/153. Moreover,
-            # 'container' is not compatible with an NVidia-enabled X server, so
-            # we have to fall back to the software-only libGL that we install
-            # in casa-run images.
-            return 'software'
+            # Although Singularity supports --nv without nvidia-container-cli,
+            # it has been found to generate random failures at runtime, see
+            # https://github.com/brainvisa/casa-distro/issues/153.
+            if _X_has_proprietary_nvidia():
+                # In that case, we cannot fall back to 'container' because that
+                # is not compatible with a X server that has the proprietary
+                # NVidia module, so we have to fall back to the software-only
+                # libGL.
+                return 'software'
+            else:
+                # When nvidia-container-cli is not present, --nv causes
+                # systematic segfaults on a X server that is *not* configured
+                # to use the NVidia proprietary driver (such as Xvnc or x2go).
+                # It seems safe to fall back to 'container' in those cases.
+                return 'container'
     else:
-        # When the X is not using the proprietary NVidia driver, the
-        # in-container DRI-enabled OpenGL libraries seem to work. If we find
-        # corner-cases where they do not, we will need to add a quirk here.
+        # When the system does not have NVidia hardware, the in-container
+        # DRI-enabled OpenGL libraries seem to work in all cases. If we find
+        # cases where they do not, we will need to add a quirk here.
         return 'container'
 
 
@@ -333,26 +348,26 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         if gui_options:
             container_options += [osp.expandvars(i) for i in gui_options]
 
-        if opengl == 'auto':
-            opengl = _guess_opengl_mode()
+    if opengl == 'auto':
+        opengl = _guess_opengl_mode()
 
-        # These options/environment variables can interfere, unset them.
-        while '--nv' in container_options:
-            container_options.remove('--nv')
-        container_env.pop('SINGULARITYENV_SOFTWARE_OPENGL', None)
+    # These options/environment variables can interfere, unset them.
+    while '--nv' in container_options:
+        container_options.remove('--nv')
+    container_env.pop('SINGULARITYENV_SOFTWARE_OPENGL', None)
 
-        if opengl == 'nv':
-            if '--nv' not in container_options:
-                container_options.append('--nv')
-        elif opengl == 'software':
-            # activate mesa path in entrypoint
-            container_env['SINGULARITYENV_SOFTWARE_OPENGL'] = '1'
-            # this variable avoids to use "funny" transparent visuals
-            container_env['SINGULARITYENV_XLIB_SKIP_ARGB_VISUALS'] = '1'
-        elif opengl == 'container':
-            pass  # nothing to do
-        else:
-            raise ValueError('Invalid value for the opengl option')
+    if opengl == 'nv':
+        if '--nv' not in container_options:
+            container_options.append('--nv')
+    elif opengl == 'software':
+        # activate mesa path in entrypoint
+        container_env['SINGULARITYENV_SOFTWARE_OPENGL'] = '1'
+        # this variable avoids to use "funny" transparent visuals
+        container_env['SINGULARITYENV_XLIB_SKIP_ARGB_VISUALS'] = '1'
+    elif opengl == 'container':
+        pass  # nothing to do
+    else:
+        raise ValueError('Invalid value for the opengl option')
 
     if 'SINGULARITYENV_PS1' not in container_env \
             and not [x for x in container_options if x.startswith('PS1=')]:
