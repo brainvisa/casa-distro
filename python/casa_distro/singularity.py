@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+from distutils.spawn import find_executable
 import os
 import os.path as osp
 import sys
@@ -294,7 +295,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             and opengl in ('auto', 'nv') and os.path.exists('/dev/nvidiactl')
             and '--no-nv' not in container_options
                 and singularity_has_option('--nv')):
-            container_options.append('--nv')
+            if opengl == 'nv' or find_executable('nvidia-container-cli'):
+                container_options.append('--nv')
         # remove --no-nv which is not a singularity option
         if '--no-nv' in container_options:
             container_options.remove('--no-nv')
