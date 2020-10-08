@@ -20,6 +20,7 @@ from casa_distro.environment import (casa_distro_directory,
                                      run_container,
                                      select_environment,
                                      update_container_image)
+from casa_distro.jenkins import BrainVISAJenkins
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
@@ -518,31 +519,100 @@ def create_user_image(
                     metadata_file, output, url])
 
 
-def get_tests(casa_distro, config):
-    o = subprocess.check_output([casa_distro,
-                                 'run',
-                                 'name={0}'.format(config['name']),
-                                 'cwd={0}/host/build'.format(config['directory']),
-                                 'ctest', '--print-labels'])
-    labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
-    tests = {}
-    for label in labels:
-        o = subprocess.check_output([casa_distro,
+
+
+class BBIDaily:
+    def __init__(self,
+                 jenkins=None):
+        self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(), subprocess.check_output(['hostname']).strip())
+        self.casa_distro_src = osp.expanduser('~/casa_distro/src')
+        self.casa_distro = osp.join(self.casa_distro_src, 'bin', 'casa_distro')
+        self.jenkins = jenkins
+        if self.jenkins:
+            if not self.jenkins.job_exists(self.bbe_name):
+                self.jenkins.create_job(self.bbe_name)
+
+    def log(self, environment, task_name, result, log):
+        if self.jenkins:
+            self.jenkins.create_build(environment=environment,
+                task=task_name,
+                result=result,
+                log=log)
+        else:
+            name = '{0}:{1}'.format(environment, task_name)
+            print()
+            print('  /-' + '-' * len(name) + '-/')
+            print(' / ' + name + ' /')
+            print('/-' + '-' * len(name) + '-/')
+            print()
+            print(log)
+
+    def call_output(self, *args, **kwargs):
+        p = subprocess.Popen(*args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
+        log, nothing = p.communicate()
+        return p.returncode, log
+
+    def update_casa_distro(self):
+        result, log = self.call_output(['git', '-C', self.casa_distro_src, 'pull'])
+        self.log(self.bbe_name, 'update casa_distro', result, log)
+
+    def update_images(self, images):
+        log = []
+        for image in images:
+            result, output = self.call_output([self.casa_distro, 'pull_image', 'image={0}'.format(image)])
+            log.append(output)
+            if result:
+                break
+        self.log(self.bbe_name, 'update images', result, '\n'.join(log))
+
+    def bv_maker(self, config, steps):
+        environment = config['name']
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        distro=config['distro'],
+                                        branch=config['branch'],
+                                        system=config['system'])
+        for step in steps:
+            result, log = self.call_output([self.casa_distro,
+                                          'run',
+                                          'name={0}'.format(config['name']),
+                                          'bv_maker', step])
+            self.log(environment, step, result, log)
+
+    def get_test_commands(self, config):
+        '''
+        Given the config of a dev environment, return a dictionary
+        whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
+        values are a list of commands to run to perform the test.
+        '''
+        o = subprocess.check_output([self.casa_distro,
                                     'run',
                                     'name={0}'.format(config['name']),
                                     'cwd={0}/host/build'.format(config['directory']),
-                                    'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
-                                    'ctest', '-V', '-L', '^{0}$'.format(label)])
-        o = o.split('\n')
-        commands = [o[i+3][o[i+3].find(':')+2:].strip()
-                    for i in range(len(o))
-                    if ': Test command:' in o[i]]
-        tests[label] = commands
-    return tests
+                                    'ctest', '--print-labels'])
+        labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
+        tests = {}
+        for label in labels:
+            o = subprocess.check_output([self.casa_distro,
+                                        'run',
+                                        'name={0}'.format(config['name']),
+                                        'cwd={0}/host/build'.format(config['directory']),
+                                        'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
+                                        'ctest', '-V', '-L', '^{0}$'.format(label)])
+            o = o.split('\n')
+            commands = [o[i+3][o[i+3].find(':')+2:].strip()
+                        for i in range(len(o))
+                        if ': Test command:' in o[i]]
+            tests[label] = commands
+        return tests
 
 @command
 def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
               version=None,
+              jenkins_server=None,
+              jenkins_auth='{base_directory}/jenkins_auth',
+              jenkins_password=None,
               update_casa_distro=True,
               base_directory=casa_distro_directory(),
               verbose=None):
@@ -581,6 +651,16 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     {system}
     {name}
     {version}
+    jenkins_server
+        default = {jenkins_server_default}
+        Base URL of the Jenkins server used to send logs (e.g.
+        https://brainvisa.info/builds). If none is given, logs are
+        written to standard output.
+    jenkins_auth
+        default = {jenkins_auth_default}
+        Name of a file containing user name and password (can be a token)
+        to use to contact Jenkins server REST API. The file must have only
+        two lines with login on first line and password on second.
     update_casa_distro
         default = {update_casa_distro_default}
         If true, yes or 1, update casa_distro
@@ -591,13 +671,19 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     verbose = verbose_file(verbose)
     update_casa_distro = boolean_value(update_casa_distro)
 
-    casa_distro_src = osp.expanduser('~/casa_distro/src')
-    casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
+    if jenkins_server:
+        jenkins_auth = jenkins_auth.format(base_directory=base_directory)
+        jenkins_login, jenkins_password = [i.strip() for i in
+                                open(jenkins_auth).readlines()[:2]]
+        jenkins = BrainVISAJenkins(jenkins_server, jenkins_login,
+                                   jenkins_password)
+    else:
+        jenkins = None
+    bbi_daily = BBIDaily(jenkins=jenkins)
 
     if update_casa_distro:
         # Update casa_distro with git and restart with update_casa_distro=no
-        print('Update casa_distro in', casa_distro_src)
-        subprocess.check_call(['git', '-C', casa_distro_src, 'pull'])
+        bbi_daily.update_casa_distro()
         res = subprocess.call([i for i in sys.argv
                                if 'update_casa_distro' not in i] +
                                ['update_casa_distro=no'])
@@ -638,27 +724,11 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         run_configs[i] = (config, dev_config)
     dev_configs = list(dev_configs.values())
 
-    for image in images:
-        print('Update image', image)
-        subprocess.check_call([casa_distro, 'pull_image', 'image={0}'.format(image)])
+    bbi_daily.update_images(images)
 
-    # For now just print environments
-    from pprint import pprint
     for config in dev_configs:
-        print('dev:', config['name'])
-        pprint(get_tests(casa_distro, config))
+        bbi_daily.bv_maker(config, ['sources', 'configure', 'build', 'doc'])
 
     for config, dev_config in run_configs:
         print('run:', config['name'], '<--', dev_config['name'])
-        #res.append(run_container(config,
-                                 #command=command,
-                                 #gui=False,
-                                 #opengl='container',
-                                 #root=False,
-                                 #cwd=None,
-                                 #env=None,
-                                 #image=None,
-                                 #container_options=[],
-                                 #base_directory=base_directory,
-                                 #verbose=verbose))
 
