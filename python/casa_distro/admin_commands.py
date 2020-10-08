@@ -9,13 +9,14 @@ import os
 import os.path as osp
 from pprint import pprint
 import re
-from subprocess import check_call
-
+import subprocess
+import sys
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_download_url)
 from casa_distro.environment import (casa_distro_directory,
+                                     iter_environments,
                                      run_container,
                                      select_environment,
                                      update_container_image)
@@ -332,7 +333,7 @@ def publish_base_image(type,
     metadata['md5'] = file_hash(image)
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
 
-    check_call(['rsync', '-P', '--progress', '--chmod=a+r',
+    subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                 metadata_file, image,
                 'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
                 % container_type])
@@ -513,5 +514,121 @@ def create_user_image(
     if upload:
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
             '{container_type}'.format(**metadata)
-        check_call(['rsync', '-P', '--progress', '--chmod=a+r',
+        subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                     metadata_file, output, url])
+
+
+@command
+def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
+              version=None,
+              update_casa_distro=True,
+              base_directory=casa_distro_directory(),
+              verbose=None):
+    '''
+    In BrainVISA Build Infrastructure (BBI), there are be some machines
+    that are be targeted to do some builds and tests. This command is
+    used to perform these tasks and is be typically used in a crontab
+    on each machine. It does the following things (and log progress and
+    results in Jenkins server) :
+
+    - Update casa_distro to latest master version and restart for the next
+      steps
+    - Parse all configured environments selected with a filter as with mrun
+      command
+    - Update dev and run images used by selected environments from BrainVISA
+      site
+    - For all selected dev environments, perform the following tasks :
+        - bv_maker sources
+        - bv_maker configure
+        - bv_maker build
+        - bv_maker doc
+        - perform all tests (as bv_maker test)
+    - For all selected user environments
+        - find the corresponding dev environment
+        - recreate the user environment image with casa_distro_admin
+          create_user_image
+        - perform all tests defined in the correponding dev environment
+          but execute them in the user environment
+
+
+    Parameters
+    ----------
+    {type}
+    {distro}
+    {branch}
+    {system}
+    {name}
+    {version}
+    update_casa_distro
+        default = {update_casa_distro_default}
+        If true, yes or 1, update casa_distro
+    {base_directory}
+    {verbose}
+    '''
+
+    verbose = verbose_file(verbose)
+    update_casa_distro = boolean_value(update_casa_distro)
+
+    if update_casa_distro:
+        # Update casa_distro with git and restart with update_casa_distro=no
+        casa_distro_src = osp.expanduser('~/casa_distro/src')
+        print('Update casa_distro in', casa_distro_src)
+        subprocess.check_call(['git', '-C', casa_distro_src, 'pull'])
+        res = subprocess.call([i for i in sys.argv
+                               if 'update_casa_distro' not in i] +
+                               ['update_casa_distro=no'])
+        sys.exit(res)
+
+    # Parse selected environments
+    dev_configs = {}
+    run_configs = []
+    images = set()
+    for config in iter_environments(base_directory,
+                                    type=type,
+                                    distro=distro,
+                                    branch=branch,
+                                    system=system,
+                                    name=name,
+                                    version=version):
+        if config['type'] == 'dev':
+            key = (config['distro'], config['branch'], config['system'])
+            if key in dev_configs:
+                raise RuntimeError('Several dev environment found for '
+                                   'distro={0}, branch={1} and '
+                                   'system={1}'.format(*key))
+            dev_configs[key] = config
+            images.add(config['image'])
+        elif config['type'] == 'run':
+            run_configs.append(config)
+            images.add(config['image'])
+
+    # Associate run environments to corresponding dev environment
+    for i in range(len(run_configs)):
+        config = run_configs[i]
+        key = (config['distro'], u'master', config['system'])
+        dev_config = dev_configs.get(key)
+        if dev_config is None:
+            raise RuntimeError('No dev environment found for '
+                                'distro={0}, branch={1} and '
+                                'system={1}'.format(*key))
+        run_configs[i] = (config, dev_config)
+    dev_configs = list(dev_configs.values())
+
+    # For now just print images and environments
+    print('images:', ' '.join(images))
+    for config in dev_configs:
+        print('dev:', config['name'])
+    for config, dev_config in run_configs:
+        print('run:', config['name'], '<--', dev_config['name'])
+        #res.append(run_container(config,
+                                 #command=command,
+                                 #gui=False,
+                                 #opengl='container',
+                                 #root=False,
+                                 #cwd=None,
+                                 #env=None,
+                                 #image=None,
+                                 #container_options=[],
+                                 #base_directory=base_directory,
+                                 #verbose=verbose))
+

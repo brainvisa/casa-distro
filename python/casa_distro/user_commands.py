@@ -820,7 +820,9 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
           opengl="auto",
           root=False,
           cwd=None,
-          env=None, image=None, container_options=[], args_list=['-norc'],
+          env=None, image=None,
+          container_options=[],
+          args_list=['-norc'],
           verbose=None):
     '''
     Start a bash shell in the configured container with the given repository
