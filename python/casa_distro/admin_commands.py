@@ -518,6 +518,28 @@ def create_user_image(
                     metadata_file, output, url])
 
 
+def get_tests(casa_distro, config):
+    o = subprocess.check_output([casa_distro,
+                                 'run',
+                                 'name={0}'.format(config['name']),
+                                 'cwd={0}/host/build'.format(config['directory']),
+                                 'ctest', '--print-labels'])
+    labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
+    tests = {}
+    for label in labels:
+        o = subprocess.check_output([casa_distro,
+                                    'run',
+                                    'name={0}'.format(config['name']),
+                                    'cwd={0}/host/build'.format(config['directory']),
+                                    'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
+                                    'ctest', '-V', '-L', '^{0}$'.format(label)])
+        o = o.split('\n')
+        commands = [o[i+3][o[i+3].find(':')+2:].strip()
+                    for i in range(len(o))
+                    if ': Test command:' in o[i]]
+        tests[label] = commands
+    return tests
+
 @command
 def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
               version=None,
@@ -621,8 +643,11 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         subprocess.check_call([casa_distro, 'pull_image', 'image={0}'.format(image)])
 
     # For now just print environments
+    from pprint import pprint
     for config in dev_configs:
         print('dev:', config['name'])
+        pprint(get_tests(casa_distro, config))
+
     for config, dev_config in run_configs:
         print('run:', config['name'], '<--', dev_config['name'])
         #res.append(run_container(config,
