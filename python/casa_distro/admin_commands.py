@@ -11,6 +11,7 @@ from pprint import pprint
 import re
 import subprocess
 import sys
+import time
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
@@ -532,12 +533,14 @@ class BBIDaily:
             if not self.jenkins.job_exists(self.bbe_name):
                 self.jenkins.create_job(self.bbe_name)
 
-    def log(self, environment, task_name, result, log):
+    def log(self, environment, task_name, result, log,
+            duration=None):
         if self.jenkins:
             self.jenkins.create_build(environment=environment,
                 task=task_name,
                 result=result,
-                log=log)
+                log=log,
+                duration=duration)
         else:
             name = '{0}:{1}'.format(environment, task_name)
             print()
@@ -553,17 +556,26 @@ class BBIDaily:
         return p.returncode, log
 
     def update_casa_distro(self):
+        start = time.time()
         result, log = self.call_output(['git', '-C', self.casa_distro_src, 'pull'])
-        self.log(self.bbe_name, 'update casa_distro', result, log)
+        duration = int(1000 * (time.time() - start))
+        self.log(self.bbe_name, 'update casa_distro',
+                 result, log,
+                 duration=duration)
 
     def update_images(self, images):
+        start = time.time()
         log = []
         for image in images:
             result, output = self.call_output([self.casa_distro, 'pull_image', 'image={0}'.format(image)])
             log.append(output)
             if result:
                 break
-        self.log(self.bbe_name, 'update images', result, '\n'.join(log))
+        duration = int(1000 * (time.time() - start))
+        self.log(self.bbe_name,
+                 'update images',
+                 result, '\n'.join(log),
+                 duration=duration)
 
     def bv_maker(self, config, steps):
         environment = config['name']
@@ -574,11 +586,13 @@ class BBIDaily:
                                         branch=config['branch'],
                                         system=config['system'])
         for step in steps:
+            start = time.time()
             result, log = self.call_output([self.casa_distro,
                                           'run',
                                           'name={0}'.format(config['name']),
                                           'bv_maker', step])
-            self.log(environment, step, result, log)
+            duration = int(1000 * (time.time() - start))
+            self.log(environment, step, result, log, duration=duration)
 
     def get_test_commands(self, config):
         '''
