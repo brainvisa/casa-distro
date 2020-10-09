@@ -364,7 +364,7 @@ def setup(distro=None,
           container_type=None,
           writable=None,
           base_directory=casa_distro_directory(),
-          image='{base_directory}/{distro}-{version}{extension}',
+          image='{base_directory}/releases/{distro}-{version}{extension}',
           url=default_download_url + '/releases/{container_type}',
           output='{base_directory}/{name}',
           # vm_memory='8192',
@@ -453,7 +453,7 @@ def setup(distro=None,
     if distro is None or version is None or system is None:
         selected = None
         for metadata_file in glob.glob(osp.join(base_directory,
-                                                'run', '*.json')):
+                                                'releases', '*.json')):
             metadata = json.load(open(metadata_file))
             if ((distro is None or distro == metadata['distro'])
                 and (version is None or version == metadata['version'])
@@ -470,7 +470,7 @@ def setup(distro=None,
                 'to select one')
         distro = selected['distro']
         version = selected['version']
-        system = selected['version']
+        system = selected['system']
     else:
         selected = {
             'distro': distro,
@@ -825,7 +825,7 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
           args_list=['-norc'],
           verbose=None):
     '''
-    Start a bash shell in the configured container with the given repository
+    Start a bash shell in the configured container with the given pository
     configuration.
 
     Parameters

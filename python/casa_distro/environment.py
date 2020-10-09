@@ -505,7 +505,9 @@ def select_environment(base_directory, **kwargs):
             'Several distros found, use a more selective criterion: {0}'
             .format(', '.join(i['name'] for i in env_list))
         )
-    raise ValueError('Cannot find any distro to perform requested action')
+    raise ValueError('Cannot find any distro to perform requested action. '
+                     'base_directory="{0}", selection={1}'.format(
+                         base_directory, kwargs))
 
 
 def write_environment_homedir(casa_home_host_path):
