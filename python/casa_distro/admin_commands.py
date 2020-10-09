@@ -783,10 +783,10 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         run_configs[i] = (config, dev_config)
     dev_configs = list(dev_configs.values())
 
-    #bbi_daily.update_images(images)
+    bbi_daily.update_images(images)
 
     for config in dev_configs:
-        #bbi_daily.bv_maker(config, ['sources', 'configure', 'build', 'doc'])
+        bbi_daily.bv_maker(config, ['sources', 'configure', 'build', 'doc'])
         bbi_daily.tests(config, config)
 
     for config, dev_config in run_configs:
