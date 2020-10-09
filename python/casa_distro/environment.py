@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 
 from casa_distro import (share_directories,
                          singularity,
@@ -721,3 +722,167 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
                       container_options=container_options,
                       base_directory=base_directory,
                       verbose=verbose)
+
+class BBIDaily:
+    def __init__(self,
+                 jenkins=None):
+        self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(),
+                                subprocess.check_output(['hostname']).strip())
+        self.casa_distro_src = osp.expanduser('~/casa_distro/src')
+        self.casa_distro = osp.join(self.casa_distro_src, 'bin',
+                                    'casa_distro')
+        self.casa_distro_admin = self.casa_distro + '_admin'
+        self.jenkins = jenkins
+        if self.jenkins:
+            if not self.jenkins.job_exists(self.bbe_name):
+                self.jenkins.create_job(self.bbe_name)
+
+    def log(self, environment, task_name, result, log,
+            duration=None):
+        if self.jenkins:
+            self.jenkins.create_build(environment=environment,
+                task=task_name,
+                result=result,
+                log=log,
+                duration=duration)
+        else:
+            name = '{0}:{1}'.format(environment, task_name)
+            print()
+            print('  /-' + '-' * len(name) + '-/')
+            print(' / ' + name + ' /')
+            print('/-' + '-' * len(name) + '-/')
+            print()
+            print(log)
+
+    def call_output(self, *args, **kwargs):
+        p = subprocess.Popen(*args, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, **kwargs)
+        log, nothing = p.communicate()
+        return p.returncode, log
+
+    def update_casa_distro(self):
+        start = time.time()
+        result, log = self.call_output(['git',
+                                        '-C', self.casa_distro_src,
+                                        'pull'])
+        duration = int(1000 * (time.time() - start))
+        self.log(self.bbe_name, 'update casa_distro',
+                 result, log,
+                 duration=duration)
+        return result == 0
+
+    def update_base_images(self, images):
+        start = time.time()
+        log = []
+        for image in images:
+            result, output = self.call_output([self.casa_distro,
+                                               'pull_image',
+                                               'image={0}'.format(image)])
+            log.append(output)
+            if result:
+                break
+        duration = int(1000 * (time.time() - start))
+        self.log(self.bbe_name,
+                 'update images',
+                 result, '\n'.join(log),
+                 duration=duration)
+        return result == 0
+
+    def bv_maker(self, config, steps):
+        environment = config['name']
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        distro=config['distro'],
+                                        branch=config['branch'],
+                                        system=config['system'])
+        for step in steps:
+            start = time.time()
+            result, log = self.call_output([self.casa_distro,
+                                          'run',
+                                          'name={0}'.format(config['name']),
+                                          'bv_maker', step])
+            duration = int(1000 * (time.time() - start))
+            self.log(environment, step, result, log, duration=duration)
+            if result:
+                break
+        return result == 0
+
+    def tests(self, test_config, dev_config):
+        environment = test_config['name']
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        **test_config)
+        tests = self.get_test_commands(dev_config)
+        failed_tests = set()
+        for test, commands in tests.items():
+            log= []
+            start = time.time()
+            success = True
+            for command in commands:
+                if test_config['type'] == 'run':
+                    command = command.replace('/casa/host/build/bin/bv_env',
+                                              '/casa/install/bin/bv_env')
+                result, output = self.call_output([self.casa_distro,
+                    'run',
+                    'name={0}'.format(test_config['name']),
+                    'env=BRAINVISA_TEST_RUN_DATA_DIR=/casa/host/tests/test,'
+                    'BRAINVISA_TEST_REF_DATA_DIR=/casa/host/tests/ref',
+                    '--',
+                    'sh', '-c', command])
+                if result:
+                    success = False
+                    failed_tests.add(test)
+                    log.append('FAILED: {0}\n'.format(command))
+                    log.append('-' * 80)
+                    log.append(output)
+                    log.append('=' * 80)
+                else:
+                    log.append('SUCCESS: {0}\n'.format(command))
+            duration = int(1000 * (time.time() - start))
+            self.log(environment, test, (0 if success else 1),
+                     '\n'.join(log), duration=duration)
+        if failed_tests:
+            self.log(environment, 'tests failed', 1,
+                     'The following tests failed: {0}'.format(
+                         ', '.join(failed_tests)))
+        return not failed_tests
+
+    def get_test_commands(self, config):
+        '''
+        Given the config of a dev environment, return a dictionary
+        whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
+        values are a list of commands to run to perform the test.
+        '''
+        o = subprocess.check_output([self.casa_distro,
+                            'run',
+                            'name={0}'.format(config['name']),
+                            'cwd={0}/host/build'.format(config['directory']),
+                            'ctest', '--print-labels'])
+        labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
+        tests = {}
+        for label in labels:
+            o = subprocess.check_output([self.casa_distro,
+                            'run',
+                            'name={0}'.format(config['name']),
+                            'cwd={0}/host/build'.format(config['directory']),
+                            'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
+                            'ctest', '-V', '-L', '^{0}$'.format(label)])
+            o = o.split('\n')
+            commands = [o[i+3][o[i+3].find(':')+2:].strip()
+                        for i in range(len(o))
+                        if ': Test command:' in o[i]]
+            tests[label] = commands
+        return tests
+
+    def update_user_image(self, user_config, dev_config):
+        start = time.time()
+        result, log = self.call_output([self.casa_distro_admin,
+                                'create_user_image',
+                                'version={0}'.format(user_config['version']),
+                                'name={0}'.format(dev_config['name'])])
+        duration = int(1000 * (time.time() - start))
+        self.log(user_config['name'], 'update user image', result, log)
+        return result == 0
+
