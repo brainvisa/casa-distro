@@ -276,45 +276,55 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     if osp.exists(overlay):
         singularity += ['--overlay', overlay]
 
+    casa_home_host_path = osp.join(config['directory'], 'host', 'home')
+
     if gui:
         xauthority = osp.expanduser('~/.Xauthority')
+        # TODO: use "xauth extract" because ~/.Xauthority does not always exist
         if osp.exists(xauthority):
             shutil.copy(xauthority,
-                        osp.join(config['directory'], 'host/home/.Xauthority'))
+                        osp.join(casa_home_host_path, '.Xauthority'))
 
     home_mount = False
-    homedir = os.path.expanduser('~')
+    host_homedir = os.path.expanduser('~')
     for dest, source in config.get('mounts', {}).items():
         source = source.format(**config)
         source = osp.expandvars(source)
         dest = dest.format(**config)
         dest = osp.expandvars(dest)
         singularity += ['--bind', '%s:%s' % (source, dest)]
-        if source == homedir:
+        if source == host_homedir:
+            # FIXME: the condition should actually be: if pathlib.Path(dest) ==
+            # pathlib.Path(host_homedir) or pathlib.Path(dest) in
+            # pathlib.Path(host_homedir).parents. The problem is that pathlib
+            # is not in stdlib on Python 2. Also, beware of trailing slashes
+            # (use os.path.normpath)!
             home_mount = True
     if not home_mount and singularity_major_version() > 2:
         # singularity 3 doesn't mount the home directory automatically.
-        singularity += ['--bind', homedir]
+        singularity += ['--bind', host_homedir]
 
-    tmp_env = dict(config.get('env', {}))
+    configured_env = dict(config.get('env', {}))
     if gui:
-        tmp_env.update(config.get('gui_env', {}))
+        configured_env.update(config.get('gui_env', {}))
     if env is not None:
-        tmp_env.update(env)
+        configured_env.update(env)
 
     singularity_home = None
 
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
-    for name, value in tmp_env.items():
+    for name, value in configured_env.items():
         value = value.format(**config)
         value = osp.expandvars(value)
         if name == 'HOME':
+            # Allow overriding HOME in configuration. Not recommended, as some
+            # functions depend on HOME=/casa/home (e.g. automatic Xauthority).
+            # Should we even allow that?
             singularity_home = value
         else:
             container_env['SINGULARITYENV_' + name] = value
-
     default_casa_home = '/casa/host/home'
     if singularity_home is None:
         singularity_home = default_casa_home
@@ -329,7 +339,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
 
     # The following code may prevent containers to run on some system
     # handle ~/.ssh
-    # ssh_dir = osp.join(homedir, '.ssh')
+    # ssh_dir = osp.join(host_homedir, '.ssh')
     # if osp.isdir(ssh_dir):
     #     singularity += [
     #         '--bind',
