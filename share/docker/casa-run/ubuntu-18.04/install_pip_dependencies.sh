@@ -71,7 +71,6 @@ $PIP2 install 'scikit-learn<0.21'
 # $PIP2 install -U 'nibabel<2.5'
 # $PIP2 install -U 'pyparsing<2.4'
 # $PIP2 install -U 'pydot<1.3'
-# $PIP2 install "python_jenkins==0.4.16"
 # $PIP2 install 'dicom'  # pydicom 0.9 API
 
 # python-pcl is installed in install_compiled_dependencies, because the pip

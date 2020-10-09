@@ -156,7 +156,6 @@ brainvisa_python_runtime_dependencies=(
     python-nibabel
     python-pyparsing
     python-pydot
-    python-jenkinsapi
     python-dicom  # version 0.9.9 from Ubuntu, NOT python-pydicom (see above)
 
     # These packages used to be installed with PIP, but that was probably a

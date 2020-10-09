@@ -111,7 +111,6 @@ toolchain_packages=(
 # Development tools and convenience utilities
 development_tools=(
     bash-completion
-    default-jre    # needed for jenkins server logs (is it really worth it? the dependencies of default-jre are huge...)
     flake8
     gdb
     gdbserver
@@ -180,7 +179,6 @@ python3_packages=(
     python3-mysqldb
     python3-ipython-genutils
     python3-requests
-    python3-jenkins
     python3-opengl
     python3-joblib
     python3-tqdm
@@ -206,7 +204,6 @@ python3_packages=(
     # check that they work when installed with apt.
     #
     # python3-nipype
-    # python3-jenkinsapi
     #
     # python3-zmq
     # python3-ipython

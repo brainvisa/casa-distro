@@ -28,7 +28,6 @@ $PIP3 install 'six~=1.13'
 # Python 3 packages that do not exist as APT packages
 $PIP3 install 'dipy<0.15'
 $PIP3 install 'nipype<1.2'
-$PIP3 install jenkinsapi
 
 # Runtime dependencies of populse-db
 $PIP3 install 'lark-parser>=0.7,<0.8'
@@ -113,11 +112,7 @@ $PIP2 uninstall --yes jupyter-console
 $PIP2 uninstall --yes dipy
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
-# used to notify jenkins server
-$PIP2 install "python_jenkins==0.4.16"
 
 # Remove these programs, which hide the Python 2 versions installed by APT.
 sudo rm -f /usr/local/bin/nib-*
 sudo rm -f /usr/local/bin/nipypecli
-sudo rm -f /usr/local/bin/jenkins_invoke
-sudo rm -f /usr/local/bin/jenkinsapi_version
