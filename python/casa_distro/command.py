@@ -70,21 +70,19 @@ param_help = {
 {indent}default={opengl_default}
 {indent}Setup different ways of trying to use OpenGL 3D rendering and GPU.
 {indent}"auto", "container", "nv", or "software".
-{indent}* "auto": performs auto-detection: same as "nv" if an NVidia device is
-{indent}detected on a host linux system, otherwise same as "container", unless
-{indent}we detect a case where that is known to fail (in which case we would
-{indent}use "software").
+{indent}* "auto": use a heuristic to choose the best option that is safe
+{indent}  based on the host configuration
 {indent}* "container": passes no special options to Singularity: the mesa
-{indent}installed in the container is used
+{indent}  installed in the container is used
 {indent}* "nv" tries to mount the proprietary NVidia driver of the host (linux)
-{indent}system in the container
+{indent}  system in the container
 {indent}* "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
-{indent}rendering. This solution is the slowest but is a fallback when no other
-{indent}solution works.''',
+{indent}  rendering. This solution is the slowest but is a fallback when no
+{indent}  other solution works.''',
     'cwd': '''cwd
-{indent}default={cwd_default}
 {indent}Set current working directory to the given value before launching
-{indent}the command.''',
+{indent}the command. By default, it is the same working directory as on the
+{indent}host''',
     'env': '''env
 {indent}Comma separated list of environment variables to pass to the command.
 {indent}Each variable must have the form name=value.''',
