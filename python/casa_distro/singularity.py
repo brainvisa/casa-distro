@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 from distutils.spawn import find_executable
+import json
 import os
 import os.path as osp
 import sys
@@ -418,7 +419,12 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     singularity += command
     if verbose:
         print('-' * 40, file=verbose)
-        print('Running singularity with the following command:', file=verbose)
+        print('Consolidated casa_distro environment configuration:',
+              file=verbose)
+        json.dump(config, verbose,
+                  indent=4, separators=(',', ': '), sort_keys=True)
+        print('\nRunning singularity with the following command:',
+              file=verbose)
         print(*("'%s'" % i for i in singularity), file=verbose)
         print('\nUsing the following environment:', file=verbose)
         for n in sorted(container_env):
