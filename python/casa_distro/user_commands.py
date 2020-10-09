@@ -11,6 +11,7 @@ from casa_distro import (environment,
                          six)
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_branch,
+                                  default_distro,
                                   default_download_url)
 from casa_distro.environment import (casa_distro_directory,
                                      find_in_path,
@@ -164,7 +165,7 @@ def distro():
 
 
 @command
-def setup_dev(distro=None,
+def setup_dev(distro=default_distro,
               branch=default_branch,
               system=None,
               name='{distro}-{branch}-{system}',
@@ -277,6 +278,7 @@ def setup_dev(distro=None,
         system = distro['systems'][0]
 
     if system not in distro['systems']:
+        # FIXME: make this a warning, but allow the user (developer) to proceed
         raise ValueError('The system {0} is not supported by the distro {1}. '
                          'Please select one of the following systems: {2}'
                          .format(system, distro['name'],
