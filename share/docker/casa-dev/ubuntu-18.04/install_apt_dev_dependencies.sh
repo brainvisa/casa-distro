@@ -20,18 +20,14 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
-# setup best mirror in /etc/apt/sources.list
-# $SUDO python2 -m pip --no-cache-dir install apt-mirror-updater
-# $SUDO apt-mirror-updater -a
-
 $SUDO apt-get -o Acquire::Retries=3 update
-
-# Probably obsolete packages (TODO: remove)
-# apt-utils
-# gadfly  # obsolete dep? (only used in datamind)
-# libgsl-dev  # was used in highres-cortex (only?)
-# openjdk-8-jdk  # was used for Docbook docs
-# pyro  # obsolete since soma-workflow 3
+$SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
+    apt-transport-https  # required for the PackageCloud git-lfs repository
+curl -L https://packagecloud.io/github/git-lfs/gpgkey | $SUDO apt-key add -
+cat <<EOF | $SUDO tee /etc/apt/sources.list.d/git-lfs.list
+deb https://packagecloud.io/github/git-lfs/ubuntu/ bionic main
+EOF
+$SUDO apt-get -o Acquire::Retries=3 update
 
 # A selection of packages that were in cati/casa-dev:ubuntu-18.04 before Yann's
 # rewrite of the install scripts (in the runtime_image branch). TODO: check if
