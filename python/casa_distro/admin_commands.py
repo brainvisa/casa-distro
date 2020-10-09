@@ -562,6 +562,7 @@ class BBIDaily:
         self.log(self.bbe_name, 'update casa_distro',
                  result, log,
                  duration=duration)
+        return result == 0
 
     def update_images(self, images):
         start = time.time()
@@ -576,6 +577,7 @@ class BBIDaily:
                  'update images',
                  result, '\n'.join(log),
                  duration=duration)
+        return result == 0
 
     def bv_maker(self, config, steps):
         environment = config['name']
@@ -593,6 +595,49 @@ class BBIDaily:
                                           'bv_maker', step])
             duration = int(1000 * (time.time() - start))
             self.log(environment, step, result, log, duration=duration)
+            if result:
+                break
+        return result == 0
+
+    def tests(self, test_config, dev_config):
+        environment = test_config['name']
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        distro=test_config['distro'],
+                                        branch=test_config['branch'],
+                                        system=test_config['system'])
+        log= []
+        tests = self.get_test_commands(dev_config)
+        failed_tests = set()
+        for test, commands in tests.items():
+            start = time.time()
+            success = True
+            for command in commands:
+                result, output = self.call_output([self.casa_distro,
+                                            'run',
+                                            'name={0}'.format(test_config['name']),
+                                            'env=BRAINVISA_TEST_RUN_DATA_DIR=/casa/host/tests/test,'
+                                            'BRAINVISA_TEST_REF_DATA_DIR=/casa/host/tests/ref',
+                                            '--',
+                                            'sh', '-c', command])
+                if result:
+                    success = False
+                    failed_tests.add(test)
+                    log.append('FAILED: {0}\n'.format(command))
+                    log.append('-' * 80)
+                    log.append(output)
+                    log.append('=' * 80)
+                else:
+                    log.append('SUCCESS: {0}\n'.format(command))
+            duration = int(1000 * (time.time() - start))
+            self.log(environment, test, (0 if success else 1),
+                     '\n'.join(log), duration=duration)
+        if failed_tests:
+            self.log(environment, 'tests failed', 1,
+                     'The following tests failed: {0}'.format(
+                         ', '.join(failed_tests)))
+        return not failed_tests
 
     def get_test_commands(self, config):
         '''
@@ -738,10 +783,11 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         run_configs[i] = (config, dev_config)
     dev_configs = list(dev_configs.values())
 
-    bbi_daily.update_images(images)
+    #bbi_daily.update_images(images)
 
     for config in dev_configs:
-        bbi_daily.bv_maker(config, ['sources', 'configure', 'build', 'doc'])
+        #bbi_daily.bv_maker(config, ['sources', 'configure', 'build', 'doc'])
+        bbi_daily.tests(config, config)
 
     for config, dev_config in run_configs:
         print('run:', config['name'], '<--', dev_config['name'])
