@@ -69,9 +69,7 @@ class BrainVISAJenkins:
         return True
 
     def create_job(self, environment,
-                   distro='unknown',
-                   system='unknown',
-                   branch='unknown'):
+                   **metadata):
         '''
         Create a jenkins job representing a task performed in a casa_distro
         environment.The type of the job created is "external task" therefore
@@ -79,17 +77,11 @@ class BrainVISAJenkins:
         configured to keep only the 20 last build logs (others are destroyed).
 
         environment : name of the casa_distro environment.
-        distro      : distro of casa_distro used for this job
-        system      : system of casa_distro used for this job
-        branch      : branch of casa_distro used for this job
+        metadata     : values that are added to the description of the job
         '''
-        description = ('environment = {0}\n'
-                       'distro = {1}\n'
-                       'system = {2}\n'
-                       'branch = {3}').format(environment,
-                                              distro,
-                                              system,
-                                              branch)
+        description = '\n'.join(
+            ['environment = {0}'.format(environment)] +
+            ['{0} = {1}'.format(*i) for i in metadata.items()])
         r = self.post('createItem',
             params={'name': environment},
             headers={'Content-Type': 'application/xml'},
