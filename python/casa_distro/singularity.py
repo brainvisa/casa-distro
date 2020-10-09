@@ -86,7 +86,7 @@ def create_image(base, base_metadata,
     if type == 'system':
         shutil.copy(base, output)
     else:
-        recipe = tempfile.NamedTemporaryFile()
+        recipe = tempfile.NamedTemporaryFile(mode='wt')
         recipe.write('''Bootstrap: localimage
     From: {base}
 
@@ -125,7 +125,7 @@ def create_user_image(base_image,
                       output,
                       base_directory,
                       verbose):
-    recipe = tempfile.NamedTemporaryFile()
+    recipe = tempfile.NamedTemporaryFile(mode='wt')
     recipe.write('''Bootstrap: localimage
     From: {base_image}
 
