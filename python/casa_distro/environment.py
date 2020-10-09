@@ -311,7 +311,10 @@ def iter_environments(base_directory, **filter):
         config = {}
         config['config_files'] = [casa_distro_json]
         config['directory'] = directory
-        config['mounts'] = {'/casa/host': '{directory}/host'}
+        config['mounts'] = {
+            '/casa/host': '{directory}/host',
+            '/host': '/',
+        }
         config['env'] = {
             'CASA_ENVIRONMENT': '{name}',
             'CASA_SYSTEM': '{system}',
