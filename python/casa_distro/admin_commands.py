@@ -347,9 +347,10 @@ def create_user_image(
         name='{distro}-{version}',
         base_image='{base_directory}/casa-run-{system}{extension}',
         distro=None,
+        branch=None,
         system=None,
         environment_name=None,
-        container_type='singularity',
+        container_type=None,
         output=osp.join(
             default_build_workflow_repository,
             'releases', '{name}{extension}'),
@@ -387,11 +388,13 @@ def create_user_image(
         default={base_image_default}
         Name of the "run" image used to generate the new user image
     distro
-        If given, select environment having the given distro name.
+        If given, select dev environment having the given distro name.
+    branch
+        If given, select dev environment having the given branch name.
     system
-        If given, select environments having the given system name.
+        If given, select dev environments having the given system name.
     environment_name
-        If given, select environment by its name.
+        If given, select dev environment by its name.
     container_type
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or
@@ -421,29 +424,28 @@ def create_user_image(
     upload = check_boolean('upload', upload)
 
     verbose = verbose_file(verbose)
-    if container_type == 'singularity':
-        extension = '.sif'
-    elif container_type == 'vbox':
-        extension = '.vdi'
-    else:
-        raise ValueError('Unsupported container type: %s' % container_type)
     config = select_environment(base_directory,
                                 type='dev',
                                 distro=distro,
-                                branch='master',
+                                branch=branch,
                                 system=system,
                                 name=environment_name,
                                 container_type=container_type)
+    container_type = config['container_type']
+    if container_type == 'singularity':
+        extension = '.sif'
+        module = casa_distro.singularity
+    elif container_type == 'vbox':
+        extension = '.vdi'
+        module = casa_distro.vbox
+    else:
+        raise ValueError('Unsupported container type: {0}'.format(container_type))
     name = name.format(version=version, **config)
     kwargs = config.copy()
     kwargs.pop('name', None)
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            extension=extension,
                                                            **kwargs)
-    if container_type == 'vbox':
-        module = casa_distro.vbox
-    else:
-        module = casa_distro.singularity
 
     metadata = {
         'name': name,
@@ -528,6 +530,7 @@ class BBIDaily:
         self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(), subprocess.check_output(['hostname']).strip())
         self.casa_distro_src = osp.expanduser('~/casa_distro/src')
         self.casa_distro = osp.join(self.casa_distro_src, 'bin', 'casa_distro')
+        self.casa_distro_admin = self.casa_distro + '_admin'
         self.jenkins = jenkins
         if self.jenkins:
             if not self.jenkins.job_exists(self.bbe_name):
@@ -564,7 +567,7 @@ class BBIDaily:
                  duration=duration)
         return result == 0
 
-    def update_images(self, images):
+    def update_base_images(self, images):
         start = time.time()
         log = []
         for image in images:
@@ -666,6 +669,16 @@ class BBIDaily:
                         if ': Test command:' in o[i]]
             tests[label] = commands
         return tests
+
+    def update_user_image(self, user_config, dev_config):
+        start = time.time()
+        result, log = self.call_output([self.casa_distro_admin,
+                                        'create_user_image',
+                                        'version={0}'.format(user_config['version']),
+                                        'name={0}'.format(dev_config['name'])])
+        duration = int(1000 * (time.time() - start))
+        self.log(user_config['name'], 'update image', result, log)
+        return result == 0
 
 @command
 def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
@@ -810,7 +823,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     dev_configs = list(dev_configs.values())
 
     if update_base_images:
-        bbi_daily.update_images(images)
+        bbi_daily.update_base_images(images)
 
     failed_dev_configs = set()
     for config in dev_configs:
