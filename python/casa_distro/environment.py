@@ -878,6 +878,9 @@ class BBIDaily:
 
     def update_user_image(self, user_config, dev_config):
         start = time.time()
+        image = user_config['image']
+        if osp.exists(image):
+            os.remove(image)
         result, log = self.call_output([self.casa_distro_admin,
                                 'create_user_image',
                                 'version={0}'.format(user_config['version']),
