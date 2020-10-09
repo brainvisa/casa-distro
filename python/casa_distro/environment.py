@@ -883,7 +883,7 @@ class BBIDaily:
         result, log = self.call_output([self.casa_distro_admin,
                                 'create_user_image',
                                 'version={0}'.format(user_config['version']),
-                                'name={0}'.format(dev_config['name'])])
+                                'environment_name={0}'.format(dev_config['name'])])
         duration = int(1000 * (time.time() - start))
         self.log(user_config['name'], 'update user image', result, log)
         return result == 0
