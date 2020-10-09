@@ -683,10 +683,11 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         bbi_daily.update_base_images(images)
 
     failed_dev_configs = set()
+    if bv_maker_steps:
+        bv_maker_steps = bv_maker_steps.split(',')
     for config in dev_configs:
         failed = False
         if bv_maker_steps:
-            bv_maker_steps = bv_maker_steps.split(',')
             if not bbi_daily.bv_maker(config, bv_maker_steps):
                 failed = True
         if dev_tests:
