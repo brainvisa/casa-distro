@@ -323,7 +323,7 @@ def iter_environments(base_directory, **filter):
         if environment_config['container_type'] == 'singularity':
             config.setdefault('gui_env', {}).update({
                 'DISPLAY': '$DISPLAY',
-                'XAUTHORITY': '/casa/host/home/.Xauthority'})
+                'XAUTHORITY': '/casa/home/.Xauthority'})
 
         update_config(config, environment_config)
 
@@ -505,11 +505,11 @@ def select_environment(base_directory, **kwargs):
     raise ValueError('Cannot find any distro to perform requested action')
 
 
-def write_environment_homedir(output):
-    home = osp.join(output, 'host', 'home')
-    if not osp.exists(home):
-        os.makedirs(home)
-    bashrc = osp.join(home, '.bashrc')
+def write_environment_homedir(casa_home_host_path):
+    """Create a new home directory for an environment."""
+    if not osp.exists(casa_home_host_path):
+        os.makedirs(casa_home_host_path)
+    bashrc = osp.join(casa_home_host_path, '.bashrc')
     if not osp.exists(bashrc):
         with open(bashrc, 'w') as f:
             print(r'''
@@ -560,7 +560,7 @@ def setup(metadata, writable,
     casa_distro_json = osp.join(output, 'host', 'conf', 'casa_distro.json')
     json.dump(environment, open(casa_distro_json, 'w'), indent=4)
 
-    write_environment_homedir(output)
+    write_environment_homedir(osp.join(output, 'home'))
 
     if writable:
         size = string_to_byte_count(writable)
@@ -591,7 +591,7 @@ def setup_dev(metadata,
         if not osp.exists(osp.join(output, 'host', subdir)):
             os.makedirs(osp.join(output, 'host', subdir))
 
-    write_environment_homedir(output)
+    write_environment_homedir(osp.join(output, 'home'))
 
     for i in os.listdir(distro['directory']):
         if i == 'casa_distro.json':
@@ -670,6 +670,10 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     Return the exit code of the command, or raise an exception if the command
     cannot be run.
     """
+    casa_home_host_path = osp.join(config['directory'], 'home')
+    if not osp.exists(casa_home_host_path):
+        write_environment_homedir(casa_home_host_path)
+
     # env_directory = config['directory']
     # if config.get('user_specific_home'):
     #     env_relative_subdirectory = osp.normcase(

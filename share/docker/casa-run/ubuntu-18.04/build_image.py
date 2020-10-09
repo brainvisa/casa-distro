@@ -16,17 +16,14 @@ def install(base_dir, builder, verbose):
                    file=verbose, flush=True)
     builder.run_root('if [ ! -e /casa ]; then mkdir /casa; fi')
     builder.run_root('if [ ! -e /casa/host ]; then mkdir /casa/host; fi')
+    builder.run_root('if [ ! -e /casa/home ]; then mkdir /casa/home; fi')
     if builder.user:
         builder.run_root('/bin/chown {0}:{0} /casa'.format(builder.user))
         builder.run_root('/bin/chown {0}:{0} /casa/host'.format(builder.user))
+        builder.run_root('/bin/chown {0}:{0} /casa/home'.format(builder.user))
 
-    # Use a minimal UTF-8-aware locale.
-    #
-    # TODO: implement builder.set_env (see
-    # https://github.com/brainvisa/casa-distro/issues/114) and uncomment the
-    # following line
-    #
-    # builder.set_env('LANG', 'C.UTF-8')
+    # Used in Singularity only
+    builder.run_root('if [ ! -e /host ]; then mkdir /host; fi')
 
     if verbose:
         six.print_('Copying files in', builder.name,
