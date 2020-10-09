@@ -604,16 +604,17 @@ class BBIDaily:
         if self.jenkins:
             if not self.jenkins.job_exists(environment):
                 self.jenkins.create_job(environment,
-                                        distro=test_config['distro'],
-                                        branch=test_config['branch'],
-                                        system=test_config['system'])
-        log= []
+                                        **test_config)
         tests = self.get_test_commands(dev_config)
         failed_tests = set()
         for test, commands in tests.items():
+            log= []
             start = time.time()
             success = True
             for command in commands:
+                if test_config['type'] == 'run':
+                    command = command.replace('/casa/host/build/bin/bv_env',
+                                              '/casa/install/bin/bv_env')
                 result, output = self.call_output([self.casa_distro,
                                             'run',
                                             'name={0}'.format(test_config['name']),
@@ -672,7 +673,12 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
               jenkins_server=None,
               jenkins_auth='{base_directory}/jenkins_auth',
               jenkins_password=None,
-              update_casa_distro=True,
+              update_casa_distro='yes',
+              update_base_images='yes',
+              bv_maker_steps='sources,configure,build,doc',
+              dev_tests='yes',
+              update_user_images='yes',
+              user_tests='yes',
               base_directory=casa_distro_directory(),
               verbose=None):
     '''
@@ -723,12 +729,32 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     update_casa_distro
         default = {update_casa_distro_default}
         If true, yes or 1, update casa_distro
+    update_base_images
+        default = {update_base_images_default}
+        Boolean indicating if the update images step must be done
+    bv_maker_steps
+        default = {bv_maker_steps_default}
+        Coma separated list of bv_maker commands to perform on cev environments.
+        May be empty to do nothing.
+    dev_tests
+        default = {dev_tests_default}
+        Boolean indicating if the tests must be performed on dev environments
+    update_user_images
+        default = {update_user_images_default}
+        Boolean indicating if images of user environment must be recreated
+    user_tests
+        default = {user_tests_default}
+        Boolean indicating if the tests must be performed on user environments
     {base_directory}
     {verbose}
     '''
 
     verbose = verbose_file(verbose)
     update_casa_distro = boolean_value(update_casa_distro)
+    update_base_images= boolean_value(update_base_images)
+    dev_tests= boolean_value(dev_tests)
+    update_user_images= boolean_value(update_user_images)
+    user_tests= boolean_value(user_tests)
 
     if jenkins_server:
         jenkins_auth = jenkins_auth.format(base_directory=base_directory)
@@ -783,12 +809,29 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         run_configs[i] = (config, dev_config)
     dev_configs = list(dev_configs.values())
 
-    bbi_daily.update_images(images)
+    if update_base_images:
+        bbi_daily.update_images(images)
 
+    failed_dev_configs = set()
     for config in dev_configs:
-        bbi_daily.bv_maker(config, ['sources', 'configure', 'build', 'doc'])
-        bbi_daily.tests(config, config)
+        failed = False
+        if bv_maker_steps:
+            bv_maker_steps = bv_maker_steps.split(',')
+            if not bbi_daily.bv_maker(config, bv_maker_steps):
+                failed = True
+        if dev_tests:
+            if not bbi_daily.tests(config, config):
+                failed = True
+        if failed:
+            failed_dev_configs.add(config['name'])
 
     for config, dev_config in run_configs:
-        print('run:', config['name'], '<--', dev_config['name'])
+        if dev_config['name'] in failed_dev_configs:
+            continue
+        if update_user_images:
+            if not bbi_daily.update_user_image(config, dev_config):
+                continue
+        if user_tests:
+            if not bbi_daily.tests(config, dev_config):
+                continue
 
