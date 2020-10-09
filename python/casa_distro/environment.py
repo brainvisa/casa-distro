@@ -793,9 +793,7 @@ class BBIDaily:
         if self.jenkins:
             if not self.jenkins.job_exists(environment):
                 self.jenkins.create_job(environment,
-                                        distro=config['distro'],
-                                        branch=config['branch'],
-                                        system=config['system'])
+                                        **config)
         for step in steps:
             start = time.time()
             result, log = self.call_output([self.casa_distro,
@@ -877,6 +875,11 @@ class BBIDaily:
         return tests
 
     def update_user_image(self, user_config, dev_config):
+        environment = user_config['name']
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        **user_config)
         start = time.time()
         image = user_config['image']
         if osp.exists(image):
