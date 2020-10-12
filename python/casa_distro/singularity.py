@@ -408,7 +408,6 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         if '--nv' not in container_options:
             container_options.append('--nv')
         nv_binds = _nv_libs_binds()
-        print('nv_binds:', nv_binds)
         for ldir in nv_binds:
             singularity += ['--bind',
                             '%s:/usr/local/lib/%s'
