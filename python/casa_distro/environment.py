@@ -554,8 +554,8 @@ def setup(metadata, writable,
 
     if not force and osp.exists(output):
         raise ValueError(
-          'The environment "%s" to setup already exists. '
-          'Please choose another name, or use force=True' % metadata['name'])
+            'The environment "%s" to setup already exists. '
+            'Please choose another name, or use force=True' % metadata['name'])
     environment = {}
     environment.update(metadata)
     environment['casa_distro_compatibility'] = '3'
@@ -728,7 +728,8 @@ class BBIDaily:
     def __init__(self,
                  jenkins=None):
         self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(),
-                                subprocess.check_output(['hostname']).strip())
+                                             subprocess.check_output(
+                                                 ['hostname']).strip())
         self.casa_distro_src = osp.expanduser('~/casa_distro/src')
         self.casa_distro = osp.join(self.casa_distro_src, 'bin',
                                     'casa_distro')
@@ -742,10 +743,10 @@ class BBIDaily:
             duration=None):
         if self.jenkins:
             self.jenkins.create_build(environment=environment,
-                task=task_name,
-                result=result,
-                log=log+'\n',
-                duration=duration)
+                                      task=task_name,
+                                      result=result,
+                                      log=log+'\n',
+                                      duration=duration)
         else:
             name = '{0}:{1}'.format(environment, task_name)
             print()
@@ -800,9 +801,9 @@ class BBIDaily:
         for step in steps:
             start = time.time()
             result, log = self.call_output([self.casa_distro,
-                                          'run',
-                                          'name={0}'.format(config['name']),
-                                          'bv_maker', step])
+                                            'run',
+                                            'name={0}'.format(config['name']),
+                                            'bv_maker', step])
             duration = int(1000 * (time.time() - start))
             self.log(environment, step, result, log, duration=duration)
             if result:
@@ -830,12 +831,17 @@ class BBIDaily:
                     command = command.replace('/casa/host/build/bin/bv_env',
                                               '/casa/install/bin/bv_env')
                 result, output = self.call_output([self.casa_distro,
-                    'run',
-                    'name={0}'.format(test_config['name']),
-                    'env=BRAINVISA_TEST_RUN_DATA_DIR=/casa/host/tests/test,'
-                    'BRAINVISA_TEST_REF_DATA_DIR=/casa/host/tests/ref',
-                    '--',
-                    'sh', '-c', command])
+                                                   'run',
+                                                   'name={0}'.format(
+                                                       test_config['name']),
+                                                   'env=BRAINVISA_'
+                                                   'TEST_RUN_DATA_DIR='
+                                                   '/casa/host/tests/test,'
+                                                   'BRAINVISA_'
+                                                   'TEST_REF_DATA_DIR='
+                                                   '/casa/host/tests/ref',
+                                                   '--',
+                                                   'sh', '-c', command])
                 if result:
                     success = False
                     log.append('FAILED: {0}\n'.format(command))
@@ -864,19 +870,23 @@ class BBIDaily:
         values are a list of commands to run to perform the test.
         '''
         o = subprocess.check_output([self.casa_distro,
-                            'run',
-                            'name={0}'.format(config['name']),
-                            'cwd={0}/host/build'.format(config['directory']),
-                            'ctest', '--print-labels'])
+                                     'run',
+                                     'name={0}'.format(config['name']),
+                                     'cwd={0}/host/build'.format(
+                                         config['directory']),
+                                     'ctest', '--print-labels'])
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
         tests = {}
         for label in labels:
             o = subprocess.check_output([self.casa_distro,
-                            'run',
-                            'name={0}'.format(config['name']),
-                            'cwd={0}/host/build'.format(config['directory']),
-                            'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
-                            'ctest', '-V', '-L', '^{0}$'.format(label)])
+                                         'run',
+                                         'name={0}'.format(config['name']),
+                                         'cwd={0}/host/build'.format(
+                                             config['directory']),
+                                         'env=BRAINVISA_TEST_REMOTE_COMMAND'
+                                         '=echo',
+                                         'ctest', '-V', '-L',
+                                         '^{0}$'.format(label)])
             o = o.split('\n')
             commands = [o[i+3][o[i+3].find(':')+2:].strip()
                         for i in range(len(o))
@@ -895,10 +905,11 @@ class BBIDaily:
         if osp.exists(image):
             os.remove(image)
         result, log = self.call_output([self.casa_distro_admin,
-                                'create_user_image',
-                                'version={0}'.format(user_config['version']),
-                                'environment_name={0}'.format(
-                                    dev_config['name'])])
+                                        'create_user_image',
+                                        'version={0}'.format(
+                                            user_config['version']),
+                                        'environment_name={0}'.format(
+                                            dev_config['name'])])
         duration = int(1000 * (time.time() - start))
         self.log(user_config['name'], 'update user image', result, log,
                  duration=duration)

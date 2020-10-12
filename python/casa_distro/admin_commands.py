@@ -337,9 +337,9 @@ def publish_base_image(type,
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
 
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                metadata_file, image,
-                'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
-                % container_type])
+                           metadata_file, image,
+                           'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
+                           % container_type])
 
 
 @command
@@ -534,7 +534,7 @@ def create_user_image(
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
             '{container_type}'.format(**metadata)
         subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                    metadata_file, output, url])
+                               metadata_file, output, url])
 
 
 @command
@@ -629,7 +629,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     if jenkins_server:
         jenkins_auth = jenkins_auth.format(base_directory=base_directory)
         jenkins_login, jenkins_password = [i.strip() for i in
-                                open(jenkins_auth).readlines()[:2]]
+                                           open(jenkins_auth).readlines()[:2]]
         jenkins = BrainVISAJenkins(jenkins_server, jenkins_login,
                                    jenkins_password)
     else:
@@ -640,8 +640,8 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         # Update casa_distro with git and restart with update_casa_distro=no
         bbi_daily.update_casa_distro()
         res = subprocess.call([i for i in sys.argv
-                            if 'update_casa_distro' not in i] +
-                            ['update_casa_distro=no'])
+                               if 'update_casa_distro' not in i] +
+                              ['update_casa_distro=no'])
         sys.exit(res)
 
     succesful_tasks = []
@@ -663,8 +663,8 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
                 key = (config['distro'], config['branch'], config['system'])
                 if key in dev_configs:
                     raise RuntimeError('Several dev environment found for '
-                                    'distro={0}, branch={1} and '
-                                    'system={1}'.format(*key))
+                                       'distro={0}, branch={1} and '
+                                       'system={1}'.format(*key))
                 dev_configs[key] = config
                 images.add(config['image'])
             elif config['type'] == 'run':
@@ -678,8 +678,8 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
             dev_config = dev_configs.get(key)
             if dev_config is None:
                 raise RuntimeError('No dev environment found for '
-                                    'distro={0}, branch={1} and '
-                                    'system={1}'.format(*key))
+                                   'distro={0}, branch={1} and '
+                                   'system={1}'.format(*key))
             run_configs[i] = (config, dev_config)
         dev_configs = list(dev_configs.values())
 

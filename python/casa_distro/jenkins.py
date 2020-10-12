@@ -8,7 +8,7 @@ import six
 
 class BrainVISAJenkins:
     '''
-    Wrapper to access Jenkins server of BrainVISA and push bv_maker results
+    Wrapper to access Jenkins server of Brain12VISA and push bv_maker results
     '''
 
     job_xml = '''<?xml version='1.1' encoding='UTF-8'?>
@@ -30,12 +30,12 @@ class BrainVISAJenkins:
     '''
 
     build_xml = ('<run>'
-        '<log encoding="hexBinary">{hex_log}</log>'
-        '<result>{result}</result>'
-        '<duration>{duration}</duration>'
-        '<displayName>{build}</displayName>'
-        '<description>{description}</description>'
-        '</run>')
+                 '<log encoding="hexBinary">{hex_log}</log>'
+                 '<result>{result}</result>'
+                 '<duration>{duration}</duration>'
+                 '<displayName>{build}</displayName>'
+                 '<description>{description}</description>'
+                 '</run>')
 
     def __init__(self, server, login, password):
         '''
@@ -84,9 +84,9 @@ class BrainVISAJenkins:
             ['environment = {0}'.format(environment)] +
             ['{0} = {1}'.format(*i) for i in metadata.items()])
         r = self.post('createItem',
-            params={'name': environment},
-            headers={'Content-Type': 'application/xml'},
-            data=self.job_xml.format(description=description))
+                      params={'name': environment},
+                      headers={'Content-Type': 'application/xml'},
+                      data=self.job_xml.format(description=description))
         r.raise_for_status()
 
     def delete_job(self, job):
@@ -118,10 +118,11 @@ class BrainVISAJenkins:
             log = log.decode('UTF8')
         hex_log = binascii.hexlify(log)
         r = self.post('job/{0}/postBuildResult'.format(environment),
-            headers={'Content-Type': 'application/xml'},
-            data=self.build_xml.format(build=task,
-                                       hex_log=hex_log,
-                                       result=result,
-                                       duration=duration or '0',
-                                       description=description or ''))
+                      headers={'Content-Type': 'application/xml'},
+                      data=self.build_xml.format(build=task,
+                                                 hex_log=hex_log,
+                                                 result=result,
+                                                 duration=duration or '0',
+                                                 description=(description or
+                                                              '')))
         r.raise_for_status()
