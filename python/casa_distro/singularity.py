@@ -252,6 +252,40 @@ def _guess_opengl_mode():
         return 'container'
 
 
+def _nv_libs_binds():
+    '''
+    nvidia-container-cli seems do miss one library (or directory):
+    libnvidia-tls is present twice in their drivers, ie:
+    /usr/lib/x86_64-linux-gnu/libnvidia-tls.so.390.138
+    /usr/lib/x86_64-linux-gnu/tls/libnvidia-tls.so.390.138
+    the latter is not mounted through nvidia-container-cli and this seems to
+    cause random crashes in OpenGL applications (ramdom: rom one container
+    start to another, but within the same singularity run the behaviour is
+    consistent).
+
+    _nv_libs_binds() adds the additional missing lib directory (tls/)
+    '''
+    if not find_executable('nvidia-container-cli'):
+        # here nvidia-container-cli i snot involved, we don't handle this.
+        return []
+
+    libs = subprocess.check_output(['nvidia-container-cli', 'list',
+                                    '--libraries']).strip().split()
+    added_libs = []
+    for lib in libs:
+        ldir, blib = osp.split(lib)
+        if blib.startswith('libnvidia-tls.so'):
+            if osp.exists(osp.join(ldir, 'tls')):
+                added_libs.append(osp.join(ldir, 'tls'))
+            elif osp.basename(ldir) == 'tls':
+                # 'tls' is already the dir for libnvidia-tls. Unfortunately
+                # sinfgularity doesn't bind it but takes its parent dir's
+                # libnvidia-tls...
+                added_libs.append(ldir)
+            break
+    return added_libs
+
+
 def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         base_directory, verbose):
     """Run a command in the Singularity container.
@@ -367,9 +401,23 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         container_options.remove('--nv')
     container_env.pop('SINGULARITYENV_SOFTWARE_OPENGL', None)
 
+    # if needed, write an ini.sh mounted in /casa/start_scripts
+    init_script = []
+
     if opengl == 'nv':
         if '--nv' not in container_options:
             container_options.append('--nv')
+        nv_binds = _nv_libs_binds()
+        print('nv_binds:', nv_binds)
+        for ldir in nv_binds:
+            singularity += ['--bind',
+                            '%s:/usr/local/lib/%s'
+                            % (ldir, osp.basename(ldir))]
+            init_script += [
+                '# add missing nvidia libs in LD_LIBRARY_PATH',
+                'export LD_LIBRARY_PATH=/usr/local/lib/tls'
+                '${LD_LIBRARY_PATH+:}${LD_LIBRARY_PATH}']
+
     elif opengl == 'software':
         # activate mesa path in entrypoint
         container_env['SINGULARITYENV_SOFTWARE_OPENGL'] = '1'
@@ -397,20 +445,25 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         # (no --env option, --home doesn't work, SINGULARITYENV_something vars
         # are not transmitted). We work around this using a mount and a bash
         # script. Bidouille bidouille... ;)
-        tmpdir = tempfile.mkdtemp(prefix='casa_singularity')
-        script = osp.join(tmpdir, 'init.sh')
         forbidden = set(['HOME', 'SINGULARITYENV_HOME', 'PWD', 'PATH',
                          'LD_LIBRARY_PATH', 'PYTHONPATH'])
+        for var, value in container_env.items():
+            if var not in forbidden:
+                if var.startswith('SINGULARITYENV_'):
+                    init_script.append('export %s="%s"'
+                                       % (var[15:], value))
+                else:
+                    init_script.append('export %s="%s"' % (var, value))
+        # --home does not work either
+        init_script.append('export HOME=%s' % singularity_home)
+
+    if init_script:
+        tmpdir = tempfile.mkdtemp(prefix='casa_singularity')
+        script = osp.join(tmpdir, 'init.sh')
         with open(script, 'w') as f:
             print('#!/bin/bash\n', file=f)
-            for var, value in container_env.items():
-                if var not in forbidden:
-                    if var.startswith('SINGULARITYENV_'):
-                        print('export %s="%s"' % (var[15:], value), file=f)
-                    else:
-                        print('export %s="%s"' % (var, value), file=f)
-            # --home does not work either
-            print('export HOME=%s' % singularity_home, file=f)
+            for line in init_script:
+                print(line, file=f)
         container_options += ['--bind', '%s:/casa/start_scripts' % tmpdir]
         temps.append(tmpdir)
 
