@@ -11,6 +11,7 @@ from pprint import pprint
 import re
 import subprocess
 import sys
+import traceback
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
@@ -640,69 +641,103 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         # Update casa_distro with git and restart with update_casa_distro=no
         bbi_daily.update_casa_distro()
         res = subprocess.call([i for i in sys.argv
-                               if 'update_casa_distro' not in i] +
-                               ['update_casa_distro=no'])
+                            if 'update_casa_distro' not in i] +
+                            ['update_casa_distro=no'])
         sys.exit(res)
 
-    # Parse selected environments
-    dev_configs = {}
-    run_configs = []
-    images = set()
-    for config in iter_environments(base_directory,
-                                    type=type,
-                                    distro=distro,
-                                    branch=branch,
-                                    system=system,
-                                    name=name,
-                                    version=version):
-        if config['type'] == 'dev':
-            key = (config['distro'], config['branch'], config['system'])
-            if key in dev_configs:
-                raise RuntimeError('Several dev environment found for '
-                                   'distro={0}, branch={1} and '
-                                   'system={1}'.format(*key))
-            dev_configs[key] = config
-            images.add(config['image'])
-        elif config['type'] == 'run':
-            run_configs.append(config)
-            images.add(config['image'])
+    succesful_tasks = []
+    failed_tasks = []
+    try:
 
-    # Associate run environments to corresponding dev environment
-    for i in range(len(run_configs)):
-        config = run_configs[i]
-        key = (config['distro'], u'master', config['system'])
-        dev_config = dev_configs.get(key)
-        if dev_config is None:
-            raise RuntimeError('No dev environment found for '
-                                'distro={0}, branch={1} and '
-                                'system={1}'.format(*key))
-        run_configs[i] = (config, dev_config)
-    dev_configs = list(dev_configs.values())
+        # Parse selected environments
+        dev_configs = {}
+        run_configs = []
+        images = set()
+        for config in iter_environments(base_directory,
+                                        type=type,
+                                        distro=distro,
+                                        branch=branch,
+                                        system=system,
+                                        name=name,
+                                        version=version):
+            if config['type'] == 'dev':
+                key = (config['distro'], config['branch'], config['system'])
+                if key in dev_configs:
+                    raise RuntimeError('Several dev environment found for '
+                                    'distro={0}, branch={1} and '
+                                    'system={1}'.format(*key))
+                dev_configs[key] = config
+                images.add(config['image'])
+            elif config['type'] == 'run':
+                run_configs.append(config)
+                images.add(config['image'])
 
-    if update_base_images:
-        bbi_daily.update_base_images(images)
+        # Associate run environments to corresponding dev environment
+        for i in range(len(run_configs)):
+            config = run_configs[i]
+            key = (config['distro'], u'master', config['system'])
+            dev_config = dev_configs.get(key)
+            if dev_config is None:
+                raise RuntimeError('No dev environment found for '
+                                    'distro={0}, branch={1} and '
+                                    'system={1}'.format(*key))
+            run_configs[i] = (config, dev_config)
+        dev_configs = list(dev_configs.values())
 
-    failed_dev_configs = set()
-    if bv_maker_steps:
-        bv_maker_steps = bv_maker_steps.split(',')
-    for config in dev_configs:
-        failed = False
+        if update_base_images:
+            if bbi_daily.update_base_images(images):
+                succesful_tasks.append('update_base_images')
+            else:
+                failed_tasks.append('update_base_images')
+
+        failed_dev_configs = set()
         if bv_maker_steps:
-            if not bbi_daily.bv_maker(config, bv_maker_steps):
-                failed = True
-        if dev_tests:
-            if not bbi_daily.tests(config, config):
-                failed = True
-        if failed:
-            failed_dev_configs.add(config['name'])
+            bv_maker_steps = bv_maker_steps.split(',')
+        for config in dev_configs:
+            failed = None
+            if bv_maker_steps:
+                succesful, failed = bbi_daily.bv_maker(config, bv_maker_steps)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i) for i in succesful)
+                if failed:
+                    failed_tasks.append('{0}: {1}'.format(config['name'], failed))
+                if failed:
+                    failed_dev_configs.add(config['name'])
+                    continue
+            if dev_tests:
+                succesful, failed = bbi_daily.tests(config, config)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i) for i in succesful)
+                failed_tasks.extend('{0}: {1}'.format(config['name'], i) for i in failed)
+                if failed:
+                    failed_dev_configs.add(config['name'])
+                    continue
 
-    for config, dev_config in run_configs:
-        if dev_config['name'] in failed_dev_configs:
-            continue
-        if update_user_images:
-            if not bbi_daily.update_user_image(config, dev_config):
+        for config, dev_config in run_configs:
+            if dev_config['name'] in failed_dev_configs:
                 continue
-        if user_tests:
-            if not bbi_daily.tests(config, dev_config):
-                continue
-
+            if update_user_images:
+                if bbi_daily.update_user_image(config, dev_config):
+                    succesful_tasks.append('{0}: update user image'.format(config['name']))
+                else:
+                    failed_tasks.append('{0}: update user image'.format(config['name']))
+                    continue
+            if user_tests:
+                succesful, failed = bbi_daily.tests(config, dev_config)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i) for i in succesful)
+                failed_tasks.extend('{0}: {1}'.format(config['name'], i) for i in failed)
+                if failed:
+                    continue
+    except:
+        log = ['Succesful tasks']
+        log.extend('  - {0}'.format(i) for i in succesful_tasks)
+        if failed_tasks:
+            log .append('Failed tasks')
+            log.extend('  - {0}'.format(i) for i in failed_tasks)
+        log += ['', 'ERROR:', '', traceback.format_exc()]
+        bbi_daily.log(bbi_daily.bbe_name, 'error', 1, '\n'.join(log))
+    else:
+        log = ['Succesful tasks']
+        log.extend('  - {0}'.format(i) for i in succesful_tasks)
+        if failed_tasks:
+            log .append('Failed tasks')
+            log.extend('  - {0}'.format(i) for i in failed_tasks)
+        bbi_daily.log(bbi_daily.bbe_name, 'finished', (1 if failed_tasks else 0), '\n'.join(log))
