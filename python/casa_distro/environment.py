@@ -739,7 +739,7 @@ class BBIDaily:
             self.jenkins.create_build(environment=environment,
                 task=task_name,
                 result=result,
-                log=log,
+                log=log+'\n',
                 duration=duration)
         else:
             name = '{0}:{1}'.format(environment, task_name)
@@ -790,6 +790,8 @@ class BBIDaily:
             if not self.jenkins.job_exists(environment):
                 self.jenkins.create_job(environment,
                                         **config)
+        done = []
+        failed = None
         for step in steps:
             start = time.time()
             result, log = self.call_output([self.casa_distro,
@@ -799,8 +801,11 @@ class BBIDaily:
             duration = int(1000 * (time.time() - start))
             self.log(environment, step, result, log, duration=duration)
             if result:
+                failed = step
                 break
-        return result == 0
+            else:
+                done.append(step)
+        return (done, failed)
 
     def tests(self, test_config, dev_config):
         environment = test_config['name']
@@ -809,7 +814,8 @@ class BBIDaily:
                 self.jenkins.create_job(environment,
                                         **test_config)
         tests = self.get_test_commands(dev_config)
-        failed_tests = set()
+        successful_tests = []
+        failed_tests = []
         for test, commands in tests.items():
             log= []
             start = time.time()
@@ -827,7 +833,6 @@ class BBIDaily:
                     'sh', '-c', command])
                 if result:
                     success = False
-                    failed_tests.add(test)
                     log.append('FAILED: {0}\n'.format(command))
                     log.append('-' * 80)
                     log.append(output)
@@ -837,11 +842,15 @@ class BBIDaily:
             duration = int(1000 * (time.time() - start))
             self.log(environment, test, (0 if success else 1),
                      '\n'.join(log), duration=duration)
+            if success:
+                successful_tests.append(test)
+            else:
+                failed_tests.append(test)
         if failed_tests:
             self.log(environment, 'tests failed', 1,
                      'The following tests failed: {0}'.format(
                          ', '.join(failed_tests)))
-        return not failed_tests
+        return (successful_tests, failed_tests)
 
     def get_test_commands(self, config):
         '''
