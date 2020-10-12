@@ -81,8 +81,8 @@ class BrainVISAJenkins:
         metadata     : values that are added to the description of the job
         '''
         description = '\n'.join(
-            ['environment = {0}'.format(environment)] +
-            ['{0} = {1}'.format(*i) for i in metadata.items()])
+            ['environment = {0}'.format(environment)]
+            + ['{0} = {1}'.format(*i) for i in metadata.items()])
         r = self.post('createItem',
                       params={'name': environment},
                       headers={'Content-Type': 'application/xml'},
@@ -123,6 +123,6 @@ class BrainVISAJenkins:
                                                  hex_log=hex_log,
                                                  result=result,
                                                  duration=duration or '0',
-                                                 description=(description or
-                                                              '')))
+                                                 description=(description
+                                                              or '')))
         r.raise_for_status()
