@@ -440,7 +440,8 @@ def create_user_image(
         extension = '.vdi'
         module = casa_distro.vbox
     else:
-        raise ValueError('Unsupported container type: {0}'.format(container_type))
+        raise ValueError('Unsupported container type: {0}'.format(
+            container_type))
     name = name.format(version=version, **config)
     kwargs = config.copy()
     kwargs.pop('name', None)
@@ -536,8 +537,6 @@ def create_user_image(
                     metadata_file, output, url])
 
 
-
-
 @command
 def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
               version=None,
@@ -605,8 +604,8 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         Boolean indicating if the update images step must be done
     bv_maker_steps
         default = {bv_maker_steps_default}
-        Coma separated list of bv_maker commands to perform on cev environments.
-        May be empty to do nothing.
+        Coma separated list of bv_maker commands to perform on dev
+        environments. May be empty to do nothing.
     dev_tests
         default = {dev_tests_default}
         Boolean indicating if the tests must be performed on dev environments
@@ -622,10 +621,10 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
 
     verbose = verbose_file(verbose)
     update_casa_distro = boolean_value(update_casa_distro)
-    update_base_images= boolean_value(update_base_images)
-    dev_tests= boolean_value(dev_tests)
-    update_user_images= boolean_value(update_user_images)
-    user_tests= boolean_value(user_tests)
+    update_base_images = boolean_value(update_base_images)
+    dev_tests = boolean_value(dev_tests)
+    update_user_images = boolean_value(update_user_images)
+    user_tests = boolean_value(user_tests)
 
     if jenkins_server:
         jenkins_auth = jenkins_auth.format(base_directory=base_directory)
@@ -697,16 +696,20 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
             failed = None
             if bv_maker_steps:
                 succesful, failed = bbi_daily.bv_maker(config, bv_maker_steps)
-                succesful_tasks.extend('{0}: {1}'.format(config['name'], i) for i in succesful)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                       for i in succesful)
                 if failed:
-                    failed_tasks.append('{0}: {1}'.format(config['name'], failed))
+                    failed_tasks.append('{0}: {1}'.format(config['name'],
+                                                          failed))
                 if failed:
                     failed_dev_configs.add(config['name'])
                     continue
             if dev_tests:
                 succesful, failed = bbi_daily.tests(config, config)
-                succesful_tasks.extend('{0}: {1}'.format(config['name'], i) for i in succesful)
-                failed_tasks.extend('{0}: {1}'.format(config['name'], i) for i in failed)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                       for i in succesful)
+                failed_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                    for i in failed)
                 if failed:
                     failed_dev_configs.add(config['name'])
                     continue
@@ -716,17 +719,21 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
                 continue
             if update_user_images:
                 if bbi_daily.update_user_image(config, dev_config):
-                    succesful_tasks.append('{0}: update user image'.format(config['name']))
+                    succesful_tasks.append('{0}: update user image'.format(
+                        config['name']))
                 else:
-                    failed_tasks.append('{0}: update user image'.format(config['name']))
+                    failed_tasks.append('{0}: update user image'.format(
+                        config['name']))
                     continue
             if user_tests:
                 succesful, failed = bbi_daily.tests(config, dev_config)
-                succesful_tasks.extend('{0}: {1}'.format(config['name'], i) for i in succesful)
-                failed_tasks.extend('{0}: {1}'.format(config['name'], i) for i in failed)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                       for i in succesful)
+                failed_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                    for i in failed)
                 if failed:
                     continue
-    except:
+    except Exception:
         log = ['Succesful tasks']
         log.extend('  - {0}'.format(i) for i in succesful_tasks)
         if failed_tasks:
@@ -740,4 +747,5 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         if failed_tasks:
             log .append('Failed tasks')
             log.extend('  - {0}'.format(i) for i in failed_tasks)
-        bbi_daily.log(bbi_daily.bbe_name, 'finished', (1 if failed_tasks else 0), '\n'.join(log))
+        bbi_daily.log(bbi_daily.bbe_name, 'finished',
+                      (1 if failed_tasks else 0), '\n'.join(log))

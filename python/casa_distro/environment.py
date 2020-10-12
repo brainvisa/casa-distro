@@ -723,6 +723,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
                       base_directory=base_directory,
                       verbose=verbose)
 
+
 class BBIDaily:
     def __init__(self,
                  jenkins=None):
@@ -821,7 +822,7 @@ class BBIDaily:
         successful_tests = []
         failed_tests = []
         for test, commands in tests.items():
-            log= []
+            log = []
             start = time.time()
             success = True
             for command in commands:
@@ -896,8 +897,9 @@ class BBIDaily:
         result, log = self.call_output([self.casa_distro_admin,
                                 'create_user_image',
                                 'version={0}'.format(user_config['version']),
-                                'environment_name={0}'.format(dev_config['name'])])
+                                'environment_name={0}'.format(
+                                    dev_config['name'])])
         duration = int(1000 * (time.time() - start))
-        self.log(user_config['name'], 'update user image', result, log)
+        self.log(user_config['name'], 'update user image', result, log,
+                 duration=duration)
         return result == 0
-

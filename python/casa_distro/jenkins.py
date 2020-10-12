@@ -5,6 +5,7 @@ import binascii
 import requests
 import six
 
+
 class BrainVISAJenkins:
     '''
     Wrapper to access Jenkins server of BrainVISA and push bv_maker results
