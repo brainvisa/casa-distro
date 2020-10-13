@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 from distutils.spawn import find_executable
 import json
+import locale
 import os
 import os.path as osp
 import sys
@@ -253,24 +254,31 @@ def _guess_opengl_mode():
 
 
 def _nv_libs_binds():
-    '''
-    nvidia-container-cli seems do miss one library (or directory):
+    '''Workaround for missing NVidia libraries.
+
+    This is a workaround for some cases where Singularity with the --nv option
+    fails to mount all libraries required for OpenGL programs to function
+    properly, see <https://github.com/brainvisa/casa-distro/issues/153>.
+
+    Singularity seems to miss one library (or directory):
     libnvidia-tls is present twice in their drivers, ie:
     /usr/lib/x86_64-linux-gnu/libnvidia-tls.so.390.138
     /usr/lib/x86_64-linux-gnu/tls/libnvidia-tls.so.390.138
     the latter is not mounted through nvidia-container-cli and this seems to
-    cause random crashes in OpenGL applications (ramdom: rom one container
+    cause random crashes in OpenGL applications (ramdom: from one container
     start to another, but within the same singularity run the behaviour is
     consistent).
 
     _nv_libs_binds() adds the additional missing lib directory (tls/)
+
     '''
     if not find_executable('nvidia-container-cli'):
-        # here nvidia-container-cli i snot involved, we don't handle this.
+        # here nvidia-container-cli is not involved, we don't handle this.
         return []
 
-    libs = subprocess.check_output(['nvidia-container-cli', 'list',
-                                    '--libraries']).strip().split()
+    out_data = subprocess.check_output(['nvidia-container-cli', 'list',
+                                        '--libraries'])
+    libs = out_data.decode(locale.getpreferredencoding()).strip().split()
     added_libs = []
     for lib in libs:
         ldir, blib = osp.split(lib)
@@ -279,7 +287,7 @@ def _nv_libs_binds():
                 added_libs.append(osp.join(ldir, 'tls'))
             elif osp.basename(ldir) == 'tls':
                 # 'tls' is already the dir for libnvidia-tls. Unfortunately
-                # sinfgularity doesn't bind it but takes its parent dir's
+                # singularity doesn't bind it but takes its parent dir's
                 # libnvidia-tls...
                 added_libs.append(ldir)
             break
