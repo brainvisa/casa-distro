@@ -41,15 +41,14 @@ The hardware representation of an environment is a set of directories in the :re
 * For a **user environment**:
 
   | - **host/conf:** configuration of the environment (config file, etc.). There are some predefined content for ``conf`` that can be generated with the command ``casa_distro setup`` but the whole environment can be customized by editing files in this directory.
-  | - **host/home:** a "home directory" for the user inside the casa-distro container of the environment. This is separated from the host home directory because as it is a container, the configuration here may differ from the host one, and cause confusions and incompatibilities.
   | - **host/host_bin:** directory containing run scripts for all |bv| executable programs, and also the :doc:`bv_command`. Programs here are meant to be run from the *host machine*, not from within the container. This directory can safely be setup in the host system ``PATH`` environment variable.
   | - **host/python:** contains the python modules needed to run the :doc:`bv_command` on the *host machine* side.
+  | - **home:** a "home directory" for the user inside the casa-distro container of the environment. This is separated from the host home directory because as it is a container, the configuration here may differ from the host one, and cause confusions and incompatibilities.
   | - **install:** the |bv| distribution directory. This directory is actually in the container image, and is not visible from the host machine.
 
 * for a **developer environment**:
 
   | - **host/conf:** configuration of the environment (config file, BioProj passwords, ``bv_maker.cfg``, etc.). The content of this directory is the input of the compilation, packaging and testing steps. There are some predefined content for ``conf`` that can be generated with the command ``casa_distro setup_dev`` but the whole environment can be customized by editing files in this directory.
-  | - **host/home:** a "home directory" for the user inside the casa-distro container of the environment. This is separated from the host home directory because as it is a container, the configuration here may differ from the host one, and cause confusions and incompatibilities.
   | - **host/src:** source of selected components for the workflow. The content
     of this directory is first created by ``bv_maker`` from within a
     Docker container running the targeted operting system. Simply call
@@ -61,6 +60,7 @@ The hardware representation of an environment is a set of directories in the :re
     as ``casa_distro bv_maker``.
   | - **host/install:** directory containing distribution packages. Packages that
     are created by bv\_maker are stored in that directory.
+  | - **home:** a "home directory" for the user inside the casa-distro container of the environment. This is separated from the host home directory because as it is a container, the configuration here may differ from the host one, and cause confusions and incompatibilities.
   | - **test:** directory used during testing. Typically reference data
     will be downloaded in this directory and compared to test data
     generated, in this directory, by test commands.

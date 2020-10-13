@@ -310,11 +310,14 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     if osp.exists(overlay):
         singularity += ['--overlay', overlay]
 
-    casa_home_host_path = osp.join(config['directory'], 'host', 'home')
+    casa_home_host_path = osp.join(config['directory'], 'home')
 
     if gui:
         xauthority = osp.expanduser('~/.Xauthority')
         # TODO: use "xauth extract" because ~/.Xauthority does not always exist
+        # Also, use a temporary file for each run, because a single
+        # ~/.Xauthority file can be overwritten by concurrent runs... which may
+        # not all using the same X server.
         if osp.exists(xauthority):
             shutil.copy(xauthority,
                         osp.join(casa_home_host_path, '.Xauthority'))
@@ -359,7 +362,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             singularity_home = value
         else:
             container_env['SINGULARITYENV_' + name] = value
-    default_casa_home = '/casa/host/home'
+    default_casa_home = '/casa/home'
     if singularity_home is None:
         singularity_home = default_casa_home
 
