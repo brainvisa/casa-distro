@@ -14,7 +14,7 @@ import sys
 import traceback
 
 from casa_distro.command import command, check_boolean
-from casa_distro.defaults import (default_build_workflow_repository,
+from casa_distro.defaults import (default_base_directory,
                                   default_download_url)
 from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
@@ -47,7 +47,7 @@ def download_image(type,
                    filename='casa-{type}-*.{extension}',
                    url=default_download_url + '/{container_type}',
                    output=osp.join(
-                       default_build_workflow_repository, '{filename}'),
+                       default_base_directory, '{filename}'),
                    container_type='singularity',
                    force=False,
                    verbose=True):
@@ -100,7 +100,7 @@ def download_image(type,
 def create_base_image(type,
                       name='casa-{type}-{system}',
                       base=None,
-                      output=osp.join(default_build_workflow_repository,
+                      output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
                       container_type='singularity',
                       memory='8192',
@@ -182,15 +182,15 @@ def create_base_image(type,
     if base is None:
         if type == 'system':
             base = osp.join(
-                default_build_workflow_repository,
+                default_base_directory,
                 '*ubuntu-*.{extension}'.format(extension=origin_extension))
         elif type == 'run':
             base = osp.join(
-                default_build_workflow_repository,
+                default_base_directory,
                 'casa-system-ubuntu-*.{extension}'.format(extension=extension))
         else:
             base = osp.join(
-                default_build_workflow_repository,
+                default_base_directory,
                 'casa-run-ubuntu-*.{extension}'.format(extension=extension))
 
     if not osp.exists(base):
@@ -281,7 +281,7 @@ def create_base_image(type,
 @command
 def publish_base_image(type,
                        image=osp.join(
-                           default_build_workflow_repository,
+                           default_base_directory,
                            'casa-{type}-*.{extension}'),
                        container_type='singularity',
                        verbose=True):
@@ -353,7 +353,7 @@ def create_user_image(
         environment_name=None,
         container_type=None,
         output=osp.join(
-            default_build_workflow_repository,
+            default_base_directory,
             'releases', '{name}{extension}'),
         base_directory=casa_distro_directory(),
         install='yes',

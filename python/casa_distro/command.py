@@ -43,7 +43,7 @@ param_help = {
 {indent}default={base_directory_default}
 {indent}Directory where images and environments are stored. This parameter
 {indent}can be passed on the commandline, or set via the
-{indent}CASA_DEFAULT_REPOSITORY environment variable.''',
+{indent}CASA_BASE_DIRECTORY environment variable.''',
     'type': '''type
 {indent}default={type_default}
 {indent}If given, select environment having the given type.''',

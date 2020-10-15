@@ -4,9 +4,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import os.path as osp
 
-default_build_workflow_repository = os.environ.get('CASA_DEFAULT_REPOSITORY')
-if not default_build_workflow_repository:
-    default_build_workflow_repository = osp.expanduser('~/casa_distro')
+default_base_directory = os.environ.get('CASA_BASE_DIRECTORY')
+if not default_base_directory:
+    default_base_directory = osp.expanduser('~/casa_distro')
 default_repository_server = 'brainvisa.info'
 default_repository_server_directory = 'prod/www/casa-distro'
 default_download_url = 'http://%s/casa-distro' % default_repository_server
