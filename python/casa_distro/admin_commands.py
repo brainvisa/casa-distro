@@ -9,16 +9,20 @@ import os
 import os.path as osp
 from pprint import pprint
 import re
-from subprocess import check_call
-
+import subprocess
+import sys
+import traceback
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_build_workflow_repository,
                                   default_download_url)
-from casa_distro.environment import (casa_distro_directory,
+from casa_distro.environment import (BBIDaily,
+                                     casa_distro_directory,
+                                     iter_environments,
                                      run_container,
                                      select_environment,
                                      update_container_image)
+from casa_distro.jenkins import BrainVISAJenkins
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
@@ -332,10 +336,10 @@ def publish_base_image(type,
     metadata['md5'] = file_hash(image)
     json.dump(metadata, open(metadata_file, 'w'), indent=4)
 
-    check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                metadata_file, image,
-                'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
-                % container_type])
+    subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
+                           metadata_file, image,
+                           'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
+                           % container_type])
 
 
 @command
@@ -344,9 +348,10 @@ def create_user_image(
         name='{distro}-{version}',
         base_image='{base_directory}/casa-run-{system}{extension}',
         distro=None,
+        branch=None,
         system=None,
         environment_name=None,
-        container_type='singularity',
+        container_type=None,
         output=osp.join(
             default_build_workflow_repository,
             'releases', '{name}{extension}'),
@@ -384,11 +389,13 @@ def create_user_image(
         default={base_image_default}
         Name of the "run" image used to generate the new user image
     distro
-        If given, select environment having the given distro name.
+        If given, select dev environment having the given distro name.
+    branch
+        If given, select dev environment having the given branch name.
     system
-        If given, select environments having the given system name.
+        If given, select dev environments having the given system name.
     environment_name
-        If given, select environment by its name.
+        If given, select dev environment by its name.
     container_type
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or
@@ -418,29 +425,29 @@ def create_user_image(
     upload = check_boolean('upload', upload)
 
     verbose = verbose_file(verbose)
-    if container_type == 'singularity':
-        extension = '.sif'
-    elif container_type == 'vbox':
-        extension = '.vdi'
-    else:
-        raise ValueError('Unsupported container type: %s' % container_type)
     config = select_environment(base_directory,
                                 type='dev',
                                 distro=distro,
-                                branch='master',
+                                branch=branch,
                                 system=system,
                                 name=environment_name,
                                 container_type=container_type)
+    container_type = config['container_type']
+    if container_type == 'singularity':
+        extension = '.sif'
+        module = casa_distro.singularity
+    elif container_type == 'vbox':
+        extension = '.vdi'
+        module = casa_distro.vbox
+    else:
+        raise ValueError('Unsupported container type: {0}'.format(
+            container_type))
     name = name.format(version=version, **config)
     kwargs = config.copy()
     kwargs.pop('name', None)
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            extension=extension,
                                                            **kwargs)
-    if container_type == 'vbox':
-        module = casa_distro.vbox
-    else:
-        module = casa_distro.singularity
 
     metadata = {
         'name': name,
@@ -490,6 +497,19 @@ def create_user_image(
                       container_options=None,
                       base_directory=base_directory,
                       verbose=verbose)
+        run_container(config=config,
+                      command=['make',
+                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                               'install-test'] + cpu_opt,
+                      gui=False,
+                      opengl="auto",
+                      root=False,
+                      cwd='/casa/host/build',
+                      env={},
+                      image=None,
+                      container_options=None,
+                      base_directory=base_directory,
+                      verbose=verbose)
 
     metadata_file = output + '.json'
 
@@ -513,5 +533,219 @@ def create_user_image(
     if upload:
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
             '{container_type}'.format(**metadata)
-        check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                    metadata_file, output, url])
+        subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
+                               metadata_file, output, url])
+
+
+@command
+def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
+              version=None,
+              jenkins_server=None,
+              jenkins_auth='{base_directory}/jenkins_auth',
+              jenkins_password=None,
+              update_casa_distro='yes',
+              update_base_images='yes',
+              bv_maker_steps='sources,configure,build,doc',
+              dev_tests='yes',
+              update_user_images='yes',
+              user_tests='yes',
+              base_directory=casa_distro_directory(),
+              verbose=None):
+    '''
+    In BrainVISA Build Infrastructure (BBI), there are be some machines
+    that are be targeted to do some builds and tests. This command is
+    used to perform these tasks and is be typically used in a crontab
+    on each machine. It does the following things (and log progress and
+    results in Jenkins server) :
+
+    - Update casa_distro to latest master version and restart for the next
+      steps
+    - Parse all configured environments selected with a filter as with mrun
+      command
+    - Update dev and run images used by selected environments from BrainVISA
+      site
+    - For all selected dev environments, perform the following tasks :
+        - bv_maker sources
+        - bv_maker configure
+        - bv_maker build
+        - bv_maker doc
+        - perform all tests (as bv_maker test)
+    - For all selected user environments
+        - find the corresponding dev environment
+        - recreate the user environment image with casa_distro_admin
+          create_user_image
+        - perform all tests defined in the correponding dev environment
+          but execute them in the user environment
+
+
+    Parameters
+    ----------
+    {type}
+    {distro}
+    {branch}
+    {system}
+    {name}
+    {version}
+    jenkins_server
+        default = {jenkins_server_default}
+        Base URL of the Jenkins server used to send logs (e.g.
+        https://brainvisa.info/builds). If none is given, logs are
+        written to standard output.
+    jenkins_auth
+        default = {jenkins_auth_default}
+        Name of a file containing user name and password (can be a token)
+        to use to contact Jenkins server REST API. The file must have only
+        two lines with login on first line and password on second.
+    update_casa_distro
+        default = {update_casa_distro_default}
+        If true, yes or 1, update casa_distro
+    update_base_images
+        default = {update_base_images_default}
+        Boolean indicating if the update images step must be done
+    bv_maker_steps
+        default = {bv_maker_steps_default}
+        Coma separated list of bv_maker commands to perform on dev
+        environments. May be empty to do nothing.
+    dev_tests
+        default = {dev_tests_default}
+        Boolean indicating if the tests must be performed on dev environments
+    update_user_images
+        default = {update_user_images_default}
+        Boolean indicating if images of user environment must be recreated
+    user_tests
+        default = {user_tests_default}
+        Boolean indicating if the tests must be performed on user environments
+    {base_directory}
+    {verbose}
+    '''
+
+    verbose = verbose_file(verbose)
+    update_casa_distro = boolean_value(update_casa_distro)
+    update_base_images = boolean_value(update_base_images)
+    dev_tests = boolean_value(dev_tests)
+    update_user_images = boolean_value(update_user_images)
+    user_tests = boolean_value(user_tests)
+
+    if jenkins_server:
+        jenkins_auth = jenkins_auth.format(base_directory=base_directory)
+        jenkins_login, jenkins_password = [i.strip() for i in
+                                           open(jenkins_auth).readlines()[:2]]
+        jenkins = BrainVISAJenkins(jenkins_server, jenkins_login,
+                                   jenkins_password)
+    else:
+        jenkins = None
+    bbi_daily = BBIDaily(jenkins=jenkins)
+
+    if update_casa_distro:
+        # Update casa_distro with git and restart with update_casa_distro=no
+        bbi_daily.update_casa_distro()
+        res = subprocess.call([i for i in sys.argv
+                               if 'update_casa_distro' not in i]
+                              + ['update_casa_distro=no'])
+        sys.exit(res)
+
+    succesful_tasks = []
+    failed_tasks = []
+    try:
+
+        # Parse selected environments
+        dev_configs = {}
+        run_configs = []
+        images = set()
+        for config in iter_environments(base_directory,
+                                        type=type,
+                                        distro=distro,
+                                        branch=branch,
+                                        system=system,
+                                        name=name,
+                                        version=version):
+            if config['type'] == 'dev':
+                key = (config['distro'], config['branch'], config['system'])
+                if key in dev_configs:
+                    raise RuntimeError('Several dev environment found for '
+                                       'distro={0}, branch={1} and '
+                                       'system={1}'.format(*key))
+                dev_configs[key] = config
+                images.add(config['image'])
+            elif config['type'] == 'run':
+                run_configs.append(config)
+                images.add(config['image'])
+
+        # Associate run environments to corresponding dev environment
+        for i in range(len(run_configs)):
+            config = run_configs[i]
+            key = (config['distro'], u'master', config['system'])
+            dev_config = dev_configs.get(key)
+            if dev_config is None:
+                raise RuntimeError('No dev environment found for '
+                                   'distro={0}, branch={1} and '
+                                   'system={1}'.format(*key))
+            run_configs[i] = (config, dev_config)
+        dev_configs = list(dev_configs.values())
+
+        if update_base_images:
+            if bbi_daily.update_base_images(images):
+                succesful_tasks.append('update_base_images')
+            else:
+                failed_tasks.append('update_base_images')
+
+        failed_dev_configs = set()
+        if bv_maker_steps:
+            bv_maker_steps = bv_maker_steps.split(',')
+        for config in dev_configs:
+            failed = None
+            if bv_maker_steps:
+                succesful, failed = bbi_daily.bv_maker(config, bv_maker_steps)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                       for i in succesful)
+                if failed:
+                    failed_tasks.append('{0}: {1}'.format(config['name'],
+                                                          failed))
+                if failed:
+                    failed_dev_configs.add(config['name'])
+                    continue
+            if dev_tests:
+                succesful, failed = bbi_daily.tests(config, config)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                       for i in succesful)
+                failed_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                    for i in failed)
+                if failed:
+                    failed_dev_configs.add(config['name'])
+                    continue
+
+        for config, dev_config in run_configs:
+            if dev_config['name'] in failed_dev_configs:
+                continue
+            if update_user_images:
+                if bbi_daily.update_user_image(config, dev_config):
+                    succesful_tasks.append('{0}: update user image'.format(
+                        config['name']))
+                else:
+                    failed_tasks.append('{0}: update user image'.format(
+                        config['name']))
+                    continue
+            if user_tests:
+                succesful, failed = bbi_daily.tests(config, dev_config)
+                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                       for i in succesful)
+                failed_tasks.extend('{0}: {1}'.format(config['name'], i)
+                                    for i in failed)
+                if failed:
+                    continue
+    except Exception:
+        log = ['Succesful tasks']
+        log.extend('  - {0}'.format(i) for i in succesful_tasks)
+        if failed_tasks:
+            log .append('Failed tasks')
+            log.extend('  - {0}'.format(i) for i in failed_tasks)
+        log += ['', 'ERROR:', '', traceback.format_exc()]
+        bbi_daily.log(bbi_daily.bbe_name, 'error', 1, '\n'.join(log))
+    else:
+        log = ['Succesful tasks']
+        log.extend('  - {0}'.format(i) for i in succesful_tasks)
+        if failed_tasks:
+            log .append('Failed tasks')
+            log.extend('  - {0}'.format(i) for i in failed_tasks)
+        bbi_daily.log(bbi_daily.bbe_name, 'finished',
+                      (1 if failed_tasks else 0), '\n'.join(log))
