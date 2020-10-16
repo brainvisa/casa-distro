@@ -287,12 +287,12 @@ _casa_distro_directory = None
 def casa_distro_directory():
     """
     Return the defaut casa_distro directory.
-    Either $CASA_DEFAULT_REPOSITORY or ~/casa_distro.
+    Either $CASA_BASE_DIRECTORY or ~/casa_distro.
     """
     global _casa_distro_directory
 
     if _casa_distro_directory is None:
-        _casa_distro_directory = os.environ.get('CASA_DEFAULT_REPOSITORY')
+        _casa_distro_directory = os.environ.get('CASA_BASE_DIRECTORY')
         if not _casa_distro_directory:
             _casa_distro_directory = osp.expanduser('~/casa_distro')
     return _casa_distro_directory

@@ -32,9 +32,9 @@ def share_directories():
     """
 
     share_directories = []
-    from casa_distro.defaults import default_build_workflow_repository
-    if default_build_workflow_repository is not None:
-        share_directories.append(osp.join(default_build_workflow_repository,
+    from casa_distro.defaults import default_base_directory
+    if default_base_directory is not None:
+        share_directories.append(osp.join(default_base_directory,
                                           'share'))
     share_directories += [osp.join(osp.expanduser('~'), '.local', 'share',
                                    'casa-distro')]
