@@ -92,12 +92,14 @@ mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
         # Use singularity to chown because it may be in sudoers
         subprocess.check_call(['sudo', 'singularity', 'run', system,
                                'chown', '--reference', tmp,
-                               tmp_output])
+                               tmp_output],
+                              cwd=tmp)
         shutil.move(tmp_output, output)
     finally:
         # Use singularity to remove temporary directory because it may be in sudoers
         subprocess.check_call(['sudo', 'singularity', 'run', system,
-                               'rm', '-R', tmp])
+                               'rm', '-R', tmp],
+                              cwd=tmp)
 
 
 @command
