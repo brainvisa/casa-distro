@@ -70,10 +70,10 @@ export PATH=/usr/local/go/bin:$PATH
 git clone https://github.com/hpcng/singularity.git
 cd singularity
 git checkout v${SINGULARITY_VERSION}
-PATH=$TMP/go/bin:${PATH} GOPATH="$TMP/.go/cache" ./mconfig
-make -C builddir dist
-PATH=$TMP/go/bin:${PATH} GOPATH="$TMP/.go/cache" rpmbuild -tb  --nodeps singularity-${SINGULARITY_VERSION}.tar.gz
-alien --to-deb --scripts $HOME/rpmbuild/RPMS/x86_64/singularity-${SINGULARITY_VERSION}-1.x86_64.rpm
+PATH=$TMP/go/bin:${PATH} GOPATH="$TMP/cache" ./mconfig
+GOPATH="$TMP/cache" make -C builddir dist
+PATH=$TMP/go/bin:${PATH} GOPATH="$TMP/cache" rpmbuild -tb  --nodeps singularity-${SINGULARITY_VERSION}.tar.gz
+alien --to-deb --scripts $TMP/rpmbuild/RPMS/x86_64/singularity-${SINGULARITY_VERSION}-1.x86_64.rpm
 mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
 ''')
         tmp_output = '/tmp/singularity-{}-x86_64.deb'.format(system)
@@ -89,12 +89,15 @@ mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
                                system,
                                'sh', build_sh],
                               cwd=tmp)
+        # Use singularity to chown because it may be in sudoers
         subprocess.check_call(['sudo', 'singularity', 'run', system,
                                'chown', '--reference', tmp,
                                tmp_output])
         shutil.move(tmp_output, output)
     finally:
-        shutil.rmtree(tmp)
+        # Use singularity to remove temporary directory because it may be in sudoers
+        subprocess.check_call(['sudo', 'singularity', 'run', system,
+                               'rm', '-R', tmp])
 
 
 @command
