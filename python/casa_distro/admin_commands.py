@@ -67,12 +67,14 @@ wget https://dl.google.com/go/go$GO_VERSION.$OS-$ARCH.tar.gz
 tar -C /usr/local -xzvf go$GO_VERSION.$OS-$ARCH.tar.gz
 rm go$GO_VERSION.$OS-$ARCH.tar.gz
 export PATH=/usr/local/go/bin:$PATH
+export GOPATH="$TMP/cache"
 git clone https://github.com/hpcng/singularity.git
 cd singularity
 git checkout v${SINGULARITY_VERSION}
-PATH=$TMP/go/bin:${PATH} GOPATH="$TMP/cache" ./mconfig
-GOPATH="$TMP/cache" make -C builddir dist
-PATH=$TMP/go/bin:${PATH} GOPATH="$TMP/cache" rpmbuild -tb  --nodeps singularity-${SINGULARITY_VERSION}.tar.gz
+./mconfig
+make -C builddir dist
+cd $TMP
+rpmbuild -tb  --nodeps singularity/singularity-${SINGULARITY_VERSION}.tar.gz
 alien --to-deb --scripts $TMP/rpmbuild/RPMS/x86_64/singularity-${SINGULARITY_VERSION}-1.x86_64.rpm
 mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
 ''')
@@ -82,6 +84,7 @@ mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
                                'docker://{}'.format(system.replace('-', ':'))],
                               cwd=tmp)
         subprocess.check_call(['sudo', 'singularity', 'run', '--writable',
+                               '--home', tmp,
                                '--env', 'TMP={}'.format(tmp),
                                '--env', 'SYSTEM={}'.format(system),
                                '--env', 'GO_VERSION={}'.format(go_version),
