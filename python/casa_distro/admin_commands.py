@@ -55,12 +55,13 @@ def singularity_deb(system,
                            version=version)
     tmp = tempfile.mkdtemp(prefix='singularity-deb-')
     try:
-        me = os.getlogin()
         build_sh = osp.join(tmp, 'build.sh')
         open(build_sh, 'w').write('''#!/bin/sh
 set -xe
 apt update -y
-DEBIAN_FRONTEND=noninteractive apt install -y build-essential uuid-dev squashfs-tools libseccomp-dev wget pkg-config git libcryptsetup-dev elfutils rpm alien
+DEBIAN_FRONTEND=noninteractive apt install -y build-essential uuid-dev \
+  squashfs-tools libseccomp-dev wget pkg-config git libcryptsetup-dev \
+  elfutils rpm alien
 cd $TMP
 export OS=linux ARCH=amd64
 wget https://dl.google.com/go/go$GO_VERSION.$OS-$ARCH.tar.gz
@@ -75,7 +76,8 @@ git checkout v${SINGULARITY_VERSION}
 make -C builddir dist
 cd $TMP
 rpmbuild -tb  --nodeps singularity/singularity-${SINGULARITY_VERSION}.tar.gz
-alien --to-deb --scripts $TMP/rpmbuild/RPMS/x86_64/singularity-${SINGULARITY_VERSION}-1.x86_64.rpm
+alien --to-deb --scripts \
+  $TMP/rpmbuild/RPMS/x86_64/singularity-${SINGULARITY_VERSION}-1.x86_64.rpm
 mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
 ''')
         tmp_output = '/tmp/singularity-{}-x86_64.deb'.format(system)
@@ -88,7 +90,8 @@ mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
                                '--env', 'TMP={}'.format(tmp),
                                '--env', 'SYSTEM={}'.format(system),
                                '--env', 'GO_VERSION={}'.format(go_version),
-                               '--env', 'SINGULARITY_VERSION={}'.format(version),
+                               '--env',
+                               'SINGULARITY_VERSION={}'.format(version),
                                system,
                                'sh', build_sh],
                               cwd=tmp)
@@ -99,7 +102,8 @@ mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
                               cwd=tmp)
         shutil.move(tmp_output, output)
     finally:
-        # Use singularity to remove temporary directory because it may be in sudoers
+        # Use singularity to remove temporary directory because it may be
+        # in sudoers
         subprocess.check_call(['sudo', 'singularity', 'run', system,
                                'rm', '-R', tmp],
                               cwd=tmp)
