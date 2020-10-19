@@ -49,8 +49,33 @@ def singularity_deb(system,
                     output='singularity-{version}-{system}.deb',
                     version='3.6.4',
                     go_version='1.13'):
-    '''
-    '''
+    """Create a Debian package to install Singularity.
+    Perform the whole installation process from a rw system and Singularity
+    source. Then put the result in a *.deb file.
+
+    Parameters
+    ----------
+    system
+        Target system. E.g. ubuntu-20.04
+
+    output
+        default={output_default}
+        Location of the resulting Debian package file.
+
+    base
+        Source file use to buld the image. The default value depends on image
+        type and container type.
+
+    version
+        default={version_default}
+        Version of Singularity to use. This must be a valid release version.
+
+    go_version
+        default={go_version_default}
+        Version of Go language to install during Singularity building process.
+        Go language is not included in the final package.
+    """
+
     output = output.format(system=system,
                            version=version)
     tmp = tempfile.mkdtemp(prefix='singularity-deb-')
