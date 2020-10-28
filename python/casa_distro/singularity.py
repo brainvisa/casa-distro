@@ -381,6 +381,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         singularity += ['--home', singularity_home]
     else:
         container_env['SINGULARITYENV_HOME'] = singularity_home
+    singularity += ['--bind',
+                    '%s:%s' % (casa_home_host_path, singularity_home)]
 
     # The following code may prevent containers to run on some system
     # handle ~/.ssh
