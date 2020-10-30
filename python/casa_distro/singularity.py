@@ -22,7 +22,7 @@ def image_name_match(image_name, filters):
     '''
     Tests if an image name matches one of the filters.
     It uses fnmatch syntax.
-    '''     
+    '''
     for f in filters:
         if fnmatch.fnmatch(image_name, f):
             return True
@@ -70,7 +70,7 @@ def create_singularity_images(bwf_dir, image_name_filters=['cati/*'],
                 env_path[v] = env.pop(v)
             elif v == 'LANG':
                 env_lang = '    if [ -z "${LANG}" -o "${LANG}" = "C" ]; then export LANG=%s; fi' % env.pop(v)
-            
+
         entry_point = docker_img_config.get('Entrypoint')
         cmd = docker_img_config.get('Cmd')
         if entry_point:
@@ -131,7 +131,7 @@ From: %s
                     open(singularity_image + '.md5', 'w').write(image_hash)
                     open(docker_id_file, 'w').write(iid)
                 finally:
-                    subprocess.call(['sudo', 'rm', '-Rf', docker_files]) 
+                    subprocess.call(['sudo', 'rm', '-Rf', docker_files])
             finally:
                 subprocess.call(['docker', 'rm', container])
         finally:
@@ -162,18 +162,18 @@ def download_singularity_image(build_workflows_repository, container_image):
         downloader.download_file(url, tmp_path,
                                  callback=downloader.stdout_progress)
     except Exception as e:
-        print('Unable to update singularity image from', 
+        print('Unable to update singularity image from',
               url, 'to', image_path)
         print(e)
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
         return False
-    
+
     tmp_md5 =  image_path + '.md5.tmp'
     try:
         downloader.download_file(url + '.md5', tmp_md5)
     except Exception as e:
-        print('Unable to update singularity image hash from', 
+        print('Unable to update singularity image hash from',
               url + '.md5', 'to', image_path + '.md5')
         print(e)
         if os.path.exists(tmp_md5):
@@ -219,7 +219,7 @@ def update_singularity_image(build_workflows_repository, container_image,
             try:
                 downloader.download_file(url, tmp.name)
             except Exception as e:
-                print('Unable to update singularity image from', 
+                print('Unable to update singularity image from',
                       url, 'to', tmp.name)
                 print(e)
 
@@ -265,7 +265,8 @@ def singularity_run_help():
 
 def singularity_has_option(option):
     doc = singularity_run_help()
-    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
+    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0 \
+        or doc.find(' %s|' % option) >= 0 or doc.find('|%s|') >= 0
 
 
 def run_singularity(casa_distro, command, gui=False, interactive=False,
@@ -273,6 +274,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
                     cwd=None, env=None, container_options=[],
                     verbose=None):
     verbose = log.getLogFile(verbose)
+    src_home_dir = casa_distro.get('source_home_directory')
 
     # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
     # to the container
@@ -301,7 +303,7 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         tmp_env.update(casa_distro.get('container_gui_env', {}))
     if env is not None:
         tmp_env.update(env)
-    
+
     singularity_home = None
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
@@ -309,10 +311,10 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
         value = value % casa_distro
         value = osp.expandvars(value)
         if name == 'HOME':
-            if singularity_has_option('--home'):
+            if singularity_has_option('--home') and src_home_dir:
                 # singularity3 uses a commandline option and complains about
                 # the env variable
-                singularity_home = ['--home', value]
+                singularity_home = ['--home', '%s:%s' % (src_home_dir, value)]
             else:
                 singularity_home = []
                 container_env['SINGULARITYENV_' + name] = value
@@ -320,24 +322,24 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
             container_env['SINGULARITYENV_' + name] = value
 
     if singularity_home is None:
-        if singularity_has_option('--home'):
+        if singularity_has_option('--home') and src_home_dir:
             # In singularity >= 3.0 host home directory is mounted
             # and configured (e.g. in environment variables) if no
             # option is given.
-            singularity_home = ['--home', '/casa/home']
+            singularity_home = ['--home', '%s:/casa/home' % src_home_dir]
         else:
             container_env['SINGULARITYENV_HOME'] = '/casa/home'
     if singularity_home:
         singularity += singularity_home
 
-    # handle ~/.ssh
-    ssh_dir = osp.join(homedir, '.ssh')
-    if singularity_home is None:
-        singularity_home = ['/casa/home']
-    if osp.isdir(ssh_dir):
-        singularity += [
-            '--bind',
-            '%s:%s' % (ssh_dir, osp.join(singularity_home[-1], '.ssh'))]
+    ## handle ~/.ssh
+    #ssh_dir = osp.join(homedir, '.ssh')
+    #if singularity_home is None:
+        #singularity_home = ['/casa/home']
+    #if osp.isdir(ssh_dir):
+        #singularity += [
+            #'--bind',
+            #'%s:%s' % (ssh_dir, osp.join(singularity_home[-1], '.ssh'))]
 
     conf_options = casa_distro.get('container_options', [])
     if cwd:
@@ -394,31 +396,31 @@ def run_singularity(casa_distro, command, gui=False, interactive=False,
 
 
 
-def create_writable_singularity_image(image, 
+def create_writable_singularity_image(image,
                                       build_workflow_directory,
-                                      build_workflows_repository,            
+                                      build_workflows_repository,
                                       verbose):
     verbose = log.getLogFile(verbose)
     if build_workflow_directory:
         casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
         casa_distro = json.load(open(casa_distro_json))
         image = casa_distro.get('container_image')
-        
+
     read_image = get_image_filename(image, build_workflows_repository)
     write_image = read_image[:-4] + 'writable'
     check_call(['sudo', 'singularity', 'build', '--sandbox', write_image, read_image])
 
 
-def singularity_root_shell(image, 
+def singularity_root_shell(image,
                            build_workflow_directory,
-                           build_workflows_repository,            
+                           build_workflows_repository,
                            verbose):
     verbose = log.getLogFile(verbose)
     if build_workflow_directory:
         casa_distro_json = osp.join(build_workflow_directory, 'conf', 'casa_distro.json')
         casa_distro = json.load(open(casa_distro_json))
         image = casa_distro.get('container_image')
-        
+
     write_image = get_image_filename(image, build_workflows_repository)
     if not write_image.endswith('.writable.simg') \
             and not write_image.endswith('.writable'):
