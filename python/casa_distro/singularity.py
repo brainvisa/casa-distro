@@ -193,7 +193,8 @@ def singularity_run_help():
 
 def singularity_has_option(option):
     doc = singularity_run_help()
-    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0
+    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0 \
+        or doc.find(' %s|' % option) >= 0 or doc.find('|%s|') >= 0
 
 
 def _X_has_proprietary_nvidia():
@@ -378,11 +379,12 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         # In singularity >= 3.0 host home directory is mounted
         # and configured (e.g. in environment variables) if no
         # option is given.
-        singularity += ['--home', singularity_home]
+        singularity += ['--home',
+                        '%s:%s' % (casa_home_host_path, singularity_home)]
     else:
         container_env['SINGULARITYENV_HOME'] = singularity_home
-    singularity += ['--bind',
-                    '%s:%s' % (casa_home_host_path, singularity_home)]
+        singularity += ['--bind',
+                        '%s:%s' % (casa_home_host_path, singularity_home)]
 
     # The following code may prevent containers to run on some system
     # handle ~/.ssh
