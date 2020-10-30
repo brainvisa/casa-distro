@@ -110,8 +110,20 @@ PIP2="sudo python2 -m pip --no-cache-dir"
 $PIP2 install -U --force-reinstall pip
 $PIP2 uninstall --yes jupyter-console
 $PIP2 uninstall --yes dipy
+$PIP2 install -U --force-reinstall 'ipython~=5.9.0'
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
+
+# fix pip uglinesses, it did actually wipe away
+# /usr/lib/python2.7/dist-packages/backports !
+sudo apt-get update
+sudo apt-get install --reinstall python-backports.functools-lru-cache python-backports-shutil-get-terminal-size python-configparser
+# Free disk space by removing APT caches
+sudo apt-get clean
+if [ -z "$APT_NO_LIST_CLEANUP" ]; then
+    # delete all the apt list files since they're big and get stale quickly
+    sudo rm -rf /var/lib/apt/lists/*
+fi
 
 # Remove these programs, which hide the Python 2 versions installed by APT.
 sudo rm -f /usr/local/bin/nib-*
