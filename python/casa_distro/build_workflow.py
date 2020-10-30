@@ -658,6 +658,7 @@ def run_container(bwf_directory, command, gui=False, interactive=False,
     casa_distro['build_workflow_dir'] = bwf_directory
     container_type = casa_distro.get('container_type')
 
+    src_home_dir = osp.join(bwf_directory, 'home')
     if casa_distro.get('user_specific_home'):
         bwf_relative_subdirectory = osp.normcase(
             osp.abspath(bwf_directory)).lstrip(os.sep)
@@ -666,12 +667,15 @@ def run_container(bwf_directory, command, gui=False, interactive=False,
             bwf_relative_subdirectory, 'home')
         casa_distro.setdefault('container_mounts', {})
         casa_distro['container_mounts']['/casa/home'] = home_path
+        src_home_dir = home_path
         if not os.path.exists(home_path):
             # In case of user-specific home directories, the home dir has not
             # been initialized at the creation of the build-workflow, so it
             # needs to be done at first launch.
             os.makedirs(home_path)
             prepare_home(bwf_directory, home_path)
+
+    casa_distro['source_home_directory'] = src_home_dir
 
     if container_type:
         if container_type == 'singularity':
