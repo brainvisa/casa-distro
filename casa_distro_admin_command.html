@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Using the casa_distro_admin command &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation and setup" href="install_setup.html" />
+    <link rel="prev" title="Using the casa_distro command" href="casa_distro_command.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="install_setup.html" title="Installation and setup"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="casa_distro_command.html" title="Using the casa_distro command"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Using the casa_distro_admin command</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="using-the-casa-distro-admin-command">
+<h1>Using the casa_distro_admin command<a class="headerlink" href="#using-the-casa-distro-admin-command" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span></code> command is the part of casa-distro which is not needed for regular users / developers: it allows to create docker and singularity system images, push them on a server to be downloadable by regular users, and to manage brainisa distributions release plans.</p>
+<p>The admin part has been separated from the other <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> command, both for sake of clarity, and because the admin part is bigger since it contains everything needed to build system images, including some precompiled software for various operating systems, some libraries source code, etc. All this makes the casa-distro complete packages more than 100MB large, whereas the user part is only 300 or 400 KB zipped.</p>
+<div class="section" id="subcommands">
+<h2>Subcommands<a class="headerlink" href="#subcommands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="help">
+<h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="package-casa-distro">
+<h3>package_casa_distro<a class="headerlink" href="#package-casa-distro" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="publish-casa-distro">
+<h3>publish_casa_distro<a class="headerlink" href="#publish-casa-distro" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="create-release-plan">
+<h3>create_release_plan<a class="headerlink" href="#create-release-plan" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="update-release-plan">
+<h3>update_release_plan<a class="headerlink" href="#update-release-plan" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="publish-release-plan">
+<h3>publish_release_plan<a class="headerlink" href="#publish-release-plan" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="apply-release-plan">
+<h3>apply_release_plan<a class="headerlink" href="#apply-release-plan" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="create-docker">
+<h3>create_docker<a class="headerlink" href="#create-docker" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="update-docker">
+<h3>update_docker<a class="headerlink" href="#update-docker" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="publish-docker">
+<h3>publish_docker<a class="headerlink" href="#publish-docker" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="create-singularity">
+<h3>create_singularity<a class="headerlink" href="#create-singularity" title="Permalink to this headline">¶</a></h3>
+<p><em>create_singularity</em> converts a docker image into a singularity image. To do so it needs to unpack the docker image into a temporary directory, and re-pack it in a different way. It requires</p>
+<ul class="simple">
+<li><p>sudo / root privileges: the user has to be allowed to run sodo commands, the password will be asked when needed.</p></li>
+<li><dl class="simple">
+<dt>lots of temporary disk space. It may be needed to setup the following environment variables while running <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span> <span class="pre">create_singularity</span></code>:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">TMPDIR</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SINGULARITY_TMPDIR</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SINGULARITY_CACHEDIR</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>And <em>create_docker</em> needs to have run before, or the docker image should have been pulled. Thus docker is required at this point in the current way things have been impemented (this may change in the future).</p>
+</div>
+<div class="section" id="publish-singularity">
+<h3>publish_singularity<a class="headerlink" href="#publish-singularity" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="publish-build-workflows">
+<h3>publish_build_workflows<a class="headerlink" href="#publish-build-workflows" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="managing-container-images">
+<h2>Managing container images<a class="headerlink" href="#managing-container-images" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="singularity-and-docker">
+<h3>Singularity and Docker<a class="headerlink" href="#singularity-and-docker" title="Permalink to this headline">¶</a></h3>
+<p>In a general way, we designed casa-distro first using <a class="reference external" href="https://www.docker.com">Docker</a>, and then extended it to <a class="reference external" href="https://www.sylabs.io/">Singularity</a>. We use Singularity by actually converting Docker images, so images should be built first using Docker. So Docker is needed to build Singularity images for Casa-distro (this is not needed for regular users, which just download system images, and can use singularity alone, or docker alone).</p>
+<p>Thus, to build a singularity image, one needs to use first <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span> <span class="pre">create_docker</span></code>, then <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span> <span class="pre">create_singularity</span></code>.</p>
+</div>
+<div class="section" id="sharing-images">
+<h3>Sharing images<a class="headerlink" href="#sharing-images" title="Permalink to this headline">¶</a></h3>
+<p>Images can be uploaded to a centralized place to allow other users to use them.</p>
+<p>By default <code class="docutils literal notranslate"><span class="pre">publish_docker</span></code> will use <a class="reference external" href="https://hub.docker.com/">Docker Hub</a>, which requires an account and access rights to push images.</p>
+<p>Singularity did not have a public hub by the time we started casa-distro, so <code class="docutils literal notranslate"><span class="pre">publish_singularity</span></code> will push by default somewhere on the <a class="reference external" href="http://brainvisa.info">BrainVISA web site</a>, which also requires to have access to the website account to push. We could use <a class="reference external" href="https://singularity-hub.org/">Singularity Hub</a> in the future.</p>
+<p>Downloading and updating images do not need any access rights, they are public.</p>
+</div>
+<div class="section" id="designing-new-images">
+<h3>Designing new images<a class="headerlink" href="#designing-new-images" title="Permalink to this headline">¶</a></h3>
+<p><em>create_docker</em> may be used to update and rebuild the images which are proposed inside the <em>casa-distro</em> distribution, but this specific use has a limited benefit since they are normally pre-built and are downloaded from the hubs when needed.</p>
+<p><em>create_docker</em> may prove useful however for an application designer who needs to ship specific or additional system packages in the images. In this situation a new image type needs to be designed.</p>
+<p>New image types correspond to subdirectories which will looked for in the following directory trees (when they exist):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;workflow_repository&gt;/share/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$HOME/.config/casa-distro/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$HOME/.casa-distro/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;casa_builtin&gt;/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
+</ul>
+<p>where:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;workflow_repository&gt;</span></code> is the main workflow repository either passed via the <code class="docutils literal notranslate"><span class="pre">--repository</span></code> option, or via the <code class="docutils literal notranslate"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code> environment variable, or in the default location <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;casa_builtin&gt;</span></code> if the builtin share directory of casa-distro (or its sources)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;image_name&gt;</span></code> is a name (or type name) for the image, like the builtin ones <code class="docutils literal notranslate"><span class="pre">casa-test</span></code>, <code class="docutils literal notranslate"><span class="pre">casa-dev</span></code> etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;system&gt;</span></code> is the name of the system running inside the docker image (the builtin ones are <code class="docutils literal notranslate"><span class="pre">ubuntu-18.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-16.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-14.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-12.04</span></code>, <code class="docutils literal notranslate"><span class="pre">centos-7.4</span></code>, <code class="docutils literal notranslate"><span class="pre">windows-7-32</span></code>, <code class="docutils literal notranslate"><span class="pre">windows-7-64</span></code>.</p></li>
+</ul>
+<p>So custom, user-defined images can be added in a personal directory.
+Such an image definition directory should contain at least two files:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">casa_distro_docker.yaml</span></code> is a Yaml file definig dependencies, name and tags for the image. Ex:</p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">../../casa-dev</span>
+<span class="nt">image_sources</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pytorch</span>
+    <span class="nt">tags</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ubuntu-16.04</span>
+    <span class="nt">visibility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">public</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>a <a class="reference external" href="https://docs.docker.com/engine/reference/builder/">Dockerfile</a>
+The Dockerfile may (should) be based on another image, in the usual way of building docker images. Thus an existing casa-distro image can be the base for a new one.</p></li>
+</ul>
+<p>Once an image is created with docker, it can be converted to singularity using <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">create_singularity</span></code>.</p>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using the casa_distro_admin command</a><ul>
+<li><a class="reference internal" href="#subcommands">Subcommands</a><ul>
+<li><a class="reference internal" href="#help">help</a></li>
+<li><a class="reference internal" href="#package-casa-distro">package_casa_distro</a></li>
+<li><a class="reference internal" href="#publish-casa-distro">publish_casa_distro</a></li>
+<li><a class="reference internal" href="#create-release-plan">create_release_plan</a></li>
+<li><a class="reference internal" href="#update-release-plan">update_release_plan</a></li>
+<li><a class="reference internal" href="#publish-release-plan">publish_release_plan</a></li>
+<li><a class="reference internal" href="#apply-release-plan">apply_release_plan</a></li>
+<li><a class="reference internal" href="#create-docker">create_docker</a></li>
+<li><a class="reference internal" href="#update-docker">update_docker</a></li>
+<li><a class="reference internal" href="#publish-docker">publish_docker</a></li>
+<li><a class="reference internal" href="#create-singularity">create_singularity</a></li>
+<li><a class="reference internal" href="#publish-singularity">publish_singularity</a></li>
+<li><a class="reference internal" href="#publish-build-workflows">publish_build_workflows</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#managing-container-images">Managing container images</a><ul>
+<li><a class="reference internal" href="#singularity-and-docker">Singularity and Docker</a></li>
+<li><a class="reference internal" href="#sharing-images">Sharing images</a></li>
+<li><a class="reference internal" href="#designing-new-images">Designing new images</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="casa_distro_command.html"
+                        title="previous chapter">Using the casa_distro command</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install_setup.html"
+                        title="next chapter">Installation and setup</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="install_setup.html" title="Installation and setup"
+             >next</a></li>
+        <li class="right" >
+          <a href="casa_distro_command.html" title="Using the casa_distro command"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Using the casa_distro_admin command</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

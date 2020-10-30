@@ -1,0 +1,522 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Casa-Distro &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Using the casa_distro command" href="casa_distro_command.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_command.html" title="Using the casa_distro command"
+             accesskey="N">next</a></li>
+        <li class="nav-item nav-item-0"><a href="#">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Casa-Distro</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="casa-distro">
+<h1>Casa-Distro<a class="headerlink" href="#casa-distro" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="download-casa-distro">
+<h2>Download Casa-Distro<a class="headerlink" href="#download-casa-distro" title="Permalink to this headline">¶</a></h2>
+<p>The best way is to get it from github:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">brainvisa</span><span class="o">/</span><span class="n">casa</span><span class="o">-</span><span class="n">distro</span><span class="o">.</span><span class="n">git</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">casa</span><span class="o">-</span><span class="n">distro</span>
+</pre></div>
+</div>
+<p>if git is installed on the host system.
+Alternatively it can be downoloaded as a <a class="reference external" href="https://github.com/brainvisa/casa-distro/archive/master.zip">.zip file</a></p>
+<p>You can get to the <a class="reference internal" href="#install"><span class="std std-ref">install</span></a> section directly then.</p>
+</div>
+<div class="section" id="i-overview">
+<h2>I - Overview<a class="headerlink" href="#i-overview" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="what-is-casa">
+<h3>What is CASA ?<a class="headerlink" href="#what-is-casa" title="Permalink to this headline">¶</a></h3>
+<p>CASA = <a class="reference external" href="http://cati-neuroimaging.com">CATI</a> + <a class="reference external" href="http://brainvisa.info">BrainVISA</a></p>
+</div>
+<div class="section" id="what-is-casa-distro">
+<h3>What is Casa-Distro ?<a class="headerlink" href="#what-is-casa-distro" title="Permalink to this headline">¶</a></h3>
+<p>It’s a development environment which helps to provide developers with a working development environment for BrainVISA and CATI tools.</p>
+<p>It provides <a class="reference external" href="https://www.sylabs.io/">Singularity</a> and <a class="reference external" href="https://www.docker.com">Docker</a> images compatible with BrainVISA distributions with all needed setup to build custom toolboxes, package them, and test them, in the same environment.</p>
+<p>Casa-distro is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It is a metronome because the distribution procedures, and especially the distribution frequency, is defined in casa-distro documentation (<a class="reference external" href="https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Casa-distro">bioproj wiki</a>). It is a swiss knife because it provides a tool for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).</p>
+</div>
+<div class="section" id="use-cases">
+<h3>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>I develop toolboxes, I need to build and release them as binary compatible with the official BrainVisa distrtibutions</p></li>
+<li><p>I am a contributor of Cati/BrainVisa environment, and need to get started quickly</p></li>
+<li><p>I am release maintainer of BrainVisa and need to produce a new release yesterday</p></li>
+</ul>
+</div>
+<div class="section" id="what-casa-distro-is-not">
+<h3>What Casa-Distro is <strong>not</strong><a class="headerlink" href="#what-casa-distro-is-not" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>Casa-Distro is not a build sytem: this is the job of <a class="reference external" href="../brainvisa-cmake-1.0index.html">BrainVisa-Cmake</a>. Casa-distro brings a wrapper for the build system: it provides Docker images of Linux systems which contain <a class="reference external" href="../brainvisa-cmake-1.0index.html">BrainVisa-Cmake</a> and many other thirdparty development tools and libraries, which are already setup for development and distribution of tools.</p>
+<p>The user will be able to use the build system (<a class="reference external" href="../brainvisa-cmake-1.0bv_maker.html">bv_maker</a>), inside Docker, in a way that ensures to build, run, and ship software that is compatible with public distributions of BrainVisa.</p>
+</li>
+<li><p>Casa-Distro is not a binary distribution of BrainVisa. Even if it could be used that way. Binary distributions provide binaries that try to work on the wider possible variety of systems. Casa-distro is one (or a small set) of these systems with development, distribution, and run environment.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="ii-background-distributions-versions-and-build-workflows">
+<h2>II - Background: distributions, versions and build workflows.<a class="headerlink" href="#ii-background-distributions-versions-and-build-workflows" title="Permalink to this headline">¶</a></h2>
+<p>Casa (BrainVISA / CATI) is composed of many versioned software components
+(more than 50 at the time of this writing). Each one has its own time line for
+development and release. Casa team is not big enough to follow the
+release of all projects and make sure that good practices are followed
+(for instance make sure that the project version is increased whenever
+the project source are changed between releases). It was therefore
+decided to schedule casa-distro versions at a frequency that is
+independent of project versions. This <strong>distribution frequency</strong> is a
+fundamental element of casa-distro; every first monday of each month, a
+<strong>distribution</strong> is created. The creation of a distribution is a series
+of steps that leads to the creation of <strong>build workflows</strong> and
+<strong>packages</strong>. Build workflows are all the directories used by developers
+who need to create or modify software. Packages are single file archives
+used to distribute all the component of a distro to end users.</p>
+<div class="section" id="distributions">
+<h3>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="what-is-a-distribution">
+<h4>What is a distribution<a class="headerlink" href="#what-is-a-distribution" title="Permalink to this headline">¶</a></h4>
+<p>A distribution (or distro) is a selection of software components that
+can be shared with collaborators. All the distro are compiled, tested
+and packaged the same way and at the same time. But each distro have its
+own software content, targeted audience and license agreement. At the
+time of this writing, the following distros are planned to be technically
+managed by CASA :</p>
+<ul class="simple">
+<li><p><strong>opensource</strong>: the open-source subset of projects managed by BrainVISA.</p></li>
+<li><p><strong>brainvisa</strong>: the historical BrainVISA distribution. It combines
+open source and close source software. It can be downloaded by anyone
+and used freely for non profit research.</p></li>
+<li><p><strong>cati_platform</strong>: this distro contains the sowtware necessary to
+operate CATI platform. It is managed by CATI and distributed only to
+CATI members.</p></li>
+<li><p><strong>cea</strong>: this distribution is based on the BrainVISA distribution but
+contains also some toolboxes that are not distributed to the whole
+community. It is installed in several CEA labs : Neurospin, MIRCen
+and SHFJ.</p></li>
+</ul>
+</div>
+<div class="section" id="distribution-frequency">
+<h4>Distribution frequency<a class="headerlink" href="#distribution-frequency" title="Permalink to this headline">¶</a></h4>
+<p>(in the future)</p>
+<p>A distribution is created every first monday of each month. Normally,
+any modification done after a distribution must wait for the next
+distribution to be released. However, in case of emergency, it is
+possible to add exceptional distributions.</p>
+</div>
+<div class="section" id="distribution-versioning">
+<h4>Distribution versioning<a class="headerlink" href="#distribution-versioning" title="Permalink to this headline">¶</a></h4>
+<p>It has been chosen to use a classical version numbering convention :
+<code class="docutils literal notranslate"><span class="pre">&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</span></code> where :</p>
+<ul class="simple">
+<li><p><strong>&lt;major&gt;:</strong> is a number that is increased whenever a major
+modification is done on significant components inducing an
+incompatibility with latest distribution.</p></li>
+<li><p><strong>&lt;minor&gt;:</strong> is a number that is increased whenever important
+features or modifications are done but without introducing
+incompatibilities.</p></li>
+<li><p><strong>&lt;patch&gt;:</strong> is a number that is increased whenever routine
+modifications are done.</p></li>
+</ul>
+</div>
+<div class="section" id="distribution-creation">
+<h4>Distribution creation<a class="headerlink" href="#distribution-creation" title="Permalink to this headline">¶</a></h4>
+<p>The creation of a distribution is a three steps process :</p>
+<ol class="arabic simple">
+<li><p><strong>Create release plan:</strong> selection of the software components that
+are going to be upgraded in the next release of the distribution.</p></li>
+<li><p><strong>Apply release plan:</strong> update the version of generic branches
+(<em>latest_release</em>, <em>bug_fix</em> and <em>trunk</em>) in the source code of all
+projects according to the release plan.</p></li>
+<li><p><strong>Compilation, testing and packaging:</strong> creation of build workflows,
+tests execution and packages creation for the new distribution.</p></li>
+<li><p><strong>Distribution deployment:</strong> make build workflows and packages
+available for users.</p></li>
+</ol>
+<p>All these steps are done by CASA admin team using <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> command. The
+release plan is discussed with distros managers and eventually modified before
+being applied. The current status of the release plan can be found on a
+<a class="reference external" href="https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan">BioProj wiki page</a>.</p>
+</div>
+</div>
+<div class="section" id="build-workflow">
+<h3>Build workflow<a class="headerlink" href="#build-workflow" title="Permalink to this headline">¶</a></h3>
+<p>A build workflow represent all what is necessary to work on a distro at
+a given version for a given operating system. In <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code>, a
+build workflow is identified by three variables:</p>
+<div class="line-block">
+<div class="line">- <strong>distro:</strong> the identifier of the distro (<em>e.g.</em> <code class="docutils literal notranslate"><span class="pre">opensource</span></code>,
+<code class="docutils literal notranslate"><span class="pre">brainvisa</span></code>, <code class="docutils literal notranslate"><span class="pre">cati</span></code> or <code class="docutils literal notranslate"><span class="pre">cea</span></code>)</div>
+<div class="line">- <strong>branch:</strong> the name of the virtual branch used to select sofware
+component sources (<code class="docutils literal notranslate"><span class="pre">latest_release</span></code>, <code class="docutils literal notranslate"><span class="pre">bug_fix</span></code> or <code class="docutils literal notranslate"><span class="pre">trunk</span></code>).</div>
+<div class="line">- <strong>system:</strong> the operating system the distro is build for (<em>e.g.</em>
+<code class="docutils literal notranslate"><span class="pre">ubuntu-12.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-16.04</span></code>, <code class="docutils literal notranslate"><span class="pre">win32</span></code> or <code class="docutils literal notranslate"><span class="pre">win64</span></code>).</div>
+</div>
+<p>The hardware representation of a build workflow is a set of directories
+:</p>
+<div class="line-block">
+<div class="line">- <strong>conf:</strong> configuration of the build workflow (BioProj passwords,
+bv_maker.cfg, etc.). The content of this directory is the input of
+the compilation, packaging and testing steps. There are some
+predefined content for <code class="docutils literal notranslate"><span class="pre">conf</span></code> that can be generated with command
+<code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">create_build_workflow</span></code> but the whole build workflow can
+be customized by editing files in this directory.</div>
+<div class="line">- <strong>src:</strong> source of selected components for the workflow. The content
+of this directory is first created by <code class="docutils literal notranslate"><span class="pre">bv_maker</span></code> from within a
+Docker container running the targeted operting system. Simply call
+<code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code> for this. The same command can be used to
+update sources to latest revision or to recompile when source code has
+been modified.</div>
+<div class="line">- <strong>build:</strong> build directory used for compilation. Like the <code class="docutils literal notranslate"><span class="pre">src</span></code>
+directory, the content of this directory is created by commands such
+as <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code>.</div>
+<div class="line">- <strong>pack:</strong> directory containing distribution packages. Packages that
+are created by bv_maker are stored in that directory.</div>
+<div class="line">- <strong>test:</strong> directory used during testing. Typically reference data
+will be downloaded in this directory and compared to test data
+generated, in this directory, by test commands.</div>
+</div>
+</div>
+</div>
+<div class="section" id="iii-casa-distro-installation-and-setup">
+<span id="install"></span><h2>III - casa_distro installation and setup<a class="headerlink" href="#iii-casa-distro-installation-and-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<p>To use Casa-Distro, a user (or rather a developer) must have a system with
+the following characteristics:</p>
+<ul class="simple">
+<li><p>Either <a class="reference external" href="https://www.sylabs.io/">Singularity</a> or
+<a class="reference external" href="https://www.docker.com">Docker</a> must be installed and setup for the user
+on the building system. These container technologies only runs
+on reasonably recent Linux systems, recent Mac systems, and Windows.</p></li>
+<li><p>Python &gt;= 2.7 is necessary  run the <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> command.</p></li>
+<li><p>Git may be used to download casa-distro <em>the first time you use it</em> (see later, <a class="reference internal" href="#install-latest-release">Install latest release</a>)</p></li>
+</ul>
+<p>The rest takes place inside containers, so are normally not restricted by the building system, (as long as it has enough memory and disk space).</p>
+<p>Singularity is available as an apt package on Ubuntu 16.04 in <a class="reference external" href="http://neuro.debian.net/">neurodebian repositories</a> and on Ubuntu 18.04 in the main repository, as the <code class="docutils literal notranslate"><span class="pre">singularity-container</span></code> package.</p>
+<p>Otherwise, to install Singularity on Debian based Linux systems (such as Ubuntu), the following packages must be installed :</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># System dependencies</span>
+sudo apt-get install python build-essential
+
+<span class="c1"># Singularity install</span>
+<span class="nv">VERSION</span><span class="o">=</span><span class="m">2</span>.4.5
+wget https://github.com/singularityware/singularity/releases/download/<span class="nv">$VERSION</span>/singularity-<span class="nv">$VERSION</span>.tar.gz
+tar xvf singularity-<span class="nv">$VERSION</span>.tar.gz
+<span class="nb">cd</span> singularity-<span class="nv">$VERSION</span>
+./configure --prefix<span class="o">=</span>/usr/local
+make
+sudo make install
+</pre></div>
+</div>
+<p>For more details about installation, setup, and troubleshooting, see <a class="reference internal" href="install_setup.html"><span class="doc">Installation and setup</span></a></p>
+</div>
+<div class="section" id="install-latest-release">
+<h3>Install latest release<a class="headerlink" href="#install-latest-release" title="Permalink to this headline">¶</a></h3>
+<p>This is the simplest and the only recommended way to use casa_distro. Simply download the latest release from <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a>, either using git:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
+</pre></div>
+</div>
+<p>or by downloading a .zip from the github site using the download button or <a class="reference external" href="https://github.com/brainvisa/casa-distro/archive/master.zip">clicking this link</a>.</p>
+<p>Once downladed, no “install step” is required, you can use the casa_distro command directly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/tmp/casa-distro/bin/casa_distro <span class="nb">help</span>
+</pre></div>
+</div>
+<p>Note that this “initial” install of casa-distro can be temporary, since once a build workflow is setup, it is possible to use the casa-distro reinstalled in the build-workflow, which will be easier to update and maintain (see the <a class="reference internal" href="#update-the-casa-distro-command">Update the casa_distro command</a> section to set it up).</p>
+</div>
+<div class="section" id="install-with-brainvisa-cmake">
+<h3>Install with brainvisa-cmake<a class="headerlink" href="#install-with-brainvisa-cmake" title="Permalink to this headline">¶</a></h3>
+<p>This advanced method can be used by people that are familiar with the use of <a class="reference external" href="../brainvisa-cmake-1.0index.html">BrainVisa-Cmake</a>. Casa-distro belong to the standard projects of brainvisa-cmake so in most case, there is no specific modification to do on <code class="docutils literal notranslate"><span class="pre">bv_maker.cfg</span></code>. casa_distro can be downloaded, configured and built like any other brainvisa-cmake components. Once built, it can be used as other commands compiled by <code class="docutils literal notranslate"><span class="pre">bv_maker</span></code>. For instance :</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;path_to_build_dir&gt;/bin/bv_env_host casa_distro --help
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="building-casa-projects">
+<h2>Building CASA projects<a class="headerlink" href="#building-casa-projects" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="first-time">
+<h3>First time<a class="headerlink" href="#first-time" title="Permalink to this headline">¶</a></h3>
+<p>Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this situation, once casa_distro has been downloaded or installed, a user has to:</p>
+<ul class="simple">
+<li><p>create a build workflow, which will contain the sources repository for BrainVisa projects, a build directory, etc.</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python /tmp/casa-distro/bin/casa_distro -r /home/me/casa create <span class="nv">distro_source</span><span class="o">=</span>opensource <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">system</span><span class="o">=</span>ubuntu-12.04
+</pre></div>
+</div>
+<p>This command specifies to setup a build workflow for the open-source projects set (<code class="docutils literal notranslate"><span class="pre">distro_source=opensource</span></code> is actually the default and can be omitted), for the <code class="docutils literal notranslate"><span class="pre">bug_fix</span></code> branch (default is <code class="docutils literal notranslate"><span class="pre">latest_release</span></code>), using a container system based on Ubuntu 12.04.
+Directories and files will be created accordingly in the repository directory, here <code class="docutils literal notranslate"><span class="pre">/home/me/casa</span></code> (default without the <code class="docutils literal notranslate"><span class="pre">-r</span></code> option is <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code>).
+The <code class="docutils literal notranslate"><span class="pre">-r</span></code> option can be omitted in all <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> commands, if either using the default location, or if the environment variable <code class="docutils literal notranslate"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code> is set to an appropriate directory.</p>
+<ul class="simple">
+<li><p>build everything</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python /tmp/casa-distro/bin/casa_distro -r /home/me/casa bv_maker <span class="nv">distro</span><span class="o">=</span>opensource <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">system</span><span class="o">=</span>ubuntu-12.04
+</pre></div>
+</div>
+<p>If distro, branch, or system are not provided, all matching build workflows will be processed.</p>
+<p>Additional options can be passed to the underlying <a class="reference external" href="../brainvisa-cmake-1.0index.html">bv_maker</a> command, which will run inside the container. Typically, the documentation can be built, testing and packaging can be performed.</p>
+</div>
+<div class="section" id="update-the-casa-distro-command">
+<h3>Update the casa_distro command<a class="headerlink" href="#update-the-casa-distro-command" title="Permalink to this headline">¶</a></h3>
+<p>Once a build workflow has been initialized, and at least source code has been updated (using casa_distro bv_maker), most <em>distributions</em> actually include the <em>casa-distro</em> project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system, so it may be a good idea to use this updated <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> command instead of <em>/tmp/casa-distro/bin/casa_distro</em> which has been downloaded temporarily to initialize the process. This can be done by “updating” a build-workflow (actually any one which contains casa-distro):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python /tmp/casa-distro/bin/casa_distro -r /home/me/casa update <span class="nv">distro</span><span class="o">=</span>opensource <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">system</span><span class="o">=</span>ubuntu-12.04
+</pre></div>
+</div>
+<p>Then the run script will use the casa-distro from this source tree.
+You can setup your host environment (<code class="docutils literal notranslate"><span class="pre">$HOME/.bashrc</span></code> typically) to use it by defaul by setting it first in the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/home/me/casa/opensource/bug_fix_ubuntu-12.04/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p>Here you should of course replace the path <code class="docutils literal notranslate"><span class="pre">/home/me/casa/opensource/bug_fix_ubuntu-12.04</span></code> with the build workflow path listed by the command <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">-r</span> <span class="pre">/home/me/casa</span> <span class="pre">list</span></code>.</p>
+</div>
+<div class="section" id="bash-completion">
+<h3>Bash completion<a class="headerlink" href="#bash-completion" title="Permalink to this headline">¶</a></h3>
+<p>Bash completion scripts have been developed for <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> and <code class="docutils literal notranslate"><span class="pre">bv_maker</span></code>. Inside a casa-distro container, these completions are already setup and should be active as soon as build workflows have been built, and the container is restarted (exit a casa-distro shell and re-run it).
+On the host, it is possible to <em>source</em> the bash completion scripts. You can set it in your <code class="docutils literal notranslate"><span class="pre">$HOME/.bashrc</span></code> file by adding to it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">BUILD_WF</span><span class="o">=</span>/home/me/casa/opensource/bug_fix_ubuntu-12.04
+<span class="k">if</span> <span class="o">[</span> -f <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+    . <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span>
+<span class="k">fi</span>
+<span class="k">if</span> <span class="o">[</span> -f <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+    . <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash&quot;</span>
+<span class="k">fi</span>
+</pre></div>
+</div>
+<p>This completion will help typing the commands and its options by providing possible options and values by typing <code class="docutils literal notranslate"><span class="pre">&lt;tab&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">&lt;tab&gt;</span> <span class="pre">&lt;tab&gt;</span></code> when typing the command code, which will significantly speed-up working intensively with casa_distro and bv_maker.</p>
+</div>
+<div class="section" id="updating-projects">
+<h3>Updating projects<a class="headerlink" href="#updating-projects" title="Permalink to this headline">¶</a></h3>
+<p>To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code> (with corresponding options, if needed).</p>
+</div>
+<div class="section" id="customizing-projects">
+<h3>Customizing projects<a class="headerlink" href="#customizing-projects" title="Permalink to this headline">¶</a></h3>
+<p>It is possible to customize the projects list to be retreived and built. It is done by editing the <a class="reference external" href="../brainvisa-cmake-1.0configuration.html">bv_maker.cfg file</a> in the build workflow, which can be found in the directory <code class="docutils literal notranslate"><span class="pre">&lt;repository&gt;/&lt;distro&gt;/&lt;branch&gt;_&lt;system&gt;/conf/</span></code></p>
+<p>where <code class="docutils literal notranslate"><span class="pre">&lt;repository&gt;</span></code> is the base casa-distro repository directory (passed as the <code class="docutils literal notranslate"><span class="pre">-r</span></code> option of casa_distro, <code class="docutils literal notranslate"><span class="pre">&lt;distro&gt;</span></code> is the projects set name (<code class="docutils literal notranslate"><span class="pre">opensource</span></code>, <code class="docutils literal notranslate"><span class="pre">brainvisa</span></code>, <code class="docutils literal notranslate"><span class="pre">cati_platform</span></code>), <code class="docutils literal notranslate"><span class="pre">&lt;branch&gt;</span></code> is the version branch identifier (<code class="docutils literal notranslate"><span class="pre">latest_release</span></code>, <code class="docutils literal notranslate"><span class="pre">bug_fix</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk</span></code>), and <code class="docutils literal notranslate"><span class="pre">&lt;system&gt;</span></code> is the system the build is based on.</p>
+</div>
+</div>
+<div class="section" id="using-casa-distro-as-a-runtime-environment-to-run-brainvisa-related-software">
+<h2>Using Casa-Distro as a runtime environment to run BrainVISA-related software<a class="headerlink" href="#using-casa-distro-as-a-runtime-environment-to-run-brainvisa-related-software" title="Permalink to this headline">¶</a></h2>
+<p>It’s possible to do so:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r /home/me/casa run <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">gui</span><span class="o">=</span>yes brainvisa
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">brainvisa</span></code> could be replaced by any other command (<code class="docutils literal notranslate"><span class="pre">anatomist</span></code>, <code class="docutils literal notranslate"><span class="pre">AimsSomething</span></code>, <code class="docutils literal notranslate"><span class="pre">morphologist</span></code>) with parameters.</p>
+<p>Note that graphical software need to run the containers with a graphical “bridge”: a X server has to be running on the host system, and OpenGL may or may not work. The option <code class="docutils literal notranslate"><span class="pre">gui=yes</span></code> of casa_distro tries to handle common cases (at least on Linux hosts), possibly using Nvidia proprietary OpenGL implementation and drivers from the host system.
+Note that the option <code class="docutils literal notranslate"><span class="pre">gui=yes</span></code> is now the default, thus it is not needed.</p>
+<p>For OpenGL rendering problems may differ between docker and singularity. We tried to handle some of them in the options passed to containers by casa_distro with gui active, but some additional options / tweaking may be helpful. See the <a class="reference internal" href="install_setup.html#opengl-troubleshooting"><span class="std std-ref">OpenGL troubleshooting</span></a> section for details.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>BUT…</p>
+<p>But soma-workflow distributed execution, in its current released version, will not spawn Docker or Singularity (or casa_distro run) in remote processing. We have made modifications in the <a class="reference external" href="https://github.com/neurospin/soma-workflow">github/master branch</a> (which is included in brainvisa/bug_fix branches) to add support for it. However it needs some additional configuration on server side to specify how to run the containers.</p>
+</div>
+<p>Remember that software run that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> commandline, or in the file <code class="docutils literal notranslate"><span class="pre">container_options</span></code> item in <code class="docutils literal notranslate"><span class="pre">&lt;casa_distro_build_workflow&gt;/conf/casa_distro.json</span></code>.</p>
+</div>
+<div class="section" id="casa-distro-command">
+<h2><a class="reference internal" href="casa_distro_command.html"><span class="doc">Using the casa_distro command</span></a><a class="headerlink" href="#casa-distro-command" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="casa_distro_command.html">Using the casa_distro command</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#general-and-common-options">General and Common options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#subcommands">Subcommands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#help">help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#bv-maker">bv_maker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#clean-images">clean_images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#create">create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#create-writable-image">create_writable_image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#delete">delete</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#list">list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#mrun">mrun</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#root-shell">root_shell</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#run">run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#shell">shell</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#update">update</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#update-image">update_image</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#the-complexity-of-arguments-parsing">The complexity of arguments parsing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#options-common-to-several-commands">Options common to several commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#workflow-specification">Workflow specification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#alternative-configurations">Alternative configurations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#environment-variables">Environment variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#workflow-configuration-file">Workflow configuration file</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#configuration-dictionary-variables">Configuration dictionary variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_command.html#alt-configs">Alternative configurations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="casa-distro-admin-command">
+<h2><a class="reference internal" href="casa_distro_admin_command.html"><span class="doc">Using the casa_distro_admin command</span></a><a class="headerlink" href="#casa-distro-admin-command" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="casa_distro_admin_command.html">Using the casa_distro_admin command</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_admin_command.html#subcommands">Subcommands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#help">help</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#package-casa-distro">package_casa_distro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#publish-casa-distro">publish_casa_distro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#create-release-plan">create_release_plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#update-release-plan">update_release_plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#publish-release-plan">publish_release_plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#apply-release-plan">apply_release_plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#create-docker">create_docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#update-docker">update_docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#publish-docker">publish_docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#create-singularity">create_singularity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#publish-singularity">publish_singularity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#publish-build-workflows">publish_build_workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="casa_distro_admin_command.html#managing-container-images">Managing container images</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#singularity-and-docker">Singularity and Docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#sharing-images">Sharing images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#designing-new-images">Designing new images</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="install-setup">
+<h2><a class="reference internal" href="install_setup.html"><span class="doc">Installation and setup</span></a><a class="headerlink" href="#install-setup" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install_setup.html">Installation and setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install_setup.html#setting-up-docker">Setting up Docker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#install-and-use-docker-on-an-ubuntu-host">Install and use docker on an Ubuntu host</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#change-docker-s-storage-base-directory">Change Docker’s storage base directory</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install_setup.html#overview-of-the-existing-public-brainvisa-images">Overview of the existing public brainvisa images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_setup.html#how-to-use-a-docker-image">How to use a docker image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_setup.html#cleaning-up-docker">Cleaning up docker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#containers">Containers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#images">Images</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install_setup.html#how-to-change-the-development-environment">How to change the development environment ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_setup.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#system-disk-full">System disk full</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#cannot-build-docker-image-network-access-denied">Cannot build docker image, network access denied</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#cannot-mount-ssh-id-rsa-when-starting-docker">Cannot mount <code class="docutils literal notranslate"><span class="pre">~/.ssh/id_rsa</span></code> when starting docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install_setup.html#opengl-is-not-working-or-is-slow">OpenGL is not working, or is slow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="install_setup.html#with-docker">with docker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="install_setup.html#with-singularity">with singularity</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Casa-Distro</a><ul>
+<li><a class="reference internal" href="#download-casa-distro">Download Casa-Distro</a></li>
+<li><a class="reference internal" href="#i-overview">I - Overview</a><ul>
+<li><a class="reference internal" href="#what-is-casa">What is CASA ?</a></li>
+<li><a class="reference internal" href="#what-is-casa-distro">What is Casa-Distro ?</a></li>
+<li><a class="reference internal" href="#use-cases">Use cases</a></li>
+<li><a class="reference internal" href="#what-casa-distro-is-not">What Casa-Distro is <strong>not</strong></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ii-background-distributions-versions-and-build-workflows">II - Background: distributions, versions and build workflows.</a><ul>
+<li><a class="reference internal" href="#distributions">Distributions</a><ul>
+<li><a class="reference internal" href="#what-is-a-distribution">What is a distribution</a></li>
+<li><a class="reference internal" href="#distribution-frequency">Distribution frequency</a></li>
+<li><a class="reference internal" href="#distribution-versioning">Distribution versioning</a></li>
+<li><a class="reference internal" href="#distribution-creation">Distribution creation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#build-workflow">Build workflow</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#iii-casa-distro-installation-and-setup">III - casa_distro installation and setup</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#install-latest-release">Install latest release</a></li>
+<li><a class="reference internal" href="#install-with-brainvisa-cmake">Install with brainvisa-cmake</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#building-casa-projects">Building CASA projects</a><ul>
+<li><a class="reference internal" href="#first-time">First time</a></li>
+<li><a class="reference internal" href="#update-the-casa-distro-command">Update the casa_distro command</a></li>
+<li><a class="reference internal" href="#bash-completion">Bash completion</a></li>
+<li><a class="reference internal" href="#updating-projects">Updating projects</a></li>
+<li><a class="reference internal" href="#customizing-projects">Customizing projects</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-casa-distro-as-a-runtime-environment-to-run-brainvisa-related-software">Using Casa-Distro as a runtime environment to run BrainVISA-related software</a></li>
+<li><a class="reference internal" href="#casa-distro-command"><span class="xref std std-doc">casa_distro_command</span></a></li>
+<li><a class="reference internal" href="#casa-distro-admin-command"><span class="xref std std-doc">casa_distro_admin_command</span></a></li>
+<li><a class="reference internal" href="#install-setup"><span class="xref std std-doc">install_setup</span></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="casa_distro_command.html"
+                        title="next chapter">Using the casa_distro command</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_command.html" title="Using the casa_distro command"
+             >next</a></li>
+        <li class="nav-item nav-item-0"><a href="#">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Casa-Distro</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

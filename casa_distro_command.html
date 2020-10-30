@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Using the casa_distro command &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Using the casa_distro_admin command" href="casa_distro_admin_command.html" />
+    <link rel="prev" title="Casa-Distro" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_admin_command.html" title="Using the casa_distro_admin command"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Casa-Distro"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Using the casa_distro command</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="using-the-casa-distro-command">
+<h1>Using the casa_distro command<a class="headerlink" href="#using-the-casa-distro-command" title="Permalink to this headline">¶</a></h1>
+<p>General syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="o">&lt;</span><span class="n">general</span> <span class="n">options</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">subcommand</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">subcommand_options</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="section" id="general-and-common-options">
+<h2>General and Common options<a class="headerlink" href="#general-and-common-options" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">-h</span></code>:</dt><dd><p>print help, equivalent to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">help</span>
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">-r</span> <span class="pre">REPOSITORY</span></code>:</dt><dd><p>specify the base repository directory containing build workflows (default:
+<code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code>).
+This base directory may also be specified via an <a class="reference external" href="#environment-variables">environment variable</a>: <code class="docutils literal notranslate"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">-v</span></code>:</dt><dd><p>verbose mode</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--version</span></code>:</dt><dd><p>print the version number of casa_distro and exit</p>
+</dd>
+</dl>
+<p>Many subcommands need build_workflows selection specifications:
+<a class="reference internal" href="#workflow-options"><span class="std std-ref">how to specify a workflow</span></a></p>
+</div>
+<div class="section" id="subcommands">
+<h2>Subcommands<a class="headerlink" href="#subcommands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="help">
+<h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
+<p>print help about casa_distro:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa-distro <span class="nb">help</span>
+</pre></div>
+</div>
+<p>or print help about a command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro <span class="nb">help</span> &lt;command&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="bv-maker">
+<h3>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this headline">¶</a></h3>
+<p>Start bv_maker in the configured container for all the selected build workflows (by default, all created build workflows).</p>
+</div>
+<div class="section" id="clean-images">
+<h3>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this headline">¶</a></h3>
+<p>Delete singularity images which are no longer used in any build workflow, or those listed in image_names.</p>
+</div>
+<div class="section" id="create">
+<h3>create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h3>
+<p>Initialize a new build workflow directory. This creates a conf subdirectory with casa_distro.json, bv_maker.cfg and svn.secret files that can be edited before compilation.</p>
+<dl class="simple">
+<dt>distro_source:</dt><dd><p>Either the name of a predefined distro (on of the directory located in
+share/distro) or a directory containing the distro source. A predefinied
+distro definition may be one of the buitin ones found in casa-distro
+(brainvisa, opensource, cati_platform), or one user-defined which will be
+looked for in $HOME/.config/casa-distro/distro, $HOME/.casa-distro/distro,
+or in the share/distro subdirectory inside the main repository directory.</p>
+</dd>
+<dt>distro_name:</dt><dd><p>Name of the distro that will be created. If omited, the name of the distro
+source (or distro source directory) is used.</p>
+</dd>
+<dt>container_type: type of container thechnology to use. It can be either</dt><dd><p>‘singularity’, ‘docker’ or None (the default). If it is None, it first try
+to see if Singularity is installed or try to see if Docker is installed.</p>
+</dd>
+<dt>container_image: image to use for the compilation container. If no</dt><dd><p>value is given, uses the one defined in the distro.</p>
+</dd>
+<dt>container_test_image: image to use for the package tests container. If no</dt><dd><p>value is given, uses the one defined in the distro.</p>
+</dd>
+<dt>branch:</dt><dd><p>bv_maker branch to use (latest_release, bug_fix or trunk)</p>
+</dd>
+<dt>system:</dt><dd><p>Name of the target system.</p>
+</dd>
+<dt>not_override:</dt><dd><p>a coma separated list of file name that must not be overriden if they
+already exist.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="create-writable-image">
+<h3>create_writable_image<a class="headerlink" href="#create-writable-image" title="Permalink to this headline">¶</a></h3>
+<p>Create a writable version of a Singularity image used to run containers. This allows to modify an image (for instance install custom packages). To use a writable image in a build workflow, it is necessary to edit its “casa_distro.json” file (located in the “conf” directory of the build workflow) to add “.writable” to the image name. For instance:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;container_image&quot;</span>: <span class="s2">&quot;cati/casa-dev:ubuntu-16.04.writable&quot;</span>
+</pre></div>
+</div>
+<p>The singularity image can be identified by its Docker-like name:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro create_writable_image cati/casa-dev:ubuntu-16.04
+</pre></div>
+</div>
+<p>It is also possible to identify an image by selecting a build workflow:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro create_writable_image <span class="nv">distro</span><span class="o">=</span>brainvisa <span class="nv">branch</span><span class="o">=</span>bug_fix
+</pre></div>
+</div>
+<p>Due to Singularity security, it is necessary to be root on the host system to create an image (sudo is used for that and can ask you a password).</p>
+</div>
+<div class="section" id="delete">
+<h3>delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h3>
+<p>Delete (physically remove files) an entire build workflow. The container image will not be erased, see clean_images for that.</p>
+<p>example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro delete <span class="nv">branch</span><span class="o">=</span>bug_fix
+</pre></div>
+</div>
+<p>By default the “interactive” mode is on, and a confirmation will be asked before proceding. If interactive is disabled, then the deletion will be done without confirmation.</p>
+</div>
+<div class="section" id="list">
+<h3>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h3>
+<p>List (eventually selected) build workflows created by the <a class="reference internal" href="#create">create</a> command.</p>
+</div>
+<div class="section" id="mrun">
+<h3>mrun<a class="headerlink" href="#mrun" title="Permalink to this headline">¶</a></h3>
+<p>Start any command in one or several container with the given repository configuration. By default, command is executed in all existing build workflows.</p>
+<p>example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Launch bv_maker on all build workflows using any version of Ubuntu</span>
+casa_distro mrun bv_maker <span class="nv">system</span><span class="o">=</span>ubuntu-*
+</pre></div>
+</div>
+<p>The “conf” parameter may address an additional config dictionary within the casa_distro.json config file. Typically, a test config may use a different system image (casa-test images), or options, or mounted directories.</p>
+</div>
+<div class="section" id="root-shell">
+<h3>root_shell<a class="headerlink" href="#root-shell" title="Permalink to this headline">¶</a></h3>
+<p>Start a shell with root privileges allowing to modify a writable singularity image. Before using this command, a writable image must have been created with the create_writable_image command. Using this command allows to modify the writable image (for instance to install packages). Due to Singularity security, it is necessary to be root on the host system to start a root shell within the container (sudo is used for that and can ask you a password).</p>
+<p>The image can be identified by its Docker-like name:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro root_shell cati/casa-dev:ubuntu-16.04
+</pre></div>
+</div>
+<p>It is also possible to identify an image by selecting a build workflow:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro root_shell <span class="nv">distro</span><span class="o">=</span>brainvisa <span class="nv">branch</span><span class="o">=</span>bug_fix
+</pre></div>
+</div>
+</div>
+<div class="section" id="run">
+<h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
+<p>Start any command in the configured container (Docker or Singularity) with the given repository configuration. example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r /home/casa run <span class="nv">branch</span><span class="o">=</span>bug_fix ls -als /casa
+</pre></div>
+</div>
+<p>The “conf” parameter may address an additional config dictionary within the casa_distro.json config file. Typically, a test config may use a different system image (casa-test images), or options, or mounted directories.</p>
+</div>
+<div class="section" id="shell">
+<span id="id1"></span><h3>shell<a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h3>
+<p>Start a bash shell in the configured container with the given repository configuration.</p>
+</div>
+<div class="section" id="update">
+<h3>update<a class="headerlink" href="#update" title="Permalink to this headline">¶</a></h3>
+<p>Update an existing build workflow directory. For now it only re-creates the run script in bin/casa_distro, pointing to the casa_distro command used to actually perform the update.</p>
+</div>
+<div class="section" id="update-image">
+<h3>update_image<a class="headerlink" href="#update-image" title="Permalink to this headline">¶</a></h3>
+<p>Update the container images of (eventually selected) build workflows created by <a class="reference internal" href="#create">create</a> command.</p>
+</div>
+</div>
+<div class="section" id="the-complexity-of-arguments-parsing">
+<h2>The complexity of arguments parsing<a class="headerlink" href="#the-complexity-of-arguments-parsing" title="Permalink to this headline">¶</a></h2>
+<p>As casa_distro runs a chain of sub-commands, each of them passing some user-provided arguments, there may be some ambiguity on who should receive arguments. The argument delimiter <code class="docutils literal notranslate"><span class="pre">--</span></code> should be used appropriately.
+For instance:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> anatomist /casa/tests/some_image.nii
+</pre></div>
+</div>
+<p>Casa_distro will run the <code class="docutils literal notranslate"><span class="pre">anatomist</span></code> command through Docker or Singularity, which also parses its commandline options:</p>
+<ul class="simple">
+<li><p>Casa_distro gets arguments <code class="docutils literal notranslate"><span class="pre">run</span></code>, <code class="docutils literal notranslate"><span class="pre">branch=bug_fix</span></code>, and <code class="docutils literal notranslate"><span class="pre">gui=1</span></code>, and identifies the remaining args as the command to run.</p></li>
+<li><p>It invokes <code class="docutils literal notranslate"><span class="pre">docker</span></code> or <code class="docutils literal notranslate"><span class="pre">singularity</span></code>, passing it some specific arguments, and the remaining <code class="docutils literal notranslate"><span class="pre">anatomist</span></code> and <code class="docutils literal notranslate"><span class="pre">/casa/tests/some_image.nii</span></code>, which will be executed in a bash shell inside docker.</p></li>
+</ul>
+<p>But the following command is ambiguous:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix bv_maker <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> --directory<span class="o">=</span>/tmp
+</pre></div>
+</div>
+<p>Why ?</p>
+<p>The last argument, <code class="docutils literal notranslate"><span class="pre">--directory=/tmp</span></code>, will be interpreted by <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code>, and you will get an error from the <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> command which does not know this option (but even if it did, it would not pass it to the <code class="docutils literal notranslate"><span class="pre">bv_maker</span></code> command). But as it is located, you likeky expected to get passed to <code class="docutils literal notranslate"><span class="pre">bv_maker</span></code>… At the moment <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> intercetps all arguments in the shape <code class="docutils literal notranslate"><span class="pre">argument=value</span></code> for himself.</p>
+<p>In the first example there was not this ambiguity since <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> did not recognize the arguments <code class="docutils literal notranslate"><span class="pre">anatomist</span></code> and <code class="docutils literal notranslate"><span class="pre">/casa/tests/some_image.nii</span></code>, so passed them to the following (docker or singularity) command. But now, <code class="docutils literal notranslate"><span class="pre">--directory=/tmp</span></code> is understood by <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code>, used, and consumed by it.</p>
+<p>So, how to pass the option to bv_maker ?</p>
+<p>You have to stop arguments parsing inside <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> and make it pass the remaining arguments to the following command, using <code class="docutils literal notranslate"><span class="pre">--</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> -- bv_maker --directory<span class="o">=</span>/tmp
+</pre></div>
+</div>
+<p>The other useful option is to pass options to the container program (docker for instance) (not to the command executed inside docker), typically to mount host directories etc. This is done using the <code class="docutils literal notranslate"><span class="pre">container_optioins</span></code> option, followed by more options:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> <span class="nv">container_options</span><span class="o">=</span><span class="s1">&#39;-v /home/albert/my_data:/docker_data&#39;</span> -- anatomist /docker_data/image.nii
+</pre></div>
+</div>
+</div>
+<div class="section" id="options-common-to-several-commands">
+<h2>Options common to several commands<a class="headerlink" href="#options-common-to-several-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="workflow-specification">
+<span id="workflow-options"></span><h3>Workflow specification<a class="headerlink" href="#workflow-specification" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">distro</span><span class="o">=</span>brainvisa
+<span class="nv">branch</span><span class="o">=</span>bug_fix
+<span class="nv">system</span><span class="o">=</span>ubuntu-16.04
+</pre></div>
+</div>
+</div>
+<div class="section" id="alternative-configurations">
+<span id="conf-option"></span><h3>Alternative configurations<a class="headerlink" href="#alternative-configurations" title="Permalink to this headline">¶</a></h3>
+<p>in <a class="reference internal" href="#run">run</a> and <a class="reference internal" href="#shell">shell</a> commands</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">conf</span><span class="o">=</span><span class="nb">test</span>
+</pre></div>
+</div>
+<p>This selects the appropriate sub-configuration block in the configuration file of the build workflow. See <a class="reference internal" href="#alt-configs"><span class="std std-ref">Alternative configurations</span></a></p>
+</div>
+</div>
+<div class="section" id="environment-variables">
+<h2>Environment variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h2>
+<p>Rather than systematically passing options, some environment variables may be used to specify some parameters to <cite>̀ casa_distro`</cite>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># replaces the -r option</span>
+<span class="nv">CASA_DEFAULT_REPOSITORY</span><span class="o">=</span>/home/someone/casa_distro
+</pre></div>
+</div>
+</div>
+<div class="section" id="workflow-configuration-file">
+<h2>Workflow configuration file<a class="headerlink" href="#workflow-configuration-file" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">casa_distro.json</span></code> file found in each workflow subdirectory (in the <code class="docutils literal notranslate"><span class="pre">conf</span></code> subdirectory, actually) is a dictionary which contains varaibles used to define the build workflow, the type of container used (docker or singularity), mounted directories in the container image, etc.</p>
+<p>Some variables substitution can occur in the string values, in a “pythonic” shape: <code class="docutils literal notranslate"><span class="pre">%(variable)s</span></code> will be replaced by the contents of a variable <code class="docutils literal notranslate"><span class="pre">variable</span></code>. The following variables are available:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>build_workflow_dir
+casa_branch
+distro_name
+system
+</pre></div>
+</div>
+<p>Moreover some environment variables replacement also takes place, in the shape: <code class="docutils literal notranslate"><span class="pre">${VARIABLE}</span></code>.</p>
+<div class="section" id="configuration-dictionary-variables">
+<h3>Configuration dictionary variables<a class="headerlink" href="#configuration-dictionary-variables" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt>alt_configs: dictionary</dt><dd><p>alternative configurations dictionary. see <a class="reference internal" href="#alt-configs"><span class="std std-ref">Alternative configurations</span></a>.</p>
+</dd>
+<dt>build_workflow_dir: string</dt><dd><p>build workflow directory</p>
+</dd>
+<dt>casa_branch: string</dt><dd><p>name of the source and build branch (<code class="docutils literal notranslate"><span class="pre">bug_fix</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk</span></code>, <code class="docutils literal notranslate"><span class="pre">latest_release</span></code>, <code class="docutils literal notranslate"><span class="pre">release_candidate</span></code>)</p>
+</dd>
+<dt>container_env: dictionary</dt><dd><p>environment variables set when running a container.</p>
+</dd>
+<dt>container_gui_env: dictionary</dt><dd><p>environment variables set when running a container in gui mode.</p>
+</dd>
+<dt>container_gui_options: list</dt><dd><p>list of commandline options passed to the container command in gui mode: depends on the container types.</p>
+</dd>
+<dt>container_image: string</dt><dd><p>container image name. May be a filename, or a docker-style identifier. Docker-style identifiers are converted into filenames when using singularity, thus are still understood, so <code class="docutils literal notranslate"><span class="pre">cati/casa-dev:ubuntu-16.04</span></code> is a valid name.</p>
+</dd>
+<dt>container_options: list</dt><dd><p>list of commandline options passed to the container command: depends on the container types, options passed to docker and to singularity actually differ.</p>
+</dd>
+<dt>container_type: string</dt><dd><p><code class="docutils literal notranslate"><span class="pre">docker</span></code> or <code class="docutils literal notranslate"><span class="pre">singularity</span></code>. New container types, <code class="docutils literal notranslate"><span class="pre">virtualbox</span></code> for instance, may be added in future extensions.</p>
+</dd>
+<dt>container_mounts: dictionary</dt><dd><p>mount points in the container. Directories from the host filesystem (source) are exported to the container (dest). The dictionary is a map of destination:source directories.</p>
+</dd>
+<dt>container_volumes: dictionary</dt><dd><p><em>Deprecated: use ``container_mounts`` instead.</em> The dictionary is a map of source:destination directories.</p>
+</dd>
+<dt>distro_name: string</dt><dd><p>name of the distribution (set of configured sources built in the build workflow).</p>
+</dd>
+<dt>distro_source: string</dt><dd><p>name of the distribution used to base this one on. <code class="docutils literal notranslate"><span class="pre">brainvisa</span></code>, <code class="docutils literal notranslate"><span class="pre">opensource</span></code>, <code class="docutils literal notranslate"><span class="pre">cati_platform</span></code>.</p>
+</dd>
+<dt>init_workflow_cmd: string</dt><dd><p>command run when initializing the build workflow. Normally none.</p>
+</dd>
+<dt>system: string</dt><dd><p>system the container runs (<code class="docutils literal notranslate"><span class="pre">ubuntu-12.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-14.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-16.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-18.04</span></code>, <code class="docutils literal notranslate"><span class="pre">centos-7.4</span></code>, <code class="docutils literal notranslate"><span class="pre">windows-7-64</span></code>).</p>
+</dd>
+<dt>user_specific_home: boolean</dt><dd><p>if true, this flag changes the mount for the <code class="docutils literal notranslate"><span class="pre">/casa/home</span></code> directory of the container, to point to a sub-directory of the current user’s home directory <code class="docutils literal notranslate"><span class="pre">$HOME/.config/casa-distro/&lt;path/to/build-workflow&gt;/home</span></code>. This allows a single build workflow directory to be shared among several users, who do not have write access to the build workflow directory itself (in particular, the <code class="docutils literal notranslate"><span class="pre">&lt;/path/to/build-workflow&gt;/home</span></code> sub-directory). The resulting home directory is created and initialized if needed, the first time that a container command is run.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="alt-configs">
+<span id="id2"></span><h3>Alternative configurations<a class="headerlink" href="#alt-configs" title="Permalink to this headline">¶</a></h3>
+<p>Alternative configurations are used with the <a class="reference internal" href="#conf-option"><span class="std std-ref">conf option</span></a> in <a class="reference internal" href="#run">run</a> and <a class="reference internal" href="#shell">shell</a> commands. They allow to change or add some configuration variables during a specific run. A typical use is to run test cases for installed packages in a different, minimal, container to check for missing libraries or files in a package.</p>
+<p>They are specified as entries in an <code class="docutils literal notranslate"><span class="pre">alt_configs</span></code> sub-directory in the json configuration file. Otherwise they have the same structure as the main dictionary.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;container_env&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;CASA_HOST_DIR&quot;</span><span class="p">:</span> <span class="s2">&quot;%(build_workflow_dir)s&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;HOME&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/home&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;CASA_BRANCH&quot;</span><span class="p">:</span> <span class="s2">&quot;%(casa_branch)s&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;CASA_DISTRO&quot;</span><span class="p">:</span> <span class="s2">&quot;%(distro_name)s&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;CASA_SYSTEM&quot;</span><span class="p">:</span> <span class="s2">&quot;%(system)s&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;system&quot;</span><span class="p">:</span> <span class="s2">&quot;ubuntu-16.04&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;distro_source&quot;</span><span class="p">:</span> <span class="s2">&quot;opensource&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;container_gui_env&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;DISPLAY&quot;</span><span class="p">:</span> <span class="s2">&quot;${DISPLAY}&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;container_volumes&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/src&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/src&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/pack&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/pack&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/tests&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/tests&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/custom/src&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/custom/src&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/build&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/build&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/conf&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/conf&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/home&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/home&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/install&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/install&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;%(build_workflow_dir)s/custom/build&quot;</span><span class="p">:</span> <span class="s2">&quot;/casa/custom/build&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;container_options&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;--pwd&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/casa/home&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;casa_branch&quot;</span><span class="p">:</span> <span class="s2">&quot;bug_fix&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;container_type&quot;</span><span class="p">:</span> <span class="s2">&quot;singularity&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;distro_name&quot;</span><span class="p">:</span> <span class="s2">&quot;brainvisa&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;container_image&quot;</span><span class="p">:</span> <span class="s2">&quot;cati/casa-dev:ubuntu-16.04&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;alt_configs&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;test&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;container_image&quot;</span><span class="p">:</span> <span class="s2">&quot;cati/casa-test:ubuntu-18.04&quot;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using the casa_distro command</a><ul>
+<li><a class="reference internal" href="#general-and-common-options">General and Common options</a></li>
+<li><a class="reference internal" href="#subcommands">Subcommands</a><ul>
+<li><a class="reference internal" href="#help">help</a></li>
+<li><a class="reference internal" href="#bv-maker">bv_maker</a></li>
+<li><a class="reference internal" href="#clean-images">clean_images</a></li>
+<li><a class="reference internal" href="#create">create</a></li>
+<li><a class="reference internal" href="#create-writable-image">create_writable_image</a></li>
+<li><a class="reference internal" href="#delete">delete</a></li>
+<li><a class="reference internal" href="#list">list</a></li>
+<li><a class="reference internal" href="#mrun">mrun</a></li>
+<li><a class="reference internal" href="#root-shell">root_shell</a></li>
+<li><a class="reference internal" href="#run">run</a></li>
+<li><a class="reference internal" href="#shell">shell</a></li>
+<li><a class="reference internal" href="#update">update</a></li>
+<li><a class="reference internal" href="#update-image">update_image</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-complexity-of-arguments-parsing">The complexity of arguments parsing</a></li>
+<li><a class="reference internal" href="#options-common-to-several-commands">Options common to several commands</a><ul>
+<li><a class="reference internal" href="#workflow-specification">Workflow specification</a></li>
+<li><a class="reference internal" href="#alternative-configurations">Alternative configurations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-variables">Environment variables</a></li>
+<li><a class="reference internal" href="#workflow-configuration-file">Workflow configuration file</a><ul>
+<li><a class="reference internal" href="#configuration-dictionary-variables">Configuration dictionary variables</a></li>
+<li><a class="reference internal" href="#alt-configs">Alternative configurations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Casa-Distro</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="casa_distro_admin_command.html"
+                        title="next chapter">Using the casa_distro_admin command</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_admin_command.html" title="Using the casa_distro_admin command"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Casa-Distro"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Using the casa_distro command</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
