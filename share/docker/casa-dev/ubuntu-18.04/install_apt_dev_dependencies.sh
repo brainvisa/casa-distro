@@ -182,6 +182,7 @@ python3_packages=(
     python3-opengl
     python3-joblib
     python3-tqdm
+    python3-mpi4py
 
     # These packages used to be installed with PIP, presumably because they
     # depend on NumPy, but it seems that they do not depend on a particular ABI

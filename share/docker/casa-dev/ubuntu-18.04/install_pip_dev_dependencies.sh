@@ -89,7 +89,7 @@ $PIP3 install 'scikit-learn<0.21'
 # Ubuntu 18.04 DO NOT work).
 $PIP3 install -U 'ipython~=5.9.0' 'ipykernel~=4.10.1' 'tornado~=4.5.3' \
                  'jupyter~=1.0.0' 'jupyter_client~=5.3.4' \
-                 'pyzmq~=18.0.2' 'qtconsole~=4.4.4'
+                 'pyzmq~=18.0.2' 'qtconsole~=4.4.4' 'nbconvert==5.6.1'
 
 $PIP3 install 'nbsphinx~=0.4.3'
 $PIP3 install 'sphinx-gallery~=0.3.1'

@@ -148,7 +148,10 @@ brainvisa_python_runtime_dependencies=(
     python-yaml
     python-joblib
     python-configobj
-
+    python-mpi4py
+    # the backports modules installed via pip are not available in backports.__path__
+    # thus we have to install them via apt  - how strange :(
+    python-backports-shutil-get-terminal-size
     # These packages used to be installed with PIP, presumably because they
     # depend on NumPy, but it seems that they do not depend on a particular ABI
     # version.
