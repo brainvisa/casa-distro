@@ -22,8 +22,8 @@ def find_in_path(command):
         if normdir not in seen:
             seen.add(normdir)
             name = os.path.join(dir, command)
-            if (osp.exists(name) and
-                    os.access(name, os.F_OK | os.X_OK) and
+            if (osp.exists(name) and \
+                    os.access(name, os.F_OK | os.X_OK) and \
                     not osp.isdir(name)):
                 return name
     return None
