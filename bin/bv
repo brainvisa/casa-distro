@@ -3,13 +3,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-import argparse
 import json
 import os
 import os.path as osp
 import subprocess
 import sys
-
 
 
 def find_in_path(command):
@@ -21,7 +19,7 @@ def find_in_path(command):
     seen = set()
     for dir in path:
         normdir = os.path.normcase(dir)
-        if not normdir in seen:
+        if normdir not in seen:
             seen.add(normdir)
             name = os.path.join(dir, command)
             if (osp.exists(name) and
@@ -29,7 +27,6 @@ def find_in_path(command):
                     not osp.isdir(name)):
                 return name
     return None
-
 
 
 help = False
@@ -76,20 +73,23 @@ configs = json.loads(output)
 environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
 if environment_dir:
     environment_dir = osp.normpath(environment_dir)
-elif osp.exists(osp.join(guess_environment_dir, 'host', 'conf', 'casa_distro.json')):
+elif osp.exists(osp.join(guess_environment_dir, 'host', 'conf',
+                         'casa_distro.json')):
     environment_dir = guess_environment_dir
 
 if not environment_dir:
     if len(configs) == 1:
         config = configs[0]
     else:
-        raise ValueError('Several casa_distro environment found : {}'.format(', '.join(i['name'] for i in configs)))
+        raise ValueError('Several casa_distro environment found : {}'.format(
+            ', '.join(i['name'] for i in configs)))
 else:
     for config in configs:
         if osp.normpath(config['directory']) == environment_dir:
             break
     else:
-        raise ValueError('Cannot find a casa_distro environment for directory {}'.format(environment_dir))
+        raise ValueError('Cannot find a casa_distro environment '
+                         'for directory {}'.format(environment_dir))
 
 if not command:
     command = ['python', '-m', 'casa_distro.configuration_gui']

@@ -582,7 +582,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
     {verbose}
 
     '''
-    json_output= check_boolean('json', json)
+    json_output = check_boolean('json', json)
     # json parameter is hiding json module.
     # it is not possible to get back to a global
     # variable for json. Therefore, the json module is
@@ -602,7 +602,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
         else:
             print(config['name'])
             for i in ('type', 'distro', 'branch', 'version', 'system',
-                    'container_type', 'image'):
+                      'container_type', 'image'):
                 v = config.get(i)
                 if v is not None:
                     print('  %s:' % i, config[i])
@@ -610,7 +610,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
             if overlay:
                 print('  writable file system:', overlay)
                 print('  writable file system size:',
-                    size_to_string(config['overlay_size']))
+                      size_to_string(config['overlay_size']))
             print('  directory:', config['directory'])
 
             if verbose:
@@ -619,6 +619,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
                     print('   ', line)
     if json_result:
         json.dump(json_result, sys.stdout)
+
 
 @command
 def run(type=None, distro=None, branch=None, system=None,
