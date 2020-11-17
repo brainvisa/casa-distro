@@ -60,12 +60,19 @@ optional arguments:
 
 
 guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(sys.argv[0])))
+print('guess_environment_dir:', guess_environment_dir)
 casa_distro_src = osp.dirname(osp.dirname(osp.realpath(sys.argv[0])))
+print('casa_distro_src:', casa_distro_src)
+# Question: do we install host-side programs in host/bin or host/host_bin
+# (as is it today) ?
 casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
 if not osp.exists(casa_distro):
-    casa_distro = find_in_path('casa_distro')
-    if not casa_distro:
-        raise RuntimeError('Cannot find casa_distro executable')
+    casa_distro = osp.join(casa_distro_src, 'host_bin', 'casa_distro')
+    if not osp.exists(casa_distro):
+        casa_distro = find_in_path('casa_distro')
+        if not casa_distro:
+            raise RuntimeError('Cannot find casa_distro executable')
+print('casa_distro:', casa_distro)
 output = subprocess.check_output([casa_distro, 'list', 'json=true'])
 configs = json.loads(output)
 
@@ -75,6 +82,9 @@ if environment_dir:
 elif osp.exists(osp.join(guess_environment_dir, 'host', 'conf',
                          'casa_distro.json')):
     environment_dir = guess_environment_dir
+elif osp.exists(osp.join(guess_environment_dir, 'conf', 'casa_distro.json')):
+    # bv is installed in <environment_dir>/host/*bin/: host is already included
+    environment_dir = osp.dirname(guess_environment_dir)
 
 if not environment_dir:
     if len(configs) == 1:
