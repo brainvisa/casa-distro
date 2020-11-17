@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 import sys
 import shutil
+import glob
 from casa_distro.info import __version__
 osp = os.path
 
@@ -82,7 +83,7 @@ fi
     # build_win_run_script(out_file, container_bin_dir)
 
 
-def install_bv_casa_distro(out_host_dir, casa_build):
+def install_bv_casa_distro(out_host_dir, casa_build, casa_src=None):
     '''
     Copy the bv executable and needed libraries into a host-readable
     filesystem, /casa/host/host_bin/ and /casa/host/python/
@@ -95,27 +96,48 @@ def install_bv_casa_distro(out_host_dir, casa_build):
         directory where the software is installed inside the container
         (/casa/host/build for a dev environment, or /casa/install for a
         user one)
+    casa_src: str
+        if given and if this directory exists, use the source directory to
+        symlink programs instead of copying them: this is a developer setup
+        where sources can be seen from the host system.
     '''
     import casa_distro
     casa_path = osp.dirname(casa_distro.__file__)
     print('casa_path:', casa_path)
     src_dir = osp.dirname(osp.dirname(casa_path))
+    bin_prefix = 'host_bin'
+
+    if casa_src:
+        sp = osp.join(casa_src,
+                      'development/casa-distro/master/bin/casa_distro')
+        if not osp.exists(sp):
+            sp2 = glob.glob(osp.join(
+                casa_src, 'development/casa-distro/master/bin/casa_distro'))
+            if sp2:
+                sp = sp2[0]
+        if osp.exists(sp):
+            casa_src = osp.relpath(osp.dirname(osp.dirname(sp)),
+                                   osp.join(out_host_dir, bin_prefix))
+        else:
+            casa_src = None
+        if casa_src:
+            print('dev mode, symlink to sources:', casa_src)
 
     # temporarily (until bv command exists...) copy whole casa_distro
-    bin_items = ['bin/casa_distro']
+    bin_items = ['bin/casa_distro', 'bin/bv']
     py_items = ['python/casa_distro']
     # bin_items = ['bin/bv']
     # py_items = ['python/casa_distro/__init__.py',
     #             'python/casa_distro/info.py', 'python/casa_distro/bv']
 
-    bin_fitems = [(osp.join(casa_build, item),
-                   osp.join(out_host_dir, 'host_bin', item[4:]))
+    bin_fitems = [(item, osp.join(casa_build, item),
+                   osp.join(out_host_dir, bin_prefix, item[4:]))
                   for item in bin_items]
-    py_fitems = [(osp.join(src_dir, item), osp.join(out_host_dir, item))
+    py_fitems = [(item, osp.join(src_dir, item), osp.join(out_host_dir, item))
                  for item in py_items]
     items = bin_fitems + py_fitems
     for item in items:
-        src, dst = item
+        short_src, src, dst = item
         print('copy:', src, '->', dst)
         if not osp.exists(src):
             print(src, 'does not exist')
@@ -123,12 +145,19 @@ def install_bv_casa_distro(out_host_dir, casa_build):
         odir = osp.dirname(dst)
         if not osp.exists(odir):
             os.makedirs(odir)
-        if osp.isdir(src):
-            if osp.exists(dst):
+        if osp.exists(dst) or osp.islink(dst):
+            if osp.isdir(dst) and not osp.islink(dst):
                 shutil.rmtree(dst)
-            shutil.copytree(src, dst)
+            else:
+                os.unlink(dst)
+        if casa_src:
+            relsrc = osp.join(casa_src, short_src)
+            os.symlink(relsrc, dst)
         else:
-            shutil.copy2(src, dst)
+            if osp.isdir(src):
+                shutil.copytree(src, dst)
+            else:
+                shutil.copy2(src, dst)
 
 
 mode = 'build'
@@ -186,16 +215,17 @@ else:
 # container_bin_dir is the (relative) directory of the executables running
 # inside the container. It is relative to /casa.
 
+casa_src = '/casa/host/src'
 host_dir = '/casa/host'
 casa_hostdir = os.environ.get('CASA_HOST_DIR')
 
 if not casa_build or not casa_hostdir:
     raise RuntimeError('we don\'t seem to be inside a container, we should.')
 
-install_bv_casa_distro(host_dir, casa_build)
+install_bv_casa_distro(host_dir, casa_build, casa_src)
 
 exclude_programs = set([
-    'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin',
+    'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin', 'bv',
     'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py', 'bv_env_host',
     'bv_env_test', 'bv_unenv', 'bv_unenv.sh', 'bv_unit_test',
     'bv_wine_regedit',
