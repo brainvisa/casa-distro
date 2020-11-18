@@ -9,8 +9,10 @@ import os
 import os.path as osp
 from pprint import pprint
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import traceback
 
 from casa_distro.command import command, check_boolean
@@ -40,6 +42,96 @@ def str_to_bool(string):
     if _true_str.match(string):
         return True
     raise ValueError('Invalid value for boolean: ' + repr(string))
+
+
+@command
+def singularity_deb(system,
+                    output='singularity-{version}-{system}.deb',
+                    version='3.6.4',
+                    go_version='1.13'):
+    """Create a Debian package to install Singularity.
+    Perform the whole installation process from a rw system and Singularity
+    source. Then put the result in a *.deb file.
+
+    Parameters
+    ----------
+    system
+        Target system. E.g. ubuntu-20.04
+
+    output
+        default={output_default}
+        Location of the resulting Debian package file.
+
+    base
+        Source file use to buld the image. The default value depends on image
+        type and container type.
+
+    version
+        default={version_default}
+        Version of Singularity to use. This must be a valid release version.
+
+    go_version
+        default={go_version_default}
+        Version of Go language to install during Singularity building process.
+        Go language is not included in the final package.
+    """
+
+    output = output.format(system=system,
+                           version=version)
+    tmp = tempfile.mkdtemp(prefix='singularity-deb-')
+    try:
+        build_sh = osp.join(tmp, 'build.sh')
+        open(build_sh, 'w').write('''#!/bin/sh
+set -xe
+apt update -y
+DEBIAN_FRONTEND=noninteractive apt install -y build-essential uuid-dev \
+  squashfs-tools libseccomp-dev wget pkg-config git libcryptsetup-dev \
+  elfutils rpm alien
+cd $TMP
+export OS=linux ARCH=amd64
+wget https://dl.google.com/go/go$GO_VERSION.$OS-$ARCH.tar.gz
+tar -C /usr/local -xzvf go$GO_VERSION.$OS-$ARCH.tar.gz
+rm go$GO_VERSION.$OS-$ARCH.tar.gz
+export PATH=/usr/local/go/bin:$PATH
+export GOPATH="$TMP/cache"
+git clone https://github.com/hpcng/singularity.git
+cd singularity
+git checkout v${SINGULARITY_VERSION}
+./mconfig
+make -C builddir dist
+cd $TMP
+rpmbuild -tb  --nodeps singularity/singularity-${SINGULARITY_VERSION}.tar.gz
+alien --to-deb --scripts \
+  $TMP/rpmbuild/RPMS/x86_64/singularity-${SINGULARITY_VERSION}-1.x86_64.rpm
+mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
+''')
+        tmp_output = '/tmp/singularity-{}-x86_64.deb'.format(system)
+        subprocess.check_call(['sudo', 'singularity', 'build',
+                               '--sandbox', system,
+                               'docker://{}'.format(system.replace('-', ':'))],
+                              cwd=tmp)
+        subprocess.check_call(['sudo', 'singularity', 'run', '--writable',
+                               '--home', tmp,
+                               '--env', 'TMP={}'.format(tmp),
+                               '--env', 'SYSTEM={}'.format(system),
+                               '--env', 'GO_VERSION={}'.format(go_version),
+                               '--env',
+                               'SINGULARITY_VERSION={}'.format(version),
+                               system,
+                               'sh', build_sh],
+                              cwd=tmp)
+        # Use singularity to chown because it may be in sudoers
+        subprocess.check_call(['sudo', 'singularity', 'run', system,
+                               'chown', '--reference', tmp,
+                               tmp_output],
+                              cwd=tmp)
+        shutil.move(tmp_output, output)
+    finally:
+        # Use singularity to remove temporary directory because it may be
+        # in sudoers
+        subprocess.check_call(['sudo', 'singularity', 'run', system,
+                               'rm', '-R', tmp],
+                              cwd=tmp)
 
 
 @command
