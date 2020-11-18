@@ -1,0 +1,105 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function
+
+import json
+import os
+import os.path as osp
+import subprocess
+import sys
+
+
+def find_in_path(command):
+    path = os.environ.get('PATH', os.defpath)
+    if not path:
+        return None
+    path = path.split(os.pathsep)
+
+    seen = set()
+    for dir in path:
+        normdir = os.path.normcase(dir)
+        if normdir not in seen:
+            seen.add(normdir)
+            name = os.path.join(dir, command)
+            if (osp.exists(name)
+                    and os.access(name, os.F_OK | os.X_OK)
+                    and not osp.isdir(name)):
+                return name
+    return None
+
+
+help = False
+verbose = None
+
+i = 1
+while i < len(sys.argv):
+    option = sys.argv[i]
+    if option in ('-h', '--help'):
+        help = True
+    elif option in ('-v', '--verbose'):
+        verbose = sys.stdout
+    else:
+        break
+    i += 1
+command = sys.argv[i:]
+
+
+if help:
+    print('''usage: bv [-h] [-v] [command...]
+
+Command used to start any BrainVISA related program.
+
+Used without parameter, it starts a graphical interface
+allowing the configuration of the environment.
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -v, --verbose
+''')
+    sys.exit()
+
+
+guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(sys.argv[0])))
+casa_distro_src = osp.dirname(osp.dirname(osp.realpath(sys.argv[0])))
+casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
+if not osp.exists(casa_distro):
+    casa_distro = find_in_path('casa_distro')
+    if not casa_distro:
+        raise RuntimeError('Cannot find casa_distro executable')
+output = subprocess.check_output([casa_distro, 'list', 'json=true'])
+configs = json.loads(output)
+
+environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
+if environment_dir:
+    environment_dir = osp.normpath(environment_dir)
+elif osp.exists(osp.join(guess_environment_dir, 'host', 'conf',
+                         'casa_distro.json')):
+    environment_dir = guess_environment_dir
+
+if not environment_dir:
+    if len(configs) == 1:
+        config = configs[0]
+    else:
+        raise ValueError('Several casa_distro environment found : {}'.format(
+            ', '.join(i['name'] for i in configs)))
+else:
+    for config in configs:
+        if osp.normpath(config['directory']) == environment_dir:
+            break
+    else:
+        raise ValueError('Cannot find a casa_distro environment '
+                         'for directory {}'.format(environment_dir))
+
+if not command:
+    command = ['python', '-m', 'casa_distro.configuration_gui']
+
+host_command = [casa_distro, 'run', 'name={}'.format(config['name'])] + command
+if verbose:
+    print('casa_distro executable =', casa_distro, file=verbose)
+    print('Environment name =', config['name'], file=verbose)
+    print('Environment directory =', config['directory'], file=verbose)
+    print('Environment image =', config['image'], file=verbose)
+    print('Container command =', command)
+    print('Host command =', host_command)
+
+subprocess.check_call(host_command)

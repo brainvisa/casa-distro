@@ -563,6 +563,7 @@ def setup(distro=None,
 @command('list')
 def list_command(type=None, distro=None, branch=None, system=None, name=None,
                  base_directory=casa_distro_directory(),
+                 json='no',
                  verbose=None):
     '''List run or dev environments created by "setup"/"setup_dev" command.
 
@@ -574,33 +575,50 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
     {system}
     {name}
     {base_directory}
+    json
+        default = {json_default}
+        The output is written as a list of configuration dictionaries in
+        JSON format.
     {verbose}
 
     '''
+    json_output = check_boolean('json', json)
+    # json parameter is hiding json module.
+    # it is not possible to get back to a global
+    # variable for json. Therefore, the json module is
+    # stored in the local variable
+    json = sys.modules['json']
     verbose = verbose_file(verbose)
+
+    json_result = []
     for config in iter_environments(base_directory,
                                     type=type,
                                     distro=distro,
                                     branch=branch,
                                     system=system,
                                     name=name):
-        print(config['name'])
-        for i in ('type', 'distro', 'branch', 'version', 'system',
-                  'container_type', 'image'):
-            v = config.get(i)
-            if v is not None:
-                print('  %s:' % i, config[i])
-        overlay = config.get('overlay')
-        if overlay:
-            print('  writable file system:', overlay)
-            print('  writable file system size:',
-                  size_to_string(config['overlay_size']))
-        print('  directory:', config['directory'])
+        if json_output:
+            json_result.append(config)
+        else:
+            print(config['name'])
+            for i in ('type', 'distro', 'branch', 'version', 'system',
+                      'container_type', 'image'):
+                v = config.get(i)
+                if v is not None:
+                    print('  %s:' % i, config[i])
+            overlay = config.get('overlay')
+            if overlay:
+                print('  writable file system:', overlay)
+                print('  writable file system size:',
+                      size_to_string(config['overlay_size']))
+            print('  directory:', config['directory'])
 
-        if verbose:
-            print('  full environment:')
-            for line in json.dumps(config, indent=2).split('\n'):
-                print('   ', line)
+            if verbose:
+                print('  full environment:')
+                for line in json.dumps(config, indent=2).split('\n'):
+                    print('   ', line)
+    if json_result:
+        json.dump(json_result, sys.stdout)
 
 
 @command
