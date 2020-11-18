@@ -117,7 +117,7 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
-    gui|verbose|force|root|install|generate|upload|interactive)
+    gui|verbose|force|root|install|generate|upload|interactive|json)
         COMPREPLY=($(compgen -W "True False true false 1 0 yes no Yes No" -- "${word}"))
         ;;
     opengl)
@@ -299,7 +299,7 @@ function _complete_casa_distro_()
             COMPREPLY=($(compgen -W "distro= name= container_type= image= writable= branch= system= base_directory= url= output= force= verbose=" -- "${word}"))
             ;;
         list)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= verbose= json=" -- "${word}"))
             ;;
         list_images)
             COMPREPLY=($(compgen -W "type= distro= branch= system= name= image= base_directory= verbose=" -- "${word}"))
