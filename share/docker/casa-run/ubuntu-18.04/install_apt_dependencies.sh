@@ -110,6 +110,11 @@ generally_useful_packages=(
     gpicview
     vim
     nano
+    openjdk-11-jre # java is used by some external tools (populse mri_conv...)
+    openjdk-11-jre-headless
+    jarwrapper
+    java-common
+    java-wrappers
 )
 
 # Dependencies of headless Anatomist
