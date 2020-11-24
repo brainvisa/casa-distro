@@ -135,8 +135,12 @@ def create_user_image(base_image,
     {environment_directory}/host/install /casa/install
 
 %runscript
-    /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
-
+    if [ -d /casa/setup -a "$1" = "setup" ]; then
+        shift
+        /casa/install/bin/bv_env python -m bv.setup "$@"
+    else
+        /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
+    fi
 '''.format(base_image=base_image,
            environment_directory=dev_config['directory']))
     recipe.flush()
