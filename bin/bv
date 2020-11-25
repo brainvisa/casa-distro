@@ -59,15 +59,15 @@ optional arguments:
     sys.exit()
 
 
-guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(sys.argv[0])))
+guess_environment_dir = osp.abspath(osp.normpath(osp.dirname(osp.dirname(
+    sys.argv[0]))))
 print('guess_environment_dir:', guess_environment_dir)
 casa_distro_src = osp.dirname(osp.dirname(osp.realpath(sys.argv[0])))
 print('casa_distro_src:', casa_distro_src)
-# Question: do we install host-side programs in host/bin or host/host_bin
-# (as is it today) ?
 casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
 if not osp.exists(casa_distro):
-    casa_distro = osp.join(casa_distro_src, 'host_bin', 'casa_distro')
+    casa_distro = osp.join(guess_environment_dir, 'casa_distro',
+                           'bin', 'casa_distro')
     if not osp.exists(casa_distro):
         casa_distro = find_in_path('casa_distro')
         if not casa_distro:
