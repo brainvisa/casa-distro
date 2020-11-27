@@ -42,42 +42,19 @@ def build_win_run_script(out_file, container_bin_dir):
 
 def build_run_script(out_file, container_bin_dir):
     # print(out_file)
-    with open(out_file, 'w') as f:
-        os.chmod(out_file, 0o755)
-        print('''#!/bin/sh
-directory="$0"
-[ -L "$directory" ] && directory="`readlink -f \"$directory\"`"
-command="`basename \"$directory\"`"
-bin_directory=$(dirname "$directory")
-bin_directory="`cd \"$bin_directory\";pwd`"
-host_dir=$(dirname "$bin_directory")
-casa_env_dir=$(dirname "$host_dir")
-casa_distro_dir=$(dirname "$casa_env_dir")
-
-if [ -n "$CASA_HOST_DIR" ]; then
-    # inside container: direct run
-    exec "$container_dir/$command" "$@"
-else
-
-    container_dir="/casa/{bin_dir}"
-    casa_env_name=$(basename $casa_env_dir)
-    casa_distro="$bin_directory/casa_distro"
-    if [ ! -x "$casa_distro" ]; then
-        # casa_distro is not installed in the host_bin dir (should not happen)
-        host_container_dir="$casa_env_dir/{bin_dir}"
-        casa_distro="$host_container_dir/casa_distro"
-    fi
-
-    if [ -x "$casa_distro" ]; then
-        # outside of container, and casa-distro can be found in the container
-        exec "$casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
-    else
-        # casa_distro is installed outside of the container, use the PATH
-        exec "casa_distro" "run" "base_directory=$casa_distro_dir" "name=$casa_env_name" "$container_dir/$command" "$@"
-    fi
-fi
-
-'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+    if osp.exists(out_file):
+        os.unlink(out_file)
+    try:
+        # try as a symlink to bv
+        os.symlink('bv', out_file)
+    except (OSError, IOError):
+        # the filesystem (or OS) doesn't support symlinks. Build a script.
+        with open(out_file, 'w') as f:
+            os.chmod(out_file, 0o755)
+            print('''#!/bin/sh
+bv="$(dirname -- $0)/bv"
+"$bv" "$(basename -- $0)" "$@"
+''', file=f)  # noqa: E501
 
     # (windows has no native singularity implementation, for now)
     # build_win_run_script(out_file, container_bin_dir)
