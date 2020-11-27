@@ -446,7 +446,7 @@ def create_user_image(
         container_type=None,
         output=osp.join(
             default_base_directory,
-            'releases', '{name}{extension}'),
+            '{name}{extension}'),
         base_directory=casa_distro_directory(),
         install='yes',
         generate='yes',

@@ -93,7 +93,12 @@ def create_image(base, base_metadata,
     From: {base}
 
 %runscript
-    . /usr/local/bin/entrypoint
+    if [ -d /casa/setup -a "$1" = "setup" ]; then
+        shift
+        /casa/install/bin/bv_env python -m casa_distro.setup_dev "$@"
+    else
+        . /usr/local/bin/entrypoint
+    fi
 '''.format(base=base))
         v = {}
         print('build_file:', build_file)
@@ -137,7 +142,7 @@ def create_user_image(base_image,
 %runscript
     if [ -d /casa/setup -a "$1" = "setup" ]; then
         shift
-        /casa/install/bin/bv_env python -m bv.setup "$@"
+        /casa/install/bin/bv_env python -m casa_distro.setup "$@"
     else
         /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
     fi

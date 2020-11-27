@@ -59,7 +59,7 @@ optional arguments:
     sys.exit()
 
 
-guess_environment_dir = osp.abspath(osp.normpath(osp.dirname(osp.dirname(
+guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(osp.abspath(
     sys.argv[0]))))
 print('guess_environment_dir:', guess_environment_dir)
 casa_distro_src = osp.dirname(osp.dirname(osp.realpath(sys.argv[0])))

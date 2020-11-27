@@ -7,7 +7,9 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
-. /casa/environment.sh
+if [ -e /casa/dev-environment.sh ]; then
+    . /casa/dev-environment.sh
+fi
 
 ###############################################################################
 # Install configuration elements that are specific to casa-dev
@@ -21,6 +23,7 @@ sudo git lfs install --system --skip-repo
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
 # Install a version of brainvisa-cmake
+echo '!!!' $CASA_SRC
 git clone https://github.com/brainvisa/brainvisa-cmake.git \
           "$CASA_SRC"/development/brainvisa-cmake/master
 mkdir /tmp/brainvisa-cmake
