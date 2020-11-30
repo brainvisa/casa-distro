@@ -95,7 +95,7 @@ def create_image(base, base_metadata,
 %runscript
     if [ -d /casa/setup -a "$1" = "setup" ]; then
         shift
-        /casa/install/bin/bv_env python -m casa_distro.setup_dev "$@"
+        /casa/install/bin/bv_env_host python -m casa_distro.setup_dev "$@"
     else
         . /usr/local/bin/entrypoint
     fi
