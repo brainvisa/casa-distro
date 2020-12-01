@@ -23,7 +23,6 @@ sudo git lfs install --system --skip-repo
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
 # Install a version of brainvisa-cmake
-echo '!!!' $CASA_SRC
 git clone https://github.com/brainvisa/brainvisa-cmake.git \
           "$CASA_SRC"/development/brainvisa-cmake/master
 mkdir /tmp/brainvisa-cmake
