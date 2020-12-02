@@ -7,7 +7,9 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
-. /casa/environment.sh
+if [ -e /casa/dev-environment.sh ]; then
+    . /casa/dev-environment.sh
+fi
 
 ###############################################################################
 # Install configuration elements that are specific to casa-dev

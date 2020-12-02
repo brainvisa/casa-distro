@@ -23,11 +23,8 @@ def test_help_subcommand():
 @pytest.mark.parametrize("subcommand", [
     'help',
     'distro',
-    'setup_dev',
-    'setup',
     'list',
     'run',
-    'update',
     'pull_image',
     'list_images',
     'shell',

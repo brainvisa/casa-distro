@@ -73,20 +73,19 @@ optional arguments:
     sys.exit()
 
 
-guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(sys.argv[0])))
-# print('guess_environment_dir:', guess_environment_dir)
+guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(osp.abspath(
+    sys.argv[0]))))
+print('guess_environment_dir:', guess_environment_dir)
 casa_distro_src = osp.dirname(osp.dirname(osp.realpath(sys.argv[0])))
-# print('casa_distro_src:', casa_distro_src)
-# Question: do we install host-side programs in host/bin or host/host_bin
-# (as is it today) ?
+print('casa_distro_src:', casa_distro_src)
 casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
 if not osp.exists(casa_distro):
-    casa_distro = osp.join(casa_distro_src, 'host_bin', 'casa_distro')
+    casa_distro = osp.join(guess_environment_dir, 'casa_distro',
+                           'bin', 'casa_distro')
     if not osp.exists(casa_distro):
         casa_distro = find_in_path('casa_distro')
         if not casa_distro:
             raise RuntimeError('Cannot find casa_distro executable')
-# print('casa_distro:', casa_distro)
 output = subprocess.check_output([casa_distro, 'list', 'json=true'])
 configs = json.loads(output)
 
@@ -115,7 +114,7 @@ else:
                          'for directory {}'.format(environment_dir))
 
 if not command:
-    command = ['python', '-m', 'casa_distro.configuration_gui']
+    command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
 
 host_command = [casa_distro, 'run', 'name={}'.format(config['name'])] + command
 if verbose:
@@ -123,7 +122,7 @@ if verbose:
     print('Environment name =', config['name'], file=verbose)
     print('Environment directory =', config['directory'], file=verbose)
     print('Environment image =', config['image'], file=verbose)
-    print('Container command =', command)
-    print('Host command =', host_command)
+    print('Container command =', ' '.join("'{}'".format(i) for i in command))
+    print('Host command =', ' '.join("'{}'".format(i) for i in host_command))
 
 subprocess.check_call(host_command)

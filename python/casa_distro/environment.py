@@ -545,127 +545,27 @@ export PS1="\[\033[33m\]\u@\h \$\[\033[0m\] "
 ''', file=f)
 
 
-def setup(metadata, writable,
-          base_directory, output, force, verbose):
-    '''
-    Create a new run environment.
-
-    '''
-
-    if not force and osp.exists(output):
-        raise ValueError(
-            'The environment "%s" to setup already exists. '
-            'Please choose another name, or use force=True' % metadata['name'])
-    environment = {}
-    environment.update(metadata)
-    environment['casa_distro_compatibility'] = '3'
-
-    if not osp.exists(osp.join(output, 'host', 'conf')):
-        os.makedirs(osp.join(output, 'host', 'conf'))
-
-    casa_distro_json = osp.join(output, 'host', 'conf', 'casa_distro.json')
-    json.dump(environment, open(casa_distro_json, 'w'), indent=4)
-
-    write_environment_homedir(osp.join(output, 'home'))
-
-    if writable:
-        size = string_to_byte_count(writable)
-        if size:
-            overlay = osp.join(output, 'overlay.img')
-            image_info = None
-            if 'container_type' in metadata and 'image' in metadata:
-                image_info = (metadata['container_type'], metadata['image'])
-            create_ext3_file(overlay, size, image_info)
+exclude_from_bin = {
+    'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin', 'bv',
+    'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py', 'bv_env_host',
+    'bv_env_test', 'bv_unenv', 'bv_unenv.sh', 'bv_unit_test',
+    'bv_wine_regedit',
+}
 
 
-def setup_dev(metadata,
-              distro,
-              writable,
-              base_directory,
-              output,
-              force,
-              verbose):
-    setup(metadata=metadata,
-          writable=writable,
-          base_directory=base_directory,
-          output=output,
-          force=force,
-          verbose=verbose)
-
-    all_subdirs = ('conf', 'src', 'build', 'install',)
-    for subdir in all_subdirs:
-        if not osp.exists(osp.join(output, 'host', subdir)):
-            os.makedirs(osp.join(output, 'host', subdir))
-
-    write_environment_homedir(osp.join(output, 'home'))
-
-    for i in os.listdir(distro['directory']):
-        if i == 'casa_distro.json':
+def create_bv_scripts(source, dest):
+    commands = {'casa_distro', 'casa_distro_admin'}
+    commands.update(os.listdir(source))
+    mode = os.stat(osp.join(source, 'bv')).st_mode
+    for command in commands:
+        if command in exclude_from_bin:
             continue
-        cp(osp.join(distro['directory'], i),
-           osp.join(output, i), verbose=verbose)
-
-    svn_secret = osp.join(output, 'host', 'conf', 'svn.secret')
-    # if not os.path.exists(svn_secret):
-    print('\n------------------------------------------------------------')
-    print('** WARNING: svn secret **')
-    print('Before using "casa_distro bv_maker" you will have to '
-          'setup svn to access the Biporoj server, which needs a login '
-          'and a password.\n'
-          'There are 2 methods for this, and 2 situations, which we could '
-          'simplify as this:\n\n'
-          '* opensource distro: if you are only using open-source '
-          'projects, you can use the preconfigured "public" '
-          'login/password: brainvisa / Soma2009.\n'
-          'Credentials are stored in the followinf file:\n')
-    print(svn_secret)
-    print('\nYou may leave it as is or replace with your own login/password '
-          'if you need to access restricted resources. Svn will be used '
-          'non-interactively, it will not ask for password confirmation '
-          '/ storage, but will reject any interactive input, including '
-          'commit comments etc.')
-    print('This file is a shell script that must set the variables '
-          'SVN_USERNAME and SVN_PASSWORD. Do not forget to properly quote '
-          'the values if they contains special characters.')
-    print('For instance, the file could contain the two following lines '
-          '(replacing "your_login" and "your_password" by appropriate '
-          'values:\n')
-    print("SVN_USERNAME='your_login'")
-    print("SVN_PASSWORD='your_password'\n")
-    print('If you need more interaction, then remove the svn.secret file, '
-          'and let svn interactively ask you for login/password and store '
-          'it appropriately, like in the following case.\n')
-    print('* brainvisa and other non-totally opensource distros: they '
-          'need a personal login and password. You can either use the '
-          'above svn.secret method (create the file if it doesn\'t exist '
-          'and fill in your information), or let svn interactively ask '
-          'you a login and password, and let it store it the way it suits '
-          'it. In this mode svn is used "directly", without interactive '
-          'restrictions.\n\n')
-    print('Remember also that you can edit and customize the projects to '
-          'be built, by editing the following file:\n')
-    print(osp.join(output, 'host', 'conf', 'bv_maker.cfg'))
-    print('------------------------------------------------------------')
-    print()
-
-
-def update_environment(config, base_directory, writable, verbose):
-    """
-    Update an existing environment
-    """
-    env_directory = config['directory']
-    if writable:
-        overlay = osp.join(env_directory, 'overlay.img')
-        size = string_to_byte_count(writable)
-        if size:
-            if os.path.exists(overlay):
-                resize_ext3_file(
-                    overlay, int(size / 1024) + (1 if size % 1024 else 0))
-            else:
-                create_ext3_file(overlay, size)
-        else:
-            if os.path.exists(overlay):
-                os.remove(overlay)
+        script = osp.join(dest, command)
+        f = open(script, 'w')
+        f.write('''#!/bin/sh
+bv="$(dirname -- $0)/bv"
+"$bv" {} "$@"'''.format(command))
+        os.chmod(script, mode)
 
 
 def run_container(config, command, gui, opengl, root, cwd, env, image,
