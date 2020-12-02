@@ -13,10 +13,10 @@ class BrainVISAJenkins:
 
     job_xml = '''<?xml version='1.1' encoding='UTF-8'?>
     <hudson.model.ExternalJob plugin="external-monitor-job@1.7">
+    <actions/>
     <description>{description}</description>
     <keepDependencies>false</keepDependencies>
     <properties>
-        <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.1.1"/>
         <jenkins.model.BuildDiscarderProperty>
         <strategy class="hudson.tasks.LogRotator">
             <daysToKeep>-1</daysToKeep>
