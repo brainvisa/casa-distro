@@ -659,8 +659,13 @@ class BBIDaily:
     def call_output(self, *args, **kwargs):
         p = subprocess.Popen(*args, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, **kwargs)
-        log, nothing = p.communicate()
-        return p.returncode, log
+        output, nothing = p.communicate()
+        log = ['-'*40,
+               ' '.join("'{}'".format(i) for i in args),
+               '-'*40,
+               output]
+
+        return p.returncode, '\n'.join(log)
 
     def update_casa_distro(self):
         start = time.time()
