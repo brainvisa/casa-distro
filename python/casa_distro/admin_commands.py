@@ -199,6 +199,7 @@ def create_base_image(type,
                       disk_size='131072',
                       gui='no',
                       cleanup='yes',
+                      force='no',
                       verbose=True):
     """Create a new virtual image
 
@@ -250,6 +251,12 @@ def create_base_image(type,
           sudo singularity run --writable
           /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
 
+    force
+        default={force_default}
+
+        If "yes", "true" or 1, erase existing image without asking any
+        question.
+
     verbose
         default={verbose_default}
         Print more detailed information if value is "yes", "true" or "1".
@@ -258,6 +265,7 @@ def create_base_image(type,
     verbose = verbose_file(verbose)
     gui = boolean_value(gui)
     cleanup = boolean_value(cleanup)
+    force = boolean_value(force)
 
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
@@ -358,6 +366,7 @@ def create_base_image(type,
                               output, metadata,
                               build_file=build_file,
                               cleanup=cleanup,
+                              force=force,
                               verbose=verbose,
                               memory=memory,
                               disk_size=disk_size,
@@ -447,6 +456,7 @@ def create_user_image(
         output=osp.join(
             default_base_directory,
             '{name}{extension}'),
+        force='no',
         base_directory=casa_distro_directory(),
         install='yes',
         generate='yes',
@@ -492,6 +502,10 @@ def create_user_image(
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
+    force
+        default={force_default}
+        If "yes", "true" or 1, erase existing image without asking any
+        question.
     base_directory
         default={base_directory_default}
         Directory where images and environments are stored
@@ -540,6 +554,7 @@ def create_user_image(
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            extension=extension,
                                                            **kwargs)
+    force = boolean_value(force)
 
     metadata = {
         'name': name,
@@ -612,6 +627,7 @@ def create_user_image(
         msg = module.create_user_image(base_image=base_image,
                                        dev_config=config,
                                        output=output,
+                                       force=force,
                                        base_directory=base_directory,
                                        verbose=verbose)
         if msg:

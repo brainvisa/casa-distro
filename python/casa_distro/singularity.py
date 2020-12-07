@@ -68,7 +68,7 @@ def iter_images(base_directory):
             yield filename
 
 
-def _singularity_build_command():
+def _singularity_build_command(cleanup=True, force=False):
     build_command = ['sudo']
     if 'SINGULARITY_TMPDIR' in os.environ:
         build_command += ['SINGULARITY_TMPDIR='
@@ -76,6 +76,10 @@ def _singularity_build_command():
     if 'TMPDIR' in os.environ:
         build_command += ['TMPDIR=' + os.environ['TMPDIR']]
     build_command += ['singularity', 'build', '--disable-cache']
+    if not cleanup:
+        build_command.append('--no-cleanup')
+    if force:
+        build_command.append('--force')
     return build_command
 
 
@@ -83,6 +87,7 @@ def create_image(base, base_metadata,
                  output, metadata,
                  build_file,
                  cleanup,
+                 force,
                  verbose, **kwargs):
     type = metadata['type']
     if type == 'system':
@@ -118,9 +123,8 @@ def create_image(base, base_metadata,
             print(open(recipe.name).read(), file=verbose)
             print('----------------------------------------', file=verbose)
             verbose.flush()
-        build_command = _singularity_build_command()
-        if not cleanup:
-            build_command.append('--no-cleanup')
+        build_command = _singularity_build_command(cleanup=cleanup,
+                                                   force=force)
         if verbose:
             print('run create command:\n',
                   *(build_command + [output, recipe.name]))
@@ -130,6 +134,7 @@ def create_image(base, base_metadata,
 def create_user_image(base_image,
                       dev_config,
                       output,
+                      force,
                       base_directory,
                       verbose):
     recipe = tempfile.NamedTemporaryFile(mode='wt')
@@ -154,7 +159,7 @@ def create_user_image(base_image,
         print(open(recipe.name).read(), file=verbose)
         print('----------------------------------------', file=verbose)
         verbose.flush()
-    build_command = _singularity_build_command()
+    build_command = _singularity_build_command(force=force)
     subprocess.check_call(build_command + [output, recipe.name])
 
 

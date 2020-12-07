@@ -814,7 +814,8 @@ class BBIDaily:
                                         'version={0}'.format(
                                             user_config['version']),
                                         'environment_name={0}'.format(
-                                            dev_config['name'])])
+                                            dev_config['name']),
+                                        'force=yes'])
         duration = int(1000 * (time.time() - start))
         self.log(user_config['name'], 'update user image', result, log,
                  duration=duration)
