@@ -117,7 +117,7 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
-    gui|verbose|force|root|install|generate|upload|interactive|json)
+    gui|verbose|force|root|install|generate|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests)
         COMPREPLY=($(compgen -W "True False true false 1 0 yes no Yes No" -- "${word}"))
         ;;
     opengl)
@@ -336,7 +336,7 @@ function _complete_casa_distro_admin_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help download_image create_base_image publish_base_image create_user_image"
+    local cmd_list="help download_image create_base_image publish_base_image create_user_image singularity_deb bbi_daily"
     local opt_list="-r --repository -h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -397,6 +397,12 @@ function _complete_casa_distro_admin_()
             ;;
         create_user_image)
             COMPREPLY=($(compgen -W "version= name= base_image= distro= system= environment_name= container_type= base_directory= install= generate= upload= verbose=" -- "${word}"))
+            ;;
+        singularity_deb)
+            COMPREPLY=($(compgen -W "system= output= base= version= go_version=" -- "${word}"))
+            ;;
+        bbi_daily)
+            COMPREPLY=($(compgen -W "type= distro= branch= system= name= version= jenkins_server= jenkins_auth= update_casa_distro= update_base_images= bv_maker_steps= dev_tests= update_user_images= user_tests= base_directory= verbose=" -- "${word}"))
             ;;
         esac
         ;;
