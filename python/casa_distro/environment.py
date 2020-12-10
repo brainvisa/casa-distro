@@ -366,7 +366,7 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
     select "*" as one of the environment filter variables.
     """
     if filter.get('name') or filter.get('system') or filter.get('distro') \
-            or filter.get('branch'):
+            or filter.get('branch') or filter.get('type'):
         # select by environment
         for config in iter_environments(base_directory,
                                         type=filter.get('type'),
