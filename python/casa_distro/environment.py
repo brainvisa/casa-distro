@@ -271,6 +271,17 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
     casa_distro_dir = osp.join(setup_dir, 'casa-distro')
     install_casa_distro(casa_distro_dir)
 
+    distro_dir = osp.join(casa_distro_dir, 'share', 'distro', distro)
+    if not osp.exists(osp.join(distro_dir, 'casa_distro.json')):
+        print('ERROR - invalid distro:', distro, file=sys.stderr)
+        sys.exit(1)
+    for i in os.listdir(distro_dir):
+        fp = osp.join(distro_dir, i)
+        if osp.isdir(fp):
+            copytree(fp, osp.join(setup_dir, i))
+        else:
+            cp(fp, osp.join(setup_dir, i))
+
     environment = {
         'casa_distro_compatibility': str(casa_distro.version_major),
         'distro': distro,
