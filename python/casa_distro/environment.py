@@ -187,11 +187,11 @@ def setup_user(setup_dir):
     if not osp.exists(bin):
         os.makedirs(bin)
 
-    bv = find_in_path('bv')
-    if bv:
-        dest = osp.join(bin, 'bv')
-        shutil.copy(bv, dest)
-        create_environment_bin_commands(osp.dirname(bv), bin)
+    bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
+                  'bin', 'bv')
+    dest = osp.join(bin, 'bv')
+    shutil.copy(bv, dest)
+    create_environment_bin_commands(osp.dirname(bv), bin)
 
     casa_distro_dir = osp.join(setup_dir, 'casa_distro')
     casa_distro_bin = osp.join(casa_distro_dir, 'bin')
