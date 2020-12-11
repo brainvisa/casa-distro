@@ -8,6 +8,8 @@ from casa_distro import six
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import default_download_url
 from casa_distro.environment import (casa_distro_directory,
+                                     setup_user as env_setup_user,
+                                     setup_dev as env_setup_dev,
                                      iter_distros,
                                      iter_environments,
                                      run_container,
@@ -137,6 +139,32 @@ class ExecutionStatus(object):
 
     def get_status_mapped(self):
         return self.status_map.get(self.status)
+
+
+@command
+def setup_user(dir):
+    """
+    Create all necessary directories and files to setup a user environement.
+    This command is not supposed to be called directly but using a user image:
+
+        mkdir ~/brainvisa
+        singularity run --bind ~/brainvisa:/casa/setup brainvisa-5.0.sif
+    """
+    env_setup_user(dir)
+
+
+@command
+def setup_dev(distro, branch=None, system=None, dir='/casa/setup'):
+    """
+    Create all necessary directories and files to setup a developer *
+    environement.
+    This command is not supposed to be called directly but using a user image:
+
+        mkdir ~/brainvisa
+        singularity run -B ~/brainvisa:/casa/setup casa-dev-ubuntu-18.04.sif \
+            brainvisa
+    """
+    env_setup_dev(dir, distro, branch, system)
 
 
 @command

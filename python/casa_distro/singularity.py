@@ -61,6 +61,11 @@ class RecipeBuilder:
                 print('   ', line, file=file)
         file.flush()
 
+    def install_casa_distro(self, dest):
+        source = osp.dirname(osp.dirname(osp.dirname(__file__)))
+        for i in ('bin', 'python', 'etc', 'share'):
+            self.copy_root(osp.join(source, i), dest)
+
 
 def iter_images(base_directory):
     for filename in os.listdir(base_directory):
@@ -98,9 +103,8 @@ def create_image(base, base_metadata,
     From: {base}
 
 %runscript
-    if [ -d /casa/setup -a "$1" = "setup" ]; then
-        shift
-        /casa/install/bin/bv_env_host python -m casa_distro.setup_dev "$@"
+    if [ -d /casa/setup ]; then
+        /casa/casa-distro/bin/casa_distro setup_dev "$@"
     else
         . /usr/local/bin/entrypoint
     fi
