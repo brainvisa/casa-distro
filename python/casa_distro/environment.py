@@ -267,9 +267,9 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
     if not osp.exists(bin):
         os.makedirs(bin)
 
-    bv = find_in_path('bv')
-    if bv:
-        shutil.copy(bv, osp.join(bin, 'bv'))
+    bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
+                  'bin', 'bv')
+    shutil.copy(bv, osp.join(bin, 'bv'))
 
     environment = {
         'casa_distro_compatibility': str(casa_distro.version_major),
