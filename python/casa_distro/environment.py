@@ -9,7 +9,6 @@ import os.path as osp
 import re
 import shutil
 import subprocess
-import tempfile
 import time
 
 from casa_distro import (share_directories,
@@ -140,7 +139,7 @@ def string_to_byte_count(size):
 def update_config(config, update):
     """
     Update a configuration dictionary with an update configuration dictionary.
-    These two dictionaries are JSON objects. To date this simply merge the
+    These two dictionaries are JSON objects. This simply merges the
     two dictionaries (dictionaries are merged recursively, lists are
     concatenated)
     """
@@ -180,67 +179,6 @@ def ext3_file_size(filename):
     if block_size is not None and block_count is not None:
         return block_size * block_count
     return None
-
-
-def create_ext3_file(filename, size, container_image=None):
-    block_size = 1024 * 1024
-    block_count = int(size / block_size)
-    if size % block_size != 0:
-        block_count += 1
-    # If there are too few blocks, the system cannot be created
-    block_count = max(2, block_count)
-    subprocess.check_call(['dd',
-                           'if=/dev/zero',
-                           'of={0}'.format(filename),
-                           'bs={0}'.format(block_size),
-                           'count={0}'.format(block_count)])
-    tmp = tempfile.mkdtemp()
-    try:
-        try:
-            subprocess.check_call(['mkfs.ext3', '-d', tmp, filename])
-        except Exception:
-            # -d option doesn't exist in all linuxes
-            #  maybe a better solution would be to use the downloaded image
-            # (normally containing ubuntu >= 18.04) to create the overlay.
-            # this would work even on mac or windows...
-            print('could not create the overlay filesystem without root '
-                  'permissions on the host system.')
-            done = False
-            if container_image:
-                container_type, image = container_image
-                if container_type == 'singularity':
-                    os.mkdir(osp.join(tmp, 'upper'))
-                    os.mkdir(osp.join(tmp, 'work'))
-                    cmd = ['singularity', 'run', '--bind', '/:/host', image,
-                           'mkfs.ext3', '-d', tmp,
-                           osp.join('/host', osp.relpath(filename, '/'))]
-                    try:
-                        print('trying using the container image')
-                        print(' '.join(cmd))
-                        subprocess.check_call(cmd)
-                        done = True
-                    except Exception as e:
-                        print(e)
-                        print('failed to create the overlay filesystem using '
-                              'the container image.')
-            if not done:
-                print('trying the old way, needing sudo permissions')
-                subprocess.check_call(['mkfs.ext3', filename])
-                subprocess.check_call(
-                    ['sudo', 'bash', '-c',
-                     'mount -t ext3 %s %s && mkdir %s/upper && mkdir %s/work '
-                     '&& umount %s' % (filename, tmp, tmp, tmp, tmp)])
-    finally:
-        shutil.rmtree(tmp)
-
-
-def resize_ext3_file(filename, size):
-    if isinstance(size, int):
-        size = str(size)
-    elif not re.match(r'\d+[KMG]?', size):
-        raise ValueError('Invlid file system size: {0}'.format(size))
-    subprocess.check_call(['e2fsck', '-f', filename])
-    subprocess.check_call(['resize2fs', filename, size])
 
 
 def iter_distros():
