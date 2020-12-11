@@ -80,7 +80,7 @@ casa_distro_src = osp.dirname(osp.dirname(osp.realpath(sys.argv[0])))
 print('casa_distro_src:', casa_distro_src)
 casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
 if not osp.exists(casa_distro):
-    casa_distro = osp.join(guess_environment_dir, 'casa_distro',
+    casa_distro = osp.join(guess_environment_dir, 'casa-distro',
                            'bin', 'casa_distro')
     if not osp.exists(casa_distro):
         casa_distro = find_in_path('casa_distro')

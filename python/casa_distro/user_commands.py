@@ -142,7 +142,7 @@ class ExecutionStatus(object):
 
 
 @command
-def setup_user(dir):
+def setup_user(dir='/casa/setup'):
     """
     Create all necessary directories and files to setup a user environement.
     This command is not supposed to be called directly but using a user image:

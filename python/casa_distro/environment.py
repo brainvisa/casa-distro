@@ -171,6 +171,19 @@ def find_in_path(file):
                 return r[0]
 
 
+def install_casa_distro(dest):
+    source = osp.dirname(osp.dirname(osp.dirname(__file__)))
+    for i in ('bin', 'python', 'etc', 'share'):
+        dest_dir = osp.join(dest, i)
+        if osp.exists(dest_dir):
+            shutil.rmtree(dest_dir)
+        copytree(osp.join(source, i), dest_dir,
+                 symlinks=True,
+                 ignore=lambda src, names, dst, dstnames:
+                 {i for i in names if i in ('__pycache__',)
+                  or i.endswith('.pyc')})
+
+
 def setup_user(setup_dir):
     """
     Initialize a user environment directory.
@@ -193,24 +206,8 @@ def setup_user(setup_dir):
     shutil.copy(bv, dest)
     create_environment_bin_commands(osp.dirname(bv), bin)
 
-    casa_distro_dir = osp.join(setup_dir, 'casa_distro')
-    casa_distro_bin = osp.join(casa_distro_dir, 'bin')
-    if not osp.exists(casa_distro_bin):
-        os.makedirs(casa_distro_bin)
-    casa_distro_python = osp.join(casa_distro_dir, 'python')
-    if not osp.exists(casa_distro_python):
-        os.makedirs(casa_distro_python)
-    for command in ('casa_distro', 'casa_distro_admin'):
-        source = find_in_path(command)
-        if source:
-            shutil.copy(source, osp.join(casa_distro_bin, command))
-            casa_distro_source = osp.dirname(casa_distro.__file__)
-    casa_distro_dest = osp.join(casa_distro_python,
-                                osp.basename(casa_distro_source))
-    if osp.exists(casa_distro_dest):
-        shutil.rmtree(casa_distro_dest)
-    shutil.copytree(casa_distro_source,
-                    casa_distro_dest)
+    casa_distro_dir = osp.join(setup_dir, 'casa-distro')
+    install_casa_distro(casa_distro_dir)
 
     environment = {
         'casa_distro_compatibility': str(casa_distro.version_major),
@@ -270,6 +267,9 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
     bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
                   'bin', 'bv')
     shutil.copy(bv, osp.join(bin, 'bv'))
+
+    casa_distro_dir = osp.join(setup_dir, 'casa-distro')
+    install_casa_distro(casa_distro_dir)
 
     environment = {
         'casa_distro_compatibility': str(casa_distro.version_major),
@@ -656,7 +656,7 @@ def create_environment_bin_commands(source, dest):
         script = osp.join(dest, command)
         if osp.exists(script):
             os.remove(script)
-        os.symlink(script, 'bv')
+        os.symlink('bv', script)
 
 
 def run_container(config, command, gui, opengl, root, cwd, env, image,
