@@ -168,19 +168,6 @@ def find_in_path(file):
                 return r[0]
 
 
-def ext3_file_size(filename):
-    block_size = block_count = None
-    for line in subprocess.check_output(['dumpe2fs', filename],
-                                        stderr=subprocess.STDOUT).split('\n'):
-        if line.startswith('Block count'):
-            block_count = int(line.rsplit(None, 1)[-1])
-        elif line.startswith('Block size'):
-            block_size = int(line.rsplit(None, 1)[-1])
-    if block_size is not None and block_count is not None:
-        return block_size * block_count
-    return None
-
-
 def iter_distros():
     """
     Iterate over all available distros. For each one, yield a
@@ -274,11 +261,6 @@ def iter_environments(base_directory, **filter):
             if osp.exists(f):
                 config['config_files'].append(f)
                 update_config(config, json.load(open(f)))
-
-        overlay = osp.join(directory, 'overlay.img')
-        if osp.exists(overlay):
-            config['overlay'] = overlay
-            config['overlay_size'] = ext3_file_size(overlay)
 
         match = False
         for k, p in filter.items():
