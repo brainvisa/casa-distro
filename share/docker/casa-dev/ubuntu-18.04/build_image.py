@@ -38,25 +38,23 @@ def install(base_dir, builder, verbose):
                       '/casa/')
     builder.run_user('chmod a+rx /casa/list-shared-libs-paths.sh')
 
-    builder.install_casa_distro('/casa/casa-distro')
+    if verbose:
+        six.print_('Running install_apt_dev_dependencies.sh',
+                   file=verbose, flush=True)
+    builder.run_root('/opt/install_apt_dev_dependencies.sh')
+    if verbose:
+        six.print_('Running install_pip_dev_dependencies.sh',
+                   file=verbose, flush=True)
+    builder.run_root('/opt/install_pip_dev_dependencies.sh')
+    if verbose:
+        six.print_('Running install_compiled_dev_dependencies.sh',
+                   file=verbose, flush=True)
+    builder.run_root('/opt/install_compiled_dev_dependencies.sh')
 
-    # if verbose:
-    #     six.print_('Running install_apt_dev_dependencies.sh',
-    #                file=verbose, flush=True)
-    # builder.run_root('/opt/install_apt_dev_dependencies.sh')
-    # if verbose:
-    #     six.print_('Running install_pip_dev_dependencies.sh',
-    #                file=verbose, flush=True)
-    # builder.run_root('/opt/install_pip_dev_dependencies.sh')
-    # if verbose:
-    #     six.print_('Running install_compiled_dev_dependencies.sh',
-    #                file=verbose, flush=True)
-    # builder.run_root('/opt/install_compiled_dev_dependencies.sh')
-
-    # if verbose:
-    #     six.print_('Running install_casa_dev_components.sh',
-    #                file=verbose, flush=True)
-    # builder.run_root('/opt/install_casa_dev_components.sh')
+    if verbose:
+        six.print_('Running install_casa_dev_components.sh',
+                   file=verbose, flush=True)
+    builder.run_root('/opt/install_casa_dev_components.sh')
 
     if verbose:
         six.print_('Cleanup files in', builder.name,

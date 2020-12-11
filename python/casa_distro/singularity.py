@@ -149,9 +149,8 @@ def create_user_image(base_image,
     {environment_directory}/host/install /casa/install
 
 %runscript
-    if [ -d /casa/setup -a "$1" = "setup" ]; then
-        shift
-        /casa/install/bin/bv_env python -m casa_distro.setup "$@"
+    if [ -d /casa/setup ]; then
+        /casa/casa-distro/bin/casa_distro setup_user "$@"
     else
         /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
     fi
