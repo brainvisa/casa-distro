@@ -132,7 +132,7 @@ else:
 if not command:
     command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
 
-host_command = [casa_distro, 'run', 'name={}'.format(config['name'])] + command
+host_command = [casa_distro, 'run', 'base_directory={}'.format(config['directory']) ] + command
 if verbose:
     print('casa_distro executable =', casa_distro, file=verbose)
     print('Environment name =', config['name'], file=verbose)
