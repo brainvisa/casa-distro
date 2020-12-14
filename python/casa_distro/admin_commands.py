@@ -47,6 +47,7 @@ def str_to_bool(string):
 @command
 def singularity_deb(system,
                     output='singularity-{version}-{system}.deb',
+                    dockerhub=None,
                     version='3.6.4',
                     go_version='1.13'):
     """Create a Debian package to install Singularity.
@@ -61,6 +62,10 @@ def singularity_deb(system,
     output
         default={output_default}
         Location of the resulting Debian package file.
+
+    dockerhub
+        default=name of the system replacing "-" by ":"
+        Name of the base image system to pull from DockerHub.
 
     base
         Source file use to buld the image. The default value depends on image
@@ -78,6 +83,8 @@ def singularity_deb(system,
 
     output = output.format(system=system,
                            version=version)
+    if not dockerhub:
+        dockerhub = system.replace('-', ':')
     tmp = tempfile.mkdtemp(prefix='singularity-deb-')
     try:
         build_sh = osp.join(tmp, 'build.sh')
@@ -108,7 +115,7 @@ mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
         tmp_output = '/tmp/singularity-{}-x86_64.deb'.format(system)
         subprocess.check_call(['sudo', 'singularity', 'build',
                                '--sandbox', system,
-                               'docker://{}'.format(system.replace('-', ':'))],
+                               'docker://{}'.format(dockerhub)],
                               cwd=tmp)
         subprocess.check_call(['sudo', 'singularity', 'run', '--writable',
                                '--home', tmp,
