@@ -76,8 +76,17 @@ optional arguments:
 guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(osp.abspath(
     sys.argv[0]))))
 print('guess_environment_dir:', guess_environment_dir)
-casa_distro_src = osp.dirname(osp.dirname(osp.realpath(sys.argv[0])))
-print('casa_distro_src:', casa_distro_src)
+
+for casa_distro_src in (
+    osp.dirname(osp.dirname(osp.realpath(sys.argv[0]))),
+    osp.join(osp.dirname(osp.dirname(sys.argv[0])), 'casa-distro')):
+        
+    if osp.exists(osp.join(casa_distro_src, 'python', 'casa_distro', '__init__.py')):
+        break
+else:
+    raise RuntimeError('Cannot find casa-distro directory')
+
+print('casa_distro directory:', casa_distro_src)
 casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
 if not osp.exists(casa_distro):
     casa_distro = osp.join(guess_environment_dir, 'casa-distro',
@@ -85,9 +94,7 @@ if not osp.exists(casa_distro):
     if not osp.exists(casa_distro):
         casa_distro = find_in_path('casa_distro')
         if not casa_distro:
-            raise RuntimeError('Cannot find casa_distro executable')
-output = subprocess.check_output([casa_distro, 'list', 'json=true'])
-configs = json.loads(output)
+            raise RuntimeError('Cannot find casa_distro executable')    
 
 environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
 if environment_dir:
@@ -98,6 +105,15 @@ elif osp.exists(osp.join(guess_environment_dir, 'host', 'conf',
 elif osp.exists(osp.join(guess_environment_dir, 'conf', 'casa_distro.json')):
     # bv is installed in <environment_dir>/host/*bin/: host is already included
     environment_dir = osp.dirname(guess_environment_dir)
+
+output = subprocess.check_output(
+    [casa_distro, 'list', 
+        'base_directory={}'.format(environment_dir),
+        'json=true'])
+configs = json.loads(output)
+if not configs:
+    output = subprocess.check_output([casa_distro, 'list', 'json=true'])
+    configs = json.loads(output)
 
 if not environment_dir:
     if len(configs) == 1:
