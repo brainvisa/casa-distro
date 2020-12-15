@@ -194,8 +194,8 @@ def setup_user(setup_dir):
               file=sys.stderr)
         sys.exit(1)
 
-    if not osp.exists(osp.join(setup_dir, 'host', 'conf')):
-        os.makedirs(osp.join(setup_dir, 'host', 'conf'))
+    if not osp.exists(osp.join(setup_dir, 'conf')):
+        os.makedirs(osp.join(setup_dir, 'conf'))
     bin = osp.join(setup_dir, 'bin')
     if not osp.exists(bin):
         os.makedirs(bin)
@@ -233,7 +233,7 @@ def setup_user(setup_dir):
         environment['name'] = '{}-{}'.format(environment['distro'],
                                              time.strftime('%Y%m%d'))
     json.dump(environment,
-              open(osp.join(setup_dir, 'host', 'conf',
+              open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
               indent=4)
 
@@ -257,8 +257,8 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
 
     all_subdirs = ('conf', 'src', 'build', 'install',)
     for subdir in all_subdirs:
-        if not osp.exists(osp.join(setup_dir, 'host', subdir)):
-            os.makedirs(osp.join(setup_dir, 'host', subdir))
+        if not osp.exists(osp.join(setup_dir, subdir)):
+            os.makedirs(osp.join(setup_dir, subdir))
 
     bin = osp.join(setup_dir, 'bin')
     if not osp.exists(bin):
@@ -300,13 +300,13 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
         environment['name'] = '{}-{}'.format(environment['distro'],
                                              time.strftime('%Y%m%d'))
     json.dump(environment,
-              open(osp.join(setup_dir, 'host', 'conf',
+              open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
               indent=4)
 
     write_environment_homedir(osp.join(setup_dir, 'home'))
 
-    svn_secret = osp.join(setup_dir, 'host', 'conf', 'svn.secret')
+    svn_secret = osp.join(setup_dir, 'conf', 'svn.secret')
     print('\n------------------------------------------------------------')
     print('** WARNING: svn secret **')
     print('Before using "casa_distro bv_maker" you will have to '
@@ -344,7 +344,7 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
           'restrictions.\n\n')
     print('Remember also that you can edit and customize the projects to '
           'be built, by editing the following file:\n')
-    print(osp.join(setup_dir, 'host', 'conf', 'bv_maker.cfg'))
+    print(osp.join(setup_dir, 'conf', 'bv_maker.cfg'))
     print('------------------------------------------------------------')
     print()
 
@@ -379,7 +379,7 @@ def select_distro(distro):
     if osp.isdir(distro):
         directory = distro
         casa_distro_json = osp.join(
-            directory, 'host', 'conf', 'casa_distro.json')
+            directory, 'conf', 'casa_distro.json')
         if osp.exists(casa_distro_json):
             distro = json.load(open(casa_distro_json))
             distro['directory'] = directory
@@ -411,11 +411,11 @@ def iter_environments(base_directory, **filter):
     base directory. For each one, yield a dictionary corresponding to the
     casa_distro.json file with the "directory" item added.
     """
-    casa_distro_jsons = glob(osp.join(base_directory, '*', 'host',
+    casa_distro_jsons = glob(osp.join(base_directory, '*',
                             'conf', 'casa_distro.json'))
     if not casa_distro_jsons:
         # Special case where base_directroy is the directory of an environment
-        casa_distro_jsons = glob(osp.join(base_directory, 'host', 'conf', 
+        casa_distro_jsons = glob(osp.join(base_directory, 'conf',
                                           'casa_distro.json'))
     for casa_distro_json in sorted(casa_distro_jsons):
         environment_config = json.load(open(casa_distro_json))
