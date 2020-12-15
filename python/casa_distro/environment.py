@@ -298,7 +298,8 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None):
     if image is None:
         image = os.getenv('SINGULARITY_CONTAINER')
         if not image:
-            images = glob(osp.join(osp.expanduser('~/casa_distro/casa-dev-*.sif')))
+            images = glob(osp.join(osp.expanduser(
+                '~/casa_distro/casa-dev-*.sif')))
             if len(images) == 1:
                 image = images[0]
             if not image:
@@ -419,7 +420,7 @@ def iter_environments(base_directory, **filter):
     casa_distro.json file with the "directory" item added.
     """
     casa_distro_jsons = glob(osp.join(base_directory, '*',
-                            'conf', 'casa_distro.json'))
+                                      'conf', 'casa_distro.json'))
     if not casa_distro_jsons:
         # Special case where base_directroy is the directory of an environment
         casa_distro_jsons = glob(osp.join(base_directory, 'conf',

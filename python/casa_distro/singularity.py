@@ -68,6 +68,7 @@ class RecipeBuilder:
         self.run_root(("find %s -name __pycache__ -o -name '*\.pyc' "
                        "-o -name '*~' -exec rm -Rf '{}' \;") % dest)
 
+
 def iter_images(base_directory):
     for filename in os.listdir(base_directory):
         if filename.endswith('.sif') or filename.endswith('.simg'):
