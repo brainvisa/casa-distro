@@ -181,7 +181,7 @@ def install_casa_distro(dest):
                  symlinks=True,
                  ignore=lambda src, names, dst, dstnames:
                  {i for i in names if i in ('__pycache__',)
-                  or i.endswith('.pyc')})
+                  or i.endswith('.pyc') or i.endswith('~')})
 
 
 def setup_user(setup_dir):

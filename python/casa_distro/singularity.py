@@ -65,7 +65,8 @@ class RecipeBuilder:
         source = osp.dirname(osp.dirname(osp.dirname(__file__)))
         for i in ('bin', 'python', 'etc', 'share'):
             self.copy_root(osp.join(source, i), dest)
-
+        self.run_root(("find %s -name __pycache__ -o -name '*\.pyc' "
+                       "-o -name '*~' -exec rm -Rf '{}' \;") % dest)
 
 def iter_images(base_directory):
     for filename in os.listdir(base_directory):
@@ -146,7 +147,7 @@ def create_user_image(base_image,
     From: {base_image}
 
 %files
-    {environment_directory}/host/install /casa/install
+    {environment_directory}/install /casa/install
 
 %runscript
     if [ -d /casa/setup ]; then
@@ -402,14 +403,6 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         container_env['SINGULARITYENV_HOME'] = singularity_home
         singularity += ['--bind',
                         '%s:%s' % (casa_home_host_path, singularity_home)]
-
-    # The following code may prevent containers to run on some system
-    # handle ~/.ssh
-    # ssh_dir = osp.join(host_homedir, '.ssh')
-    # if osp.isdir(ssh_dir):
-    #     singularity += [
-    #         '--bind',
-    #         '%s:%s' % (ssh_dir, osp.join(singularity_home, '.ssh'))]
 
     container_options = config.get(
         'container_options', []) + (container_options or [])
