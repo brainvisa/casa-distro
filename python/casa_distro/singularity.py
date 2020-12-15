@@ -65,8 +65,8 @@ class RecipeBuilder:
         source = osp.dirname(osp.dirname(osp.dirname(__file__)))
         for i in ('bin', 'python', 'etc', 'share'):
             self.copy_root(osp.join(source, i), dest)
-        self.run_root(("find %s -name __pycache__ -o -name '*\.pyc' "
-                       "-o -name '*~' -exec rm -Rf '{}' \;") % dest)
+        self.run_root(("find %s -name __pycache__ -o -name '*\\.pyc' "
+                       "-o -name '*~' -exec rm -Rf '{}' \\;") % dest)
 
 
 def iter_images(base_directory):
