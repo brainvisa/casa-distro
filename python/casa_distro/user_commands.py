@@ -242,7 +242,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
                 print('  full environment:')
                 for line in json.dumps(config, indent=2).split('\n'):
                     print('   ', line)
-    if json_result:
+    if json_output:
         json.dump(json_result, sys.stdout)
 
 
