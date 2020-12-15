@@ -424,7 +424,7 @@ def iter_environments(base_directory, **filter):
         config['config_files'] = [casa_distro_json]
         config['directory'] = directory
         config['mounts'] = {
-            '/casa/host': '{directory}/host',
+            '/casa/host': '{directory}',
             '/host': '/',
         }
         config['env'] = {
@@ -840,7 +840,7 @@ class BBIDaily:
             success = True
             for command in commands:
                 if test_config['type'] == 'run':
-                    command = command.replace('/casa/host/build/bin/bv_env',
+                    command = command.replace('/casa/build/bin/bv_env',
                                               '/casa/install/bin/bv_env')
                 result, output = self.call_output([self.casa_distro,
                                                    'run',
@@ -848,10 +848,10 @@ class BBIDaily:
                                                        test_config['name']),
                                                    'env=BRAINVISA_'
                                                    'TEST_RUN_DATA_DIR='
-                                                   '/casa/host/tests/test,'
+                                                   '/casa/tests/test,'
                                                    'BRAINVISA_'
                                                    'TEST_REF_DATA_DIR='
-                                                   '/casa/host/tests/ref',
+                                                   '/casa/tests/ref',
                                                    '--',
                                                    'sh', '-c', command])
                 if result:
@@ -884,7 +884,7 @@ class BBIDaily:
         o = subprocess.check_output([self.casa_distro,
                                      'run',
                                      'name={0}'.format(config['name']),
-                                     'cwd={0}/host/build'.format(
+                                     'cwd={0}/build'.format(
                                          config['directory']),
                                      'ctest', '--print-labels'])
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
@@ -893,7 +893,7 @@ class BBIDaily:
             o = subprocess.check_output([self.casa_distro,
                                          'run',
                                          'name={0}'.format(config['name']),
-                                         'cwd={0}/host/build'.format(
+                                         'cwd={0}/build'.format(
                                              config['directory']),
                                          'env=BRAINVISA_TEST_REMOTE_COMMAND'
                                          '=echo',
