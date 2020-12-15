@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-import json
+import glob
 import os
 import os.path as osp
 import subprocess
@@ -26,6 +26,11 @@ def find_in_path(command):
                     and not osp.isdir(name)):
                 return name
     return None
+
+
+def failure(message):
+    print('ERROR:', message, file=sys.stderr)
+    sys.exit(1)
 
 
 help = False
@@ -73,72 +78,70 @@ optional arguments:
     sys.exit()
 
 
-guess_environment_dir = osp.normpath(osp.dirname(osp.dirname(osp.abspath(
-    sys.argv[0]))))
-print('guess_environment_dir:', guess_environment_dir)
-
-for casa_distro_src in (
-    osp.dirname(osp.dirname(osp.realpath(sys.argv[0]))),
-    osp.join(osp.dirname(osp.dirname(sys.argv[0])), 'casa-distro')):
-        
-    if osp.exists(osp.join(casa_distro_src, 'python', 'casa_distro', '__init__.py')):
-        break
-else:
-    raise RuntimeError('Cannot find casa-distro directory')
-
-print('casa_distro directory:', casa_distro_src)
-casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
-if not osp.exists(casa_distro):
-    casa_distro = osp.join(guess_environment_dir, 'casa-distro',
-                           'bin', 'casa_distro')
-    if not osp.exists(casa_distro):
-        casa_distro = find_in_path('casa_distro')
-        if not casa_distro:
-            raise RuntimeError('Cannot find casa_distro executable')    
-
 environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
 if environment_dir:
     environment_dir = osp.normpath(environment_dir)
-elif osp.exists(osp.join(guess_environment_dir, 'host', 'conf',
-                         'casa_distro.json')):
-    environment_dir = guess_environment_dir
-elif osp.exists(osp.join(guess_environment_dir, 'conf', 'casa_distro.json')):
-    # bv is installed in <environment_dir>/host/*bin/: host is already included
-    environment_dir = osp.dirname(guess_environment_dir)
-
-output = subprocess.check_output(
-    [casa_distro, 'list', 
-        'base_directory={}'.format(environment_dir),
-        'json=true'])
-configs = json.loads(output)
-if not configs:
-    output = subprocess.check_output([casa_distro, 'list', 'json=true'])
-    configs = json.loads(output)
-
-if not environment_dir:
-    if len(configs) == 1:
-        config = configs[0]
-    else:
-        raise ValueError('Several casa_distro environment found : {}'.format(
-            ', '.join(i['name'] for i in configs)))
 else:
-    for config in configs:
-        if osp.normpath(config['directory']) == environment_dir:
+    bv = osp.normpath(osp.abspath(sys.argv[0]))
+    real_bv = osp.realpath(bv)
+    guess_environments = [osp.dirname(osp.dirname(bv))]
+    guess_environment = osp.dirname(osp.dirname(real_bv))
+    for i in range(5):
+        guess_environments.append(guess_environment)
+        parent = osp.dirname(guess_environment)
+        if parent == guess_environment:
+            break
+        guess_environment = parent
+    for environment_dir in guess_environments:
+        if (osp.exists(osp.join(environment_dir, 'host', 'conf',
+                                'casa_distro.json'))
+            or osp.exists(osp.join(environment_dir, 'conf',
+                                   'casa_distro.json'))):
             break
     else:
-        raise ValueError('Cannot find a casa_distro environment '
-                         'for directory {}'.format(environment_dir))
+        failure('Cannot find execution environment')
+
+casa_distro = None
+for i in (('host', 'src', 'development', 'casa-distro', '*'),
+          ('src', 'development', 'casa-distro', '*'),
+          ('host', 'src', 'development', 'casa_distro'),
+          ('src', 'development', 'casa-distro'),
+          ('host', 'src', 'casa_distro'),
+          ('src', 'casa-distro'),
+          ('casa_distro')):
+    for casa_distro_src in glob.glob(osp.join(environment_dir, *i)):
+        if osp.exists(osp.join(casa_distro_src, 'python', 'casa_distro',
+                               '__init__.py')):
+            casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
+            break
+    if casa_distro:
+        break
+else:
+    casa_distro = find_in_path('casa_distro')
+    if not casa_distro:
+        failure('Cannot find casa_distro executable')
 
 if not command:
     command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
 
-host_command = [casa_distro, 'run', 'base_directory={}'.format(config['directory']) ] + command
+host_command = [casa_distro, 'run',
+                'base_directory={}'.format(environment_dir)]
+host_command += command
+
 if verbose:
+    print('Environment directory =', environment_dir, file=verbose)
     print('casa_distro executable =', casa_distro, file=verbose)
-    print('Environment name =', config['name'], file=verbose)
-    print('Environment directory =', config['directory'], file=verbose)
-    print('Environment image =', config['image'], file=verbose)
     print('Container command =', ' '.join("'{}'".format(i) for i in command))
     print('Host command =', ' '.join("'{}'".format(i) for i in host_command))
+
+output = subprocess.check_output([casa_distro, '--version'],
+                                 stderr=subprocess.STDOUT)
+s = output.split()
+if not s:
+    version = 'unknown'
+else:
+    version = s[-1]
+if not version.startswith('3.'):
+    failure('Invalid version for {}: {}'.format(casa_distro, version))
 
 subprocess.check_call(host_command)
