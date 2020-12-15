@@ -240,7 +240,7 @@ def setup_user(setup_dir):
     write_environment_homedir(osp.join(setup_dir, 'home'))
 
 
-def setup_dev(setup_dir, distro, branch=None, system=None):
+def setup_dev(setup_dir, distro, branch=None, system=None, image=None):
     if not branch:
         branch = os.environ['CASA_BRANCH']
 
@@ -272,33 +272,40 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
     install_casa_distro(casa_distro_dir)
 
     distro_dir = osp.join(casa_distro_dir, 'share', 'distro', distro)
-    if not osp.exists(osp.join(distro_dir, 'casa_distro.json')):
+    casa_distro_json = osp.join(distro_dir, 'casa_distro.json')
+    if not osp.exists(casa_distro_json):
         print('ERROR - invalid distro:', distro, file=sys.stderr)
         sys.exit(1)
     for i in os.listdir(distro_dir):
+        if i == 'casa_distro.json':
+            continue
         fp = osp.join(distro_dir, i)
         if osp.isdir(fp):
             copytree(fp, osp.join(setup_dir, i))
         else:
             cp(fp, osp.join(setup_dir, i))
 
-    environment = {
+    environment = json.load(open(casa_distro_json))
+    environment.pop('description', None)
+    environment.update({
         'casa_distro_compatibility': str(casa_distro.version_major),
         'distro': distro,
         'type': 'dev',
         'system': system,
         'branch': branch,
         'container_type': 'singularity',
-    }
-    environment['image'] = os.getenv('SINGULARITY_CONTAINER')
-    if not environment['image']:
-        environment['image'] = '/unknown.sif'
-    if environment['image'] != '/unknown.sif':
-        environment['name'] = \
-            osp.splitext(osp.basename(environment['image']))[0]
-    else:
-        environment['name'] = '{}-{}'.format(environment['distro'],
-                                             time.strftime('%Y%m%d'))
+    })
+    if image is None:
+        image = os.getenv('SINGULARITY_CONTAINER')
+        if not image:
+            images = glob(osp.join(osp.expanduser('~/casa_distro/casa-dev-*.sif')))
+            if len(images) == 1:
+                image = images[0]
+            if not image:
+                raise ValueError('No image found')
+    environment['image'] = image
+    environment['name'] = \
+        osp.splitext(osp.basename(environment['image']))[0]
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
@@ -419,7 +426,7 @@ def iter_environments(base_directory, **filter):
                                           'casa_distro.json'))
     for casa_distro_json in sorted(casa_distro_jsons):
         environment_config = json.load(open(casa_distro_json))
-        directory = osp.dirname(osp.dirname(osp.dirname(casa_distro_json)))
+        directory = osp.dirname(osp.dirname(casa_distro_json))
         config = {}
         config['config_files'] = [casa_distro_json]
         config['directory'] = directory
