@@ -240,7 +240,8 @@ def setup_user(setup_dir):
     write_environment_homedir(osp.join(setup_dir, 'home'))
 
 
-def setup_dev(setup_dir, distro, branch=None, system=None, image=None):
+def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
+              name=None):
     if not branch:
         branch = os.environ['CASA_BRANCH']
 
@@ -249,6 +250,9 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None):
     if not system:
         system = \
             '-'.join(platform.linux_distribution()[:2]).lower()
+
+    if name is None:
+        name = '-'.join([distro, branch, system])
 
     if not osp.exists(setup_dir):
         print('Directory {} does not exist.'.format(setup_dir),
@@ -305,8 +309,7 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None):
             if not image:
                 raise ValueError('No image found')
     environment['image'] = image
-    environment['name'] = \
-        osp.splitext(osp.basename(environment['image']))[0]
+    environment['name'] = name
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),

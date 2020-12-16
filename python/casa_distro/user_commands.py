@@ -154,7 +154,7 @@ def setup_user(dir='/casa/setup'):
 
 
 @command
-def setup_dev(distro, branch=None, system=None, dir='/casa/setup'):
+def setup_dev(distro, branch=None, system=None, dir='/casa/setup', name=None):
     """
     Create all necessary directories and files to setup a developer *
     environement.
@@ -183,8 +183,11 @@ def setup_dev(distro, branch=None, system=None, dir='/casa/setup'):
     dir
         dir={dir_default}
         Target environment directory
+
+    name
+        name of the environment. Must be unique.
     """
-    env_setup_dev(dir, distro, branch, system)
+    env_setup_dev(dir, distro, branch, system, name=name)
 
 
 @command
