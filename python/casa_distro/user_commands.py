@@ -161,8 +161,28 @@ def setup_dev(distro, branch=None, system=None, dir='/casa/setup'):
     This command is not supposed to be called directly but using a user image:
 
         mkdir ~/brainvisa
-        singularity run -B ~/brainvisa:/casa/setup casa-dev-ubuntu-18.04.sif \
-            brainvisa
+        singularity run -B \\
+            ~/brainvisa:/casa/setup casa-dev-ubuntu-18.04.sif brainvisa master
+
+    Parameters
+    ----------
+
+    distro
+        Name of the distro to use as template
+
+    branch
+        default={branch_default}
+        Name of the branch to use. By default, try to use a branch defined in
+        in CASA_BRANCH environment variable.
+
+    system
+        default={system_default}
+        Name of the system for this environement. By default look for
+        CASA_SYSTEM environment variable or guess from system files.
+
+    dir
+        dir={dir_default}
+        Target environment directory
     """
     env_setup_dev(dir, distro, branch, system)
 

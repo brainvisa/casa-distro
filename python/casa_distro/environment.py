@@ -181,7 +181,7 @@ def install_casa_distro(dest):
                  symlinks=True,
                  ignore=lambda src, names, dst, dstnames:
                  {i for i in names if i in ('__pycache__',)
-                  or i.endswith('.pyc')})
+                  or i.endswith('.pyc') or i.endswith('~')})
 
 
 def setup_user(setup_dir):
@@ -194,8 +194,8 @@ def setup_user(setup_dir):
               file=sys.stderr)
         sys.exit(1)
 
-    if not osp.exists(osp.join(setup_dir, 'host', 'conf')):
-        os.makedirs(osp.join(setup_dir, 'host', 'conf'))
+    if not osp.exists(osp.join(setup_dir, 'conf')):
+        os.makedirs(osp.join(setup_dir, 'conf'))
     bin = osp.join(setup_dir, 'bin')
     if not osp.exists(bin):
         os.makedirs(bin)
@@ -233,14 +233,14 @@ def setup_user(setup_dir):
         environment['name'] = '{}-{}'.format(environment['distro'],
                                              time.strftime('%Y%m%d'))
     json.dump(environment,
-              open(osp.join(setup_dir, 'host', 'conf',
+              open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
               indent=4)
 
     write_environment_homedir(osp.join(setup_dir, 'home'))
 
 
-def setup_dev(setup_dir, distro, branch=None, system=None):
+def setup_dev(setup_dir, distro, branch=None, system=None, image=None):
     if not branch:
         branch = os.environ['CASA_BRANCH']
 
@@ -257,8 +257,8 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
 
     all_subdirs = ('conf', 'src', 'build', 'install',)
     for subdir in all_subdirs:
-        if not osp.exists(osp.join(setup_dir, 'host', subdir)):
-            os.makedirs(osp.join(setup_dir, 'host', subdir))
+        if not osp.exists(osp.join(setup_dir, subdir)):
+            os.makedirs(osp.join(setup_dir, subdir))
 
     bin = osp.join(setup_dir, 'bin')
     if not osp.exists(bin):
@@ -272,41 +272,49 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
     install_casa_distro(casa_distro_dir)
 
     distro_dir = osp.join(casa_distro_dir, 'share', 'distro', distro)
-    if not osp.exists(osp.join(distro_dir, 'casa_distro.json')):
+    casa_distro_json = osp.join(distro_dir, 'casa_distro.json')
+    if not osp.exists(casa_distro_json):
         print('ERROR - invalid distro:', distro, file=sys.stderr)
         sys.exit(1)
     for i in os.listdir(distro_dir):
+        if i == 'casa_distro.json':
+            continue
         fp = osp.join(distro_dir, i)
         if osp.isdir(fp):
             copytree(fp, osp.join(setup_dir, i))
         else:
             cp(fp, osp.join(setup_dir, i))
 
-    environment = {
+    environment = json.load(open(casa_distro_json))
+    environment.pop('description', None)
+    environment.update({
         'casa_distro_compatibility': str(casa_distro.version_major),
         'distro': distro,
         'type': 'dev',
         'system': system,
         'branch': branch,
         'container_type': 'singularity',
-    }
-    environment['image'] = os.getenv('SINGULARITY_CONTAINER')
-    if not environment['image']:
-        environment['image'] = '/unknown.sif'
-    if environment['image'] != '/unknown.sif':
-        environment['name'] = \
-            osp.splitext(osp.basename(environment['image']))[0]
-    else:
-        environment['name'] = '{}-{}'.format(environment['distro'],
-                                             time.strftime('%Y%m%d'))
+    })
+    if image is None:
+        image = os.getenv('SINGULARITY_CONTAINER')
+        if not image:
+            images = glob(osp.join(osp.expanduser(
+                '~/casa_distro/casa-dev-*.sif')))
+            if len(images) == 1:
+                image = images[0]
+            if not image:
+                raise ValueError('No image found')
+    environment['image'] = image
+    environment['name'] = \
+        osp.splitext(osp.basename(environment['image']))[0]
     json.dump(environment,
-              open(osp.join(setup_dir, 'host', 'conf',
+              open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
               indent=4)
 
     write_environment_homedir(osp.join(setup_dir, 'home'))
 
-    svn_secret = osp.join(setup_dir, 'host', 'conf', 'svn.secret')
+    svn_secret = osp.join(setup_dir, 'conf', 'svn.secret')
     print('\n------------------------------------------------------------')
     print('** WARNING: svn secret **')
     print('Before using "casa_distro bv_maker" you will have to '
@@ -344,7 +352,7 @@ def setup_dev(setup_dir, distro, branch=None, system=None):
           'restrictions.\n\n')
     print('Remember also that you can edit and customize the projects to '
           'be built, by editing the following file:\n')
-    print(osp.join(setup_dir, 'host', 'conf', 'bv_maker.cfg'))
+    print(osp.join(setup_dir, 'conf', 'bv_maker.cfg'))
     print('------------------------------------------------------------')
     print()
 
@@ -379,7 +387,7 @@ def select_distro(distro):
     if osp.isdir(distro):
         directory = distro
         casa_distro_json = osp.join(
-            directory, 'host', 'conf', 'casa_distro.json')
+            directory, 'conf', 'casa_distro.json')
         if osp.exists(casa_distro_json):
             distro = json.load(open(casa_distro_json))
             distro['directory'] = directory
@@ -411,20 +419,20 @@ def iter_environments(base_directory, **filter):
     base directory. For each one, yield a dictionary corresponding to the
     casa_distro.json file with the "directory" item added.
     """
-    casa_distro_jsons = glob(osp.join(base_directory, '*', 'host',
-                            'conf', 'casa_distro.json'))
+    casa_distro_jsons = glob(osp.join(base_directory, '*',
+                                      'conf', 'casa_distro.json'))
     if not casa_distro_jsons:
         # Special case where base_directroy is the directory of an environment
-        casa_distro_jsons = glob(osp.join(base_directory, 'host', 'conf', 
+        casa_distro_jsons = glob(osp.join(base_directory, 'conf',
                                           'casa_distro.json'))
     for casa_distro_json in sorted(casa_distro_jsons):
         environment_config = json.load(open(casa_distro_json))
-        directory = osp.dirname(osp.dirname(osp.dirname(casa_distro_json)))
+        directory = osp.dirname(osp.dirname(casa_distro_json))
         config = {}
         config['config_files'] = [casa_distro_json]
         config['directory'] = directory
         config['mounts'] = {
-            '/casa/host': '{directory}/host',
+            '/casa/host': '{directory}',
             '/host': '/',
         }
         config['env'] = {
@@ -840,7 +848,7 @@ class BBIDaily:
             success = True
             for command in commands:
                 if test_config['type'] == 'run':
-                    command = command.replace('/casa/host/build/bin/bv_env',
+                    command = command.replace('/casa/build/bin/bv_env',
                                               '/casa/install/bin/bv_env')
                 result, output = self.call_output([self.casa_distro,
                                                    'run',
@@ -848,10 +856,10 @@ class BBIDaily:
                                                        test_config['name']),
                                                    'env=BRAINVISA_'
                                                    'TEST_RUN_DATA_DIR='
-                                                   '/casa/host/tests/test,'
+                                                   '/casa/tests/test,'
                                                    'BRAINVISA_'
                                                    'TEST_REF_DATA_DIR='
-                                                   '/casa/host/tests/ref',
+                                                   '/casa/tests/ref',
                                                    '--',
                                                    'sh', '-c', command])
                 if result:
@@ -884,7 +892,7 @@ class BBIDaily:
         o = subprocess.check_output([self.casa_distro,
                                      'run',
                                      'name={0}'.format(config['name']),
-                                     'cwd={0}/host/build'.format(
+                                     'cwd={0}/build'.format(
                                          config['directory']),
                                      'ctest', '--print-labels'])
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
@@ -893,7 +901,7 @@ class BBIDaily:
             o = subprocess.check_output([self.casa_distro,
                                          'run',
                                          'name={0}'.format(config['name']),
-                                         'cwd={0}/host/build'.format(
+                                         'cwd={0}/build'.format(
                                              config['directory']),
                                          'env=BRAINVISA_TEST_REMOTE_COMMAND'
                                          '=echo',

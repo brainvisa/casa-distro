@@ -104,11 +104,11 @@ else:
 casa_distro = None
 for i in (('host', 'src', 'development', 'casa-distro', '*'),
           ('src', 'development', 'casa-distro', '*'),
-          ('host', 'src', 'development', 'casa_distro'),
+          ('host', 'src', 'development', 'casa-distro'),
           ('src', 'development', 'casa-distro'),
-          ('host', 'src', 'casa_distro'),
+          ('host', 'src', 'casa-distro'),
           ('src', 'casa-distro'),
-          ('casa_distro')):
+          ('casa-distro',)):
     for casa_distro_src in glob.glob(osp.join(environment_dir, *i)):
         if osp.exists(osp.join(casa_distro_src, 'python', 'casa_distro',
                                '__init__.py')):

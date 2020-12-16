@@ -164,7 +164,7 @@ def create_user_image(base_image,
                       output,
                       base_directory,
                       verbose):
-    install_dir = osp.join(dev_config['directory'], 'host', 'install')
+    install_dir = osp.join(dev_config['directory'], 'install')
     vm_name = osp.splitext(osp.basename(output))[0]
     vm = VBoxMachine(vm_name)
     if vm.exists():
