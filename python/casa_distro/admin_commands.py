@@ -48,8 +48,8 @@ def str_to_bool(string):
 def singularity_deb(system,
                     output='singularity-{version}-{system}.deb',
                     dockerhub=None,
-                    version='3.6.4',
-                    go_version='1.13'):
+                    version='3.7.0',
+                    go_version='1.15.6'):
     """Create a Debian package to install Singularity.
     Perform the whole installation process from a rw system and Singularity
     source. Then put the result in a *.deb file.
