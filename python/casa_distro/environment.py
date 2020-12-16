@@ -539,6 +539,15 @@ def update_container_image(container_type, image_name, url, force=False,
         image_name = osp.join(casa_distro_directory(), image_name)
 
     image = osp.basename(image_name)
+
+    metadata_file = '%s.json' % image_name
+    if new_only and osp.exists(metadata_file) and osp.exists(image_name):
+        print('image %s already exists.' % image, file=verbose)
+        return  # don't update
+
+    metadata = json.loads(
+        urlopen('%s.json' % remote_image).read().decode('utf-8'))
+
     if image not in url_listdir(url):
         if image.endswith('.simg') and not verbose:
             # probably a casa-distro 2 image: don't even warn
@@ -548,12 +557,6 @@ def update_container_image(container_type, image_name, url, force=False,
                   image_name=image, remote_image=remote_image))
         return
 
-    metadata_file = '%s.json' % image_name
-    metadata = json.loads(
-        urlopen('%s.json' % remote_image).read().decode('utf-8'))
-    if new_only and osp.exists(metadata_file) and osp.exists(image_name):
-        print('image %s already exists.' % image, file=verbose)
-        return  # don't update
     if not force and osp.exists(metadata_file):
         local_metadata = json.load(open(metadata_file))
         if local_metadata.get('md5') == metadata.get('md5') \
