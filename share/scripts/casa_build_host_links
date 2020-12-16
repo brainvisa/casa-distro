@@ -63,7 +63,7 @@ bv="$(dirname -- $0)/bv"
 def install_bv_casa_distro(out_host_dir, casa_build, casa_src=None):
     '''
     Copy the bv executable and needed libraries into a host-readable
-    filesystem, /casa/host/host_bin/ and /casa/host/python/
+    filesystem, /casa/host/bin/ and /casa/host/python/
 
     Parameters
     ----------
@@ -82,7 +82,7 @@ def install_bv_casa_distro(out_host_dir, casa_build, casa_src=None):
     casa_path = osp.dirname(casa_distro.__file__)
     print('casa_path:', casa_path)
     src_dir = osp.dirname(osp.dirname(casa_path))
-    bin_prefix = 'host_bin'
+    bin_prefix = 'bin'
 
     if casa_src:
         sp = osp.join(casa_src,
@@ -149,7 +149,7 @@ if '-h' in sys.argv[1:]:
     print('build run scripts for Casa-distro / BrainVisa executables to ease '
           'their use from outside the container')
     print('''This script should be run from inside a casa-distro container, in
-    a developer environment. It creates a directory /casa/host/host_bin where
+    a developer environment. It creates a directory /casa/host/bin where
     it will write a script for every executable in the build environment. Each
     of these scripts can be invoked from *outside the container* and will take
     care of running the right casa-distro container and call the executable.
@@ -164,7 +164,7 @@ if '-h' in sys.argv[1:]:
     it will switch to "install" mode, otherwise use the "build" mode. The
     current mode here is: %s
 
-    The scripts in /casa/host/host_bin are sh shell scripts, thus to be used
+    The scripts in /casa/host/bin are sh shell scripts, thus to be used
     from outside the container, the host machine must have a sh/bash shell
     installed, which is OK on any linux or Mac host.
 
@@ -173,7 +173,7 @@ if '-h' in sys.argv[1:]:
     environment config (/casa/host/conf/casa_distro.json).
 
     After running this script, it is possible to set the host PATH to point to
-    the host_bin/ directory of the environment to run
+    the bin/ directory of the environment to run
     commands. ''' % mode)
     sys.exit(0)
 
@@ -208,7 +208,7 @@ exclude_programs = set([
     'bv_wine_regedit',
 ])
 
-out_dir = osp.join(host_dir, 'host_bin')
+out_dir = osp.join(host_dir, 'bin')
 # win_dir = osp.join(host_dir, 'win_bin')
 if not osp.isdir(out_dir):
     os.mkdir(out_dir)
@@ -226,7 +226,7 @@ for exe in os.listdir(osp.join(casa_build, 'bin')):
 # custom scripts
 version = '.'.join(__version__.split('.')[:2])
 
-custom_scripts = ['share/casa_distro-%s/scripts/casa_distro_launcher', ]
+custom_scripts = []
 
 for exe in custom_scripts:
     out_file = osp.join(out_dir, osp.basename(exe))
