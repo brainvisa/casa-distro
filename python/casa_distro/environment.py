@@ -318,6 +318,13 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
     write_environment_homedir(osp.join(setup_dir, 'home'))
 
     svn_secret = osp.join(setup_dir, 'conf', 'svn.secret')
+    open(svn_secret, 'w').write(
+        "# This is a shell script that must set the variables SVN_USERNAME\n"
+        "# and SVN_PASSWORD. Do not forget to properly quote the variable\n"
+        "# especially if values contains special characters.\n\n"
+        "SVN_USERNAME='brainvisa'\n"
+        "SVN_PASSWORD='Soma2009'\n")
+
     print('\n------------------------------------------------------------')
     print('** WARNING: svn secret **')
     print('Before using "casa_distro bv_maker" you will have to '
