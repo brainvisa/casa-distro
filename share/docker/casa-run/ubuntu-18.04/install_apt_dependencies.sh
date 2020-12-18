@@ -131,9 +131,9 @@ headless_anatomist_dependencies=(
 )
 
 cd /tmp
-wget https://sourceforge.net/projects/virtualgl/files/2.6.3/virtualgl_2.6.3_amd64.deb
-$SUDO dpkg -i virtualgl_2.6.3_amd64.deb
-rm -f /tmp/virtualgl_2.6.3_amd64.deb
+wget https://sourceforge.net/projects/virtualgl/files/2.6.5/virtualgl_2.6.5_amd64.deb
+$SUDO dpkg -i virtualgl_2.6.5_amd64.deb
+rm -f /tmp/virtualgl_2.6.5_amd64.deb
 
 
 # Python packages needed at runtime by BrainVISA
