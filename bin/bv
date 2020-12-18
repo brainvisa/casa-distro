@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import glob
 import os
 import os.path as osp
+import signal
 import subprocess
 import sys
 
@@ -146,4 +147,9 @@ else:
 if not version.startswith('3.'):
     failure('Invalid version for {}: {}'.format(casa_distro, version))
 
-subprocess.check_call(host_command)
+# Avoid displaying a stack trace if the child command is interrupted with
+# Ctrl+C
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+retcode = subprocess.call(host_command)
+sys.exit(retcode)
