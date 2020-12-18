@@ -134,8 +134,10 @@ if verbose:
     print('Container command =', ' '.join("'{}'".format(i) for i in command))
     print('Host command =', ' '.join("'{}'".format(i) for i in host_command))
 
+# universal_newlines is a weird name for requesting conversion to text
 output = subprocess.check_output([casa_distro, '--version'],
-                                 stderr=subprocess.STDOUT)
+                                 stderr=subprocess.STDOUT,
+                                 universal_newlines=True)
 s = output.split()
 if not s:
     version = 'unknown'
