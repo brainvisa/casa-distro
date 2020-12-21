@@ -834,9 +834,9 @@ class BBIDaily:
         for step in steps:
             start = time.time()
             result, log = self.call_output([self.casa_distro,
-                                            'run',
+                                            'bv_maker',
                                             'name={0}'.format(config['name']),
-                                            'bv_maker', step])
+                                            step])
             duration = int(1000 * (time.time() - start))
             self.log(environment, step, result, log, duration=duration)
             if result:
