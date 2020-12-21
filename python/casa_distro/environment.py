@@ -861,18 +861,18 @@ class BBIDaily:
             success = True
             for command in commands:
                 if test_config['type'] == 'run':
-                    command = command.replace('/casa/build/bin/bv_env',
-                                              '/casa/install/bin/bv_env')
+                    command = command.replace('/casa/host/build/bin/bv_env',
+                                              '/casa/host/install/bin/bv_env')
                 result, output = self.call_output([self.casa_distro,
                                                    'run',
                                                    'name={0}'.format(
                                                        test_config['name']),
                                                    'env=BRAINVISA_'
                                                    'TEST_RUN_DATA_DIR='
-                                                   '/casa/tests/test,'
+                                                   '/casa/host/tests/test,'
                                                    'BRAINVISA_'
                                                    'TEST_REF_DATA_DIR='
-                                                   '/casa/tests/ref',
+                                                   '/casa/host/tests/ref',
                                                    '--',
                                                    'sh', '-c', command])
                 if result:
