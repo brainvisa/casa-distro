@@ -286,6 +286,7 @@ brainvisa_shared_library_dependencies=(
     libqwt-qt5-6
     libsigc++-2.0-0v5
     libsm6
+    libspnav0
     libsqlite3-0
     libstdc++6
     libsvm3

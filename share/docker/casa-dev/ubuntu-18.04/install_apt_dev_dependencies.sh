@@ -267,6 +267,7 @@ brainvisa_standard_dev_dependencies=(
     libqt5x11extras5-dev
     libqwt-qt5-dev
     libsigc++-2.0-dev
+    libspnav-dev
     libsvm-dev
     libtiff-dev
     libvtk6-dev
