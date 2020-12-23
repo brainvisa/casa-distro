@@ -911,20 +911,38 @@ class BBIDaily:
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
         tests = {}
         for label in labels:
-            o = subprocess.check_output([self.casa_distro,
-                                         'run',
-                                         'name={0}'.format(config['name']),
-                                         'cwd={0}/build'.format(
-                                             config['directory']),
-                                         'env=BRAINVISA_TEST_REMOTE_COMMAND'
-                                         '=echo',
-                                         'ctest', '-V', '-L',
-                                         '^{0}$'.format(label)])
+            p = subprocess.Popen(
+                [
+                    self.casa_distro,
+                    'run',
+                    'name={0}'.format(config['name']),
+                    'cwd={0}/build'.format(
+                        config['directory']),
+                    'env=BRAINVISA_TEST_REMOTE_COMMAND'
+                    '=echo',
+                    'ctest', '-V', '-L',
+                    '^{0}$'.format(label)
+                ] + config.get('ctest_options', []),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            o, stderr = p.communicate()
+            if p.returncode != 0:
+                # We want to hide stderr unless ctest returns a nonzero exit
+                # code. In the case of test filtering where no tests are
+                # matched (e.g. with ctest_options=['-R', 'dummyfilter']), the
+                # annoying message 'No tests were found!!!' is printed to
+                # stderr by ctest, but it exits with return code 0.
+                sys.stderr.write(stderr)
+                raise RuntimeError('ctest failed with the above error')
             o = o.split('\n')
+            # Extract the third line that follows each line containing ': Test
+            # command:'
             commands = [o[i+3][o[i+3].find(':')+2:].strip()
                         for i in range(len(o))
                         if ': Test command:' in o[i]]
-            tests[label] = commands
+            if commands:  # skip empty command lists
+                tests[label] = commands
         return tests
 
     def update_user_image(self, user_config, dev_config):
