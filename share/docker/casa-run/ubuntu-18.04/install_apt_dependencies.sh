@@ -102,6 +102,7 @@ generally_useful_packages=(
     python-setuptools  # needed for most source installs with python-pip
     ssh-client  # notably useful for Git repositories over SSH
     sudo
+    tree
     unzip
     wget
     xz-utils
