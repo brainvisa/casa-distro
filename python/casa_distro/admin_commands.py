@@ -85,6 +85,9 @@ def singularity_deb(system,
                            version=version)
     if not dockerhub:
         dockerhub = system.replace('-', ':')
+        if system.startswith('mint'):
+            # mint is found under another name
+            dockerhub = 'linuxmintd/%s-amd64' % system.replace('-', '')
     tmp = tempfile.mkdtemp(prefix='singularity-container-deb-')
     try:
         build_sh = osp.join(tmp, 'build.sh')
