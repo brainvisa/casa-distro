@@ -4,7 +4,7 @@ Casa-Distro quickstart
 
 .. highlight:: bash
 
-This page contains informations to quickly and simply install casa-distro, and the `BrainVISA software distribution <http://brainvisa.info>`_ through casa-distro.
+This page contains informations to quickly and simply install the `BrainVISA software distribution <http://brainvisa.info>`_ through container images and an embedded casa-distro inside them.
 
 If you are a developper looking for more details about casa-distro and its installation, you can follow the first steps here to install ``casa-distro``, but skip the ``casa_distro setup`` step, then follow the instructions in :doc:`developer`.
 
@@ -44,69 +44,52 @@ the following characteristics:
 
 
 * `Singularity v3 <https://www.sylabs.io/>`_ must be installed and setup for
-  the use on the building system. To install Singularity on Debian based Linux systems (such as Ubuntu), follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
+  the use on the building system. To install Singularity on Debian based Linux systems (such as Ubuntu),
 
-* Python >= 2.7 is necessary to run the ``casa_distro`` command. Python is usually installed on most Linux distributions. To check its installation, open a terminal and type: ``python`` (you can leave the interpreter using `<ctrl>-D` or by typing `exit()`. If it is not installed, do it (https://python.org).
+    * Look in http://brainvisa.info/casa-distro/singularity/ for a suitable debian (.deb) package named ``singularity-container-<version>-<system>.deb``. If found, download it and install it, either using a graphical tool, or the following commandline::
 
-* Install Casa-Distro with python
+        sudo dpkg -i singularity-container-*.deb
 
-  Casa_distro is available in the official python package repository `PyPi <https://pypi.org/project/casa-distro/>`_. Once python is installed, you can use this command to install casa_distro::
+    * if no package can be found for your system, then follow `Singularity installation instructions <https://sylabs.io/guides/3.6/admin-guide/installation.html#install-from-source>`_
 
-      pip install casa-distro
+* Download the BrainVISA image found in http://brainvisa.info/casa-distro/releases/singularity/.
+  It's a ``.sif`` file, for instance ``brainvisa-5.0.0.sif``.
+  Download it in a "safe" place where it can be reused, typically in a directory ``casa_distro`` on your home directory.
 
-* Setup an :ref:`environment`
+* Create an installation directory for the :ref:`environment`::
 
-  Once installed, you can use the ``casa_distro`` command in your terminal to download and install a compiled image with open software and tools::
+    mkdir $HOME/casa_distro/brainvisa-5.0.0
 
-      casa_distro setup [options]
+* Execute the container image it using Singularity, with an option to tell it to run its setup procedure. The installation directory should be passed::
 
-  for instance::
+    singularity run -B $HOME/casa_distro/brainvisa-5.0.0:/casa/setup $HOME/casa_distro/brainvisa-5.0.0.sif
 
-      casa_distro setup distro=brainvisa version=5.0
+* Python >= 2.7 is necessary to run the ``bv`` command. Python is usually installed on most Linux distributions. To check its installation, open a terminal and type: ``python`` (you can leave the interpreter using `<ctrl>-D` or by typing `exit()`. If it is not installed, do it (https://python.org).
 
-  This is the step which will actually install a BrainVISA software distribution.
+* set the ``bin/`` directory of the :ref:`environment` installation directory in the ``PATH`` environment variable of your host system config, typically in ``$HOME/.bashrc`` or ``$HOME/.bash_profile`` if you are using a Unix Bash shell::
 
-* Run programs from the container
+    export PATH="$HOME/casa_distro/brainvisa-5.0.0/bin:$PATH"
+
+* Optionally, you may want to run the configuration GUI, through the ``bv`` program: as programs are actually running in a container or a virtual machine (transparently), the user may have to configure additional mount points to actually see his data and working directories from his host machine in the container. This is done graphically, simply using::
+
+    bv
+
+* Installation is finished, you can run programs from the container.
 
   There are several ways actually:
 
-  #. The simplest way, from a Unix host machine (or windows with a bash shell):
+  #. The simplest way, call commands directly from the above ``PATH`` like if they were on the host machine::
 
-    * Add to the ``PATH`` environment variable the directory containing run scripts: the ``host_bin`` directory of the installed :ref:`environment`.
+        # run programs
+        AimsFileInfo --info
+        anatomist
+        brainvisa
 
-      ::
+  2. Using :doc:`bv <bv_command>` interface to containers or :doc:`casa_distro <casa_distro_command>`:
 
-          # this line could be in a ~/.bashrc or ~/.bash_profile script
-          export PATH="$HOME/casa_distro/brainvisa-5.0/host/host_bin:$PATH"
+    The :doc:`bv <bv_command>` program is found in each :ref:`environment` ``bin`` directory in order to be always compatible with this environment.
 
-    * then call the programs like if they were on the host machine::
-
-          # run programs
-          AimsFileInfo --info
-
-    * As programs are actually running in a container or a virtual machine (transparently), the user may have to configure additional mount points to actually see his data and working directories from his host machine in the container. This is done graphically, simply using::
-
-          bv
-
-  ..   #. Similar, from a Windows host machine:
-  ..
-  ..     * add the directory containing the run scripts in the ``%PATH%`` environment variable (can be done globally in the user / machine settings):
-  ..
-  ..       .. code-block:: bat
-  ..
-  ..           set PATH=%HOMEDRIVE%%HOMEPATH%\casa_distro\brainvisa-5.0\host\win_bin;%PATH%
-  ..
-  ..     * run the programs from a cmd shell:
-  ..
-  ..       .. code-block:: bat
-  ..
-  ..           AimsFileInfo --info
-
-  2. Using :doc:`casa_distro <casa_distro_command>` or :doc:`bv <bv_command>` interface to containers:
-
-    The :doc:`bv <bv_command>` program is found in each :ref:`environment` ``host_bin`` directory in order to be always compatible with this environment. It is also part of the casa-distro distributions installed via ``pip``.
-
-    * :doc:`bv_command` accepts ``shell`` or an executable program name as sub-commands, they both allow to run programs installed inside the container, for instance::
+    * :doc:`bv_command` accepts an executable program name as sub-command, it allows to run programs installed inside the container, for instance::
 
           bv brainvisa
           bv anatomist
@@ -114,11 +97,7 @@ the following characteristics:
 
       or to open an interactive shell in the container::
 
-          bv shell
-
-      As programs are actually running in a container or a virtual machine (transparently), the user may have to configure additional mount points to actually see his data and working directories from his host machine in the container. This is done graphically, simply using::
-
-          bv
+          bv bash
 
       More options may be used. :doc:`See the complete documentation of the bv command <bv_command>`.
 
