@@ -657,30 +657,47 @@ def write_environment_homedir(casa_home_host_path):
     if not osp.exists(bashrc):
         with open(bashrc, 'w') as f:
             print(r'''
-if [ -f /etc/profile ]; then
-    . /etc/profile
-fi
+# .bashrc
+#
+# The default bashrc settings are stored in the Singularity images, so that
+# they can be updated appropriately when the images evolve. Please keep this as
+# the first command of this file.
+. /casa/bashrc
 
-# source any bash_completion scripts
-if [ -n "$CASA_BUILD" -a -d "$CASA_BUILD/etc/bash_completion.d" ]; then
-    # from a build directory
-    for d in "$CASA_BUILD/etc/bash_completion.d/"*; do
-        if [ -f "$d" ]; then
-            . "$d"
-        fi
-    done
-elif [ -d "/casa/install/etc/bash_completion.d" ]; then
-    # else from an install directory
-    for d in "/casa/install/etc/bash_completion.d/"*; do
-        if [ -f "$d" ]; then
-            . "$d"
-        fi
-    done
-fi
+# Users can customize their bash environment below this line. Example
+# customizations are included, please uncomment them to try them out.
 
-export PS1="\[\033[33m\]\u@\h \$\[\033[0m\] "
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
 
-''', file=f)
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# Include the current Git branch and Git status in the prompt. VERY USEFUL for
+# developers, but disabled by default because it slows down the prompt on slow
+# filesystems.
+#source /usr/lib/git-core/git-sh-prompt
+#GIT_PS1_SHOWDIRTYSTATE=true
+#GIT_PS1_SHOWSTASHSTATE=true
+#GIT_PS1_SHOWUNTRACKEDFILES=true
+#GIT_PS1_SHOWUPSTREAM=auto
+#GIT_PS1_DESCRIBE_STYLE=describe
+#GIT_PS1_SHOWCOLORHINTS=true
+#PS1='${CASA_ENVIRONMENT:+($CASA_ENVIRONMENT)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\[\033[01m\]$(__git_ps1 " (%s)")\[\033[00m\]\$ '
+
+# Allow quickly changing the current directory to sub-directories of
+# /casa/host, for example:
+#     cd src/axon/master
+#CDPATH=:/casa/host
+''', file=f)  # noqa: E501
+    # Create an (empty) .sudo_as_admin_successful file to prevent the startup
+    # message telling to use "sudo" in the container, which does not work under
+    # Singularity.
+    silence_file = osp.join(casa_home_host_path, '.sudo_as_admin_successful')
+    if not osp.exists(silence_file):
+        with open(silence_file, 'w') as f:
+            pass
 
 
 exclude_from_bin = {

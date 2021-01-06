@@ -456,18 +456,6 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     else:
         raise ValueError('Invalid value for the opengl option')
 
-    if 'SINGULARITYENV_PS1' not in container_env \
-            and not [x for x in container_options if x.startswith('PS1=')]:
-        # the prompt with singularity 3 is ugly and cannot be overriden in the
-        # .bashrc of the container.
-        ps1 = r'\[\033[33m\]\u@\h \$\[\033[0m\] '
-        if singularity_has_option('--env'):
-            container_options += ['--env', 'PS1=%s' % ps1]
-        else:
-            container_env['SINGULARITYENV_PS1'] = ps1
-            if 'PS1' in container_env:
-                del container_env['PS1']
-
     if singularity_version()[:3] == [3, 3, 0] and sys.platform == 'darwin':
         # the beta of singularity 3.3 for Mac doesn't pass envars in any way
         # (no --env option, --home doesn't work, SINGULARITYENV_something vars
