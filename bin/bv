@@ -136,16 +136,20 @@ if verbose:
     print('Host command =', ' '.join("'{}'".format(i) for i in host_command))
 
 # universal_newlines is a weird name for requesting conversion to text
-output = subprocess.check_output([casa_distro, '--version'],
-                                 stderr=subprocess.STDOUT,
-                                 universal_newlines=True)
+try:
+    output = subprocess.check_output([casa_distro, '--version'],
+                                     stderr=subprocess.STDOUT,
+                                     universal_newlines=True)
+except subprocess.CalledProcessError as exc:
+    failure('{} failed with the following message:\n{}'
+            .format(casa_distro, exc.output))
 s = output.split()
 if not s:
     version = 'unknown'
 else:
     version = s[-1]
 if not version.startswith('3.'):
-    failure('Invalid version for {}: {}'.format(casa_distro, version))
+    failure('Invalid version for {}: {}'.format(casa_distro, output))
 
 # Avoid displaying a stack trace if the child command is interrupted with
 # Ctrl+C
