@@ -338,20 +338,30 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     if osp.exists(overlay):
         singularity += ['--overlay', overlay]
 
+    configured_env = dict(config.get('env', {}))
+    if gui:
+        configured_env.update(config.get('gui_env', {}))
+    if env is not None:
+        configured_env.update(env)
+
     # This configuration key is always set by
     # casa_distro.environment.run_container
     casa_home_host_path = config['mounts']['/casa/home']
     if gui:
-        xauthority = osp.expanduser('~/.Xauthority')
-        # TODO: use "xauth extract" because ~/.Xauthority does not always exist
-        # Also, use a temporary file for each run, because a single
-        # ~/.Xauthority file can be overwritten by concurrent runs... which may
-        # not all using the same X server.
-        if osp.exists(xauthority):
-            shutil.copy(xauthority,
-                        osp.join(casa_home_host_path, '.Xauthority'))
+        # Use a temporary file for each run, because a single ~/.Xauthority
+        # file could be overwritten by concurrent runs... which may not all be
+        # using the same X server.
+        with tempfile.NamedTemporaryFile(prefix='casa-distro',
+                                         suffix='.Xauthority',
+                                         delete=False) as f:
+            xauthority_tmpfile = f.name
+        temps.append(xauthority_tmpfile)
+        retcode = subprocess.call(['xauth', 'extract', xauthority_tmpfile,
+                                   os.environ.get('DISPLAY', '')])
+        if retcode == 0:
+            config['mounts']['/casa/Xauthority'] = xauthority_tmpfile
             config.setdefault('gui_env', {})
-            config['gui_env']['XAUTHORITY'] = '/casa/home/.Xauthority'
+            config['gui_env']['XAUTHORITY'] = '/casa/Xauthority'
 
     home_mount = False
     host_homedir = os.path.expanduser('~')
@@ -371,12 +381,6 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     if not home_mount and singularity_major_version() > 2:
         # singularity 3 doesn't mount the home directory automatically.
         singularity += ['--bind', host_homedir]
-
-    configured_env = dict(config.get('env', {}))
-    if gui:
-        configured_env.update(config.get('gui_env', {}))
-    if env is not None:
-        configured_env.update(env)
 
     singularity_home = None
 
@@ -520,7 +524,10 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         pass  # avoid displaying a stack trace
     finally:
         for temp in temps:
-            shutil.rmtree(temp)
+            if os.path.isdir(temp):
+                shutil.rmtree(temp)
+            else:
+                os.unlink(temp)
 
 
 def setup(type, distro, branch, system, name, base_directory, image,
