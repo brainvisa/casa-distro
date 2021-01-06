@@ -56,6 +56,9 @@ def install(base_dir, builder, verbose):
                    file=verbose, flush=True)
     builder.run_root('/opt/install_casa_dev_components.sh')
 
+    builder.copy_root(osp.join(base_dir, 'gitignore'), '/etc')
+    builder.run_root('git config --system core.excludesfile /etc/gitignore')
+
     if verbose:
         six.print_('Cleanup files in', builder.name,
                    file=verbose, flush=True)
