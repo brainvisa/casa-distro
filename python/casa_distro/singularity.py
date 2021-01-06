@@ -350,6 +350,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         if osp.exists(xauthority):
             shutil.copy(xauthority,
                         osp.join(casa_home_host_path, '.Xauthority'))
+            config.setdefault('gui_env', {})
+            config['gui_env']['XAUTHORITY'] = '/casa/home/.Xauthority'
 
     home_mount = False
     host_homedir = os.path.expanduser('~')

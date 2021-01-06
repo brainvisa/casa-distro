@@ -455,8 +455,8 @@ def iter_environments(base_directory, **filter):
             config['env']['CASA_BRANCH'] = config['bv_maker_branch']
         if environment_config['container_type'] == 'singularity':
             config.setdefault('gui_env', {}).update({
-                'DISPLAY': '$DISPLAY',
-                'XAUTHORITY': '/casa/home/.Xauthority'})
+                'DISPLAY': '$DISPLAY'
+            })
 
         update_config(config, environment_config)
 
