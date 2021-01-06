@@ -465,10 +465,15 @@ class Launchers(Qt.QWidget):
         self._terminal_btn = Qt.QPushButton(Qt.QIcon(term_icon), 'TERMINAL')
         self._terminal_btn.setIconSize(
             Qt.QSize(self.icon_size, self.icon_size))
+        self._xterm_btn = Qt.QPushButton(Qt.QIcon(term_icon), 'XTERM')
+        self._xterm_btn.setIconSize(
+            Qt.QSize(self.icon_size, self.icon_size))
 
         self._launchers_layout.addWidget(self._brainvisa_btn)
         self._launchers_layout.addWidget(self._anatomist_btn)
-        self._launchers_layout.addWidget(self._terminal_btn)
+        self._launchers_layout.addWidget(self._xterm_btn)
+        if sys.stdout.isatty() and sys.stdin.isatty():
+            self._launchers_layout.addWidget(self._terminal_btn)
 
         self._main_layout.addWidget(self._reload_msg)
         self._main_layout.addWidget(self._launchers_container)
@@ -478,6 +483,7 @@ class Launchers(Qt.QWidget):
         self._brainvisa_btn.clicked.connect(self._launch_brainvisa)
         self._anatomist_btn.clicked.connect(self._launch_anatomist)
         self._terminal_btn.clicked.connect(self._launch_terminal)
+        self._xterm_btn.clicked.connect(self._launch_xterm)
 
     def _launch_brainvisa(self):
         self.launch('brainvisa')
@@ -485,8 +491,11 @@ class Launchers(Qt.QWidget):
     def _launch_anatomist(self):
         self.launch('anatomist')
 
-    def _launch_terminal(self):
+    def _launch_xterm(self):
         self.launch('xterm')
+
+    def _launch_terminal(self):
+        self.launch('bash')
 
     def launch(self, command):
         self.launched.emit(command)
