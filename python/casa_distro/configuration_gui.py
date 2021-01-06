@@ -18,6 +18,10 @@ import glob
 try:
     from soma.qt_gui.qt_backend import Qt
     from soma.qt_gui.qt_backend.QtCore import Signal
+    try:
+        from soma.qt_gui.qt_backend import QtWebEngineWidgets
+    except Exception:
+        print('QtWebEngineWidgets cannot be imported.')
 except ImportError:
     try:
         from PyQt5 import Qt
@@ -126,9 +130,11 @@ class CasaLauncher(Qt.QDialog):
         validation_btns.accepted.connect(dialog.accept)
         validation_btns.rejected.connect(dialog.reject)
 
+        preserved = set(['mounts'])
         if dialog.exec_():
             for k in list(self.conf.keys()):
-                del self.conf[k]
+                if k not in preserved:
+                    del self.conf[k]
             self.conf.update(config_edit.edited_config())
             self._mount_manager.update_ui()
             self.block_launchers()
@@ -172,9 +178,20 @@ class MountManager(Qt.QWidget):
         self._manager_btns = Qt.QHBoxLayout()
         self._add_mount = Qt.QPushButton('+')
         self._remove_mount = Qt.QPushButton('-')
+        self._ssh_mount = Qt.QPushButton('.ssh')
+        self._help_btn = Qt.QPushButton('?')
         self._manager_btns.addStretch(1)
         self._manager_btns.addWidget(self._add_mount)
         self._manager_btns.addWidget(self._remove_mount)
+        self._manager_btns.addWidget(self._ssh_mount)
+        self._manager_btns.addWidget(self._help_btn)
+
+        self._add_mount.setToolTip('Add a mount point')
+        self._remove_mount.setToolTip('Remove selected mount point(s)')
+        self._ssh_mount.setToolTip(
+            'Add a configured mount point for host SSH config.\n'
+            'This alows to share the host SSH keys with the container.')
+        self._help_btn.setToolTip('Help on how to configure mounts')
 
         self._main_layout.addWidget(self._mount_table)
         self._main_layout.addWidget(self._error_label)
@@ -183,6 +200,8 @@ class MountManager(Qt.QWidget):
     def setup_links(self):
         self._add_mount.clicked.connect(self._add_mount_row)
         self._remove_mount.clicked.connect(self._delete_mount_row)
+        self._ssh_mount.clicked.connect(self._add_ssh_mount)
+        self._help_btn.clicked.connect(self._help_mounts)
         self._mount_table.cellChanged.connect(self._value_modified)
 
     def update_ui(self):
@@ -220,7 +239,7 @@ class MountManager(Qt.QWidget):
                 Qt.QTableWidgetItem(''))
             self._mount_table.item(self._mount_table.rowCount() - 1,
                                    0).setData(Qt.Qt.UserRole, '')
-            self.conf.get('mounts', {})[''] = host_path
+            self.conf.setdefault('mounts', {})[''] = host_path
             self.check_all_mounts()
 
     def _delete_mount_row(self):
@@ -234,6 +253,96 @@ class MountManager(Qt.QWidget):
                 host_path = self._mount_table.item(row, 1).text()
                 del self.conf.get('mounts', {})[host_path]
                 self._mount_table.removeRow(row)
+
+    def _add_ssh_mount(self):
+        cont_ssh = '/casa/home/.ssh'
+        if cont_ssh in self.conf.get('mounts', {}):
+            mbox_icon = Qt.QMessageBox.Information
+            mbox_title = 'Directory already exists'
+            mbox_text = 'The .ssh directory is already in the mount points'
+            mbox = Qt.QMessageBox(mbox_icon, mbox_title, mbox_text)
+            timer = Qt.QTimer.singleShot(2000, mbox.accept)  # noqa: F841
+            mbox.exec_()
+            return
+        host_home = os.environ.get('CASA_HOST_HOME')
+        if host_home is None:
+            mbox_icon = Qt.QMessageBox.Information
+            mbox_title = 'No access to home directory'
+            mbox_text = 'The user home directory on host side cannot be ' \
+                'determined. Probably casa_distro is not correctly installed.'
+            mbox = Qt.QMessageBox(mbox_icon, mbox_title, mbox_text)
+            timer = Qt.QTimer.singleShot(2000, mbox.accept)  # noqa: F841
+            mbox.exec_()
+            return
+        host_ssh = os.path.join(host_home, '.ssh')
+        if not os.path.exists('/host' + host_ssh):
+            mbox_icon = Qt.QMessageBox.Information
+            mbox_title = 'No ssh directory'
+            mbox_text = 'The .ssh directory on the host side does not exist.'
+            mbox = Qt.QMessageBox(mbox_icon, mbox_title, mbox_text)
+            timer = Qt.QTimer.singleShot(2000, mbox.accept)  # noqa: F841
+            mbox.exec_()
+            return
+
+        self.modified = True
+        self.valueChanged.emit()
+        self._mount_table.setRowCount(self._mount_table.rowCount() + 1)
+        self._mount_table.setItem(
+            self._mount_table.rowCount() - 1, 0,
+            Qt.QTableWidgetItem(host_ssh))
+        self._mount_table.setItem(
+            self._mount_table.rowCount() - 1, 1,
+            Qt.QTableWidgetItem(cont_ssh))
+        self._mount_table.item(self._mount_table.rowCount() - 1,
+                               0).setData(Qt.Qt.UserRole, cont_ssh)
+        self.conf.setdefault('mounts', {})[cont_ssh] = host_ssh
+        self.check_all_mounts()
+
+    def _help_mounts(self):
+        try:
+            self.help_widget = QtWebEngineWidgets.QWebEngineView()
+        except Exception:
+            print('QWebEngineView failed, using QWebView')
+            self.help_widget = Qt.QWebView()
+        self.help_widget.setWindowTitle('How to configure mount points')
+        help_text = '''<h1>How to configure mount points</h1>
+<p>Mount points allow to see the host system directories from the container. They are needed to read and write files. Some mount points are automatically configured in <b>bv</b> / <b>Casa-Distro</b>, but additional mount points may be added by the user.
+</p>
+
+<h2>Automatically configure mount points</h2>
+<p>
+<ul>
+  <li>Environment directory, seen under <tt>/casa/host</tt></li>
+  <li>Container-specific home directory, seen under <tt>/casa/home</tt></li>
+  <li>Host home directory, normally seen under the same location as on the host machine, typically <tt>/home/johndoe</tt></li>
+  <li>Host machine root filesystem (<tt>/</tt>), seen under the directory <tt>/host</tt></li>
+</ul>
+</p>
+
+<h2>Adding new mount points</h2>
+<p>
+When a new mount point is added, the user has to choose two directories: one on the host side, and one on the container side, which is where the host directory will be visible on the container.
+</p>
+<p>
+The user is thus first asked for the host-side directory (the one to be mounted), using a file/directory browser. <b>However</b> as the <tt>bv</tt> program is actually running on the container side, it cannot display the host-side filesystem in its native form. This is why we display the <tt>/host</tt> directory, which is where the host root filesystem is mounted. The <tt>/host</tt> prefix will be removed automatically.
+</p>
+<p>
+Once the host-side directory has been chosen, it is displayed as the first column in a new line of the mount table. the second column ("Container") must be edited (via a double click), and the container-side mount point must be typed here. It is not a file/directory browser since the container-side directoy does not necessarily exist and may not be found on the container filesystem.
+</p>
+<p>
+After mount points have been edited, they must be validated (using the "OK" button in the configuration GUI), and <tt>bv</tt> must be restarted using the new mounts.
+</p>
+
+<h2>The .SSH mount point</h2>
+<p>
+The button <b><tt>".ssh"</tt></b> sets up automatically a mount point for the host user SSH directory into the container user directory. It is used to share the host user SSH configuration and keys, allowing to use the SSH protocol (<tt>ssh</tt> command, <tt>git</tt> via ssh, etc) exactly like the host user does. This is possible if the host has a Unix home directory organization, and the host user has a SSH configuration already setup (<tt>$HOME/.ssh</tt> directory).
+</p>
+<p>
+This directory is not automatically mounted because in some cases it might interfere with singularity mounts, and in some cases the user does not want to share his ssh config.
+</p>
+'''  # noqa: E501
+        self.help_widget.setHtml(help_text)
+        self.help_widget.show()
 
     def check_mount(self, host, container):
         if host and container:
@@ -300,6 +409,12 @@ class MountManager(Qt.QWidget):
 
         self._mount_table.blockSignals(False)
         return all_mounts_ok
+
+    def hideEvent(self, event):
+        if hasattr(self, 'help_widget') and self.help_widget:
+            self.help_widget.close()
+            del self.help_widget
+        event.accept()
 
 
 class Launchers(Qt.QWidget):
@@ -406,6 +521,11 @@ class ConfigEditor(Qt.QWidget):
             traits.TraitListObject: traits.List,
         }
         for key, value in conf.items():
+            if key == 'mounts':
+                # mounts are edited in the GUI and cause problems to the
+                # ControllerWidget which shows dict keys as traits, thus
+                # do not support some / or . characters in traits names.
+                continue
             trait_type = trait_types.get(type(value), traits.Any)
             self.controller.add_trait(key, trait_type())
             setattr(self.controller, key, value)
