@@ -342,10 +342,10 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3,
         image for it,
         'auto': try in this order: ('wget_no_dl', 'internal', 'wget').
     use_tmp: bool
-        if True, download a temporary file prepended wit a dot
-        ("/home/someone/file.sif" -> "/home/someone/.file.sif") and move it to
-        the final (dest) location only after the download is finished. This
-        avoids erasing older files before the download is finished.
+        if True, download a temporary file appended with ".part"
+        ("/home/someone/file.sif" -> "/home/someone/file.sif.part") and move
+        it to the final (dest) location only after the download is finished.
+        This avoids erasing older files before the download is finished.
     md5_check: str
         if not None, check the md5 sum of the downloaded file and checks it
         matches the given hash string
@@ -358,7 +358,7 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3,
 
     if use_tmp:
         tmp_dest = list(osp.split(dest))
-        tmp_dest[-1] = '.%s' % tmp_dest[-1]
+        tmp_dest[-1] = tmp_dest[-1] + '.part'
         tmp_dest = osp.join(*tmp_dest)
     else:
         tmp_dest = dest
