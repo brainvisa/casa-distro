@@ -351,7 +351,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         # Use a temporary file for each run, because a single ~/.Xauthority
         # file could be overwritten by concurrent runs... which may not all be
         # using the same X server.
-        with tempfile.NamedTemporaryFile(prefix='casa-distro',
+        with tempfile.NamedTemporaryFile(prefix='casa-distro-',
                                          suffix='.Xauthority',
                                          delete=False) as f:
             xauthority_tmpfile = f.name
@@ -370,6 +370,12 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         source = osp.expandvars(source)
         dest = dest.format(**config)
         dest = osp.expandvars(dest)
+        if not os.path.exists(source):
+            print('WARNING: the path {0} cannot be found on your system, '
+                  'so it cannot be mounted in the container as requested by '
+                  'your casa-distro configuration.'.format(source),
+                  file=sys.stderr)
+            continue
         singularity += ['--bind', '%s:%s' % (source, dest)]
         if source == host_homedir:
             # FIXME: the condition should actually be: if pathlib.Path(dest) ==
