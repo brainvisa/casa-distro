@@ -13,6 +13,7 @@ import json
 import subprocess
 import os
 import collections
+import glob
 
 try:
     from soma.qt_gui.qt_backend import Qt
@@ -186,29 +187,40 @@ class MountManager(Qt.QWidget):
 
     def update_ui(self):
         self._mount_table.clearContents()
-        for idx, (host, container) in enumerate(
+        for idx, (container, host) in enumerate(
                 self.conf.get('mounts', {}).items()):
             self._mount_table.setItem(idx, 0, Qt.QTableWidgetItem(host))
-            # First col not editable
-            self._mount_table.item(idx, 0).setFlags(
-                self._mount_table.item(idx, 0).flags() ^ Qt.Qt.ItemIsEditable)
             self._mount_table.setItem(idx, 1, Qt.QTableWidgetItem(container))
+            self._mount_table.item(idx, 0).setData(Qt.Qt.UserRole, container)
 
     def _add_mount_row(self):
-        host_mount_choice = Qt.QFileDialog()
+        if '' in self.conf.get('mounts', {}):
+            Qt.QMessageBox.critical(
+                None,
+                'Malformed mount point',
+                'A mount point has not been assigned a container side '
+                'directory. You must define it, or remove the mount point, '
+                'before adding a new one')
+            return
+        host_mount_choice = Qt.QFileDialog(
+            None, 'host side directory (in /host)', '/host')
         host_mount_choice.setFileMode(Qt.QFileDialog.Directory)
         if host_mount_choice.exec_():
             self.modified = True
             self.valueChanged.emit()
             self._mount_table.setRowCount(self._mount_table.rowCount() + 1)
             host_path = host_mount_choice.selectedFiles()[0]
+            if host_path.startswith('/host/'):
+                host_path = host_path[5:]
             self._mount_table.setItem(
                 self._mount_table.rowCount() - 1, 0,
                 Qt.QTableWidgetItem(host_path))
             self._mount_table.setItem(
                 self._mount_table.rowCount() - 1, 1,
                 Qt.QTableWidgetItem(''))
-            self.conf.get('mounts', {})[host_path] = ''
+            self._mount_table.item(self._mount_table.rowCount() - 1,
+                                   0).setData(Qt.Qt.UserRole, '')
+            self.conf.get('mounts', {})[''] = host_path
             self.check_all_mounts()
 
     def _delete_mount_row(self):
@@ -219,7 +231,7 @@ class MountManager(Qt.QWidget):
                 set(item.row() for item in self._mount_table.selectedItems()),
                 reverse=True)
             for row in rows:
-                host_path = self._mount_table.item(row, 0).text()
+                host_path = self._mount_table.item(row, 1).text()
                 del self.conf.get('mounts', {})[host_path]
                 self._mount_table.removeRow(row)
 
@@ -234,7 +246,11 @@ class MountManager(Qt.QWidget):
             return
         host = self._mount_table.item(row, 0).text()
         cont = self._mount_table.item(row, 1).text()
-        self.conf.setdefault('mounts', {})[host] = cont
+        old_cont = self._mount_table.item(row, 0).data(Qt.Qt.UserRole)
+        if old_cont is not None and old_cont != cont:
+            del self.conf['mounts'][old_cont]
+        self.conf.setdefault('mounts', {})[cont] = host
+        self._mount_table.item(row, 0).setData(Qt.Qt.UserRole, cont)
         self.valueChanged.emit()
         self.check_all_mounts()
 
@@ -309,22 +325,31 @@ class Launchers(Qt.QWidget):
         self._reload_msg = Qt.QLabel()
 
         env_path, python_path, build_path = get_env_path()
-        brainvisa_icon = Qt.QPixmap(
-            os.path.join(build_path, 'share/doc/axon/images/brainvisa.png'))
+        icon_path = None
+        axon_doc = glob.glob(os.path.join(build_path, 'share/doc/axon*'))
+        if axon_doc:
+            icon_path = os.path.join(axon_doc[0], 'images/brainvisa.png')
+        brainvisa_icon = Qt.QPixmap(icon_path)
         self._brainvisa_btn = Qt.QPushButton(
             Qt.QIcon(brainvisa_icon), 'BRAINVISA')
         self._brainvisa_btn.setIconSize(
             Qt.QSize(self.icon_size, self.icon_size))
 
-        anatomist_icon = Qt.QPixmap(
-            os.path.join(build_path,
-                         'share/doc/anatomist/html/images/anaLogo.png'))
+        icon_path = None
+        ana_doc = glob.glob(os.path.join(build_path, 'share/doc/anatomist*'))
+        if ana_doc:
+            icon_path = os.path.join(ana_doc[0], 'images/anaLogo.png')
+        anatomist_icon = Qt.QPixmap(icon_path)
         self._anatomist_btn = Qt.QPushButton(
             Qt.QIcon(anatomist_icon), 'ANATOMIST')
         self._anatomist_btn.setIconSize(
             Qt.QSize(self.icon_size, self.icon_size))
 
-        self._terminal_btn = Qt.QPushButton(Qt.QIcon(), 'TERMINAL')
+        term_icon = Qt.QPixmap(
+            '/usr/share/icons/breeze/apps/64/utilities-terminal.svg')
+        self._terminal_btn = Qt.QPushButton(Qt.QIcon(term_icon), 'TERMINAL')
+        self._terminal_btn.setIconSize(
+            Qt.QSize(self.icon_size, self.icon_size))
 
         self._launchers_layout.addWidget(self._brainvisa_btn)
         self._launchers_layout.addWidget(self._anatomist_btn)

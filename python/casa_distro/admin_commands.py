@@ -46,7 +46,7 @@ def str_to_bool(string):
 
 @command
 def singularity_deb(system,
-                    output='singularity-{version}-{system}.deb',
+                    output='singularity-container-{version}-{system}.deb',
                     dockerhub=None,
                     version='3.7.0',
                     go_version='1.15.6'):
@@ -85,7 +85,10 @@ def singularity_deb(system,
                            version=version)
     if not dockerhub:
         dockerhub = system.replace('-', ':')
-    tmp = tempfile.mkdtemp(prefix='singularity-deb-')
+        if system.startswith('mint'):
+            # mint is found under another name
+            dockerhub = 'linuxmintd/%s-amd64' % system.replace('-', '')
+    tmp = tempfile.mkdtemp(prefix='singularity-container-deb-')
     try:
         build_sh = osp.join(tmp, 'build.sh')
         open(build_sh, 'w').write('''#!/bin/sh
@@ -105,14 +108,21 @@ git clone https://github.com/hpcng/singularity.git
 cd singularity
 git checkout v${SINGULARITY_VERSION}
 ./mconfig
+sed -i 's/Name: singularity/Name: singularity-container/g' \
+  singularity.spec
+sed -i 's|BuildRoot: /var/tmp/singularity-|BuildRoot: \
+/var/tmp/singularity-container-|g' singularity.spec
 make -C builddir dist
 cd $TMP
-rpmbuild -tb  --nodeps singularity/singularity-${SINGULARITY_VERSION}.tar.gz
+mv singularity/singularity-${SINGULARITY_VERSION}.tar.gz \
+  singularity/singularity-container-${SINGULARITY_VERSION}.tar.gz
+rpmbuild -tb --nodeps \
+  singularity/singularity-container-${SINGULARITY_VERSION}.tar.gz
 alien --to-deb --scripts \
-  $TMP/rpmbuild/RPMS/x86_64/singularity-${SINGULARITY_VERSION}-1.x86_64.rpm
-mv singularity*.deb /tmp/singularity-$SYSTEM-x86_64.deb
+  $TMP/rpmbuild/RPMS/x86_64/singularity-container-${SINGULARITY_VERSION}-1.x86_64.rpm
+mv singularity-container*.deb /tmp/singularity-container-$SYSTEM-x86_64.deb
 ''')
-        tmp_output = '/tmp/singularity-{}-x86_64.deb'.format(system)
+        tmp_output = '/tmp/singularity-container-{}-x86_64.deb'.format(system)
         subprocess.check_call(['sudo', 'singularity', 'build',
                                '--sandbox', system,
                                'docker://{}'.format(dockerhub)],

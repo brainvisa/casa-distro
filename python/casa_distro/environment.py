@@ -555,8 +555,19 @@ def update_container_image(container_type, image_name, url, force=False,
         print('image %s already exists.' % image, file=verbose)
         return  # don't update
 
-    metadata = json.loads(
-        urlopen('%s.json' % remote_image).read().decode('utf-8'))
+    json_url = '%s.json' % remote_image
+    try:
+        try:
+            f = urlopen(json_url)
+            if f.getcode() == 404:
+                return
+            metadata = json.loads(f.read().decode('utf-8'))
+        except Exception as e:
+            print('%s could not be read:' % json_url, e)
+            return
+    finally:
+        f.close()
+        del f
 
     if image not in url_listdir(url):
         if image.endswith('.simg') and not verbose:
