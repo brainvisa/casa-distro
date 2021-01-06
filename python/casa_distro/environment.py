@@ -562,6 +562,7 @@ def update_container_image(container_type, image_name, url, force=False,
 
     json_url = '%s.json' % remote_image
     try:
+        f = None
         try:
             f = urlopen(json_url)
             if f.getcode() == 404:
@@ -571,7 +572,8 @@ def update_container_image(container_type, image_name, url, force=False,
             print('%s could not be read:' % json_url, e)
             return
     finally:
-        f.close()
+        if f:
+            f.close()
         del f
 
     if image not in url_listdir(url):
