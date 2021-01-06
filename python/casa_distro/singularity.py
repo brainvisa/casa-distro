@@ -380,6 +380,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     # Creates environment with variables prefixed by SINGULARITYENV_
     # with --cleanenv only these variables are given to the container
     container_env = os.environ.copy()
+    # allow to access host home directory from the container
+    container_env['SINGULARITYENV_CASA_HOST_HOME'] \
+        = os.path.realpath(os.path.expanduser('~'))
     for name, value in configured_env.items():
         value = value.format(**config)
         value = osp.expandvars(value)
