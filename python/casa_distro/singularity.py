@@ -338,8 +338,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     if osp.exists(overlay):
         singularity += ['--overlay', overlay]
 
-    casa_home_host_path = osp.join(config['directory'], 'home')
-
+    # This configuration key is always set by
+    # casa_distro.environment.run_container
+    casa_home_host_path = config['mounts']['/casa/home']
     if gui:
         xauthority = osp.expanduser('~/.Xauthority')
         # TODO: use "xauth extract" because ~/.Xauthority does not always exist

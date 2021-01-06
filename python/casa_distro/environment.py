@@ -237,7 +237,7 @@ def setup_user(setup_dir):
                             'casa_distro.json'), 'w'),
               indent=4)
 
-    write_environment_homedir(osp.join(setup_dir, 'home'))
+    prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
 
 def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
@@ -315,7 +315,7 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
                             'casa_distro.json'), 'w'),
               indent=4)
 
-    write_environment_homedir(osp.join(setup_dir, 'home'))
+    prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
     svn_secret = osp.join(setup_dir, 'conf', 'svn.secret')
     open(svn_secret, 'w').write(
@@ -649,8 +649,18 @@ def select_environment(base_directory, **kwargs):
                          base_directory, kwargs))
 
 
-def write_environment_homedir(casa_home_host_path):
-    """Create a new home directory for an environment."""
+def prepare_environment_homedir(casa_home_host_path):
+    """Create or complete a home directory for an environment.
+
+    This function has two roles:
+    - It must create and initialize a home directory at setup time (it is
+      called by setup_user or setup_dev).
+
+    - It is also called every time a command is started in an environment,
+      because the home directory may need to be created (in the per-user
+      homedir scenario, i.e. shared installations). For that reason, please
+      keep this function nice and short. It must also be idempotent.
+    """
     if not osp.exists(casa_home_host_path):
         os.makedirs(casa_home_host_path)
     bashrc = osp.join(casa_home_host_path, '.bashrc')
@@ -732,25 +742,28 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     Return the exit code of the command, or raise an exception if the command
     cannot be run.
     """
-    casa_home_host_path = osp.join(config['directory'], 'home')
-    if not osp.exists(casa_home_host_path):
-        write_environment_homedir(casa_home_host_path)
+    if not os.path.exists(osp.join(config['directory'], 'home')):
+        full_environment_path_flat = (
+            osp.normcase(osp.abspath(config['directory']))
+            .lstrip(os.sep)
+            .replace(os.sep, '_')
+        )
+        xdg_data_home = os.environ.get('XDG_DATA_HOME', '')
+        if not xdg_data_home:
+            xdg_data_home = os.path.join(os.path.expanduser('~'),
+                                         '.local', 'share')
+        host_path_of_container_home = os.path.join(
+            xdg_data_home, 'casa-distro',
+            full_environment_path_flat, 'home')
+    else:
+        host_path_of_container_home = osp.join(config['directory'], 'home')
 
-    # env_directory = config['directory']
-    # if config.get('user_specific_home'):
-    #     env_relative_subdirectory = osp.normcase(
-    #         osp.abspath(env_directory)).lstrip(os.sep)
-    #     home_path = os.path.join(
-    #         os.path.expanduser('~'), '.config', 'casa-distro',
-    #         env_relative_subdirectory, 'home')
-    #     config.setdefault('mounts', {})
-    #     config['mounts']['/casa/home'] = home_path
-    #     if not os.path.exists(home_path):
-    #         In case of user-specific home directories, the home dir has not
-    #         been initialized at the creation of the build-workflow, so it
-    #         needs to be done at first launch.
-    #         os.makedirs(home_path)
-    #         prepare_home(env_directory, home_path)
+    config.setdefault('mounts', {})
+    config['mounts']['/casa/home'] = host_path_of_container_home
+
+    # Prepare the home directory of the container (create it if needed, and
+    # ensure that necessary files are present.)
+    prepare_environment_homedir(host_path_of_container_home)
 
     container_type = config.get('container_type')
     if container_type == 'singularity':
