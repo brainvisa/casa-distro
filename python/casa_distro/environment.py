@@ -460,11 +460,16 @@ def iter_environments(base_directory, **filter):
 
         update_config(config, environment_config)
 
-        for i in ('~/.config/casa-distro/casa_distro_3.json',):
-            f = osp.expanduser(i).format(name=config['name'])
-            if osp.exists(f):
-                config['config_files'].append(f)
-                update_config(config, json.load(open(f)))
+        xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '')
+        if not xdg_config_home:
+            xdg_config_home = osp.expanduser('~/.config')
+        user_config_file = osp.join(xdg_config_home,
+                                    'casa-distro', 'casa_distro_3.json')
+        for additional_config_file in [user_config_file]:
+            if osp.exists(additional_config_file):
+                config['config_files'].append(additional_config_file)
+                with open(additional_config_file) as f:
+                    update_config(config, json.load(f))
 
         match = False
         for k, p in filter.items():
