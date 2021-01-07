@@ -101,8 +101,8 @@ def install_bv_casa_distro(out_host_dir, casa_build, casa_src=None):
             print('dev mode, symlink to sources:', casa_src)
 
     # temporarily (until bv command exists...) copy whole casa_distro
-    bin_items = ['bin/casa_distro', 'bin/bv']
-    py_items = ['python/casa_distro']
+    bin_items = ['bin/bv']
+    py_items = []  # ['python/casa_distro']  # this is done by the setup now
     # bin_items = ['bin/bv']
     # py_items = ['python/casa_distro/__init__.py',
     #             'python/casa_distro/info.py', 'python/casa_distro/bv']
@@ -202,7 +202,7 @@ if not casa_build or not casa_hostdir:
 install_bv_casa_distro(host_dir, casa_build, casa_src)
 
 exclude_programs = set([
-    'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin', 'bv',
+    'python', 'python2', 'python3', 'bv', 'docker-deps',
     'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py', 'bv_env_host',
     'bv_env_test', 'bv_unenv', 'bv_unenv.sh', 'bv_unit_test',
     'bv_wine_regedit',
