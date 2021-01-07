@@ -115,7 +115,9 @@ the following characteristics:
 
       More options may be used. :doc:`See the complete documentation of the casa_distro command <casa_distro_command>`.
 
-      Note that ``bv`` is made available inside each environment (distribution installation) and makes an installation self-contained (it doesn't depend on a global host installation of ``bv`` outside of the environment directory), whereas ``casa_distro`` is cross-environments and thus needs to be installed on the host system. Note also that ``bv`` still depends on Python which still needs to be installed and working on the host machine.
+  .. note::
+
+      Note that ``bv`` is made available inside each environment (distribution installation) and makes an installation self-contained (it doesn't depend on a global host installation of ``bv`` outside of the environment directory), whereas ``casa_distro`` is cross-environments and thus may be, either installed on the host system, or picked from one particular environment, but can manage others. Note also that ``bv`` **still depends on Python which still needs to be installed and working on the host machine**.
 
 * If you are using ``casa-distro`` using Singularity or Docker containers, graphical software need to run the containers with a graphical "bridge": a *X server* has to be running on the host system, and *OpenGL* may or may not work. The options ``gui=yes`` and ``opengl`` of casa_distro try to handle common cases, possibly using Nvidia proprietary OpenGL implementation and drivers from the host system.
 

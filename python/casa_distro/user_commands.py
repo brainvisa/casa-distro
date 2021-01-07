@@ -145,10 +145,17 @@ class ExecutionStatus(object):
 def setup_user(dir='/casa/setup'):
     """
     Create all necessary directories and files to setup a user environement.
-    This command is not supposed to be called directly but using a user image:
+    This command is not supposed to be called directly but using a user image::
 
         mkdir ~/brainvisa
         singularity run --bind ~/brainvisa:/casa/setup brainvisa-5.0.sif
+
+    Parameters
+    ----------
+
+    dir
+        dir={dir_default}
+        Target environment directory
     """
     env_setup_user(dir)
 
@@ -158,7 +165,7 @@ def setup_dev(distro, branch=None, system=None, dir='/casa/setup', name=None):
     """
     Create all necessary directories and files to setup a developer *
     environement.
-    This command is not supposed to be called directly but using a user image:
+    This command is not supposed to be called directly but using a user image::
 
         mkdir ~/brainvisa
         singularity run -B \\
@@ -167,25 +174,13 @@ def setup_dev(distro, branch=None, system=None, dir='/casa/setup', name=None):
     Parameters
     ----------
 
-    distro
-        Name of the distro to use as template
-
-    branch
-        default={branch_default}
-        Name of the branch to use. By default, try to use a branch defined in
-        in CASA_BRANCH environment variable.
-
-    system
-        default={system_default}
-        Name of the system for this environement. By default look for
-        CASA_SYSTEM environment variable or guess from system files.
-
+    {distro}
+    {branch}
+    {system}
     dir
         dir={dir_default}
         Target environment directory
-
-    name
-        name of the environment. Must be unique.
+    {name}
     """
     env_setup_dev(dir, distro, branch, system, name=name)
 
@@ -285,7 +280,8 @@ def run(type=None, distro=None, branch=None, system=None,
     """
     Start any command in a selected run or dev environment
 
-    example:
+    example::
+
         casa_distro branch=master ls -als /casa
 
     Parameters
@@ -350,10 +346,10 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
     least one environment are updated. There are two ways of selecting the
     image(s) to be downloaded:
 
-    1. filtered by environment, using the 'name' selector, or a combination of
-       'distro', 'branch', and 'system'.
+    1. filtered by environment, using the ``name`` selector, or a combination
+       of ``distro``, ``branch``, and ``system``.
 
-    2. directly specifying a full image name, e.g.:
+    2. directly specifying a full image name, e.g.::
 
            casa_distro pull_image image=casa-run-ubuntu-18.04.sif
 
@@ -407,12 +403,12 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
     '''List the locally installed container images.
     There are two ways of selecting the image(s):
 
-    1. filtered by environment, using the 'name' selector, or a combination of
-       'distro', 'branch', and 'system'.
+    1. filtered by environment, using the ``name`` selector, or a combination
+       of ``distro``, ``branch``, and ``system``.
 
-    2. directly specifying a full image name, e.g.:
+    2. directly specifying a full image name, e.g.::
 
-           casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+           casa_distro list_image image=casa-run-ubuntu-18.04.sif
 
     Parameters
     ----------
@@ -501,9 +497,9 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
     repository configuration. By default, command is executed in
     all existing build workflows.
 
-    example:
-        # Launch bv_maker on all build workflows using any version of Ubuntu
+    example::
 
+        # Launch bv_maker on all build workflows using any version of Ubuntu
         casa_distro mrun bv_maker system=ubuntu-*
 
     Parameters
@@ -613,10 +609,10 @@ def clean_images(distro=None, branch=None, system=None, name=None, type=None,
     or those listed in the "image" parameter.
     There are two ways of selecting the image(s):
 
-    1. filtered by environment, using the 'name' selector, or a combination of
-       'distro', 'branch', and 'system'.
+    1. filtered by environment, using the ``name`` selector, or a combination
+       of ``distro``, ``branch``, and ``system``.
 
-    2. directly specifying a full image name, e.g.:
+    2. directly specifying a full image name, e.g.::
 
            casa_distro clean_images image=casa-run-ubuntu-18.04.sif
 

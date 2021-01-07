@@ -41,44 +41,53 @@ def command(f, name=None):
 param_help = {
     'base_directory': '''base_directory
 {indent}default={base_directory_default}
+
 {indent}Directory where images and environments are stored. This parameter
 {indent}can be passed on the commandline, or set via the
-{indent}CASA_BASE_DIRECTORY environment variable.''',
-    'type': '''type
+{indent}``CASA_BASE_DIRECTORY`` environment variable.''',
+    'type': ''':ref:`type <env_type>`
 {indent}default={type_default}
+
 {indent}If given, select environment having the given type.''',
-    'distro': '''distro
+    'distro': ''':ref:`distro`
 {indent}default={distro_default}
+
 {indent}If given, select environment having the given distro name.''',
-    'branch': '''branch
+    'branch': ''':ref:`branch`
 {indent}default={branch_default}
+
 {indent}If given, select environment having the given branch.''',
-    'system': '''system
+    'system': ''':ref:`system`
 {indent}default={system_default}
+
 {indent}If given, select environments having the given system name.''',
-    'name': '''name
+    'name': ''':ref:`name <env_name>`
 {indent}default={name_default}
+
 {indent}If given, select environment by its name. It replaces type, distro,
 {indent}branch and system and is shorter to select one.''',
     'gui': '''gui
 {indent}default={gui_default}
-{indent}If "no", "false" or "0", command is not using a graphical user
+
+{indent}If ``no``, ``false`` or ``0``, command is not using a graphical user
 {indent}interface (GUI). Nothing is done to connect the container to a
 {indent}graphical interface. This option may be necessary in context where
 {indent}a graphical interface is not available.''',
     'opengl': '''opengl
 {indent}default={opengl_default}
+
 {indent}Setup different ways of trying to use OpenGL 3D rendering and GPU.
-{indent}"auto", "container", "nv", or "software".
-{indent}* "auto": use a heuristic to choose the best option that is safe
+{indent}``auto``, ``container``, ``nv``, or ``software``.
+
+{indent}* ``auto``: use a heuristic to choose the best option that is safe
 {indent}  based on the host configuration
-{indent}* "container": passes no special options to Singularity: the mesa
+{indent}* ``container``: passes no special options to Singularity: the mesa
 {indent}  installed in the container is used
-{indent}* "nv" tries to mount the proprietary NVidia driver of the host (linux)
+{indent}* ``nv`` tries to mount the proprietary NVidia driver of the host (linux)
 {indent}  system in the container
-{indent}* "software" sets LD_LIBRARY_PATH to use a software-only OpenGL
+{indent}* ``software`` sets LD_LIBRARY_PATH to use a software-only OpenGL
 {indent}  rendering. This solution is the slowest but is a fallback when no
-{indent}  other solution works.''',
+{indent}  other solution works.''',  # noqa: E501
     'cwd': '''cwd
 {indent}Set current working directory to the given value before launching
 {indent}the command. By default, it is the same working directory as on the
@@ -86,7 +95,7 @@ param_help = {
     'env': '''env
 {indent}Comma separated list of environment variables to pass to the command.
 {indent}Each variable must have the form name=value.''',
-    'image': '''image
+    'image': ''':ref:`image`
 {indent}Force usage of a specific virtual image instead of the one defined
 {indent}in the environment configuration.''',
     'container_options': '''container_options
@@ -94,19 +103,39 @@ param_help = {
 {indent}call the container system.''',
     'verbose': '''verbose
 {indent}default={verbose_default}
-{indent}Print more detailed information if value is "yes", "true" or "1".''',
+
+{indent}Print more detailed information if value is ``yes``, ``true`` or ``1``.''',  # noqa: E501
     'root': '''root
 {indent}default={root_default}
-{indent}If "yes", "true" or "1", start execution as system administrator. For
+
+{indent}If ``yes``, ``true`` or ``1``, start execution as system administrator. For
 {indent}Singularity container, this requires administrator privileges on host
-{indent}system.''',
+{indent}system.''',  # noqa: E501
     'version': '''version
 {indent}If given, select environment by its version (only applicable to user
 {indent}environments, not dev)''',
 }
 
 
-def get_doc(command, indent=''):
+def text_formatted(text):
+    ftext = text
+    ftext = re.sub(':[^:]+:`([^`<]+)( *<.*>)?`', lambda m: m.group(1), ftext)
+    ftext = re.sub('`([^`<]+)( *<.*>)?`_', lambda m: m.group(1), ftext)
+    ftext = re.sub('.. ([^:]+):: *', lambda m: m.group(1) + ':', ftext)
+    ftext = ftext.replace('``', '"')
+    ftext = ftext.replace('`', "'")
+    ftext = ftext.replace('.. ', '')
+    ftext = ftext.replace('::', ':')
+    return ftext
+
+
+def formatted_help(text, format='text'):
+    if format == 'text':
+        return text_formatted(text)
+    return text
+
+
+def get_doc(command, indent='', format='text'):
     doc = inspect.getdoc(command) or ''
 
     cargs = inspect.getargspec(command)
@@ -115,11 +144,16 @@ def get_doc(command, indent=''):
                                 cargs.defaults or ())}
 
     executable = osp.basename(sys.argv[0])
+    if format == 'rst':
+        base_directory_default = ' ``$HOME/casa_distro``'
+    else:
+        base_directory_default = casa_distro_directory()
     help_vars = dict(executable=executable,
                      casa_version=__version__,
-                     base_directory_default=casa_distro_directory(),
+                     base_directory_default=base_directory_default,
                      indent='    ')
     help_vars.update(defaults)
+    help_vars['base_directory_default'] = base_directory_default
     r = re.compile('{([^}]+)}')
     keys = set()
     for text in param_help.values():
@@ -131,16 +165,36 @@ def get_doc(command, indent=''):
     doc = doc.format(**help_vars)
     if indent:
         doc = '\n'.join(indent + line for line in doc.split('\n'))
-    return doc
+    return formatted_help(doc, format=format)
 
 
 @command
-def help(command=None):
+def help(command=None, format='text', full=False):
     """
     Print global help or help about a command.
+
+    Parameters
+    ----------
+    format
+        format help text in a given text format. Valid values are "text"
+        (default) for raw text, or rst (RST/sphinx format).
+    full
+        if ``true`` or ``yes`` or ``1``, display each subcommand parameters
+        documentation in the general help.
     """
+    full = check_boolean('full', full)
+    indent = ''
+    if format == 'text':
+        indent = ' ' * 4
+
+    if format == 'rst':
+        base_directory_default = ' ``$HOME/casa_distro``'
+    else:
+        base_directory_default = casa_distro_directory()
+
     if command:
-        command_help = get_doc(commands[command], indent=' ' * 4)
+        command_help = get_doc(commands[command], indent=indent,
+                               format=format)
         print('-' * len(command))
         print(command)
         print('-' * len(command))
@@ -150,8 +204,8 @@ def help(command=None):
 
         help_vars = dict(executable=executable,
                          casa_version=__version__,
-                         base_directory_default=casa_distro_directory(),
-                         indent='        ')
+                         base_directory_default=base_directory_default,
+                         indent='    ')
         r = re.compile('{([^}]+)}')
         keys = set()
         for text in param_help.values():
@@ -168,9 +222,11 @@ https://github.com/brainvisa/casa-distro for more information
 
 Version : {casa_version}
 
-usage: {executable} [-v] [--version] <command> [<command parameters>...]
+usage::
 
-optional arguments:
+    {executable} <general options> <command> [<command parameters>...]
+
+general optional arguments:
     -v, --verbose   Display as much information as possible.
     --version       Display casa-distro version number and exit.
     -h, --help      Display help message and exit.
@@ -178,25 +234,34 @@ optional arguments:
                     command.
 
 Common parameters:
-    Most commands accept more or less the same parameters.
+==================
+Most commands accept more or less the same parameters.
 
-    {base_directory}
+Many subcommands need :ref:`environment` selection specifications: :ref:`see the documentation on how to specify an environment <environment_options>`.
+
+{base_directory}
 
 Commands:
-'''.format(**help_vars)
+========='''.format(**help_vars)  # noqa: E501
+
+        help_vars['indent'] = indent
+        global_help = formatted_help(global_help, format=format)
 
         commands_summary = [global_help]
         for command in commands:
-            command_doc = get_doc(commands[command], indent=' ' * 8)
-            # Split the docstring in two to remove parameters documentation
-            # The docstring is supposed to follow the Numpy style docstring
-            # see
-            # https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
-            command_doc = re.split(
-                r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
-            commands_summary.append('    ' + '-' * len(command))
-            commands_summary.append('    ' + command)
-            commands_summary.append('    ' + '-' * len(command))
+            command_doc = get_doc(commands[command], indent=indent * 2,
+                                  format=format)
+            if not full:
+                # Split the docstring in two to remove parameters documentation
+                # The docstring is supposed to follow the Numpy style docstring
+                # see
+                # https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
+                command_doc = re.split(
+                    r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
+            commands_summary.append('')
+            commands_summary.append(indent + '-' * len(command))
+            commands_summary.append(indent + command)
+            commands_summary.append(indent + '-' * len(command))
             commands_summary.append(command_doc)
         print('\n'.join(commands_summary))
 
