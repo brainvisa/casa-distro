@@ -347,7 +347,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     # This configuration key is always set by
     # casa_distro.environment.run_container
     casa_home_host_path = config['mounts']['/casa/home']
-    if gui:
+    if gui and os.environ.get('DISPLAY'):
         # Use a temporary file for each run, because a single ~/.Xauthority
         # file could be overwritten by concurrent runs... which may not all be
         # using the same X server.
@@ -357,7 +357,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             xauthority_tmpfile = f.name
         temps.append(xauthority_tmpfile)
         retcode = subprocess.call(['xauth', 'extract', xauthority_tmpfile,
-                                   os.environ.get('DISPLAY', '')])
+                                   os.environ['DISPLAY']])
         if retcode == 0:
             config['mounts']['/casa/Xauthority'] = xauthority_tmpfile
             config.setdefault('gui_env', {})
