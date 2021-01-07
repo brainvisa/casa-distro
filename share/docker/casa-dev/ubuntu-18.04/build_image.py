@@ -12,7 +12,6 @@ def install(base_dir, builder, verbose):
               'install_pip_dev_dependencies.sh',
               'install_compiled_dev_dependencies.sh',
               'build_sip_pyqt.sh',
-              'build_singularity_3.sh',
               'install_casa_dev_components.sh'):
         # /opt is used instead of /tmp here because /tmp can be bind mount
         # during build on Singularity (and the copied files are hidden by this
@@ -64,7 +63,6 @@ def install(base_dir, builder, verbose):
                    file=verbose, flush=True)
     builder.run_root('rm -f /opt/install_apt_dev_dependencies.sh '
                      '/opt/build_sip_pyqt.sh '
-                     '/opt/build_singularity_3.sh '
                      '/opt/install_pip_dev_dependencies.sh '
                      '/opt/install_compiled_dev_dependencies.sh '
                      '/opt/install_casa_dev_components.sh')
