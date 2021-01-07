@@ -255,6 +255,7 @@ latex_documents = [
 
 bv_cmake_version = '1.0'
 swf_version = '1.0'
+bv_web_version = '5.0'
 try:
     from brainvisa.maker import version as bv_cmake_v
     bv_cmake_version = '%s.%s' % (bv_cmake_v.version_major,
@@ -266,6 +267,11 @@ try:
     swf_version = '%s.%s' % (swf_v.version_major, swf_v.version_minor)
 except ImportError:
     pass
+try:
+    from soma import aims
+    bv_web_version = '%s.%s' % aims.version()
+except ImportError:
+    pass
 
 # Example configuration for intersphinx: refer to the Python standard library.
 # intersphinx_mapping = {'http://docs.python.org/': None}
@@ -275,6 +281,7 @@ extlinks = {
                  'brainvisa cmake '),
     'soma-workflow': ('../soma-workflow-' + swf_version + '/sphinx/%s',
                       'Soma-Workflow '),
+    'bv': ('../web-' + bv_web_version + '/%s', 'axon '),
 }
 
 # generate help

@@ -60,6 +60,7 @@ The base VirtualBox image is a minimal configuration of a system image downloade
 Managing container images
 =========================
 
+----------------------
 Singularity and Docker
 ----------------------
 
@@ -67,6 +68,7 @@ In a general way, we designed casa-distro first using `Docker <https://www.docke
 
 Thus, to build a singularity image, one needs to use first ``casa_distro_admin create_docker``, then ``casa_distro_admin create_singularity``.
 
+--------------
 Sharing images
 --------------
 
@@ -78,6 +80,7 @@ Singularity did not have a public hub by the time we started casa-distro, so ``p
 
 Downloading and updating images do not need any access rights, they are public.
 
+--------------------
 Designing new images
 --------------------
 

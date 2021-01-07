@@ -9,7 +9,7 @@ Technical issues
 
 .. _BrainVISA: http://brainvisa.info
 
-* The :doc:`quickstart` section explains how to install casa-distro and a released, compiled, version of BrainVISA. This is what a "regular user" needs.
+* The :bv:`BrainVisa download / install section <download.html>` explains how to install casa-distro and a released, compiled, version of BrainVISA. This is what a "regular user" needs.
 
 * Developers can find information on the :doc:`developer` section.
 

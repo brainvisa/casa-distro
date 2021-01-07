@@ -2,7 +2,7 @@
 Casa-Distro
 ===========
 
-If you want to install simply casa-distro as a user, you can directly see :doc:`Quickstart page <quickstart>`
+If you want to install simply casa-distro as a user, you can directly see the :bv:`BrainVisa download / install section <download.html>`.
 
 
 Overview
@@ -47,7 +47,7 @@ Casa-Distro for users
 
 Users will use Casa-Distro to install and run `BrainVISA <http://brainvisa.info>`_ software.
 
-See the :doc:`Quickstart page <quickstart>` for instructions.
+See the :bv:`BrainVisa download / install section <download.html>` explains how to install it.
 
 The containerization allows to have a single binary distribution for all host operating systems and versions.
 
@@ -69,8 +69,7 @@ See the :doc:`developer` documentation.
 Installation and setup
 ======================
 
-see: :doc:`quickstart`
-
+see: :bv:`BrainVisa download / install section <download.html>`.
 
 
 3 main commands
@@ -97,7 +96,6 @@ Contents
 
 .. toctree::
 
-    quickstart
     concepts
     technical
     developer
