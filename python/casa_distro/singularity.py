@@ -180,7 +180,7 @@ def singularity_version():
 
     if _singularity_version is None:
         output = subprocess.check_output(
-            ['singularity', '--version']).decode('utf-8')
+            ['singularity', '--version'], bufsize=-1).decode('utf-8')
         m = re.match(r'^([\d.]*).*$', output.split()[-1])
         if m:
             version = m.group(1)
@@ -206,7 +206,7 @@ def singularity_run_help():
         return _singularity_run_help
 
     output = subprocess.check_output(['singularity', 'help',
-                                      'run']).decode('utf-8')
+                                      'run'], bufsize=-1).decode('utf-8')
     return output
 
 
@@ -297,7 +297,7 @@ def _nv_libs_binds():
         return []
 
     out_data = subprocess.check_output(['nvidia-container-cli', 'list',
-                                        '--libraries'])
+                                        '--libraries'], bufsize=-1)
     libs = out_data.decode(locale.getpreferredencoding()).strip().split()
     added_libs = []
     for lib in libs:
@@ -357,7 +357,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             xauthority_tmpfile = f.name
         temps.append(xauthority_tmpfile)
         retcode = subprocess.call(['xauth', 'extract', xauthority_tmpfile,
-                                   os.environ['DISPLAY']])
+                                   os.environ['DISPLAY']], bufsize=-1)
         if retcode == 0:
             config['mounts']['/casa/Xauthority'] = xauthority_tmpfile
             config.setdefault('gui_env', {})

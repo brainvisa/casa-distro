@@ -9,6 +9,7 @@ import os.path as osp
 import platform
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -804,8 +805,7 @@ class BBIDaily:
     def __init__(self,
                  jenkins=None):
         self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(),
-                                             subprocess.check_output(
-                                                 ['hostname']).strip())
+                                             socket.gethostname())
         self.casa_distro_src = osp.expanduser('~/casa_distro/src')
         self.casa_distro = osp.join(self.casa_distro_src, 'bin',
                                     'casa_distro')
@@ -834,7 +834,8 @@ class BBIDaily:
 
     def call_output(self, *args, **kwargs):
         p = subprocess.Popen(*args, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT, **kwargs)
+                             stderr=subprocess.STDOUT, bufsize=-1,
+                             **kwargs)
         output, nothing = p.communicate()
         log = ['-'*40,
                ' '.join("'{}'".format(i) for i in args),
@@ -952,7 +953,8 @@ class BBIDaily:
                                      'name={0}'.format(config['name']),
                                      'cwd={0}/build'.format(
                                          config['directory']),
-                                     'ctest', '--print-labels'])
+                                     'ctest', '--print-labels'],
+                                    bufsize=-1)
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
         tests = {}
         for label in labels:
@@ -970,6 +972,7 @@ class BBIDaily:
                 ] + config.get('ctest_options', []),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                bufsize=-1,
             )
             o, stderr = p.communicate()
             if p.returncode != 0:
