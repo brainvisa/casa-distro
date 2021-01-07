@@ -591,17 +591,10 @@ def create_user_image(
 
     if install:
         # TODO check the return code
-        try:
-            # determine cpu count
-            import joblib  # might not be installed
-            cpu_opt = ['-j%d' % joblib.cpu_count()]
-        except ImportError:
-            cpu_opt = []
-        # make install-runtime hangs somewhere when used with parallel options
         run_container(config=config,
                       command=['make',
                                'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-runtime'],  # + cpu_opt,
+                               'install-runtime'],
                       gui=False,
                       opengl="container",
                       root=False,
@@ -614,7 +607,7 @@ def create_user_image(
         run_container(config=config,
                       command=['make',
                                'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-doc'] + cpu_opt,
+                               'install-doc'],
                       gui=False,
                       opengl="container",
                       root=False,
@@ -627,7 +620,7 @@ def create_user_image(
         run_container(config=config,
                       command=['make',
                                'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-test'] + cpu_opt,
+                               'install-test'],
                       gui=False,
                       opengl="container",
                       root=False,
