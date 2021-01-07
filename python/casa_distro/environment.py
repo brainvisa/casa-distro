@@ -319,53 +319,66 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
     prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
     svn_secret = osp.join(setup_dir, 'conf', 'svn.secret')
-    open(svn_secret, 'w').write(
-        "# This is a shell script that must set the variables SVN_USERNAME\n"
-        "# and SVN_PASSWORD. Do not forget to properly quote the variable\n"
-        "# especially if values contains special characters.\n\n"
-        "SVN_USERNAME='brainvisa'\n"
-        "SVN_PASSWORD='Soma2009'\n")
+    with open(svn_secret, 'w') as f:
+        f.write('''\
+# This is a shell script that must set the variables SVN_USERNAME
+# and SVN_PASSWORD. Do not forget to properly quote the variable
+# especially if values contains special characters.
 
-    print('\n------------------------------------------------------------')
-    print('** WARNING: svn secret **')
-    print('Before using "casa_distro bv_maker" you will have to '
-          'setup svn to access the Biporoj server, which needs a login '
-          'and a password.\n'
-          'There are 2 methods for this, and 2 situations, which we could '
-          'simplify as this:\n\n'
-          '* opensource distro: if you are only using open-source '
-          'projects, you can use the preconfigured "public" '
-          'login/password: brainvisa / Soma2009.\n'
-          'Credentials are stored in the followinf file:\n')
-    print(svn_secret)
-    print('\nYou may leave it as is or replace with your own login/password '
-          'if you need to access restricted resources. Svn will be used '
-          'non-interactively, it will not ask for password confirmation '
-          '/ storage, but will reject any interactive input, including '
-          'commit comments etc.')
-    print('This file is a shell script that must set the variables '
-          'SVN_USERNAME and SVN_PASSWORD. Do not forget to properly quote '
-          'the values if they contains special characters.')
-    print('For instance, the file could contain the two following lines '
-          '(replacing "your_login" and "your_password" by appropriate '
-          'values:\n')
-    print("SVN_USERNAME='your_login'")
-    print("SVN_PASSWORD='your_password'\n")
-    print('If you need more interaction, then remove the svn.secret file, '
-          'and let svn interactively ask you for login/password and store '
-          'it appropriately, like in the following case.\n')
-    print('* brainvisa and other non-totally opensource distros: they '
-          'need a personal login and password. You can either use the '
-          'above svn.secret method (create the file if it doesn\'t exist '
-          'and fill in your information), or let svn interactively ask '
-          'you a login and password, and let it store it the way it suits '
-          'it. In this mode svn is used "directly", without interactive '
-          'restrictions.\n\n')
-    print('Remember also that you can edit and customize the projects to '
-          'be built, by editing the following file:\n')
-    print(osp.join(setup_dir, 'conf', 'bv_maker.cfg'))
-    print('------------------------------------------------------------')
-    print()
+SVN_USERNAME='brainvisa'
+SVN_PASSWORD='Soma2009'
+''')
+
+    print('''
+------------------------------------------------------------------------
+** WARNING: svn secret **
+
+Before using "casa_distro bv_maker" you will have to set up svn to
+access the BioProj server (https://bioproj.extra.cea.fr/), which needs a
+login and a password.
+
+There are two situations, which we could simplify as this:
+
+* opensource distro: if you are only using open-source projects, you can
+  use the public credentials:
+
+    Username: brainvisa
+    Password: Soma2009
+
+* brainvisa and other non-totally opensource distros: they need a
+  personal login and password.
+
+
+Credentials can be handled in two ways, at your choice:
+
+* The svn.secret method (default):
+
+  Credentials are, by default, stored in a file named conf/svn.secret.
+
+  This file is a shell script that must set the variables SVN_USERNAME
+  and SVN_PASSWORD. Do not forget to properly quote the values if they
+  contains special characters For instance, the file could contain the
+  two following lines (replacing "your_login" and "your_password" by
+  appropriate values):
+
+  SVN_USERNAME='your_login'
+  SVN_PASSWORD='your_password'
+
+  CAVEAT: If the svn.secret file exists, SVN will be forced to use
+  non-interactive mode: it will never ask for password confirmation /
+  storage, and it will reject any interactive input, including commit
+  comments, etc.
+
+* If you need more interaction, then remove the svn.secret file and let
+  svn interactively ask you for login/password and store it
+  appropriately.
+------------------------------------------------------------------------
+Remember also that you can edit and customize the projects to
+be built, by editing the following file:
+
+    conf/bv_maker.cfg
+------------------------------------------------------------------------
+''')
 
 
 def iter_distros():
