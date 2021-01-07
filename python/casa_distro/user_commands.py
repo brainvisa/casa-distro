@@ -258,7 +258,8 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
 
             if verbose:
                 print('  full environment:')
-                for line in json.dumps(config, indent=2).split('\n'):
+                for line in json.dumps(config, indent=2,
+                                       separators=(',', ': ')).split('\n'):
                     print('   ', line)
     if json_output:
         json.dump(json_result, sys.stdout)

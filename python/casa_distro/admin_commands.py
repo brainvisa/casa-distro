@@ -372,7 +372,8 @@ def create_base_image(type,
             print('using', build_file, file=verbose)
         print('metadata = ', end='', file=verbose)
         pprint(metadata, stream=verbose, indent=4)
-    json.dump(metadata, open(metadata_output, 'w'), indent=4)
+    json.dump(metadata, open(metadata_output, 'w'),
+              indent=4, separators=(',', ': '))
 
     if container_type == 'vbox':
         module = casa_distro.vbox
@@ -393,7 +394,8 @@ def create_base_image(type,
     elif osp.isfile(output):
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
-        json.dump(metadata, open(metadata_output, 'w'), indent=4)
+        json.dump(metadata, open(metadata_output, 'w'),
+                  indent=4, separators=(',', ': '))
 
 
 @command
@@ -452,7 +454,8 @@ def publish_base_image(type,
     metadata = json.load(open(metadata_file))
     metadata['size'] = os.stat(image).st_size
     metadata['md5'] = file_hash(image)
-    json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    json.dump(metadata, open(metadata_file, 'w'),
+              indent=4, separators=(',', ': '))
 
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                            metadata_file, image,
@@ -499,7 +502,7 @@ def create_user_image(
 
     Parameters
     ----------
-    version
+    version [REQUIRED]
         Version of the release to create.
     name
         default={name_default}
@@ -587,53 +590,58 @@ def create_user_image(
                                    **metadata)
 
     if install:
-        # TODO check the return code
-        try:
-            # determine cpu count
-            import joblib  # might not be installed
-            cpu_opt = ['-j%d' % joblib.cpu_count()]
-        except ImportError:
-            cpu_opt = []
-        # make install-runtime hangs somewhere when used with parallel options
-        run_container(config=config,
-                      command=['make',
-                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-runtime'],  # + cpu_opt,
-                      gui=False,
-                      opengl="auto",
-                      root=False,
-                      cwd='/casa/host/build',
-                      env={},
-                      image=None,
-                      container_options=None,
-                      base_directory=base_directory,
-                      verbose=verbose)
-        run_container(config=config,
-                      command=['make',
-                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-doc'] + cpu_opt,
-                      gui=False,
-                      opengl="auto",
-                      root=False,
-                      cwd='/casa/host/build',
-                      env={},
-                      image=None,
-                      container_options=None,
-                      base_directory=base_directory,
-                      verbose=verbose)
-        run_container(config=config,
-                      command=['make',
-                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-test'] + cpu_opt,
-                      gui=False,
-                      opengl="auto",
-                      root=False,
-                      cwd='/casa/host/build',
-                      env={},
-                      image=None,
-                      container_options=None,
-                      base_directory=base_directory,
-                      verbose=verbose)
+        # todo check the return code
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'install-runtime'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make install-runtime failed, aborting.')
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'install-doc'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make install-doc failed, aborting.')
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'install-test'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make install-test failed, aborting.')
 
     metadata_file = output + '.json'
 
@@ -653,7 +661,8 @@ def create_user_image(
         # Add image file md5 hash to JSON metadata file
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+        json.dump(metadata, open(metadata_file, 'w'),
+                  indent=4, separators=(',', ': '))
 
     if upload:
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \

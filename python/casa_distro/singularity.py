@@ -12,6 +12,8 @@ import shutil
 import subprocess
 import tempfile
 
+from . import six
+
 
 class RecipeBuilder:
 
@@ -180,7 +182,7 @@ def singularity_version():
 
     if _singularity_version is None:
         output = subprocess.check_output(
-            ['singularity', '--version']).decode('utf-8')
+            ['singularity', '--version'], bufsize=-1).decode('utf-8')
         m = re.match(r'^([\d.]*).*$', output.split()[-1])
         if m:
             version = m.group(1)
@@ -206,7 +208,7 @@ def singularity_run_help():
         return _singularity_run_help
 
     output = subprocess.check_output(['singularity', 'help',
-                                      'run']).decode('utf-8')
+                                      'run'], bufsize=-1).decode('utf-8')
     return output
 
 
@@ -297,7 +299,7 @@ def _nv_libs_binds():
         return []
 
     out_data = subprocess.check_output(['nvidia-container-cli', 'list',
-                                        '--libraries'])
+                                        '--libraries'], bufsize=-1)
     libs = out_data.decode(locale.getpreferredencoding()).strip().split()
     added_libs = []
     for lib in libs:
@@ -347,7 +349,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     # This configuration key is always set by
     # casa_distro.environment.run_container
     casa_home_host_path = config['mounts']['/casa/home']
-    if gui:
+    if gui and os.environ.get('DISPLAY'):
         # Use a temporary file for each run, because a single ~/.Xauthority
         # file could be overwritten by concurrent runs... which may not all be
         # using the same X server.
@@ -357,11 +359,16 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             xauthority_tmpfile = f.name
         temps.append(xauthority_tmpfile)
         retcode = subprocess.call(['xauth', 'extract', xauthority_tmpfile,
-                                   os.environ.get('DISPLAY', '')])
+                                   os.environ['DISPLAY']], bufsize=-1)
         if retcode == 0:
             config['mounts']['/casa/Xauthority'] = xauthority_tmpfile
             config.setdefault('gui_env', {})
             config['gui_env']['XAUTHORITY'] = '/casa/Xauthority'
+
+    # Make the host ssh-agent usable in the container
+    if 'SSH_AUTH_SOCK' in os.environ:
+        configured_env['SSH_AUTH_SOCK'] = '/casa/ssh_auth_sock'
+        config['mounts']['/casa/ssh_auth_sock'] = '$SSH_AUTH_SOCK'
 
     home_mount = False
     host_homedir = os.path.expanduser('~')
@@ -399,13 +406,16 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     for name, value in configured_env.items():
         value = value.format(**config)
         value = osp.expandvars(value)
+        value = six.ensure_str(value, locale.getpreferredencoding())
         if name == 'HOME':
             # Allow overriding HOME in configuration. Not recommended, as some
             # functions depend on HOME=/casa/home (e.g. automatic Xauthority).
             # Should we even allow that?
             singularity_home = value
         else:
-            container_env['SINGULARITYENV_' + name] = value
+            singularityenv_name = six.ensure_str('SINGULARITYENV_' + name,
+                                                 locale.getpreferredencoding())
+            container_env[singularityenv_name] = value
     default_casa_home = '/casa/home'
     if singularity_home is None:
         singularity_home = default_casa_home

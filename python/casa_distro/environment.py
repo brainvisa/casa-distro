@@ -9,6 +9,7 @@ import os.path as osp
 import platform
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -235,7 +236,7 @@ def setup_user(setup_dir):
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
-              indent=4)
+              indent=4, separators=(',', ': '))
 
     prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
@@ -313,7 +314,7 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
-              indent=4)
+              indent=4, separators=(',', ': '))
 
     prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
@@ -610,7 +611,8 @@ def update_container_image(container_type, image_name, url, force=False,
         if older_metadata['md5'] == metadata['md5']:
             download_all = False
 
-    json.dump(metadata, open(tmp_metadata_file, 'w'), indent=4)
+    json.dump(metadata, open(tmp_metadata_file, 'w'),
+              indent=4, separators=(',', ': '))
     downloader.download_file(remote_image, image_name,
                              allow_continue=not download_all,
                              use_tmp=True,
@@ -804,8 +806,7 @@ class BBIDaily:
     def __init__(self,
                  jenkins=None):
         self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(),
-                                             subprocess.check_output(
-                                                 ['hostname']).strip())
+                                             socket.gethostname())
         self.casa_distro_src = osp.expanduser('~/casa_distro/src')
         self.casa_distro = osp.join(self.casa_distro_src, 'bin',
                                     'casa_distro')
@@ -834,7 +835,8 @@ class BBIDaily:
 
     def call_output(self, *args, **kwargs):
         p = subprocess.Popen(*args, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT, **kwargs)
+                             stderr=subprocess.STDOUT, bufsize=-1,
+                             **kwargs)
         output, nothing = p.communicate()
         log = ['-'*40,
                ' '.join("'{}'".format(i) for i in args),
@@ -910,27 +912,24 @@ class BBIDaily:
             for command in commands:
                 if test_config['type'] == 'run':
                     command = command.replace('/casa/host/build/bin/bv_env',
-                                              '/casa/host/install/bin/bv_env')
-                result, output = self.call_output([self.casa_distro,
-                                                   'run',
-                                                   'name={0}'.format(
-                                                       test_config['name']),
-                                                   'env=BRAINVISA_'
-                                                   'TEST_RUN_DATA_DIR='
-                                                   '/casa/host/tests/test,'
-                                                   'BRAINVISA_'
-                                                   'TEST_REF_DATA_DIR='
-                                                   '/casa/host/tests/ref',
-                                                   '--',
-                                                   'sh', '-c', command])
+                                              '/casa/install/bin/bv_env')
+                result, output = self.call_output([
+                    self.casa_distro,
+                    'run',
+                    'name={0}'.format(test_config['name']),
+                    'env=BRAINVISA_TEST_RUN_DATA_DIR=/casa/host/tests/test,'
+                    'BRAINVISA_TEST_REF_DATA_DIR=/casa/host/tests/ref',
+                    '--',
+                    'sh', '-c', command
+                ])
                 if result:
                     success = False
                     log.append('FAILED: {0}\n'.format(command))
-                    log.append('-' * 80)
-                    log.append(output)
-                    log.append('=' * 80)
                 else:
                     log.append('SUCCESS: {0}\n'.format(command))
+                log.append('-' * 80)
+                log.append(output)
+                log.append('=' * 80)
             duration = int(1000 * (time.time() - start))
             self.log(environment, test, (0 if success else 1),
                      '\n'.join(log), duration=duration)
@@ -955,7 +954,8 @@ class BBIDaily:
                                      'name={0}'.format(config['name']),
                                      'cwd={0}/build'.format(
                                          config['directory']),
-                                     'ctest', '--print-labels'])
+                                     'ctest', '--print-labels'],
+                                    bufsize=-1)
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
         tests = {}
         for label in labels:
@@ -973,6 +973,7 @@ class BBIDaily:
                 ] + config.get('ctest_options', []),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                bufsize=-1,
             )
             o, stderr = p.communicate()
             if p.returncode != 0:

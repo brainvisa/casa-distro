@@ -18,10 +18,6 @@ set -x  # display commands before running them
 # the casa-run image.
 PY_S=3.6 PY=3.6m /opt/build_sip_pyqt.sh
 
-# Install singularity in the image in order to run tests using
-# singularity-in-singularity.
-/opt/build_singularity_3.sh
-
 
 # Post-install configuration
 sudo ldconfig
