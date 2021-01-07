@@ -81,7 +81,7 @@ There are two environment types:
 environment name
 ================
 
- Identifier for the :ref:`environment`. The *name* has to be unique in a :ref:`repository` and can be used as a shortcut to select a specific environment, once setup and installed: it can replace :ref:`distro`, :ref:`branch`, :ref:`version`, :ref:`system` and :ref:`type <env_type>` to select an existing environment.
+Identifier for the :ref:`environment`. The *name* has to be unique in a :ref:`repository` and can be used as a shortcut to select a specific environment, once setup and installed: it can replace :ref:`distro`, :ref:`branch`, :ref:`version`, :ref:`system` and :ref:`type <env_type>` to select an existing environment.
 
 
  .. _distro:

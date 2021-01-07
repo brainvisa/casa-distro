@@ -56,8 +56,7 @@ def singularity_deb(system,
 
     Parameters
     ----------
-    system
-        Target system. E.g. ubuntu-20.04
+    {system}
 
     output
         default={output_default}
@@ -163,13 +162,18 @@ def download_image(type,
     """
     Download an image from brainvisa.info web site
 
+    Parameters
+    ----------
     type
+        type of image to publish. Either "system" for a base system image, or
+        "run" for an image used in a user environment, or "dev" for a developer
+        image.
     filename
     url
     output
     container_type
     force
-    verbose
+    {verbose}
     """
     verbose = verbose_file(verbose)
 
@@ -223,13 +227,11 @@ def create_base_image(type,
     Parameters
     ----------
     type
-        type of image to create. Either "system" for a base system image, or
+        type of image to publish. Either "system" for a base system image, or
         "run" for an image used in a user environment, or "dev" for a developer
         image.
 
-    name
-        default={name_default}
-        name of the virtual image (no other image must have the same name).
+    {name}
 
     base
         Source file use to buld the image. The default value depends on image
@@ -237,15 +239,18 @@ def create_base_image(type,
 
     output
         default={output_default}
+
         File location where the image is created.
 
     container_type
         default={container_type_default}
+
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
 
     memory
         default={memory_default}
+
         For vbox container type only. Size in MiB of memory allocated for
         virtual machine.
 
@@ -256,6 +261,7 @@ def create_base_image(type,
 
     gui
         default={gui_default}
+
         For vbox container type only. If value is "yes", "true" or "1", display
         VirtualBox window.
 
@@ -271,12 +277,10 @@ def create_base_image(type,
     force
         default={force_default}
 
-        If "yes", "true" or 1, erase existing image without asking any
+        If ``yes``, ``true`` or 1, erase existing image without asking any
         question.
 
-    verbose
-        default={verbose_default}
-        Print more detailed information if value is "yes", "true" or "1".
+    {verbose}
 
     """
     verbose = verbose_file(verbose)
@@ -415,18 +419,14 @@ def publish_base_image(type,
         "run" for an image used in a user environment, or "dev" for a developer
         image.
 
-    image
-        default={image_default}
-        Image file to upload (as well as the corresponding JSON file)
+    {image}
 
     container_type
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
 
-    verbose
-        default={verbose_default}
-        Print more detailed information if value is "yes", "true" or "1".
+    {verbose}
 
     """
     verbose = verbose_file(verbose)
@@ -510,12 +510,9 @@ def create_user_image(
     base_image
         default={base_image_default}
         Name of the "run" image used to generate the new user image
-    distro
-        If given, select dev environment having the given distro name.
-    branch
-        If given, select dev environment having the given branch name.
-    system
-        If given, select dev environments having the given system name.
+    {distro}
+    {branch}
+    {system}
     environment_name
         If given, select dev environment by its name.
     container_type
@@ -526,9 +523,7 @@ def create_user_image(
         default={force_default}
         If "yes", "true" or 1, erase existing image without asking any
         question.
-    base_directory
-        default={base_directory_default}
-        Directory where images and environments are stored
+    {base_directory}
     install
         default={install_default}
         If "true", "yes" or "1", perform the installation step.
@@ -541,9 +536,7 @@ def create_user_image(
         default={upload_default}
         If "true", "yes" or "1", upload the image on BrainVISA web site.
         If "false", "no" or "0", skip this step
-    verbose
-        default={verbose_default}
-        Print more detailed information if value is "yes", "true" or "1".
+    {verbose}
 
     """
     install = check_boolean('install', install)

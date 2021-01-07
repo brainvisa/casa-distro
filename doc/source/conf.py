@@ -282,3 +282,10 @@ extlinks = {
 help = subprocess.check_output(['casa_distro', 'help', 'format=rst', 'full=1'])
 with open('casa_distro_command_help.rst', 'w') as f:
     f.write(help.decode('utf-8'))
+help = subprocess.check_output(['casa_distro_admin', 'help', 'format=rst',
+                                'full=1'])
+with open('casa_distro_admin_command_help.rst', 'w') as f:
+    f.write(help.decode('utf-8'))
+help = subprocess.check_output(['bv', '-h'])
+with open('bv_command_help.rst', 'w') as f:
+    f.write(help.decode('utf-8'))

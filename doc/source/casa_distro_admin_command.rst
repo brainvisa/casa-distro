@@ -4,6 +4,12 @@ The casa_distro_admin command
 
 Creation and publication of casa-distro releases and conainer images.
 
+.. include:: casa_distro_admin_command_help.rst
+
+
+Images and releases creation
+============================
+
 .. Distribution creation
 .. +++++++++++++++++++++
 ..
@@ -49,56 +55,6 @@ The base VirtualBox image is a minimal configuration of a system image downloade
 8) Download and install VirtualBox guest additions
 9) Shut down the VM
 10) Configure the VM in VirualBox (especially 3D acceleration, processors and memory)
-
-
-
-Subcommands
-===========
-
-help
-----
-Print global help or help about a command.
-
-
-download_image
---------------
-
-Download an image from brainvisa.info web site
-
-type
-filename
-url
-output
-container_type
-force
-verbose
-
-
-create_base_image
------------------
-
-Create a new virtual image
-
-publish_base_image
-------------------
-
-Upload an image to BrainVISA web site.
-
-create_user_image
------------------
-
-Create a run image given a development environment.
-The development environment is selected among existing ones its
-distro and system or simply by its name. Only developement environments
-using the master branch are considered.
-This command can perform three steps. Each step can be ignored by setting
-the corresponding option to "no" :
-
-- install: perform an installation of the development environment into its installation directory. This modify the development environment by updating its installation directory.
-
-- generate: generate a new image for the run environment. The ne image is based on base_image and the installation directory of the development environment is copied into the image in /casa/install.
-
-- upload: upload the run image on BrainVISA web site.
 
 
 Managing container images
