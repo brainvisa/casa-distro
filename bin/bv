@@ -125,7 +125,7 @@ else:
 if not command:
     command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
 
-host_command = [casa_distro, 'run',
+host_command = [sys.executable, casa_distro, 'run',
                 'base_directory={}'.format(environment_dir)]
 host_command += command
 
