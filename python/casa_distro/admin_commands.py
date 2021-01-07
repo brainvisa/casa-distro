@@ -372,7 +372,8 @@ def create_base_image(type,
             print('using', build_file, file=verbose)
         print('metadata = ', end='', file=verbose)
         pprint(metadata, stream=verbose, indent=4)
-    json.dump(metadata, open(metadata_output, 'w'), indent=4)
+    json.dump(metadata, open(metadata_output, 'w'),
+              indent=4, separators=(',', ': '))
 
     if container_type == 'vbox':
         module = casa_distro.vbox
@@ -393,7 +394,8 @@ def create_base_image(type,
     elif osp.isfile(output):
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
-        json.dump(metadata, open(metadata_output, 'w'), indent=4)
+        json.dump(metadata, open(metadata_output, 'w'),
+                  indent=4, separators=(',', ': '))
 
 
 @command
@@ -452,7 +454,8 @@ def publish_base_image(type,
     metadata = json.load(open(metadata_file))
     metadata['size'] = os.stat(image).st_size
     metadata['md5'] = file_hash(image)
-    json.dump(metadata, open(metadata_file, 'w'), indent=4)
+    json.dump(metadata, open(metadata_file, 'w'),
+              indent=4, separators=(',', ': '))
 
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                            metadata_file, image,
@@ -653,7 +656,8 @@ def create_user_image(
         # Add image file md5 hash to JSON metadata file
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
-        json.dump(metadata, open(metadata_file, 'w'), indent=4)
+        json.dump(metadata, open(metadata_file, 'w'),
+                  indent=4, separators=(',', ': '))
 
     if upload:
         url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \

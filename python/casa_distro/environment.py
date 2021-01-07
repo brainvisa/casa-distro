@@ -236,7 +236,7 @@ def setup_user(setup_dir):
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
-              indent=4)
+              indent=4, separators=(',', ': '))
 
     prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
@@ -314,7 +314,7 @@ def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
-              indent=4)
+              indent=4, separators=(',', ': '))
 
     prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
@@ -611,7 +611,8 @@ def update_container_image(container_type, image_name, url, force=False,
         if older_metadata['md5'] == metadata['md5']:
             download_all = False
 
-    json.dump(metadata, open(tmp_metadata_file, 'w'), indent=4)
+    json.dump(metadata, open(tmp_metadata_file, 'w'),
+              indent=4, separators=(',', ': '))
     downloader.download_file(remote_image, image_name,
                              allow_continue=not download_all,
                              use_tmp=True,
