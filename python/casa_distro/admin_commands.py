@@ -590,46 +590,58 @@ def create_user_image(
                                    **metadata)
 
     if install:
-        # TODO check the return code
-        run_container(config=config,
-                      command=['make',
-                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-runtime'],
-                      gui=False,
-                      opengl="container",
-                      root=False,
-                      cwd='/casa/host/build',
-                      env={},
-                      image=None,
-                      container_options=None,
-                      base_directory=base_directory,
-                      verbose=verbose)
-        run_container(config=config,
-                      command=['make',
-                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-doc'],
-                      gui=False,
-                      opengl="container",
-                      root=False,
-                      cwd='/casa/host/build',
-                      env={},
-                      image=None,
-                      container_options=None,
-                      base_directory=base_directory,
-                      verbose=verbose)
-        run_container(config=config,
-                      command=['make',
-                               'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                               'install-test'],
-                      gui=False,
-                      opengl="container",
-                      root=False,
-                      cwd='/casa/host/build',
-                      env={},
-                      image=None,
-                      container_options=None,
-                      base_directory=base_directory,
-                      verbose=verbose)
+        # todo check the return code
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'install-runtime'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make install-runtime failed, aborting.')
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'install-doc'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make install-doc failed, aborting.')
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'install-test'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make install-test failed, aborting.')
 
     metadata_file = output + '.json'
 
