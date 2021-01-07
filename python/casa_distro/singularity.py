@@ -12,6 +12,8 @@ import shutil
 import subprocess
 import tempfile
 
+from . import six
+
 
 class RecipeBuilder:
 
@@ -404,13 +406,16 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     for name, value in configured_env.items():
         value = value.format(**config)
         value = osp.expandvars(value)
+        value = six.ensure_str(value, locale.getpreferredencoding())
         if name == 'HOME':
             # Allow overriding HOME in configuration. Not recommended, as some
             # functions depend on HOME=/casa/home (e.g. automatic Xauthority).
             # Should we even allow that?
             singularity_home = value
         else:
-            container_env['SINGULARITYENV_' + name] = value
+            singularityenv_name = six.ensure_str('SINGULARITYENV_' + name,
+                                                 locale.getpreferredencoding())
+            container_env[singularityenv_name] = value
     default_casa_home = '/casa/home'
     if singularity_home is None:
         singularity_home = default_casa_home
