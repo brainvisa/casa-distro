@@ -502,7 +502,7 @@ def create_user_image(
 
     Parameters
     ----------
-    version
+    version [REQUIRED]
         Version of the release to create.
     name
         default={name_default}
