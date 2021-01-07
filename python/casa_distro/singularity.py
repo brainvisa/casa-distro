@@ -363,6 +363,11 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             config.setdefault('gui_env', {})
             config['gui_env']['XAUTHORITY'] = '/casa/Xauthority'
 
+    # Make the host ssh-agent usable in the container
+    if 'SSH_AUTH_SOCK' in os.environ:
+        configured_env['SSH_AUTH_SOCK'] = '/casa/ssh_auth_sock'
+        config['mounts']['/casa/ssh_auth_sock'] = '$SSH_AUTH_SOCK'
+
     home_mount = False
     host_homedir = os.path.expanduser('~')
     for dest, source in config.get('mounts', {}).items():
