@@ -912,7 +912,7 @@ class BBIDaily:
             for command in commands:
                 if test_config['type'] == 'run':
                     command = command.replace('/casa/host/build/bin/bv_env',
-                                              '/casa/host/install/bin/bv_env')
+                                              '/casa/install/bin/bv_env')
                 result, output = self.call_output([
                     self.casa_distro,
                     'run',
