@@ -911,26 +911,23 @@ class BBIDaily:
                 if test_config['type'] == 'run':
                     command = command.replace('/casa/host/build/bin/bv_env',
                                               '/casa/host/install/bin/bv_env')
-                result, output = self.call_output([self.casa_distro,
-                                                   'run',
-                                                   'name={0}'.format(
-                                                       test_config['name']),
-                                                   'env=BRAINVISA_'
-                                                   'TEST_RUN_DATA_DIR='
-                                                   '/casa/host/tests/test,'
-                                                   'BRAINVISA_'
-                                                   'TEST_REF_DATA_DIR='
-                                                   '/casa/host/tests/ref',
-                                                   '--',
-                                                   'sh', '-c', command])
+                result, output = self.call_output([
+                    self.casa_distro,
+                    'run',
+                    'name={0}'.format(test_config['name']),
+                    'env=BRAINVISA_TEST_RUN_DATA_DIR=/casa/host/tests/test,'
+                    'BRAINVISA_TEST_REF_DATA_DIR=/casa/host/tests/ref',
+                    '--',
+                    'sh', '-c', command
+                ])
                 if result:
                     success = False
                     log.append('FAILED: {0}\n'.format(command))
-                    log.append('-' * 80)
-                    log.append(output)
-                    log.append('=' * 80)
                 else:
                     log.append('SUCCESS: {0}\n'.format(command))
+                log.append('-' * 80)
+                log.append(output)
+                log.append('=' * 80)
             duration = int(1000 * (time.time() - start))
             self.log(environment, test, (0 if success else 1),
                      '\n'.join(log), duration=duration)
