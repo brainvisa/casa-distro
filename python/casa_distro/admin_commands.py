@@ -479,6 +479,8 @@ def create_user_image(
         force='no',
         base_directory=casa_distro_directory(),
         install='yes',
+        install_doc='yes',
+        install_test='yes',
         generate='yes',
         upload='no',
         verbose=True):
@@ -526,7 +528,20 @@ def create_user_image(
     {base_directory}
     install
         default={install_default}
-        If "true", "yes" or "1", perform the installation step.
+        If "true", "yes" or "1", perform the installation steps:
+        'make install-runtime', as well as 'make install-doc' and
+        'make install-test', depending on the install_doc and install_test
+        parameters.
+        If "false", "no" or "0", skip all installation steps
+    install_doc
+        default={install_doc_default}
+        If "true", "yes" or "1", run 'make install-doc' as part of the install
+        step.
+        If "false", "no" or "0", skip this step
+    install_test
+        default={install_test_default}
+        If "true", "yes" or "1", run 'make install-test' as part of the install
+        step.
         If "false", "no" or "0", skip this step
     generate
         default={generate_default}
@@ -540,6 +555,8 @@ def create_user_image(
 
     """
     install = check_boolean('install', install)
+    install_doc = check_boolean('install_doc', install_doc)
+    install_test = check_boolean('install_test', install_test)
     generate = check_boolean('generate', generate)
     upload = check_boolean('upload', upload)
 
@@ -583,7 +600,6 @@ def create_user_image(
                                    **metadata)
 
     if install:
-        # todo check the return code
         retcode = run_container(
             config=config,
             command=['make',
@@ -601,6 +617,7 @@ def create_user_image(
         )
         if retcode != 0:
             sys.exit('make install-runtime failed, aborting.')
+    if install and install_doc:
         retcode = run_container(
             config=config,
             command=['make',
@@ -618,6 +635,7 @@ def create_user_image(
         )
         if retcode != 0:
             sys.exit('make install-doc failed, aborting.')
+    if install and install_test:
         retcode = run_container(
             config=config,
             command=['make',
