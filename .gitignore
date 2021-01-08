@@ -40,6 +40,11 @@ coverage.xml
 # Sphinx documentation
 _build/
 
+/doc/source/bv_command_help.rst
+/doc/source/casa_distro_admin_command_help.rst
+/doc/source/casa_distro_command_help.rst
+
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
