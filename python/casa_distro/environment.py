@@ -1007,7 +1007,9 @@ class BBIDaily:
                 tests[label] = commands
         return tests
 
-    def update_user_image(self, user_config, dev_config):
+    def update_user_image(self, user_config, dev_config,
+                          install_doc=True,
+                          install_test=True):
         environment = user_config['name']
         if self.jenkins:
             if not self.jenkins.job_exists(environment):
@@ -1017,13 +1019,15 @@ class BBIDaily:
         image = user_config['image']
         if osp.exists(image):
             os.remove(image)
-        result, log = self.call_output([self.casa_distro_admin,
-                                        'create_user_image',
-                                        'version={0}'.format(
-                                            user_config['version']),
-                                        'environment_name={0}'.format(
-                                            dev_config['name']),
-                                        'force=yes'])
+        result, log = self.call_output([
+            self.casa_distro_admin,
+            'create_user_image',
+            'version={0}'.format(user_config['version']),
+            'environment_name={0}'.format(dev_config['name']),
+            'force=yes',
+            'install_doc=' + str(install_doc),
+            'install_test=' + str(install_test),
+        ])
         duration = int(1000 * (time.time() - start))
         self.log(user_config['name'], 'update user image', result, log,
                  duration=duration)

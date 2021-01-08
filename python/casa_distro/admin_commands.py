@@ -863,7 +863,11 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
             if dev_config['name'] in failed_dev_configs:
                 continue
             if update_user_images:
-                if bbi_daily.update_user_image(config, dev_config):
+                success = bbi_daily.update_user_image(
+                    config, dev_config,
+                    install_doc='doc' in bv_maker_steps,
+                )
+                if success:
                     succesful_tasks.append('{0}: update user image'.format(
                         config['name']))
                 else:
