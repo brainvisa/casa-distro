@@ -553,7 +553,7 @@ def update_container_image(container_type, image_name, url, force=False,
     image_name: str
         image filename (full path)
     url: str
-        pattern ('http://brainvisa.info/casa-distro/{container_type}')
+        pattern (e.g. 'https://brainvisa.info/download/{container_type}')
     force: bool
         download image even if it seems up-to-date
     verbose: file

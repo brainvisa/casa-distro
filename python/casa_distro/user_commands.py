@@ -341,7 +341,7 @@ def run(type=None, distro=None, branch=None, system=None,
 @command
 def pull_image(distro=None, branch=None, system=None, name=None, type=None,
                image='*', base_directory=casa_distro_directory(),
-               url=default_download_url + '/{container_type}',
+               url=default_download_url,
                force=False, verbose=None):
     '''Update the container images. By default all images that are used by at
     least one environment are updated. There are two ways of selecting the

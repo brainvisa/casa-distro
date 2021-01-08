@@ -10,6 +10,7 @@ import os.path as osp
 import re
 import sys
 
+from casa_distro.defaults import publish_url
 from casa_distro.info import __version__
 from casa_distro.log import boolean_value
 from casa_distro import six
@@ -151,6 +152,7 @@ def get_doc(command, indent='', format='text'):
     help_vars = dict(executable=executable,
                      casa_version=__version__,
                      base_directory_default=base_directory_default,
+                     publish_url=publish_url,
                      indent='    ')
     help_vars.update(defaults)
     help_vars['base_directory_default'] = base_directory_default

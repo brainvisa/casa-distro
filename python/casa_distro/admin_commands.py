@@ -17,7 +17,8 @@ import traceback
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
-                                  default_download_url)
+                                  default_download_url,
+                                  publish_url)
 from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
@@ -153,7 +154,7 @@ mv singularity-container*.deb /tmp/singularity-container-$SYSTEM-x86_64.deb
 @command
 def download_image(type,
                    filename='casa-{type}-*.{extension}',
-                   url=default_download_url + '/{container_type}',
+                   url=default_download_url,
                    output=osp.join(
                        default_base_directory, '{filename}'),
                    container_type='singularity',
@@ -410,6 +411,15 @@ def publish_base_image(type,
                        container_type='singularity',
                        verbose=True):
     """Upload an image to BrainVISA web site.
+    Upload is done with rsync in the following remote directory:
+
+      {publish_url}
+
+    This directory location can be customized with
+    the following environment variables:
+        BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+        BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+        BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
 
     Parameters
     ----------
@@ -458,9 +468,7 @@ def publish_base_image(type,
               indent=4, separators=(',', ': '))
 
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                           metadata_file, image,
-                           'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
-                           % container_type])
+                           metadata_file, image, publish_url])
 
 
 @command
@@ -551,6 +559,15 @@ def create_user_image(
         default={upload_default}
         If "true", "yes" or "1", upload the image on BrainVISA web site.
         If "false", "no" or "0", skip this step
+        Upload is done with rsync in the following remote directory:
+
+          {publish_url}
+
+        This directory location can be customized with
+        the following environment variables:
+          BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+          BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+          BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
     {verbose}
 
     """
@@ -676,10 +693,8 @@ def create_user_image(
                   indent=4, separators=(',', ': '))
 
     if upload:
-        url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
-            '{container_type}'.format(**metadata)
         subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                               metadata_file, output, url])
+                               metadata_file, output, publish_url])
 
 
 @command
