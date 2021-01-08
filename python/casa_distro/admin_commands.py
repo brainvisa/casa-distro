@@ -17,7 +17,10 @@ import traceback
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
-                                  default_download_url)
+                                  default_download_url,
+                                  publish_server,
+                                  publish_login,
+                                  publish_dir)
 from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
@@ -153,7 +156,7 @@ mv singularity-container*.deb /tmp/singularity-container-$SYSTEM-x86_64.deb
 @command
 def download_image(type,
                    filename='casa-{type}-*.{extension}',
-                   url=default_download_url + '/{container_type}',
+                   url=default_download_url,
                    output=osp.join(
                        default_base_directory, '{filename}'),
                    container_type='singularity',
@@ -457,10 +460,12 @@ def publish_base_image(type,
     json.dump(metadata, open(metadata_file, 'w'),
               indent=4, separators=(',', ': '))
 
-    subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                           metadata_file, image,
-                           'brainvisa@brainvisa.info:prod/www/casa-distro/%s/'
-                           % container_type])
+    subprocess.check_call([
+        'rsync', '-P', '--progress', '--chmod=a+r', metadata_file, image,
+        '{publish_login}@{publish_server}:{publish_dir}/'.format(
+            publish_login=publish_login,
+            publish_server=publish_server,
+            publish_dir=publish_dir)])
 
 
 @command
@@ -676,8 +681,10 @@ def create_user_image(
                   indent=4, separators=(',', ': '))
 
     if upload:
-        url = 'brainvisa@brainvisa.info:prod/www/casa-distro/releases/' \
-            '{container_type}'.format(**metadata)
+        url = '{publish_login}@{publish_server}:{publish_dir}/'.format(
+            publish_login=publish_login,
+            publish_server=publish_server,
+            publish_dir=publish_dir)])
         subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                                metadata_file, output, url])
 
