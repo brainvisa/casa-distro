@@ -313,13 +313,16 @@ brainvisa_other_dependencies=(
     # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
     # displayed at the start of each executable.
     libqt5sql5-sqlite
+    # mcverter command of mriconvert has a dependency on libpng. This makes it
+    # difficult to be mounted and used from a host directory when there is a
+    # version mismatch for that library.
+    mriconvert
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run
 brainvisa_test_dependencies=(
     cmake  # BrainVISA tests are driven by ctest
 )
-
 
 ###############################################################################
 # Install build dependencies that are necessary for install_pip_dependencies.sh
