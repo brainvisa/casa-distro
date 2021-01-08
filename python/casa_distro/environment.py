@@ -820,7 +820,8 @@ class BBIDaily:
                  jenkins=None):
         self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(),
                                              socket.gethostname())
-        self.casa_distro_src = osp.expanduser('~/casa_distro/src')
+        self.casa_distro_src = osp.dirname(osp.dirname(
+            osp.dirname(__file__)))
         self.casa_distro = osp.join(self.casa_distro_src, 'bin',
                                     'casa_distro')
         self.casa_distro_admin = self.casa_distro + '_admin'
