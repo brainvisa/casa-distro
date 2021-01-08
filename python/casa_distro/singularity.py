@@ -77,14 +77,18 @@ def iter_images(base_directory):
             yield filename
 
 
-def _singularity_build_command(cleanup=True, force=False):
-    build_command = ['sudo']
-    if 'SINGULARITY_TMPDIR' in os.environ:
-        build_command += ['SINGULARITY_TMPDIR='
-                          + os.environ['SINGULARITY_TMPDIR']]
-    if 'TMPDIR' in os.environ:
-        build_command += ['TMPDIR=' + os.environ['TMPDIR']]
+def _singularity_build_command(cleanup=True, force=False, fakeroot=False):
+    build_command = []
+    if not fakeroot:
+        build_command += ['sudo']
+        if 'SINGULARITY_TMPDIR' in os.environ:
+            build_command += ['SINGULARITY_TMPDIR='
+                              + os.environ['SINGULARITY_TMPDIR']]
+        if 'TMPDIR' in os.environ:
+            build_command += ['TMPDIR=' + os.environ['TMPDIR']]
     build_command += ['singularity', 'build', '--disable-cache']
+    if fakeroot:
+        build_command += ['--fakeroot']
     if not cleanup:
         build_command.append('--no-cleanup')
     if force:
@@ -166,7 +170,7 @@ def create_user_image(base_image,
         print(open(recipe.name).read(), file=verbose)
         print('----------------------------------------', file=verbose)
         verbose.flush()
-    build_command = _singularity_build_command(force=force)
+    build_command = _singularity_build_command(force=force, fakeroot=True)
     subprocess.check_call(build_command + [output, recipe.name])
 
 
