@@ -5,7 +5,7 @@
 # from the svn.secret shell script, which is configurable by the user of
 # casa-distro.
 
-. /casa/conf/svn.secret || exit 1
+. /casa/host/conf/svn.secret || exit 1
 
 if [ -z "$SVN_USERNAME" ]; then
     echo 'No SVN_USERNAME variable was found in svn.secret' >&2

@@ -1,0 +1,7 @@
+{
+    "casa_distro_compatibility": "3.0",
+    "name": "web",
+    "description": "Distro for building brainvisa.info website.",
+    "systems": ["ubuntu-18.04"],
+    "container_image": "casa-dev-{system}"
+}

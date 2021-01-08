@@ -3,7 +3,6 @@ from __future__ import absolute_import, print_function
 
 import os
 import sys
-from glob import glob
 from setuptools import find_packages, setup
 
 packages = find_packages('python')
@@ -22,10 +21,18 @@ distro_dir = os.path.join(here, 'share', 'distro')
 data_files = []
 for base, dirs, files in os.walk(distro_dir):
     if files:
-        #data_files.extend(os.path.join(base[len(here)+1:],i) for i in files)
-        data_files.append([os.path.join('lib', 'python%d.%d' % sys.version_info[:2], 'site-packages', 'casa_distro', 'share', 'distro', base[len(distro_dir)+1:]), [os.path.join(base[len(here)+1:],i) for i in files]])    
-from pprint import pprint
-pprint(data_files)
+        # data_files.extend(os.path.join(base[len(here)+1:],i) for i in files)
+        data_files.append([
+            os.path.join(
+                'lib', 'python%d.%d' % sys.version_info[:2],
+                'site-packages', 'casa_distro',
+                'share', 'distro',
+                base[len(distro_dir) + 1:]
+            ),
+            [os.path.join(base[len(here) + 1:], i) for i in files]
+        ])
+# from pprint import pprint
+# pprint(data_files)
 
 setup(
     name=release_info['NAME'],

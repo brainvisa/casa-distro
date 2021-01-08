@@ -1,7 +1,0 @@
-dependencies:
-    - ../../casa-dev
-image_sources:
-  - name: cati_platform
-    tags:
-      - ubuntu-18.04
-    visibility: public

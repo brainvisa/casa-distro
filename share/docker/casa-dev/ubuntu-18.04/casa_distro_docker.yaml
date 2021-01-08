@@ -1,5 +1,5 @@
 dependencies:
-    - ../../casa-test
+    - ../../casa-run
 image_sources:
   - name: casa-dev
     tags:

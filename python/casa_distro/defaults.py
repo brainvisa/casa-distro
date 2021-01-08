@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
+
 import os
 import os.path as osp
 
-default_build_workflow_repository = os.environ.get('CASA_DEFAULT_REPOSITORY')
-if not default_build_workflow_repository:
-    default_build_workflow_repository = osp.expanduser('~/casa_distro')
-default_repository_server = 'brainvisa.info'
-default_repository_server_directory = 'prod/www/casa-distro'
-default_download_url = 'http://%s/casa-distro'  % default_repository_server
-default_repository_login = 'brainvisa'
-default_distro = 'opensource'
-default_branch = 'latest_release'
-default_system = 'ubuntu-12.04'
+default_base_directory = os.environ.get('CASA_BASE_DIRECTORY')
+if not default_base_directory:
+    default_base_directory = osp.expanduser('~/casa_distro')
+
+publish_server = os.environ.get('BRAINVISA_PUBLISH_SERVER', 'brainvisa.info')
+publish_login = os.environ.get('BRAINVISA_PUBLISH_LOGIN', 'brainvisa')
+publish_dir = os.environ.get('BRAINVISA_PUBLISH_DIR',
+                             '/var/www/html/brainvisa.info_download')
+publish_url = '{publish_login}@{publish_server}:{publish_dir}/'.format(
+      publish_login=publish_login,
+      publish_server=publish_server,
+      publish_dir=publish_dir)
+default_download_url = 'https://{}/download'.format(publish_server)

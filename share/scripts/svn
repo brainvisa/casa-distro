@@ -16,5 +16,9 @@ for i in "$@"; do
   fi
 done
 
-. "$CASA_CONF/$secret"
-exec /usr/bin/svn --non-interactive --username "$SVN_USERNAME" --password "$SVN_PASSWORD" "${args[@]}"
+if [ -f "$CASA_CONF/$secret" ]; then
+  . "$CASA_CONF/$secret"
+  exec /usr/bin/svn --non-interactive --username "$SVN_USERNAME" --password "$SVN_PASSWORD" "${args[@]}"
+else
+  exec /usr/bin/svn "${args[@]}"
+fi

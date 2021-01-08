@@ -14,8 +14,8 @@ if osp.exists(osp.join(ppath, 'casa_distro', '__init__.py')):
     sys.path.insert(0, ppath)
 del ppath
 
-from casa_distro.command import main
-from casa_distro import user_commands
+from casa_distro.command import main  # noqa: E402
+from casa_distro import user_commands  # noqa: F401, E402
 
 tmp_share = None
 try:

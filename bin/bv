@@ -1,0 +1,169 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function
+
+import glob
+import os
+import os.path as osp
+import signal
+import subprocess
+import sys
+
+
+def find_in_path(command):
+    path = os.environ.get('PATH', os.defpath)
+    if not path:
+        return None
+    path = path.split(os.pathsep)
+
+    seen = set()
+    for dir in path:
+        normdir = os.path.normcase(dir)
+        if normdir not in seen:
+            seen.add(normdir)
+            name = os.path.join(dir, command)
+            if (osp.exists(name)
+                    and os.access(name, os.F_OK | os.X_OK)
+                    and not osp.isdir(name)):
+                return name
+    return None
+
+
+def failure(message):
+    print('ERROR:', message, file=sys.stderr)
+    sys.exit(1)
+
+
+help = False
+verbose = None
+
+if osp.basename(sys.argv[0]) != 'bv':
+    # we are invoked as another name from 'bv': we are obviously a symlink to
+    # the bv script. In that situation we should:
+    # - use the name we have been invoked as as the command to run in the
+    #   container, as if called as "bv otherprogram"
+    # - dereference the symlink to get the actual bv script in sys.argv[0]
+    #   because we will use its path to find out the environment dir
+    sys.argv.insert(1, osp.basename(sys.argv[0]))
+    if osp.islink(sys.argv[0]):
+        bv = os.readlink(sys.argv[0])
+        if not osp.isabs(bv):
+            bv = osp.join(osp.dirname(sys.argv[0]), bv)
+        sys.argv[0] = bv
+
+i = 1
+while i < len(sys.argv):
+    option = sys.argv[i]
+    if option in ('-h', '--help'):
+        help = True
+    elif option in ('-v', '--verbose'):
+        verbose = sys.stdout
+    else:
+        break
+    i += 1
+command = sys.argv[i:]
+
+
+if help:
+    print('''usage: bv [-h] [-v] [command...]
+
+Command used to start any BrainVISA related program.
+
+Used without parameter, it starts a graphical interface
+allowing the configuration of the environment.
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -v, --verbose
+
+Currently bv is just a shorthand to the "casa_distro run" command, and follows
+the same syntax and options. In the future it will change to more
+"conventional" arguments syntax (say, "--opengl container" instead of
+"opengl=container").
+
+See the doc in casa_distro::
+
+    casa_distro help run
+''')
+    sys.exit()
+
+
+environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
+if environment_dir:
+    environment_dir = osp.normpath(environment_dir)
+else:
+    bv = osp.normpath(osp.abspath(sys.argv[0]))
+    real_bv = osp.realpath(bv)
+    guess_environments = [osp.dirname(osp.dirname(bv))]
+    guess_environment = osp.dirname(osp.dirname(real_bv))
+    for i in range(5):
+        guess_environments.append(guess_environment)
+        parent = osp.dirname(guess_environment)
+        if parent == guess_environment:
+            break
+        guess_environment = parent
+    for environment_dir in guess_environments:
+        if (osp.exists(osp.join(environment_dir, 'host', 'conf',
+                                'casa_distro.json'))
+            or osp.exists(osp.join(environment_dir, 'conf',
+                                   'casa_distro.json'))):
+            break
+    else:
+        failure('Cannot find execution environment')
+
+casa_distro = None
+for i in (('host', 'src', 'development', 'casa-distro', '*'),
+          ('src', 'development', 'casa-distro', '*'),
+          ('host', 'src', 'development', 'casa-distro'),
+          ('src', 'development', 'casa-distro'),
+          ('host', 'src', 'casa-distro'),
+          ('src', 'casa-distro'),
+          ('casa-distro',)):
+    for casa_distro_src in glob.glob(osp.join(environment_dir, *i)):
+        if osp.exists(osp.join(casa_distro_src, 'python', 'casa_distro',
+                               '__init__.py')):
+            casa_distro = osp.join(casa_distro_src, 'bin', 'casa_distro')
+            break
+    if casa_distro:
+        break
+else:
+    casa_distro = find_in_path('casa_distro')
+    if not casa_distro:
+        failure('Cannot find casa_distro executable')
+
+if not command:
+    command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
+
+host_command = [sys.executable, casa_distro, 'run',
+                'base_directory={}'.format(environment_dir)]
+host_command += command
+
+if verbose:
+    print('Environment directory =', environment_dir, file=verbose)
+    print('casa_distro executable =', casa_distro, file=verbose)
+    print('Container command =', ' '.join("'{}'".format(i) for i in command))
+    print('Host command =', ' '.join("'{}'".format(i) for i in host_command))
+
+# universal_newlines is a weird name for requesting conversion to text
+try:
+    output = subprocess.check_output([casa_distro, '--version'],
+                                     stderr=subprocess.STDOUT,
+                                     bufsize=-1,
+                                     universal_newlines=True)
+except subprocess.CalledProcessError as exc:
+    failure('{} failed with the following message:\n{}'
+            .format(casa_distro, exc.output))
+s = output.split()
+if not s:
+    version = 'unknown'
+else:
+    version = s[-1]
+if not version.startswith('3.'):
+    failure('Invalid version for {}: {}'.format(casa_distro, output))
+
+# Avoid displaying a stack trace if the child command is interrupted with
+# Ctrl+C
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+retcode = subprocess.call(host_command)
+sys.exit(retcode)

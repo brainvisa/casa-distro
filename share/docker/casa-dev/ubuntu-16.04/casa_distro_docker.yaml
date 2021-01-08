@@ -1,7 +1,0 @@
-dependencies:
-    - ../../casa-test
-image_sources:
-  - name: casa-dev
-    tags:
-      - ubuntu-16.04
-    visibility: public

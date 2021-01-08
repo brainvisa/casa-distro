@@ -1,0 +1,235 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
+import os
+import sys
+import shutil
+import glob
+from casa_distro.info import __version__
+osp = os.path
+
+
+def build_win_run_script(out_file, container_bin_dir):
+    # (windows has no native singularity implementation, for now)
+    # build windows .bat script for windows hosts
+    exe = osp.basename(out_file)
+    win_dir = osp.join(osp.dirname(osp.dirname(out_file)), 'win_bin')
+    out_file = osp.join(win_dir, exe + '.bat')
+    # print(out_file)
+    with open(out_file, 'w') as f:
+        os.chmod(out_file, 0o755)
+        print(r'''@setlocal
+@set bin_directory="%~d0%~p0"
+@set command="%~n0.exe"
+@set host_dir=
+@set casa_env_dir="%bin_directory%\..\.."
+@for %%F in ("%casa_env_dir%) do set casa_env_name=%%~nF
+@set container_dir="/casa/{bin_dir}"
+@set casa_distro_dir="%casa_env_dir%\.."
+@set host_container_dir="%casa_env_dir%\{bin_dir}"
+@set casa_distro="%host_container_dir%\casa_distro"
+@if exist "%casa_distro%" (
+    @"python.exe" "%casa_distro%" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
+@else (
+    @"python.exe" "-m" "casa_distro" "run" "base_directory=%casa_distro_dir%" "name=%casa_env_name%" "%container_dir%\%command%" %*
+)
+@endlocal
+'''.format(bin_dir=container_bin_dir), file=f)  # noqa: E501
+
+
+def build_run_script(out_file, container_bin_dir):
+    # print(out_file)
+    if osp.exists(out_file):
+        os.unlink(out_file)
+    try:
+        # try as a symlink to bv
+        os.symlink('bv', out_file)
+    except (OSError, IOError):
+        # the filesystem (or OS) doesn't support symlinks. Build a script.
+        with open(out_file, 'w') as f:
+            os.chmod(out_file, 0o755)
+            print('''#!/bin/sh
+bv="$(dirname -- $0)/bv"
+"$bv" "$(basename -- $0)" "$@"
+''', file=f)  # noqa: E501
+
+    # (windows has no native singularity implementation, for now)
+    # build_win_run_script(out_file, container_bin_dir)
+
+
+def install_bv_casa_distro(out_host_dir, casa_build, casa_src=None):
+    '''
+    Copy the bv executable and needed libraries into a host-readable
+    filesystem, /casa/host/bin/ and /casa/host/python/
+
+    Parameters
+    ----------
+    out_host_dir: str
+        output base directory (/casa/host)
+    casa_build: str
+        directory where the software is installed inside the container
+        (/casa/host/build for a dev environment, or /casa/install for a
+        user one)
+    casa_src: str
+        if given and if this directory exists, use the source directory to
+        symlink programs instead of copying them: this is a developer setup
+        where sources can be seen from the host system.
+    '''
+    import casa_distro
+    casa_path = osp.dirname(casa_distro.__file__)
+    print('casa_path:', casa_path)
+    src_dir = osp.dirname(osp.dirname(casa_path))
+    bin_prefix = 'bin'
+
+    if casa_src:
+        sp = osp.join(casa_src,
+                      'development/casa-distro/master/bin/casa_distro')
+        if not osp.exists(sp):
+            sp2 = glob.glob(osp.join(
+                casa_src, 'development/casa-distro/master/bin/casa_distro'))
+            if sp2:
+                sp = sp2[0]
+        if osp.exists(sp):
+            casa_src = osp.relpath(osp.dirname(osp.dirname(sp)),
+                                   osp.join(out_host_dir, bin_prefix))
+        else:
+            casa_src = None
+        if casa_src:
+            print('dev mode, symlink to sources:', casa_src)
+
+    # temporarily (until bv command exists...) copy whole casa_distro
+    bin_items = ['bin/bv']
+    py_items = []  # ['python/casa_distro']  # this is done by the setup now
+    # bin_items = ['bin/bv']
+    # py_items = ['python/casa_distro/__init__.py',
+    #             'python/casa_distro/info.py', 'python/casa_distro/bv']
+
+    bin_fitems = [(item, osp.join(casa_build, item),
+                   osp.join(out_host_dir, bin_prefix, item[4:]))
+                  for item in bin_items]
+    py_fitems = [(item, osp.join(src_dir, item), osp.join(out_host_dir, item))
+                 for item in py_items]
+    items = bin_fitems + py_fitems
+    for item in items:
+        short_src, src, dst = item
+        print('copy:', src, '->', dst)
+        if not osp.exists(src):
+            print(src, 'does not exist')
+            continue
+        odir = osp.dirname(dst)
+        if not osp.exists(odir):
+            os.makedirs(odir)
+        if osp.exists(dst) or osp.islink(dst):
+            if osp.isdir(dst) and not osp.islink(dst):
+                shutil.rmtree(dst)
+            else:
+                os.unlink(dst)
+        if casa_src:
+            relsrc = osp.join(casa_src, short_src)
+            os.symlink(relsrc, dst)
+        else:
+            if osp.isdir(src):
+                shutil.copytree(src, dst)
+            else:
+                shutil.copy2(src, dst)
+
+
+mode = 'build'
+
+casa_install = '/casa/install'
+if osp.exists(osp.join(casa_install, 'bin', 'bv_env')):
+    # installed binaries exist, use them
+    mode = 'install'
+
+if '-h' in sys.argv[1:]:
+    print(sys.argv[0], '[-h]')
+    print('build run scripts for Casa-distro / BrainVisa executables to ease '
+          'their use from outside the container')
+    print('''This script should be run from inside a casa-distro container, in
+    a developer environment. It creates a directory /casa/host/bin where
+    it will write a script for every executable in the build environment. Each
+    of these scripts can be invoked from *outside the container* and will take
+    care of running the right casa-distro container and call the executable.
+    Incidentally the scripts can also be called from inside the container, and
+    in this situation will not run another container but call the executable
+    directly.
+
+    There are 2 modes: "build" and "install", because executables may be found
+    either in the install directory (/casa/install/bin) or in the build
+    directory (/casa/host/build/bin) and the scripts have to call one of them.
+    The rule is that if there are any executables in the *install* directory,
+    it will switch to "install" mode, otherwise use the "build" mode. The
+    current mode here is: %s
+
+    The scripts in /casa/host/bin are sh shell scripts, thus to be used
+    from outside the container, the host machine must have a sh/bash shell
+    installed, which is OK on any linux or Mac host.
+
+    Note that in the scripts, casa_distro is called without any particular
+    options (gui, opengl, etc), so all needed options must be configured in the
+    environment config (/casa/host/conf/casa_distro.json).
+
+    After running this script, it is possible to set the host PATH to point to
+    the bin/ directory of the environment to run
+    commands. ''' % mode)
+    sys.exit(0)
+
+# '''
+#     For Windows hosts, casa_build_host_links also creates a set of .bat run
+#     scripts in /casa/host/win_bin, which do the same but in a .bat language
+#     so that windows machines understand them natively.
+# '''
+
+if mode == 'install':
+    casa_build = '/casa/install'
+    container_bin_dir = 'install/bin'
+else:
+    casa_build = os.environ.get('CASA_%s' % mode.upper())
+    container_bin_dir = 'host/build/bin'
+# container_bin_dir is the (relative) directory of the executables running
+# inside the container. It is relative to /casa.
+
+casa_src = '/casa/host/src'
+host_dir = '/casa/host'
+casa_hostdir = os.environ.get('CASA_HOST_DIR')
+
+if not casa_build or not casa_hostdir:
+    raise RuntimeError('we don\'t seem to be inside a container, we should.')
+
+install_bv_casa_distro(host_dir, casa_build, casa_src)
+
+exclude_programs = set([
+    'python', 'python2', 'python3', 'bv', 'docker-deps',
+    'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py', 'bv_env_host',
+    'bv_env_test', 'bv_unenv', 'bv_unenv.sh', 'bv_unit_test',
+    'bv_wine_regedit',
+])
+
+out_dir = osp.join(host_dir, 'bin')
+# win_dir = osp.join(host_dir, 'win_bin')
+if not osp.isdir(out_dir):
+    os.mkdir(out_dir)
+# if not osp.isdir(win_dir):
+    # os.mkdir(win_dir)
+
+for exe in os.listdir(osp.join(casa_build, 'bin')):
+    if exe in exclude_programs:
+        print('exclude:', exe)
+        continue
+    # print(exe)
+    out_file = osp.join(out_dir, exe)
+    build_run_script(out_file, container_bin_dir)
+
+# custom scripts
+version = '.'.join(__version__.split('.')[:2])
+
+custom_scripts = []
+
+for exe in custom_scripts:
+    out_file = osp.join(out_dir, osp.basename(exe))
+    exe_file = osp.join(casa_build, exe)
+    if osp.exists(exe_file):
+        build_run_script(out_file, osp.join('/casa', osp.dirname(exe)))

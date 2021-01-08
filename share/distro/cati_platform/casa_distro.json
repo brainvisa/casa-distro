@@ -1,0 +1,9 @@
+{
+    "name": "cati_platform",
+    "description": "This distro contains internal CATI software.",
+    "container_volumes": {
+        "%(build_workflow_dir)s/cati/qualicati/database": "/cati/qualicati/database",
+        "%(build_workflow_dir)s/cati/qualicati/save": "/cati/qualicati/save",
+        "%(build_workflow_dir)s/cati/qualicati/database_debug": "/cati/qualicati/database_debug"
+    }
+}

@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v3.2.0
     hooks:
     -   id: check-case-conflict
     -   id: check-executables-have-shebangs
@@ -10,10 +10,12 @@ repos:
     -   id: check-xml
     -   id: check-yaml
     -   id: debug-statements
+    -   id: end-of-file-fixer
     -   id: fix-encoding-pragma
+    -   id: trailing-whitespace
 
 -   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.7.9
+    rev: 3.8.3
     hooks:
     -   id: flake8
         name: flake8 under python2
@@ -23,3 +25,10 @@ repos:
         name: flake8 under python3
         language_version: python3
         exclude: ^doc/source/sphinxext/
+
+# Not ready yet
+# -   repo: https://github.com/mgedmin/check-manifest
+#     rev: "0.42"  # 0.43 needs recent git (--recurse-submodules option of
+#                  # git ls-files)
+#     hooks:
+#     -   id: check-manifest
