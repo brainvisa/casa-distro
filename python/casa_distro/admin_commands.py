@@ -18,9 +18,7 @@ import traceback
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
                                   default_download_url,
-                                  publish_server,
-                                  publish_login,
-                                  publish_dir)
+                                  publish_url)
 from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
@@ -413,6 +411,15 @@ def publish_base_image(type,
                        container_type='singularity',
                        verbose=True):
     """Upload an image to BrainVISA web site.
+    Upload is done with rsync in the following remote directory:
+
+      {publish_url}
+
+    This directory location can be customized with
+    the following environment variables:
+        BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+        BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+        BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
 
     Parameters
     ----------
@@ -460,12 +467,8 @@ def publish_base_image(type,
     json.dump(metadata, open(metadata_file, 'w'),
               indent=4, separators=(',', ': '))
 
-    subprocess.check_call([
-        'rsync', '-P', '--progress', '--chmod=a+r', metadata_file, image,
-        '{publish_login}@{publish_server}:{publish_dir}/'.format(
-            publish_login=publish_login,
-            publish_server=publish_server,
-            publish_dir=publish_dir)])
+    subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
+                           metadata_file, image, publish_url])
 
 
 @command
@@ -556,6 +559,15 @@ def create_user_image(
         default={upload_default}
         If "true", "yes" or "1", upload the image on BrainVISA web site.
         If "false", "no" or "0", skip this step
+        Upload is done with rsync in the following remote directory:
+
+          {publish_url}
+
+        This directory location can be customized with
+        the following environment variables:
+          BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+          BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+          BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
     {verbose}
 
     """
@@ -681,12 +693,8 @@ def create_user_image(
                   indent=4, separators=(',', ': '))
 
     if upload:
-        url = '{publish_login}@{publish_server}:{publish_dir}/'.format(
-            publish_login=publish_login,
-            publish_server=publish_server,
-            publish_dir=publish_dir)])
         subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                               metadata_file, output, url])
+                               metadata_file, output, publish_url])
 
 
 @command
