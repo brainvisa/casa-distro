@@ -798,7 +798,9 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
 
     if update_casa_distro:
         # Update casa_distro with git and restart with update_casa_distro=no
-        bbi_daily.update_casa_distro()
+        success = bbi_daily.update_casa_distro()
+        if not success:
+            sys.exit('bbi_daily: failed to update casa-distro')
         res = subprocess.call([i for i in sys.argv
                                if 'update_casa_distro' not in i]
                               + ['update_casa_distro=no'])
