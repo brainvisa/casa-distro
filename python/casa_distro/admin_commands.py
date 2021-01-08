@@ -711,7 +711,10 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
               user_tests='yes',
               base_directory=casa_distro_directory(),
               verbose=None):
-    '''
+    '''BrainVISA Build infrastructure: daily/nightly automated tests
+
+    See :doc:`bbi_daily` for a complete introduction to automated tests.
+
     In BrainVISA Build Infrastructure (BBI), there are be some machines
     that are be targeted to do some builds and tests. This command is
     used to perform these tasks and is be typically used in a crontab

@@ -2,7 +2,7 @@
 The casa_distro_admin command
 =============================
 
-Creation and publication of casa-distro releases and conainer images.
+Creation and publication of casa-distro releases and container images.
 
 .. include:: casa_distro_admin_command_help.rst
 
