@@ -1024,6 +1024,7 @@ class BBIDaily:
             self.casa_distro_admin,
             'create_user_image',
             'version={0}'.format(user_config['version']),
+            'name={0}'.format(user_config['name']),
             'environment_name={0}'.format(dev_config['name']),
             'force=yes',
             'install_doc=' + str(install_doc),
