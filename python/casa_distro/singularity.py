@@ -375,7 +375,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         config['mounts']['/casa/ssh_auth_sock'] = '$SSH_AUTH_SOCK'
 
     home_mount = False
-    host_homedir = os.path.expanduser('~')
+    host_homedir = os.path.realpath(os.path.expanduser('~'))
     for dest, source in config.get('mounts', {}).items():
         source = source.format(**config)
         source = osp.expandvars(source)
