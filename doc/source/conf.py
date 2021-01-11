@@ -60,7 +60,10 @@ extensions = [
     'sphinx.ext.viewcode',
     napoleon,
     'sphinx.ext.extlinks',
+    'sphinx.ext.autosectionlabel',
 ]
+
+autosectionlabel_prefix_document = True
 
 # Remove some numpy-linked warnings
 numpydoc_show_class_members = False
