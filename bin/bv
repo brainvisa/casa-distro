@@ -134,8 +134,15 @@ else:
 if not command:
     command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
 
-host_command = [sys.executable, casa_distro, 'run',
-                'base_directory={}'.format(environment_dir)]
+if command and command[0] in ('bv_maker', ):
+    # if the command is a sub-command of casa_distro, call it the casa_distro
+    # way because it may handle some options differently (gui and opengl for
+    # bv_maker for instance)
+    host_command = [sys.executable, casa_distro,
+                    'base_directory={}'.format(environment_dir)]
+else:
+    host_command = [sys.executable, casa_distro, 'run',
+                    'base_directory={}'.format(environment_dir)]
 host_command += command
 
 if verbose:
