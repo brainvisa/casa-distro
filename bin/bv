@@ -38,6 +38,7 @@ help = False
 verbose = None
 
 perform_run = True
+casa_distro_admin = False
 me = osp.basename(sys.argv[0])
 if me != 'bv':
     # we are invoked as another name from 'bv': we are obviously a symlink to
@@ -51,6 +52,7 @@ if me != 'bv':
     if osp.islink(sys.argv[0]):
         if me in ('casa_distro', 'casa_distro_admin'):
             perform_run = False
+            casa_distro_admin = (me == 'casa_distro_admin')
         else:
             sys.argv.insert(1, me)
             bv = os.readlink(sys.argv[0])
@@ -142,7 +144,11 @@ else:
 if not command and perform_run:
     command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
 
-host_command = [sys.executable, casa_distro]
+if casa_distro_admin:
+    host_command = [sys.executable, casa_distro + '_admin']
+else:
+    host_command = [sys.executable, casa_distro]
+
 if perform_run:
     if command[0] not in ('bv_maker', ):
         # if the command is a sub-command of casa_distro, call it the
