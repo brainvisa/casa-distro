@@ -344,36 +344,102 @@ function _complete_bv_()
 #     echo "word: $word"
 #     echo "line: $line"
 #     echo "COMP_CWORD: $COMP_CWORD"
-#     echo "COMP_WORDS: $COMP_WORDS"
+#     echo "COMP_WORDS: ${COMP_WORDS[@]}"
 
-    case $(( COMP_CWORD - cmd_wd_num )) in
-    0)
-        COMPREPLY=($(compgen -W "$opt_list $kw_opt_list" -c -- "${word}"))
-        if [ -n "$COMPREPLY" ]; then
-            if [ ${COMPREPLY:(-1)} != "=" ]; then
-                COMPREPLY="$COMPREPLY "
-            fi
+    # find if 1st option is -r
+    if (( COMP_CWORD > 1 )) \
+        && { [ "${COMP_WORDS[1]}" = "-h" ] \
+             || [ "${COMP_WORDS[1]}" = "--help" ] \
+             || [ "${COMP_WORDS[1]}" = "--verbose" ] \
+             || [ "${COMP_WORDS[1]}" = "-v" ]; }; then
+        local cmd_wd_num=2
+    fi
+
+    if [ "$word" = "=" ] \
+          || [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = "=" ]; then
+        # after = sign: complete an option value
+        _complete_casa_distro_option_
+        return
+    fi
+
+    COMPREPLY=($(compgen -W "$opt_list $kw_opt_list" -- "${word}"))
+    if [ -n "$COMPREPLY" ]; then
+        if [ ${COMPREPLY:(-1)} != "=" ]; then
+            COMPREPLY="$COMPREPLY "
         fi
-        ;;
-    *)
+        return
+    fi
 
-        if [ "$word" = "=" ] \
-             || [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = "=" ]; then
-            # after = sign: complete an option value
-            _complete_casa_distro_option_
-            return
-        fi
+    # use completion within bv container
 
-        COMPREPLY=($(compgen -W "$opt_list $kw_opt_list" -c -- "${word}"))
-        if [ -n "$COMPREPLY" ]; then
-            if [ ${COMPREPLY:(-1)} != "=" ]; then
-                COMPREPLY="$COMPREPLY "
-            fi
-        fi
+    new_line=${COMP_LINE:$((${#COMP_WORDS[0]} + 1))}
 
-        ;;
-    esac
+    if [ $(( COMP_CWORD - cmd_wd_num )) == "0" ]; then
 
+        COMPREPLY=($(${COMP_WORDS[0]} -- bash -i -l -c ". ~/.bashrc && compgen -c $new_line"))
+        return
+
+    else
+
+        tmp=$(mktemp)
+        cat << EOF > $tmp
+#
+# Author: Brian Beffa <brbsix@gmail.com>
+# Original source: https://brbsix.github.io/2015/11/29/accessing-tab-completion-programmatically-in-bash/
+# License: LGPLv3 (http://www.gnu.org/licenses/lgpl-3.0.txt)
+# https://brbsix.github.io/2015/11/29/accessing-tab-completion-programmatically-in-bash/
+#
+
+get_completions(){
+    local completion COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMPREPLY=()
+
+    # load bash-completion if necessary
+    declare -F _completion_loader &>/dev/null || {
+        source /usr/share/bash-completion/bash_completion
+    }
+
+    COMP_LINE=\$*
+    COMP_POINT=\${#COMP_LINE}
+
+    eval set -- "\$@"
+
+    COMP_WORDS=("\$@")
+
+    # add '' to COMP_WORDS if the last character of the command line is a space
+    [[ \${COMP_LINE[@]: -1} = ' ' ]] && COMP_WORDS+=('')
+
+    # index of the last word
+    COMP_CWORD=\$(( \${#COMP_WORDS[@]} - 1 ))
+
+    # determine completion function
+    completion=\$(complete -p "\$1" 2>/dev/null | awk '{print \$(NF-1)}')
+
+    # run _completion_loader only if necessary
+    [[ -n \$completion ]] || {
+
+        # load completion
+        _completion_loader "\$1"
+
+        # detect completion
+        completion=\$(complete -p "\$1" 2>/dev/null | awk '{print \$(NF-1)}')
+
+    }
+
+    # ensure completion was detected
+    [[ -n \$completion ]] || return 1
+
+    # execute completion function
+    "\$completion"
+
+    # print completions to stdout
+    printf '%s\n' "\${COMPREPLY[@]}" | LC_ALL=C sort
+}
+EOF
+
+        COMPREPLY=($(${COMP_WORDS[0]} -- bash -i -l -c ". ~/.bashrc && . $tmp && get_completions $new_line"))
+        rm $tmp
+
+    fi
 }
 
 
