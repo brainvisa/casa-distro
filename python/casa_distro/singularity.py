@@ -111,12 +111,18 @@ def create_image(base, base_metadata,
     From: {base}
 
 %runscript
+    export CASA_SYSTEM='{system}'
+    export CASA_TYPE='{type}'
+    export CASA_NAME='{name}'
     if [ -d /casa/setup ]; then
         /casa/casa-distro/bin/casa_distro setup_dev "$@"
     else
         . /usr/local/bin/entrypoint
     fi
-'''.format(base=base))
+'''.format(base=base,
+           system=metadata['system'],
+           type=type,
+           name=metadata['name']))
         v = {}
         print('build_file:', build_file)
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
