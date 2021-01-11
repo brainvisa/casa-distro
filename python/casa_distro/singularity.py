@@ -155,9 +155,6 @@ def create_user_image(base_image,
                       force,
                       base_directory,
                       verbose):
-    from pprint import pprint
-    pprint(dev_config)
-    boom
     recipe = tempfile.NamedTemporaryFile(mode='wt')
     recipe.write('''Bootstrap: localimage
     From: {base_image}
