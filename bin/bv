@@ -49,7 +49,7 @@ if me != 'bv':
     # - There is an exception for a symlink called casa_distro. In this case
     #   casa_distro is called directly without using the container.
     if osp.islink(sys.argv[0]):
-        if me == 'casa_distro':
+        if me in ('casa_distro', 'casa_distro_admin'):
             perform_run = False
         else:
             sys.argv.insert(1, me)
@@ -149,6 +149,9 @@ if perform_run:
         # casa_distro way because it may handle some options differently (gui
         # and opengl for bv_maker for instance)
         host_command += ['run']
+    else:
+        host_command += [command[0]]
+        command = command[1:]
     host_command += ['base_directory={}'.format(environment_dir)]
 
 host_command += command
