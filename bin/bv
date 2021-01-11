@@ -37,19 +37,26 @@ def failure(message):
 help = False
 verbose = None
 
-if osp.basename(sys.argv[0]) != 'bv':
+perform_run = True
+me = osp.basename(sys.argv[0])
+if me != 'bv':
     # we are invoked as another name from 'bv': we are obviously a symlink to
     # the bv script. In that situation we should:
     # - use the name we have been invoked as as the command to run in the
     #   container, as if called as "bv otherprogram"
     # - dereference the symlink to get the actual bv script in sys.argv[0]
     #   because we will use its path to find out the environment dir
-    sys.argv.insert(1, osp.basename(sys.argv[0]))
+    # - There is an exception for a symlink called casa_distro. In this case
+    #   casa_distro is called directly without using the container.
     if osp.islink(sys.argv[0]):
-        bv = os.readlink(sys.argv[0])
-        if not osp.isabs(bv):
-            bv = osp.join(osp.dirname(sys.argv[0]), bv)
-        sys.argv[0] = bv
+        if me == 'casa_distro':
+            perform_run = False
+        else:
+            sys.argv.insert(1, me)
+            bv = os.readlink(sys.argv[0])
+            if not osp.isabs(bv):
+                bv = osp.join(osp.dirname(sys.argv[0]), bv)
+            sys.argv[0] = bv
 
 i = 1
 while i < len(sys.argv):
@@ -109,7 +116,8 @@ else:
                                    'casa_distro.json'))):
             break
     else:
-        failure('Cannot find execution environment')
+        if perform_run:
+            failure('Cannot find execution environment')
 
 casa_distro = None
 for i in (('host', 'src', 'development', 'casa-distro', '*'),
@@ -131,18 +139,18 @@ else:
     if not casa_distro:
         failure('Cannot find casa_distro executable')
 
-if not command:
+if not command and perform_run:
     command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
 
-if command and command[0] in ('bv_maker', ):
-    # if the command is a sub-command of casa_distro, call it the casa_distro
-    # way because it may handle some options differently (gui and opengl for
-    # bv_maker for instance)
-    host_command = [sys.executable, casa_distro,
-                    'base_directory={}'.format(environment_dir)]
-else:
-    host_command = [sys.executable, casa_distro, 'run',
-                    'base_directory={}'.format(environment_dir)]
+host_command = [sys.executable, casa_distro]
+if perform_run:
+    if command[0] not in ('bv_maker', ):
+        # if the command is a sub-command of casa_distro, call it the
+        # casa_distro way because it may handle some options differently (gui
+        # and opengl for bv_maker for instance)
+        host_command += ['run']
+    host_command += ['base_directory={}'.format(environment_dir)]
+
 host_command += command
 
 if verbose:

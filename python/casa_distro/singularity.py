@@ -111,12 +111,18 @@ def create_image(base, base_metadata,
     From: {base}
 
 %runscript
+    export CASA_SYSTEM='{system}'
+    export CASA_TYPE='{type}'
+    export CASA_ENVIRONMENT='{name}'
     if [ -d /casa/setup ]; then
         /casa/casa-distro/bin/casa_distro setup_dev "$@"
     else
         . /usr/local/bin/entrypoint
     fi
-'''.format(base=base))
+'''.format(base=base,
+           system=metadata['system'],
+           type=type,
+           name=metadata['name']))
         v = {}
         print('build_file:', build_file)
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
@@ -149,6 +155,9 @@ def create_user_image(base_image,
                       force,
                       base_directory,
                       verbose):
+    from pprint import pprint
+    pprint(dev_config)
+    boom
     recipe = tempfile.NamedTemporaryFile(mode='wt')
     recipe.write('''Bootstrap: localimage
     From: {base_image}
@@ -157,13 +166,21 @@ def create_user_image(base_image,
     {environment_directory}/install /casa/install
 
 %runscript
+    export CASA_SYSTEM='{system}'
+    export CASA_TYPE='{type}'
+    export CASA_ENVIRONMENT='{name}'
+    export CASA_DISTRO='{distro}'
     if [ -d /casa/setup ]; then
         /casa/casa-distro/bin/casa_distro setup_user "$@"
     else
         /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
     fi
 '''.format(base_image=base_image,
-           environment_directory=dev_config['directory']))
+           environment_directory=dev_config['directory'],
+           system=dev_config['system'],
+           type='user',
+           name=dev_config['name'],
+           distro=dev_config['distro']))
     recipe.flush()
     if verbose:
         print('---------- Singularity recipe ----------', file=verbose)
