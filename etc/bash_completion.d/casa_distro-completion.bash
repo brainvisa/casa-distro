@@ -332,6 +332,51 @@ function _complete_casa_distro_()
 }
 
 
+function _complete_bv_()
+{
+    local word=${COMP_WORDS[COMP_CWORD]}
+    local line=${COMP_LINE}
+    local opt_list="-h --help -v --verbose"
+    local kw_opt_list="gui= opengl= root= image= cwd= env= container_options= verbose="
+    local cmd_wd_num=1
+
+#     echo
+#     echo "word: $word"
+#     echo "line: $line"
+#     echo "COMP_CWORD: $COMP_CWORD"
+#     echo "COMP_WORDS: $COMP_WORDS"
+
+    case $(( COMP_CWORD - cmd_wd_num )) in
+    0)
+        COMPREPLY=($(compgen -W "$opt_list $kw_opt_list" -c -- "${word}"))
+        if [ -n "$COMPREPLY" ]; then
+            if [ ${COMPREPLY:(-1)} != "=" ]; then
+                COMPREPLY="$COMPREPLY "
+            fi
+        fi
+        ;;
+    *)
+
+        if [ "$word" = "=" ] \
+             || [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = "=" ]; then
+            # after = sign: complete an option value
+            _complete_casa_distro_option_
+            return
+        fi
+
+        COMPREPLY=($(compgen -W "$opt_list $kw_opt_list" -c -- "${word}"))
+        if [ -n "$COMPREPLY" ]; then
+            if [ ${COMPREPLY:(-1)} != "=" ]; then
+                COMPREPLY="$COMPREPLY "
+            fi
+        fi
+
+        ;;
+    esac
+
+}
+
+
 function _complete_casa_distro_admin_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
@@ -417,3 +462,4 @@ function _complete_casa_distro_admin_()
 
 complete -F _complete_casa_distro_ -o nospace -o default casa_distro
 complete -F _complete_casa_distro_admin_ -o nospace -o default casa_distro_admin
+complete -F _complete_bv_ -o nospace -o default bv

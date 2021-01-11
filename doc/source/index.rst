@@ -69,7 +69,21 @@ See the :doc:`developer` documentation.
 Installation and setup
 ======================
 
-see: :bv:`BrainVisa download / install section <download.html>`.
+Follow roughly the same procedure as for user setup, as axplained in: :bv:`BrainVisa download / install section <download.html>`, except that:
+
+* Developers should download a "developer" image:
+
+  Available developer images:
+
+  +----------------+
+  + filename:      +
+  +----------------+
+  +                +
+  +----------------+
+
+* The setup is done using a :ref:`distro` and a :ref:`branch` parameters, and optionally :ref:`name <env_name>` or other parameters accepted by :ref:`casa_distro setup_dev <casa_distro_command:setup_dev>`::
+
+    singularity -B ~/casa_distro/opensource-master-ubuntu-18.04:/casa/setup ~/casa_distro/casa-dev-ubuntu-18.04.sif distro=opensource branch=master
 
 
 3 main commands
