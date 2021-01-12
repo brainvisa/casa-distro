@@ -925,8 +925,8 @@ class BBIDaily:
             success = True
             for command in commands:
                 if test_config['type'] == 'run':
-                    command = command.replace('/casa/host/build/bin/bv_env',
-                                              '/casa/install/bin/bv_env')
+                    command = command.replace('/casa/host/build',
+                                              '/casa/install')
                 result, output = self.call_output([
                     self.casa_distro,
                     'run',
@@ -966,8 +966,7 @@ class BBIDaily:
         o = subprocess.check_output([self.casa_distro,
                                      'run',
                                      'name={0}'.format(config['name']),
-                                     'cwd={0}/build'.format(
-                                         config['directory']),
+                                     'cwd=/casa/host/build',
                                      'ctest', '--print-labels'],
                                     bufsize=-1)
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
@@ -978,8 +977,7 @@ class BBIDaily:
                     self.casa_distro,
                     'run',
                     'name={0}'.format(config['name']),
-                    'cwd={0}/build'.format(
-                        config['directory']),
+                    'cwd=/casa/host/build',
                     'env=BRAINVISA_TEST_REMOTE_COMMAND'
                     '=echo',
                     'ctest', '-V', '-L',
