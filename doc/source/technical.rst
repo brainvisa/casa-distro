@@ -368,6 +368,46 @@ Remember that software running that way live in a container, which is more or le
 ..   docker pull is208614:5000/casa/system
 
 
+Developing in containers
+========================
+
+See also the BrainVisa developers site: https://brainvisa.github.io/
+
+Using Git
+---------
+
+Both git ans svn are used in Brainvisa projects sources. svn will probably be completely replaced with git.
+
+git URLs use https by default. It's OK for anonymous download and update, but they require manual authentication for each push, thus it's painful. If you have a github account, you can use ssh with a ssh key instead. See https://brainvisa.github.io/contributing.html
+
+Once done git will automatically use ssh. But then ssh needs to be working...
+
+
+Using ssh
+---------
+
+git and ssh may be used either on the host side (since sources are actually stored on the host filesystem), or within the container. As users may have ssh keys and have already registered them in GitHub, they will want to reuse their host ssh keys.
+
+On Linux (or Mac) hosts, it is possible.
+
+Singularity 3 does not allow to mount the host ``.ssh`` directory into the already mounted container home directory. So there are 2 other options:
+
+#. copy the host ``.ssh`` directory into the container home::
+
+    cp -a "/host/$CASA_HOST_HOME/.ssh" ~/
+
+   But copying private ssh keys is not recommended for security reasons.
+
+#. use a ssh agent:
+    - install ``keychain``. On debian-based Linux distributions, this is::
+
+        sudo apt-get install keychain
+
+    - add in your host ``$HOME/.bash_profile`` file::
+
+        eval $(keychain --eval --agents ssh id_rsa)
+
+
 .. _troubleshooting:
 
 Troubleshooting
