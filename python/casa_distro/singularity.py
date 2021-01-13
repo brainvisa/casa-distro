@@ -119,7 +119,7 @@ Bootstrap: localimage
         /casa/casa-distro/bin/casa_distro setup_dev "$@"
     elif [ $# -ne 0 ]; then
         . /usr/local/bin/entrypoint
-    else
+    elif [ "$CASA_TYPE" = dev ]; then
         # if we are invoked without any argument, and setup is not mounted,
         # display a usage message
         echo 'The Singularity image has been run without arguments, and'
@@ -145,6 +145,12 @@ Bootstrap: localimage
         echo '(the 'bv' command needs Python language installed):'
         echo
         echo '~/casa_distro/brainvisa-master/bin/bv bash'
+        echo
+        echo 'Please visit https://brainvisa.info/ for complete help.'
+    elif [ "$CASA_TYPE" = run ]; then
+        echo 'This casa-run image is not intended to be used directly,'
+        echo 'but as an intermediate building block for the creation'
+        echo 'of the casa-dev images or user images using casa-distro.'
         echo
         echo 'Please visit https://brainvisa.info/ for complete help.'
     fi
