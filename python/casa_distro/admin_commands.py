@@ -282,6 +282,17 @@ def create_base_image(type,
                       verbose=True):
     """Create a new virtual image
 
+    Creating the casa-system image:
+
+    - For Singularity you need to run these commands in order to create the
+      casa-system image:
+
+          cd "$CASA_BASE_DIRECTORY"
+          singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
+          casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif
+
+    - For VirtualBox: TODO
+
     Parameters
     ----------
     type
