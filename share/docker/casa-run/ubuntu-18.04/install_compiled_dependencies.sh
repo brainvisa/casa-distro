@@ -85,8 +85,10 @@ rm -rf python-pcl-0.2.0 v0.2.0.zip
 # cmake does not work with clang whenever Qt5 is invoked.
 # workaround here:
 # https://stackoverflow.com/questions/38027292/configure-a-qt5-5-7-application-for-android-with-cmake/40256862#40256862
-sed 's/^\(set_property.*INTERFACE_COMPILE_FEATURES.*\)$/#\ \1/' < /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake > /tmp/Qt5CoreConfigExtras.cmake
-sudo cp -f /tmp/Qt5CoreConfigExtras.cmake /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
+tmpfile=$(mktemp)
+sed 's/^\(set_property.*INTERFACE_COMPILE_FEATURES.*\)$/#\ \1/' < /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake >| "$tmpfile"
+sudo cp -f "$tmpfile" /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
+rm -f "$tmpfile"
 
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
 # and virtual C++ inheritance
