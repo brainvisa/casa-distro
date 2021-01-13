@@ -25,7 +25,6 @@ from casa_distro.environment import (BBIDaily,
                                      run_container,
                                      select_environment,
                                      update_container_image)
-from casa_distro.jenkins import BrainVISAJenkins
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
@@ -57,7 +56,9 @@ def singularity_deb(system,
 
     Parameters
     ----------
-    {system}
+    system
+        Name of the system for the output file.
+        If dockerhub is not given, a value is built based on this parameter
 
     output
         default={output_default}
@@ -66,10 +67,6 @@ def singularity_deb(system,
     dockerhub
         default=name of the system replacing "-" by ":"
         Name of the base image system to pull from DockerHub.
-
-    base
-        Source file use to buld the image. The default value depends on image
-        type and container type.
 
     version
         default={version_default}
@@ -152,6 +149,66 @@ mv singularity-container*.deb /tmp/singularity-container-$SYSTEM-x86_64.deb
 
 
 @command
+def singularity_debs(directory):
+    """Create all required Singularity debian packages in a directory.
+    Packages that must be build have a corresponding
+    singularity-container-*.deb.json file with the following structure:
+
+    {{
+      "singularity_version": "3.7.0", required Singularity version
+      "go_version": "1.15.6",          Go version to use to build Singularity
+      "system": {{
+        "name": "ubuntu",             Name of the target system
+        "version": "20.04",            Version of the targer system
+        "dockerhub": "ubuntu:20.04"   System image to pull on DockerHub
+      }}
+    }}
+
+    The command makes sure that all .deb files corresponding to a *.deb.json
+    file exists. If not, they are created with singularity_deb command.
+
+    Parameters
+    ----------
+    directory
+        Name of directory containing JSON files and where deb files might be
+        created
+    """
+    for json_file in glob.glob(osp.join(directory,
+                                        'singularity-container-*.deb.json')):
+        deb_file = json_file[:-5]
+        if not osp.exists(deb_file):
+            json_content = json.load(open(json_file))
+            singularity_version = json_content.get('singularity_version')
+            if not singularity_version:
+                raise ValueError('"singularity_version" '
+                                 'is missing from {}'.format(json_file))
+            go_version = json_content.get('go_version')
+            if not go_version:
+                raise ValueError('"go_version" is missing from {}'.format(
+                    json_file))
+
+            system = json_content.get('system', {})
+            system_name = system.get('name')
+            if not system_name:
+                raise ValueError('"system"/"name" '
+                                 'is missing from {}'.format(json_file))
+            system_version = system.get('version')
+            if not system_version:
+                raise ValueError('"system"/"version" '
+                                 'is missing from {}'.format(json_file))
+            dockerhub = system.get('dockerhub')
+            if not dockerhub:
+                raise ValueError('"system"/"dockerhub" '
+                                 'is missing from {}'.format(json_file))
+
+            singularity_deb(system='{}-{}'.format(system_name, system_version),
+                            output=deb_file,
+                            dockerhub=dockerhub,
+                            version=singularity_version,
+                            go_version=go_version)
+
+
+@command
 def download_image(type,
                    filename='casa-{type}-*.{extension}',
                    url=default_download_url,
@@ -224,17 +281,6 @@ def create_base_image(type,
                       force='no',
                       verbose=True):
     """Create a new virtual image
-
-    Creating the casa-system image:
-
-    - For Singularity you need to run these commands in order to create the
-      casa-system image:
-
-          cd "$CASA_BASE_DIRECTORY"
-          singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
-          casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif
-
-    - For VirtualBox: TODO
 
     Parameters
     ----------
@@ -802,6 +848,10 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     user_tests = boolean_value(user_tests)
 
     if jenkins_server:
+        # Import jenkins only if necessary to avoid  dependency
+        # on requests module
+        from casa_distro.jenkins import BrainVISAJenkins
+
         jenkins_auth = jenkins_auth.format(base_directory=base_directory)
         jenkins_login, jenkins_password = [i.strip() for i in
                                            open(jenkins_auth).readlines()[:2]]
