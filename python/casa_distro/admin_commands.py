@@ -736,6 +736,7 @@ def create_user_image(
             os.makedirs(output_dir)
         msg = module.create_user_image(base_image=base_image,
                                        dev_config=config,
+                                       version=version,
                                        output=output,
                                        force=force,
                                        base_directory=base_directory,

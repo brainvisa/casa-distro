@@ -78,7 +78,7 @@ take inspiration from it to create your own personalized set-up.
 7. Check out and compile an initial build::
 
      "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/bv \
-         opengl=container bv_maker
+         bv_maker
 
 9. Download the ``casa-run`` image::
 

@@ -161,6 +161,7 @@ def create_image(base, base_metadata,
 
 def create_user_image(base_image,
                       dev_config,
+                      version,
                       output,
                       base_directory,
                       verbose):

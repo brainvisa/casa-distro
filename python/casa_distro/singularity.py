@@ -185,6 +185,7 @@ Bootstrap: localimage
 
 def create_user_image(base_image,
                       dev_config,
+                      version,
                       output,
                       force,
                       base_directory,
@@ -201,6 +202,7 @@ Bootstrap: localimage
     export CASA_SYSTEM='{system}'
     export CASA_TYPE='{type}'
     export CASA_DISTRO='{distro}'
+    export CASA_VERSION='{version}'
 
     if [ -d /casa/setup ]; then
         /casa/casa-distro/bin/casa_distro setup_user "$@"
@@ -213,11 +215,11 @@ Bootstrap: localimage
         echo '(install BrainVISA), then you need to specify an'
         echo 'installation directory as a mount point in the /casa/setup'
         echo 'container directory. Typically, to setup into the host '
-        echo 'directory ~/brainvisa, run the following commands:'
+        echo "directory ~/brainvisa-$CASA_VERSION, run the following commands:"
         echo
-        echo 'mkdir -p ~/brainvisa'
-        echo "mv \"$SINGULARITY_CONTAINER\" ~/brainvisa/"
-        echo 'cd ~/brainvisa'
+        echo "mkdir -p ~/brainvisa-$CASA_VERSION"
+        echo "mv \"$SINGULARITY_CONTAINER\" ~/brainvisa-$CASA_VERSION/"
+        echo "cd ~/brainvisa-$CASA_VERSION"
         echo "singularity run -B .:/casa/setup $SINGULARITY_NAME"
         echo
         echo 'If you have already setup such an environment, you should'
@@ -227,7 +229,7 @@ Bootstrap: localimage
         echo 'bin/ directory of the install environment directory.'
         echo '(the 'bv' command depends only on Python being installed):'
         echo
-        echo '~/brainvisa/bin/bv bash'
+        echo "~/brainvisa-$CASA_VERSION/bin/bv bash"
         echo
         echo 'Please visit https://brainvisa.info/ for complete help.'
     fi
@@ -235,7 +237,8 @@ Bootstrap: localimage
            environment_directory=dev_config['directory'],
            system=dev_config['system'],
            type='user',
-           distro=dev_config['distro']))
+           distro=dev_config['distro'],
+           version=version))
     recipe.flush()
     if verbose:
         print('---------- Singularity recipe ----------', file=verbose)
