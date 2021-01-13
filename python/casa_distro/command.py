@@ -170,8 +170,10 @@ def get_doc(command, indent='', format='text'):
     return formatted_help(doc, format=format)
 
 
+# The 'file' parameter is not documented in the docstring because it is not
+# meant to be used from the command-line.
 @command
-def help(command=None, format='text', full=False):
+def help(command=None, format='text', full=False, file=None):
     """
     Print global help or help about a command.
 
@@ -185,6 +187,8 @@ def help(command=None, format='text', full=False):
         documentation in the general help.
     """
     full = check_boolean('full', full)
+    if file is None:
+        file = sys.stdout
     indent = ''
     if format == 'text':
         indent = ' ' * 4
@@ -197,10 +201,10 @@ def help(command=None, format='text', full=False):
     if command:
         command_help = get_doc(commands[command], indent=indent,
                                format=format)
-        print('-' * len(command))
-        print(command)
-        print('-' * len(command))
-        print(command_help)
+        print('-' * len(command), file=file)
+        print(command, file=file)
+        print('-' * len(command), file=file)
+        print(command_help, file=file)
     else:
         executable = osp.basename(sys.argv[0])
 
@@ -265,7 +269,7 @@ Commands:
             commands_summary.append(indent + command)
             commands_summary.append(indent + '-' * len(command))
             commands_summary.append(command_doc)
-        print('\n'.join(commands_summary))
+        print('\n'.join(commands_summary), file=file)
 
 
 def main():
@@ -323,8 +327,15 @@ def main():
                 kwargs['args_list'] = args + args_list
                 args = []
             result = command(*args, **kwargs)
-    except (ValueError, RuntimeError, NotImplementedError) as e:
-        raise
-        print('ERROR:', e)
-        result = os.EX_USAGE
+    except (ValueError, TypeError, RuntimeError, NotImplementedError) as e:
+        print('ERROR: {0} raised the following error:'.format(command_name),
+              file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        print('\nUsage:', file=sys.stderr)
+        help(command_name, file=sys.stderr)
+        sys.stderr.flush()
+        print('\nERROR SUMMARY (details above): {0}:'.format(e),
+              file=sys.stderr)
+        sys.exit(os.EX_USAGE)
     sys.exit(result)

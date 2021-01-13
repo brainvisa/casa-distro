@@ -145,10 +145,12 @@ class ExecutionStatus(object):
 def setup_user(dir='/casa/setup'):
     """
     Create all necessary directories and files to setup a user environement.
+
     This command is not supposed to be called directly but using a user image::
 
         mkdir ~/brainvisa
-        singularity run --bind ~/brainvisa:/casa/setup brainvisa-5.0.sif
+        cd ~/brainvisa
+        singularity run --bind .:/casa/setup brainvisa-5.0.sif
 
     Parameters
     ----------
@@ -163,13 +165,17 @@ def setup_user(dir='/casa/setup'):
 @command
 def setup_dev(distro, branch=None, system=None, dir='/casa/setup', name=None):
     """
-    Create all necessary directories and files to setup a developer *
-    environement.
-    This command is not supposed to be called directly but using a user image::
+    Create all necessary directories and files to setup a developer
+    environment.
 
-        mkdir ~/brainvisa
+    This command is not supposed to be called directly but using a casa-dev
+    image::
+
+        mkdir -p ~/casa_distro/brainvisa-master
+        cd ~/casa_distro
         singularity run -B \\
-            ~/brainvisa:/casa/setup casa-dev-ubuntu-18.04.sif brainvisa master
+            ./brainvisa-master:/casa/setup casa-dev-ubuntu-18.04.sif \\
+            brainvisa master
 
     Parameters
     ----------

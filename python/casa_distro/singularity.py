@@ -107,44 +107,46 @@ def create_image(base, base_metadata,
         shutil.copy(base, output)
     else:
         recipe = tempfile.NamedTemporaryFile(mode='wt')
-        recipe.write('''Bootstrap: localimage
+        recipe.write('''\
+Bootstrap: localimage
     From: {base}
 
 %runscript
     export CASA_SYSTEM='{system}'
     export CASA_TYPE='{type}'
     export CASA_ENVIRONMENT='{name}'
+
     if [ -d /casa/setup ]; then
         /casa/casa-distro/bin/casa_distro setup_dev "$@"
+    elif [ $# -ne 0 ]; then
+        . /usr/local/bin/entrypoint
     else
         # if we are invoked without any argument, and setup is not mounted,
         # display a usage message
-        if [ "${{#@}}" = "0" ]; then
-            echo "The Singularity image has been run without arguments, and"
-            echo "without a setup mount point."
-            echo "This run will do nothig. If you want to setup an environemnt"
-            echo "(install BrainVisa), then you need to specify an"
-            echo "installation directory as a mount point in the /casa/setup"
-            echo "container directory. Typically, to setup into the host "
-            echo 'directory $HOME/casa_distro/brainvisa-5.0, use the command:'
-            echo
-            echo 'mkdir -p $HOME/casa_distro/brainvisa-5.0'
-            echo 'singularity -B $HOME/casa_distro/brainvisa-5.0:/casa/setup brainvisa-5.0.sif'
-            echo
-            echo "If you have already setup such an environment, you should"
-            echo "run the image using appropriate options, mount points, and"
-            echo "a command to run (bash for instance)."
-            echo "This is normally done using the 'bv' command found in the"
-            echo "bin/ directory of the install environment directory."
-            echo "(the 'bv' command needs Python language installed):"
-            echo
-            echo '$HOME/casa_distro/brainvisa-5.0/bin/bv bash'
-            echo
-
-        else
-
-            . /usr/local/bin/entrypoint
-        fi
+        echo 'The Singularity image has been run without arguments, and'
+        echo 'without a setup mount point.'
+        echo 'This run will do nothing. If you want to setup an environment'
+        echo '(install a BrainVISA development environment), then you need'
+        echo 'to specify an installation directory as a mount point in the'
+        echo '/casa/setup container directory. Typically, to setup into the'
+        echo 'directory ~/casa_distro/brainvisa-master, run the following'
+        echo 'commands:'
+        echo
+        echo 'mkdir -p ~/casa_distro/brainvisa-master'
+        echo "mv \"$SINGULARITY_CONTAINER\" ~/casa_distro/"
+        echo 'cd ~/casa_distro'
+        echo "singularity run -B ./brainvisa-master:/casa/setup $SINGULARITY_NAME"
+        echo
+        echo 'If you have already setup such an environment, you should'
+        echo 'run the image using appropriate options, mount points, and'
+        echo 'a command to run (bash for instance).'
+        echo 'This is normally done using the 'bv' command found in the'
+        echo 'bin/ directory of the install environment directory.'
+        echo '(the 'bv' command needs Python language installed):'
+        echo
+        echo '~/casa_distro/brainvisa-master/bin/bv bash'
+        echo
+        echo 'Please visit https://brainvisa.info/ for complete help.'
     fi
 '''.format(base=base,  # noqa: E501
            system=metadata['system'],
@@ -183,7 +185,8 @@ def create_user_image(base_image,
                       base_directory,
                       verbose):
     recipe = tempfile.NamedTemporaryFile(mode='wt')
-    recipe.write('''Bootstrap: localimage
+    recipe.write('''\
+Bootstrap: localimage
     From: {base_image}
 
 %files
@@ -194,10 +197,35 @@ def create_user_image(base_image,
     export CASA_TYPE='{type}'
     export CASA_ENVIRONMENT='{name}'
     export CASA_DISTRO='{distro}'
+
     if [ -d /casa/setup ]; then
         /casa/casa-distro/bin/casa_distro setup_user "$@"
-    else
+    elif [ $# -ne 0 ]; then
         /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
+    else
+        echo 'The Singularity image has been run without arguments, and'
+        echo 'without a setup mount point.'
+        echo 'This run will do nothing. If you want to setup an environment'
+        echo '(install BrainVISA), then you need to specify an'
+        echo 'installation directory as a mount point in the /casa/setup'
+        echo 'container directory. Typically, to setup into the host '
+        echo 'directory ~/brainvisa, run the following commands:'
+        echo
+        echo 'mkdir -p ~/brainvisa'
+        echo "mv \"$SINGULARITY_CONTAINER\" ~/brainvisa/"
+        echo 'cd ~/brainvisa'
+        echo "singularity run -B .:/casa/setup $SINGULARITY_NAME"
+        echo
+        echo 'If you have already setup such an environment, you should'
+        echo 'run the image using appropriate options, mount points, and'
+        echo 'a command to run (bash for instance).'
+        echo 'This is normally done using the 'bv' command found in the'
+        echo 'bin/ directory of the install environment directory.'
+        echo '(the 'bv' command depends only on Python being installed):'
+        echo
+        echo '~/brainvisa/bin/bv bash'
+        echo
+        echo 'Please visit https://brainvisa.info/ for complete help.'
     fi
 '''.format(base_image=base_image,
            environment_directory=dev_config['directory'],
