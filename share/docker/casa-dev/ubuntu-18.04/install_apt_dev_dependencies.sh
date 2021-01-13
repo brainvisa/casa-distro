@@ -110,6 +110,7 @@ toolchain_packages=(
 
 # Development tools and convenience utilities
 development_tools=(
+    ack-grep
     bash-completion
     flake8
     gdb
