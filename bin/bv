@@ -142,7 +142,7 @@ else:
         failure('Cannot find casa_distro executable')
 
 if not command and perform_run:
-    command = ['bv_env_host', 'python', '-m', 'casa_distro.configuration_gui']
+    command = ['python', '-m', 'casa_distro.configuration_gui']
 
 if casa_distro_admin:
     host_command = [sys.executable, casa_distro + '_admin']
