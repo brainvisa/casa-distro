@@ -241,11 +241,8 @@ def setup_user(setup_dir):
     prepare_environment_homedir(osp.join(setup_dir, 'home'))
 
 
-def setup_dev(setup_dir, distro, branch=None, system=None, image=None,
+def setup_dev(setup_dir, distro, branch='master', system=None, image=None,
               name=None):
-    if not branch:
-        branch = os.environ['CASA_BRANCH']
-
     if not system:
         system = os.getenv('CASA_SYSTEM')
     if not system:

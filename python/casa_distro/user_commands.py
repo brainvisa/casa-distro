@@ -163,7 +163,8 @@ def setup_user(dir='/casa/setup'):
 
 
 @command
-def setup_dev(distro, branch=None, system=None, dir='/casa/setup', name=None):
+def setup_dev(distro, branch='master', system=None, dir='/casa/setup',
+              name=None):
     """
     Create all necessary directories and files to setup a developer
     environment.
