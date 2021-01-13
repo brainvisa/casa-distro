@@ -77,7 +77,7 @@ def iter_images(base_directory):
             yield filename
 
 
-def _singularity_build_command(cleanup=True, force=False, fakeroot=False):
+def _singularity_build_command(cleanup=True, force=False, fakeroot=True):
     build_command = []
     if not fakeroot:
         build_command += ['sudo']
