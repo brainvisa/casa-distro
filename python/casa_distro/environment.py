@@ -224,6 +224,8 @@ def setup_user(setup_dir):
             '-'.join(platform.linux_distribution()[:2]).lower()
     if 'CASA_BRANCH' in os.environ:
         environment['branch'] = os.environ['CASA_BRANCH']
+    if 'CASA_VERSION' in os.environ:
+        environment['version'] = os.environ['CASA_VERSION']
     environment['image'] = os.getenv('SINGULARITY_CONTAINER')
     if not environment['image']:
         environment['image'] = '/unknown.sif'
