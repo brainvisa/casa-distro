@@ -108,17 +108,7 @@ take inspiration from it to create your own personalized set-up.
       singularity run --bind "$(pwd)"/brainvisa-master-ubuntu-18.04-nightly:/casa/setup \
           brainvisa-master-ubuntu-18.04-nightly.sif
 
-12. Edit ``brainvisa-master-ubuntu-18.04-nightly/conf/casa_distro.json`` by
-    changing the ``distro`` and ``version`` keys to their correct values
-    (create them if they are missing). In our example::
-
-      "distro": "brainvisa",
-      "version": "nightly"
-
-    This should not be needed anymore when `issue #201
-    <https://github.com/brainvisa/casa-distro/issues/201>`_ is fixed.
-
-13. Check that the whole ``bbi_daily`` process is able to run successfully::
+12. Check that the whole ``bbi_daily`` process is able to run successfully::
 
       "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin \
           bbi_daily dev_tests=no user_tests=no
@@ -126,7 +116,7 @@ take inspiration from it to create your own personalized set-up.
     Beware that the output of each step is displayed only when that step is
     finished, so the command may seem to hang for a long time.
 
-14. Set the ``bbi_command`` to run on a regular basis using ``crontab -e``::
+13. Set the ``bbi_command`` to run on a regular basis using ``crontab -e``::
 
       MAILTO=your.email@host.example
       37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
