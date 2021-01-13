@@ -82,7 +82,7 @@ take inspiration from it to create your own personalized set-up.
 
 9. Download the ``casa-run`` image::
 
-     "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/src/development/casa-distro/master/bin/casa_distro \
+     "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro \
          pull_image image=casa-run-ubuntu-18.04.sif
 
 10. Create an inital user image. You may need to set the ``SINGULARITY_TMPDIR``
@@ -90,7 +90,7 @@ take inspiration from it to create your own personalized set-up.
     of the final user image)::
 
       export SINGULARITY_TMPDIR=/volatile/tmp
-      "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/src/development/casa-distro/master/bin/casa_distro_admin \
+      "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin \
           create_user_image \
           version=nightly \
           environment_name=brainvisa-master-ubuntu-18.04 \
@@ -120,7 +120,7 @@ take inspiration from it to create your own personalized set-up.
 
 13. Check that the whole ``bbi_daily`` process is able to run successfully::
 
-      "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/src/development/casa-distro/master/bin/casa_distro_admin \
+      "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin \
           bbi_daily dev_tests=no user_tests=no
 
     Beware that the output of each step is displayed only when that step is
@@ -129,7 +129,7 @@ take inspiration from it to create your own personalized set-up.
 14. Set the ``bbi_command`` to run on a regular basis using ``crontab -e``::
 
       MAILTO=your.email@host.example
-      37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-ubuntu-18.04/src/development/casa-distro/master/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
+      37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
 
     :note: Remember to set all the needed environment variables, including
            ``BRAINVISA_PUBLISH_SERVER``. ``PATH`` may need to be set
