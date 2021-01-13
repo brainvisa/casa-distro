@@ -114,7 +114,6 @@ Bootstrap: localimage
 %runscript
     export CASA_SYSTEM='{system}'
     export CASA_TYPE='{type}'
-    export CASA_ENVIRONMENT='{name}'
 
     if [ -d /casa/setup ]; then
         /casa/casa-distro/bin/casa_distro setup_dev "$@"
@@ -151,8 +150,7 @@ Bootstrap: localimage
     fi
 '''.format(base=base,  # noqa: E501
            system=metadata['system'],
-           type=type,
-           name=metadata['name']))
+           type=type))
         v = {}
         print('build_file:', build_file)
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
@@ -196,7 +194,6 @@ Bootstrap: localimage
 %runscript
     export CASA_SYSTEM='{system}'
     export CASA_TYPE='{type}'
-    export CASA_ENVIRONMENT='{name}'
     export CASA_DISTRO='{distro}'
 
     if [ -d /casa/setup ]; then
@@ -232,7 +229,6 @@ Bootstrap: localimage
            environment_directory=dev_config['directory'],
            system=dev_config['system'],
            type='user',
-           name=dev_config['name'],
            distro=dev_config['distro']))
     recipe.flush()
     if verbose:
