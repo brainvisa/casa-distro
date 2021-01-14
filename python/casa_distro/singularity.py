@@ -612,6 +612,10 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             v = container_env[n]
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
+        # When verbose is stdout or stderr we must flush buffers to avoid the
+        # output of the singularity command to be intermixed with verbose
+        # output.
+        verbose.flush()
 
     try:
         return subprocess.call(singularity, env=container_env)
