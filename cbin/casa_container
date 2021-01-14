@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import os.path as osp
+import sys
+
+binpath = osp.realpath(sys.argv[0])
+pypath = osp.join(osp.dirname(osp.dirname(binpath)), 'python')
+
+if not osp.exists(osp.join(pypath, 'casa_distro')):
+    branch = os.environ.get('CASA_BRANCH')
+    if branch:
+        if branch == 'bug_fix':  # fix an obsolete setting
+            branch = 'master'
+        pypath = '/casa/host/src/development/casa-distro/%s/python' % branch
+
+    if not osp.exists(osp.join(pypath, 'casa_distro')):
+        pypath = '/casa/casa-distro/python'
+
+sys.path.insert(0, pypath)
+
+from casa_distro.command import main  # noqa: E402
+from casa_distro import container_commands  # noqa: F401, E402
+
+main()
