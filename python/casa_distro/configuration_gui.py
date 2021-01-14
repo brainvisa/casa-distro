@@ -528,7 +528,7 @@ def get_env_path():
     return env_path, python_path, build_path
 
 
-if __name__ == "__main__":
+def main_gui():
     if not Qt.QApplication.instance():
         app = Qt.QApplication(sys.argv)
 
@@ -538,3 +538,7 @@ if __name__ == "__main__":
     dialog.show()
 
     app.exec_()
+
+
+if __name__ == "__main__":
+    main_gui()
