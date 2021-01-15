@@ -65,7 +65,7 @@ class RecipeBuilder:
 
     def install_casa_distro(self, dest):
         source = osp.dirname(osp.dirname(osp.dirname(__file__)))
-        for i in ('bin', 'python', 'etc', 'share'):
+        for i in ('bin', 'cbin', 'python', 'etc', 'share'):
             self.copy_root(osp.join(source, i), dest)
         self.run_root(("find %s -name __pycache__ -o -name '*\\.pyc' "
                        "-o -name '*~' -exec rm -Rf '{}' \\;") % dest)
@@ -116,7 +116,7 @@ Bootstrap: localimage
     export CASA_TYPE='{type}'
 
     if [ -d /casa/setup ]; then
-        /casa/casa-distro/bin/casa_distro setup_dev "$@"
+        /usr/local/bin/entrypoint casa_container setup_dev "$@"
     elif [ $# -ne 0 ]; then
         . /usr/local/bin/entrypoint
     elif [ "$CASA_TYPE" = dev ]; then
@@ -205,7 +205,7 @@ Bootstrap: localimage
     export CASA_VERSION='{version}'
 
     if [ -d /casa/setup ]; then
-        /casa/casa-distro/bin/casa_distro setup_user "$@"
+        /casa/casa-distro/cbin/casa_container setup_user "$@"
     elif [ $# -ne 0 ]; then
         /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
     else

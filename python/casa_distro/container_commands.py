@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 
 # from casa_distro import six
 from casa_distro.command import command
-from casa_distro.environment import (setup_user as env_setup_user,
-                                     setup_dev as env_setup_dev)
+from casa_distro.container_environment import (setup_user as env_setup_user,
+                                               setup_dev as env_setup_dev)
 
 
 @command

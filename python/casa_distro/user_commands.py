@@ -3,20 +3,24 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import shutil
+import glob
+import os
+import os.path as osp
+import json
 
 from casa_distro import six
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import default_download_url
 from casa_distro.environment import (casa_distro_directory,
-                                     setup_user as env_setup_user,
-                                     setup_dev as env_setup_dev,
                                      iter_distros,
                                      iter_environments,
                                      run_container,
                                      select_environment,
                                      iter_images,
                                      update_container_image,
-                                     delete_image)
+                                     delete_image,
+                                     find_in_path,
+                                     select_distro)
 from casa_distro.log import verbose_file
 
 if six.PY3:
@@ -142,54 +146,407 @@ class ExecutionStatus(object):
 
 
 @command
-def setup_user(dir='/casa/setup'):
-    """
-    Create all necessary directories and files to setup a user environement.
-
-    This command is not supposed to be called directly but using a user image::
-
-        mkdir ~/brainvisa
-        cd ~/brainvisa
-        singularity run --bind .:/casa/setup brainvisa-5.0.sif
-
+def setup_user(distro=None,
+               version=None,
+               system=None,
+               name='{distro}-{version}',
+               container_type=None,
+               writable=None,
+               base_directory=casa_distro_directory(),
+               image='{base_directory}/{distro}-{version}{extension}',
+               url=default_download_url + '/releases/{container_type}',
+               output='{base_directory}/{name}',
+               # vm_memory='8192',
+               # vm_disk_size='131072',
+               force=False,
+               verbose=True):
+    """Create a new user environment
     Parameters
     ----------
-
-    dir
-        dir={dir_default}
-        Target environment directory
+    distro
+        default={distro_default}
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    version
+        version of the distro to use. By default the release with highest
+        version is selected.
+    system
+        System to use inside this environment.
+    name
+        default={name_default}
+        Name of the environment. No other environment must have the same name
+        (including developer environments).
+        This name may be used later to select the environment to run.
+    container_type
+        default={container_type_default}
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker". If not given try to gues according to installed container
+        software in the following order : Singularity, VirtualBox and Docker.
+    writable
+        size of a writable file system that can be used to make environement
+        specific modification to the container file system. The size can be
+        written in bytes as an integer, or in kilobytes with suffix "K", or in
+        megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+        not 0, this will create an overlay.img file in the base environment
+        directory. This file will contain the any modification done to the
+        container file system.
+    {base_directory}
+    image
+        default={image_default}
+        Location of the virtual image for this environement.
+    url
+        default={url_default}
+        URL where to download image if it is not found.
+    output
+        default={output_default}
+        Directory where the environement will be stored.
+    force
+        default=False
+        force overwriting any existing matching environement. By default
+        casa_distro will refuse to overwrite an existing one.
+    {verbose}
     """
-    env_setup_user(dir)
+    verbose = verbose_file(verbose)
+    force = check_boolean('force', force)
+
+    if not container_type:
+        if find_in_path('singularity'):
+            container_type = 'singularity'
+        elif find_in_path('VBoxManage'):
+            container_type = 'vbox'
+        elif find_in_path('docker'):
+            container_type = 'docker'
+        else:
+            raise ValueError('Cannot guess container_type according to '
+                             'Singularity, VirtualBox or Docker command '
+                             'research')
+
+    if container_type == 'singularity':
+        extension = '.sif'
+    elif container_type == 'vbox':
+        extension = '.vdi'
+    elif container_type == 'docker':
+        raise NotImplementedError(
+            'docker container type is not yet supported by this command')
+    else:
+        raise ValueError('Invalid container type: {0}'.format(container_type))
+    if verbose:
+        print('Container type:', container_type,
+              file=verbose)
+
+    if distro is None or version is None or system is None:
+        selected = None
+        for metadata_file in glob.glob(osp.join(base_directory,
+                                                'run', '*.json')):
+            metadata = json.load(open(metadata_file))
+            if ((distro is None or distro == metadata['distro'])
+                and (version is None or version == metadata['version'])
+                    and (system is None or system == metadata['system'])):
+                if selected:
+                    raise ValueError(
+                        'Several releases found. Please adjust, distro, '
+                        'version and system to select only one')
+                metadata['image'] = metadata_file[:metadata_file.rfind('.')]
+                selected = metadata
+        if selected is None:
+            raise ValueError(
+                'No release found. Please adjust, distro, version and system '
+                'to select one')
+        distro = selected['distro']
+        version = selected['version']
+        system = selected['version']
+    else:
+        selected = {
+            'distro': distro,
+            'system': system,
+            'version': version,
+            'container_type': container_type,
+        }
+
+    name = name.format(distro=distro,
+                       version=version,
+                       system=system)
+    selected['name'] = name
+
+    if verbose:
+        print('name:', name,
+              file=verbose)
+
+    if not osp.isdir(base_directory):
+        raise ValueError('No such directory: {0}'.format(base_directory))
+    if verbose:
+        print('base directory:', base_directory,
+              file=verbose)
+
+    image = image.format(distro=distro,
+                         version=version,
+                         system=system,
+                         base_directory=base_directory,
+                         container_type=container_type,
+                         extension=extension)
+    selected['image'] = image
+
+    if verbose:
+        print('image:', image,
+              file=verbose)
+
+    url = url.format(distro=distro,
+                     version=version,
+                     system=system,
+                     base_directory=base_directory,
+                     container_type=container_type,
+                     extension=extension)
+    if verbose:
+        print('download image url:', url,
+              file=verbose)
+
+    update_container_image(container_type, image, url, new_only=True,
+                           verbose=verbose)
+
+    output = output.format(distro=distro,
+                           version=version,
+                           system=system,
+                           base_directory=base_directory,
+                           name=name,
+                           extension=extension)
+    if verbose:
+        print('output:', output,
+              file=verbose)
+
+    if writable and container_type != 'singularity':
+        raise ValueError(
+            'Only Singularity supports writable file system overlay')
+
+    if not osp.exists(output):
+        os.makedirs(output)
+
+    selected.setdefault('mounts', {})['/casa/setup'] = output
+    selected['directory'] = output
+
+    run_container(
+        selected,
+        command=['casa_container', 'setup_user'],
+        gui=False,
+        opengl='container',
+        root=False,
+        cwd='/casa/home',
+        env=None,
+        image=image,
+        container_options=None,
+        base_directory=base_directory,
+        verbose=verbose)
 
 
 @command
-def setup_dev(distro, branch='master', system=None, dir='/casa/setup',
-              name=None):
-    """
-    Create all necessary directories and files to setup a developer
-    environment.
-
-    This command is not supposed to be called directly but using a casa-dev
-    image::
-
-        mkdir -p ~/casa_distro/brainvisa-master
-        cd ~/casa_distro
-        singularity run -B \\
-            ./brainvisa-master:/casa/setup casa-dev-ubuntu-18.04.sif \\
-            brainvisa master
-
+def setup_dev(distro='opensource',
+              branch='master',
+              system=None,
+              name='{distro}-{branch}-{system}',
+              container_type=None,
+              writable=None,
+              base_directory=casa_distro_directory(),
+              image='{base_directory}/casa-dev-{system}{extension}',
+              url=default_download_url + '/{container_type}',
+              output='{base_directory}/{name}',
+              # vm_memory='8192',
+              # vm_disk_size='131072',
+              force=False,
+              verbose=True):
+    """Create a new developer environment
     Parameters
     ----------
-
-    {distro}
-    {branch}
-    {system}
-    dir
-        dir={dir_default}
-        Target environment directory
-    {name}
+    distro
+        default={distro_default}
+        Distro used to build this environment. This is typically "brainvisa",
+        "opensource" or "cati_platform". Use "casa_distro distro" to list all
+        currently available distro. Choosing a distro is mandatory to create a
+        new environment. If the environment already exists, distro must be set
+        only to reset configuration files to their default values.
+    branch
+        default={branch_default}
+        Name of the source branch to use for dev environments. Either
+        "latest_release", "master" or "integration".
+    system
+        System to use with this environment. By default, it uses the first
+        supported system of the selected distro.
+    name
+        default={name_default}
+        Name of the environment. No other environment must have the same name
+        (including non developer environments).
+        This name may be used later to select the environment to run.
+    container_type
+        default={container_type_default}
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker". If not given try to gues according to installed container
+        software in the following order : Singularity, VirtualBox and Docker.
+    writable
+        size of a writable file system that can be used to make environement
+        specific modification to the container file system. The size can be
+        written in bytes as an integer, or in kilobytes with suffix "K", or in
+        megabytes qith suffix "M", or in gygabytes with suffix "G". If size is
+        not 0, this will create an overlay.img file in the base environment
+        directory. This file will contain the any modification done to the
+        container file system.
+    {base_directory}
+    image
+        default={image_default}
+        Location of the virtual image for this environement.
+    url
+        default={url_default}
+        URL where to download image if it is not found.
+    output
+        default={output_default}
+        Directory where the environement will be stored.
+    force
+        default=False
+        force overwriting any existing matching environement. By default
+        casa_distro will refuse to overwrite an existing one.
+    {verbose}
     """
-    env_setup_dev(dir, distro, branch, system, name=name)
+
+    verbose = verbose_file(verbose)
+    force = check_boolean('force', force)
+
+    if not container_type:
+        if find_in_path('singularity'):
+            container_type = 'singularity'
+        elif find_in_path('VBoxManage'):
+            container_type = 'vbox'
+        elif find_in_path('docker'):
+            container_type = 'docker'
+        else:
+            raise ValueError('Cannot guess container_type according to '
+                             'Singularity, VirtualBox or Docker command '
+                             'research')
+
+    if container_type == 'singularity':
+        extension = '.sif'
+    elif container_type == 'vbox':
+        extension = '.vdi'
+    elif container_type == 'docker':
+        raise NotImplementedError(
+            'docker container type is not yet supported by this command')
+    else:
+        raise ValueError('Invalid container type: {0}'.format(container_type))
+    if verbose:
+        print('Container type:', container_type,
+              file=verbose)
+
+    distro = select_distro(distro)
+    if verbose:
+        print('Distro:', distro['name'],
+              file=verbose)
+        print('Distro directory:', distro['directory'],
+              file=verbose)
+
+    if branch not in ('latest_release', 'master', 'integration'):
+        raise ValueError('Invalid branch : {0}'.format(branch))
+    if verbose:
+        print('Branch:', branch,
+              file=verbose)
+
+    if system is None:
+        system = distro['systems'][0]
+
+    if system not in distro['systems']:
+        # FIXME: make this a warning, but allow the user (developer) to proceed
+        raise ValueError('The system {0} is not supported by the distro {1}. '
+                         'Please select one of the following systems: {2}'
+                         .format(system, distro['name'],
+                                 ', '.join(distro['systems'])))
+    if verbose:
+        print('System:', system,
+              file=verbose)
+
+    name = name.format(distro=distro['name'],
+                       branch=branch,
+                       system=system)
+    if verbose:
+        print('name:', name,
+              file=verbose)
+
+    if not osp.isdir(base_directory):
+        raise ValueError('No such directory: {0}'.format(base_directory))
+    if verbose:
+        print('base directory:', base_directory,
+              file=verbose)
+
+    image = image.format(distro=distro['name'],
+                         branch=branch,
+                         system=system,
+                         base_directory=base_directory,
+                         container_type=container_type,
+                         extension=extension)
+    if verbose:
+        print('image:', image,
+              file=verbose)
+
+    url = url.format(distro=distro['name'],
+                     branch=branch,
+                     system=system,
+                     base_directory=base_directory,
+                     container_type=container_type,
+                     extension=extension)
+    if verbose:
+        print('download image url:', url,
+              file=verbose)
+
+    output = output.format(distro=distro['name'],
+                           branch=branch,
+                           system=system,
+                           base_directory=base_directory,
+                           name=name,
+                           extension=extension)
+    if verbose:
+        print('output:', output,
+              file=verbose)
+
+    update_container_image(container_type, image, url, new_only=True,
+                           verbose=verbose)
+
+    if writable and container_type != 'singularity':
+        raise ValueError(
+            'Only Singularity supports writable file system overlay')
+
+    metadata = {
+        'name': name,
+        'type': 'dev',
+        'distro': distro['name'],
+        'branch': branch,
+        'system': system,
+        'container_type': container_type,
+        'image': image,
+    }
+
+    if not osp.exists(output):
+        os.makedirs(output)
+
+    metadata.setdefault('mounts', {})['/casa/setup'] = output
+    metadata['directory'] = output
+
+    options = []
+    if branch:
+        options.append('branch=%s' % branch)
+    if distro['name']:
+        options.append('distro=%s' % distro['name'])
+    if system:
+        options.append('system=%s' % system)
+
+    run_container(
+        metadata,
+        command=['casa_container', 'setup_dev'] + options,
+        gui=False,
+        opengl='container',
+        root=False,
+        cwd='/casa/home',
+        env=None,
+        image=image,
+        container_options=None,
+        base_directory=base_directory,
+        verbose=verbose)
 
 
 @command
