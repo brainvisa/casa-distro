@@ -180,7 +180,10 @@ Bootstrap: localimage
         if verbose:
             print('run create command:\n',
                   *(build_command + [output, recipe.name]))
-        subprocess.check_call(build_command + [output, recipe.name])
+        # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
+        # permission issue with --fakeroot and NFS root_squash.
+        subprocess.check_call(build_command + [output, recipe.name],
+                              cwd='/')
 
 
 def create_user_image(base_image,
@@ -246,7 +249,10 @@ Bootstrap: localimage
         print('----------------------------------------', file=verbose)
         verbose.flush()
     build_command = _singularity_build_command(force=force, fakeroot=True)
-    subprocess.check_call(build_command + [output, recipe.name])
+    # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
+    # permission issue with --fakeroot and NFS root_squash.
+    subprocess.check_call(build_command + [output, recipe.name],
+                          cwd='/')
 
 
 _singularity_version = None
