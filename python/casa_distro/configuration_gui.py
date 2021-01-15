@@ -499,6 +499,7 @@ class ConfigEditor(Qt.QWidget):
 
 
 def get_env_path():
+    env_path = '/casa/host'
     build_path = None
     python_path = None
     casa_path = os.path.dirname(os.path.dirname(os.path.dirname(
@@ -506,34 +507,21 @@ def get_env_path():
     if os.path.isdir(os.path.join(casa_path, 'python')):
         python_path = os.path.join(casa_path, 'python')
     else:
-        casa_path = os.path.dirname(casa_path)
-        if os.path.isdir(os.path.join(casa_path, 'python')):
-            python_path = os.path.join(casa_path, 'python')
-        else:
-            try:
-                import casa_distro
-                python_path = os.path.dirname(os.path.dirname(
-                    casa_distro.__file__))
-            except ImportError:
-                python_path = None
-    if not python_path:
+        try:
+            import casa_distro
+            python_path = os.path.dirname(os.path.dirname(
+                casa_distro.__file__))
+        except ImportError:
+            python_path = None
+    if not python_path or not os.path.isdir(python_path):
         python_path = '/casa/casa-distro/python'
-    if not casa_path or not os.path.isdir(casa_path):
-        casa_path = '/casa/host'
-    # try direct install case (unlinkely)
-    env_path = casa_path
-    if os.path.exists(os.path.join(env_path, 'conf', 'casa_distro.json')):
-        build_path = os.path.dirname(python_path)
-    else:
-        # install [/ build] case
-        env_path = os.path.dirname(env_path)
-        if os.path.exists(os.path.join(env_path, 'conf', 'casa_distro.json')):
-            build_path = os.path.dirname(python_path)
-        else:
-            # source case
-            env_path = os.path.dirname(os.path.dirname(
-                os.path.dirname(env_path)))
-            build_path = os.path.join(env_path, 'build')
+
+    if os.path.isdir('/casa/host/build/bin'):
+        build_path = '/casa/host/build'
+    elif os.path.isdir('/casa/host/install/bin'):
+        build_path = '/casa/host/install'
+    elif os.path.isdir('/casa/install/bin'):
+        build_path = '/casa/install'
     return env_path, python_path, build_path
 
 
