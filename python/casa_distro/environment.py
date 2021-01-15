@@ -327,6 +327,7 @@ def setup_dev(setup_dir, distro, branch='master', system=None, image=None,
 SVN_USERNAME='brainvisa'
 SVN_PASSWORD='Soma2009'
 ''')
+    os.chmod(svn_secret, 0o600)  # hide password from other users
 
     print('''
 ------------------------------------------------------------------------
