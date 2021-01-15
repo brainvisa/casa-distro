@@ -272,7 +272,7 @@ Commands:
         print('\n'.join(commands_summary), file=file)
 
 
-def main(meant_from_container=False):
+def main(meant_for_container=False):
     args_list = []
     if '--' in sys.argv:
         ind = sys.argv.index('--')
@@ -327,7 +327,7 @@ def main(meant_from_container=False):
                 kwargs['args_list'] = args + args_list
                 args = []
             # ensure we are running on the right side of the container
-            if (not meant_from_container and command_name != 'help'
+            if (not meant_for_container and command_name != 'help'
                     and 'CASA_HOST_DIR' in os.environ):
                 print('the "%s" command has been called from within a '
                       'casa-distro container. This is not the way it should '
