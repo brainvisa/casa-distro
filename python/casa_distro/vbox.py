@@ -401,7 +401,7 @@ class VBoxMachine:
 
 
     def install_casa_distro(self, dest):
-        #TODO: will be removed
+        """This is a no op because we do not use casa_distro with VirtualBox"""
         pass
 
 
