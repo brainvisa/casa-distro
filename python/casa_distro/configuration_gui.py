@@ -500,17 +500,25 @@ class ConfigEditor(Qt.QWidget):
 
 def get_env_path():
     build_path = None
+    python_path = None
     casa_path = os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__))))
     if os.path.isdir(os.path.join(casa_path, 'python')):
         python_path = os.path.join(casa_path, 'python')
     else:
-        try:
-            import casa_distro
-            python_path = os.path.dirname(os.path.dirname(
-                casa_distro.__file__))
-        except ImportError:
-            python_path = None
+        casa_path = os.path.dirname(casa_path)
+        if os.path.isdir(os.path.join(casa_path, 'python')):
+            python_path = os.path.join(casa_path, 'python')
+        else:
+            try:
+                import casa_distro
+                python_path = os.path.dirname(os.path.dirname(
+                    casa_distro.__file__))
+            except ImportError:
+                python_path = None
+    if not python_path:
+        python_path = '/casa/casa-distro/python'
+        casa_path = '/casa/host'
     # try direct install case (unlinkely)
     env_path = casa_path
     if os.path.exists(os.path.join(env_path, 'conf', 'casa_distro.json')):
@@ -531,6 +539,8 @@ def get_env_path():
 def main_gui():
     if not Qt.QApplication.instance():
         app = Qt.QApplication(sys.argv)
+    else:
+        app = Qt.QApplication.instance()
 
     casa_path, _, _ = get_env_path()
     conf_path = os.path.join(casa_path, 'conf/casa_distro.json')
