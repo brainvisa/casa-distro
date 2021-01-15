@@ -107,29 +107,37 @@ See the doc in casa_distro::
     sys.exit()
 
 
-environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
-if environment_dir:
-    environment_dir = osp.normpath(environment_dir)
+bv = osp.normpath(osp.abspath(sys.argv[0]))
+real_bv = osp.realpath(bv)
+guess_environments = [osp.dirname(osp.dirname(bv))]
+guess_environment = osp.dirname(osp.dirname(real_bv))
+for i in range(5):
+    guess_environments.append(guess_environment)
+    parent = osp.dirname(guess_environment)
+    if parent == guess_environment:
+        break
+    guess_environment = parent
+for environment_dir in guess_environments:
+    if (osp.exists(osp.join(environment_dir, 'host', 'conf',
+                            'casa_distro.json'))
+        or osp.exists(osp.join(environment_dir, 'conf',
+                               'casa_distro.json'))):
+        break
 else:
-    bv = osp.normpath(osp.abspath(sys.argv[0]))
-    real_bv = osp.realpath(bv)
-    guess_environments = [osp.dirname(osp.dirname(bv))]
-    guess_environment = osp.dirname(osp.dirname(real_bv))
-    for i in range(5):
-        guess_environments.append(guess_environment)
-        parent = osp.dirname(guess_environment)
-        if parent == guess_environment:
-            break
-        guess_environment = parent
-    for environment_dir in guess_environments:
-        if (osp.exists(osp.join(environment_dir, 'host', 'conf',
-                                'casa_distro.json'))
-            or osp.exists(osp.join(environment_dir, 'conf',
-                                   'casa_distro.json'))):
-            break
-    else:
-        if perform_run:
-            failure('Cannot find execution environment')
+    if perform_run:
+        if not environment_dir or not os.path.isdir(environment_dir):
+            environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
+            if environment_dir:
+                environment_dir = osp.normpath(environment_dir)
+
+        if not environment_dir or not os.path.isdir(environment_dir):
+            failure(
+                'Cannot find execution environment\n'
+                'An appropriate environment has not been found. Please check '
+                'that "bv" is run in an environment bin/ directory (and '
+                'started from the host system) or that the '
+                'CASA_ENVIRONMENT_DIR environment variable has been set '
+                'appropriately.')
 
 casa_distro = None
 for i in (('host', 'src', 'development', 'casa-distro', '*'),
