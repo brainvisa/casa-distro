@@ -34,6 +34,13 @@ def failure(message):
     sys.exit(1)
 
 
+if 'CASA_HOST_DIR' in os.environ:
+    print('the "%s" command has been called from within a casa-distro '
+          'container. This is not the way it should be used: it must be '
+          'called from the host system.' % osp.basename(sys.argv[0]),
+          file=sys.stderr)
+    sys.exit(1)
+
 help = False
 verbose = None
 
@@ -77,6 +84,9 @@ if help:
     print('''usage: bv [-h] [-v] [command...]
 
 Command used to start any BrainVISA related program.
+
+It is meant to be used from outside a container, and runs commands inside a
+container.
 
 Used without parameter, it starts a graphical interface
 allowing the configuration of the environment.
@@ -142,7 +152,7 @@ else:
         failure('Cannot find casa_distro executable')
 
 if not command and perform_run:
-    command = ['python', '-m', 'casa_distro.configuration_gui']
+    command = ['casa_container', 'config_gui']
 
 if casa_distro_admin:
     host_command = [sys.executable, casa_distro + '_admin']

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import os
 import os.path as osp
 import sys
@@ -17,6 +19,14 @@ if not osp.exists(osp.join(pypath, 'casa_distro')):
 
     if not osp.exists(osp.join(pypath, 'casa_distro')):
         pypath = '/casa/casa-distro/python'
+
+if not pypath or not osp.exists(pypath):
+    print('the "%s" command has been called from outside a casa-distro '
+          'container. This is not the way it should be used: it must be '
+          'called from the within the container.' % osp.basename(sys.argv[0]),
+          file=sys.stderr)
+    sys.exit(1)
+
 
 sys.path.insert(0, pypath)
 

@@ -36,4 +36,12 @@ if [ -f "${CASA_BUILD}/bin/bv_env.sh" ] \
     # need to update the path to help bv_env.sh to find out its installation
     PATH="${CASA_BUILD}/bin:${PATH}"
     . "${CASA_BUILD}/bin/bv_env.sh"
+    branch="$CASA_BRANCH"
+    if [ "$branch" = "bug_fix" ]; then
+        branch="master"
+    fi
+    if [ -d "/casa/host/src/development/casa-distro/$branch/cbin" ]; then
+        export PATH="/casa/host/src/development/casa-distro/$branch/cbin:$PATH"
+    fi
+    unset branch
 fi
