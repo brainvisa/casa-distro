@@ -3,7 +3,6 @@
 
 from __future__ import print_function
 
-import os
 import os.path as osp
 import shutil
 import sys
@@ -19,13 +18,6 @@ del ppath
 
 from casa_distro.command import main  # noqa: E402
 from casa_distro import user_commands  # noqa: F401, E402
-
-if 'CASA_HOST_DIR' in os.environ:
-    print('the "%s" command has been called from within a casa-distro '
-          'container. This is not the way it should be used: it must be '
-          'called from the host system.' % osp.basename(sys.argv[0]),
-          file=sys.stderr)
-    sys.exit(1)
 
 tmp_share = None
 try:

@@ -33,4 +33,4 @@ sys.path.insert(0, pypath)
 from casa_distro.command import main  # noqa: E402
 from casa_distro import container_commands  # noqa: F401, E402
 
-main()
+main(meant_for_container=True)

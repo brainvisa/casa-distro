@@ -382,6 +382,8 @@ class Launchers(Qt.QWidget):
         self._reload_msg = Qt.QLabel()
 
         env_path, python_path, build_path = get_env_path()
+        if not build_path:
+            build_path = ''
         icon_path = None
         axon_doc = glob.glob(os.path.join(build_path, 'share/doc/axon*'))
         if axon_doc:

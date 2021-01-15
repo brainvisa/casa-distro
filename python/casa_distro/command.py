@@ -272,7 +272,7 @@ Commands:
         print('\n'.join(commands_summary), file=file)
 
 
-def main():
+def main(meant_for_container=False):
     args_list = []
     if '--' in sys.argv:
         ind = sys.argv.index('--')
@@ -326,6 +326,14 @@ def main():
             if 'args_list' in cargs.args:
                 kwargs['args_list'] = args + args_list
                 args = []
+            # ensure we are running on the right side of the container
+            if (not meant_for_container and command_name != 'help'
+                    and 'CASA_HOST_DIR' in os.environ):
+                print('the "%s" command has been called from within a '
+                      'casa-distro container. This is not the way it should '
+                      'be used: it must be called from the host system.'
+                      % osp.basename(sys.argv[0]), file=sys.stderr)
+                sys.exit(1)
             result = command(*args, **kwargs)
     except (ValueError, TypeError, RuntimeError, NotImplementedError) as e:
         print('ERROR: {0} raised the following error:'.format(command_name),

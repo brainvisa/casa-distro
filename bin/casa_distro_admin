@@ -3,7 +3,6 @@
 
 from __future__ import print_function
 
-import os
 import os.path as osp
 import sys
 
@@ -13,13 +12,6 @@ ppath = osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'python')
 if osp.exists(osp.join(ppath, 'casa_distro', '__init__.py')):
     sys.path.insert(0, ppath)
 del ppath
-
-if 'CASA_HOST_DIR' in os.environ:
-    print('the "%s" command has been called from within a casa-distro '
-          'container. This is not the way it should be used: it must be '
-          'called from the host system.' % osp.basename(sys.argv[0]),
-          file=sys.stderr)
-    sys.exit(1)
 
 try:
     from casa_distro.command import main
