@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import getpass
 
 from . import six
 
@@ -175,15 +176,28 @@ Bootstrap: localimage
             print(open(recipe.name).read(), file=verbose)
             print('----------------------------------------', file=verbose)
             verbose.flush()
+        fakeroot = True
         build_command = _singularity_build_command(cleanup=cleanup,
-                                                   force=force)
+                                                   force=force,
+                                                   fakeroot=fakeroot)
         if verbose:
             print('run create command:\n',
                   *(build_command + [output, recipe.name]))
         # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
         # permission issue with --fakeroot and NFS root_squash.
-        subprocess.check_call(build_command + [output, recipe.name],
-                              cwd='/')
+        try:
+            subprocess.check_call(build_command + [output, recipe.name],
+                                  cwd='/')
+        except Exception:
+            if fakeroot:
+                print('** Image creation has failed **', file=sys.stderr)
+                print('If you see an error message about fakeroot not working '
+                      'on your system, then try the following command (you '
+                      'need sudo permissions):', file=sys.stderr)
+                print('sudo singularity config fakeroot --add %s'
+                      % getpass.getuser(), file=sys.stderr)
+                print(file=sys.stderr)
+            raise
 
 
 def create_user_image(base_image,
