@@ -158,11 +158,11 @@ def create_image(base, base_metadata,
         raise NotImplementedError('Creation of image of type {0} is not yet '
                                   'implemented for VirtualBox'.format(type))
 
-
 def create_user_image(base_image,
                       dev_config,
                       version,
                       output,
+                      force,
                       base_directory,
                       verbose):
     install_dir = osp.join(dev_config['directory'], 'install')

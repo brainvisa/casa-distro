@@ -652,8 +652,9 @@ def create_user_image(
                                 branch=branch,
                                 system=system,
                                 name=environment_name,
-                                container_type=container_type)
-    container_type = config['container_type']
+                                container_type='singularity')
+    if container_type != 'vbox':
+        container_type = config['container_type']
     if container_type == 'singularity':
         extension = '.sif'
         module = casa_distro.singularity
