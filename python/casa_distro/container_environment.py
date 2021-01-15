@@ -189,6 +189,7 @@ def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
 SVN_USERNAME='brainvisa'
 SVN_PASSWORD='Soma2009'
 ''')
+    os.chmod(svn_secret, 0o600)  # hide password from other users
 
     print('''
 ------------------------------------------------------------------------
