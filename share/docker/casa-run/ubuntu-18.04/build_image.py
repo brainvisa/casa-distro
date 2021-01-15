@@ -61,11 +61,6 @@ def install(base_dir, builder, verbose):
     builder.copy_root(osp.join(base_dir, 'mesa'), '/usr/local/lib/')
 
     if verbose:
-        six.print_('Install casa-distro in /casa/casa-distro',
-                   file=verbose, flush=True)
-    builder.install_casa_distro('/casa/casa-distro')
-
-    if verbose:
         six.print_('Running install_apt_dependencies.sh',
                    file=verbose, flush=True)
     builder.run_root('/opt/install_apt_dependencies.sh')

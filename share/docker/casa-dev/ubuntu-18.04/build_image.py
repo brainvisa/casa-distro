@@ -49,6 +49,11 @@ def install(base_dir, builder, verbose):
     builder.run_root('/opt/install_compiled_dev_dependencies.sh')
 
     if verbose:
+        six.print_('Installing casa-distro in /casa/casa-distro',
+                   file=verbose, flush=True)
+    builder.install_casa_distro('/casa/casa-distro')
+
+    if verbose:
         six.print_('Running install_casa_dev_components.sh',
                    file=verbose, flush=True)
     builder.run_root('/opt/install_casa_dev_components.sh')

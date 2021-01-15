@@ -212,9 +212,6 @@ def create_user_image(base_image,
 Bootstrap: localimage
     From: {base_image}
 
-%files
-    {environment_directory}/install /casa/install
-
 %runscript
     export CASA_SYSTEM='{system}'
     export CASA_TYPE='{type}'
@@ -251,12 +248,17 @@ Bootstrap: localimage
         echo 'Please visit https://brainvisa.info/ for complete help.'
     fi
 '''.format(base_image=base_image,
-           environment_directory=dev_config['directory'],
            system=dev_config['system'],
            type='user',
            distro=dev_config['distro'],
            version=version))
+
+    rb = RecipeBuilder(output)
+    rb.copy_root(dev_config['directory'] + '/install', '/casa')
+    rb.install_casa_distro('/casa/casa-distro')
+    rb.write(recipe)
     recipe.flush()
+
     if verbose:
         print('---------- Singularity recipe ----------', file=verbose)
         print(open(recipe.name).read(), file=verbose)
