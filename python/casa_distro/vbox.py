@@ -265,8 +265,9 @@ class VBoxMachine:
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
-                print('Starting', self.name, 'and waiting for it to be ready',
-                      file=verbose, flush=True)
+                six.print_('Starting', self.name,
+                          'and waiting for it to be ready',
+                          file=verbose, flush=True)
             self.start(gui=gui)
             command = self._run_user_command('echo')
             for i in range(attempts):
@@ -397,6 +398,12 @@ class VBoxMachine:
                         '--password', self.user_password, self.name,
                          'copyto', '--target-directory', dest_dir,
                          source])
+
+
+    def install_casa_distro(self, dest):
+        #TODO: will be removed
+        pass
+
 
     def install(self,
                 build_file,
