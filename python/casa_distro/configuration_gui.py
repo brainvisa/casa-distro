@@ -518,6 +518,7 @@ def get_env_path():
                 python_path = None
     if not python_path:
         python_path = '/casa/casa-distro/python'
+    if not casa_path or not os.path.isdir(casa_path):
         casa_path = '/casa/host'
     # try direct install case (unlinkely)
     env_path = casa_path
