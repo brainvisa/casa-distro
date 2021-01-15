@@ -34,13 +34,6 @@ def failure(message):
     sys.exit(1)
 
 
-if 'CASA_HOST_DIR' in os.environ:
-    print('the "%s" command has been called from within a casa-distro '
-          'container. This is not the way it should be used: it must be '
-          'called from the host system.' % osp.basename(sys.argv[0]),
-          file=sys.stderr)
-    sys.exit(1)
-
 help = False
 verbose = None
 
@@ -107,6 +100,14 @@ See the doc in casa_distro::
     sys.exit()
 
 
+if 'CASA_HOST_DIR' in os.environ:
+    print('the "%s" command has been called from within a casa-distro '
+          'container. This is not the way it should be used: it must be '
+          'called from the host system.' % osp.basename(sys.argv[0]),
+          file=sys.stderr)
+    sys.exit(1)
+
+
 bv = osp.normpath(osp.abspath(sys.argv[0]))
 real_bv = osp.realpath(bv)
 guess_environments = [osp.dirname(osp.dirname(bv))]
@@ -124,6 +125,7 @@ for environment_dir in guess_environments:
                                'casa_distro.json'))):
         break
 else:
+    environment_dir = None
     if perform_run:
         if not environment_dir or not os.path.isdir(environment_dir):
             environment_dir = os.environ.get('CASA_ENVIRONMENT_DIR')
