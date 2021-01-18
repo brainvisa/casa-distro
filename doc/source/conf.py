@@ -288,14 +288,16 @@ extlinks = {
 }
 
 # generate help
+exe_path = os.path.join('..', '..', 'bin')
 
-help = subprocess.check_output(['casa_distro', 'help', 'format=rst', 'full=1'])
+help = subprocess.check_output([os.path.join(exe_path, 'casa_distro'), 'help',
+                                'format=rst', 'full=1'])
 with open('casa_distro_command_help.rst', 'w') as f:
     f.write(help.decode('utf-8'))
-help = subprocess.check_output(['casa_distro_admin', 'help', 'format=rst',
-                                'full=1'])
+help = subprocess.check_output([os.path.join(exe_path, 'casa_distro_admin'),
+                                'help', 'format=rst', 'full=1'])
 with open('casa_distro_admin_command_help.rst', 'w') as f:
     f.write(help.decode('utf-8'))
-help = subprocess.check_output(['bv', '-h'])
+help = subprocess.check_output([os.path.join(exe_path, 'bv'), '-h'])
 with open('bv_command_help.rst', 'w') as f:
     f.write(help.decode('utf-8'))
