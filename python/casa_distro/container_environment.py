@@ -28,10 +28,9 @@ def install_casa_distro(dest):
 
 
 exclude_from_bin = {
-    'python', 'python2', 'python3', 'casa_distro', 'casa_distro_admin', 'bv',
-    'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py', 'bv_env_host',
-    'bv_env_test', 'bv_unenv', 'bv_unenv.sh', 'bv_unit_test',
-    'bv_wine_regedit',
+    'python', 'python2', 'python3', 'bv', 'bv_env', 'bv_env.sh', 'bv_env.bat',
+    'bv_env.py', 'bv_env_host', 'bv_env_test', 'bv_unenv', 'bv_unenv.sh',
+    'bv_unit_test', 'bv_wine_regedit', 'docker-deps',
 }
 
 
@@ -70,6 +69,7 @@ def setup_user(setup_dir='/casa/setup'):
     dest = osp.join(bin, 'bv')
     shutil.copy(bv, dest)
     create_environment_bin_commands(osp.dirname(bv), bin)
+    create_environment_bin_commands('/casa/install/bin', bin)
 
     casa_distro_dir = osp.join(setup_dir, 'casa-distro')
     install_casa_distro(casa_distro_dir)
