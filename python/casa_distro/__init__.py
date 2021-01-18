@@ -21,7 +21,7 @@ if not osp.exists(share_directory):
                     '%s-%s.%s' % (project_name, version_major, version_minor)
                 )
             del brainvisa_home
-casa_branches = ['latest_release', 'bug_fix', 'trunk']
+casa_branches = ['latest_release', 'master', 'integration']
 
 
 def share_directories():

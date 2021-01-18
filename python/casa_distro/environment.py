@@ -21,8 +21,10 @@ from casa_distro import downloader
 
 bv_maker_branches = {
     'latest_release': 'latest_release',
-    'master': 'bug_fix',
-    'integration': 'trunk'
+    'master': 'master',
+    'bug_fix': 'master',
+    'integration': 'integration',
+    'trunk': 'integration',
 }
 
 # We need to duplicate this function to allow copying over
