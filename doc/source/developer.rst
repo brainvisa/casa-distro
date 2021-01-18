@@ -17,13 +17,11 @@ Installation and setup
 
 .. highlight:: bash
 
-* The :bv:`BrainVisa download / install section <download.html>` explains how to install a released, compiled, version of BrainVISA. This is what a "regular user" needs.
+* The :bv:`BrainVisa download / install section <download.html>` explains how to install both a released, compiled, version of BrainVISA (This is what a "regular user" needs), or a developer environment which will build from sources.
 
 * Alternatively it is possible to install Casa-Distro from its sources on GitHub. To get the lastest realease you can simply download it from https://github.com/brainvisa/casa-distro, using  the ``git`` command::
 
     git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
-
-..   or by downloading a .zip from the github site using the download button or `clicking this link <https://github.com/brainvisa/casa-distro/archive/master.zip>`_.
 
   Once downloaded, no "install step" is required, you can use the casa_distro command directly::
 
