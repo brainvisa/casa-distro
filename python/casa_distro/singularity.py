@@ -256,6 +256,8 @@ Bootstrap: localimage
     rb = RecipeBuilder(output)
     rb.copy_root(dev_config['directory'] + '/install', '/casa')
     rb.install_casa_distro('/casa/casa-distro')
+    rb.run_user('touch /casa/install/share/brainvisa-share-*/'
+                'database-*.sqlite')
     rb.write(recipe)
     recipe.flush()
 
