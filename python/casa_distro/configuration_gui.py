@@ -473,14 +473,35 @@ class ConfigEditor(Qt.QWidget):
             list: traits.List,
             traits.TraitListObject: traits.List,
         }
+        default_traits = [
+            ('casa_distro_compatibility', traits.Str('3')),
+            ('name', traits.Str('')),
+            ('distro', traits.Str('opensource')),
+            ('system', traits.Str('')),
+            ('branch', traits.Str('')),
+            ('version', traits.Str('')),
+            ('type', traits.Str('user')),
+            ('image', traits.Str('')),
+            ('container_type', traits.Str('singularity')),
+            ('systems', traits.ListUnicode(['ubuntu-18.04'])),
+            ('env', traits.Dict(traits.Str(), traits.Str(), {})),
+            ('gui_env', traits.DictStrStr({})),
+            ('container_options', traits.ListUnicode([])),
+            ('container_gui_options', traits.ListUnicode([])),
+        ]
+        for name, trait in default_traits:
+            if not self.controller.trait(name):
+                self.controller.add_trait(name, trait)
+
         for key, value in conf.items():
             if key == 'mounts':
                 # mounts are edited in the GUI and cause problems to the
                 # ControllerWidget which shows dict keys as traits, thus
                 # do not support some / or . characters in traits names.
                 continue
-            trait_type = trait_types.get(type(value), traits.Any)
-            self.controller.add_trait(key, trait_type())
+            if not self.controller.trait(key):
+                trait_type = trait_types.get(type(value), traits.Any)
+                self.controller.add_trait(key, trait_type())
             setattr(self.controller, key, value)
 
         self.setup_ui()
