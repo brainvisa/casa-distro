@@ -302,7 +302,7 @@ brainvisa_shared_library_dependencies=(
 # Programs and data that BrainVISA depends on at runtime
 brainvisa_misc_runtime_dependencies=(
     python2.7
-    lftp
+    lftp=4.8.1-1ubuntu0.1
     sqlite3
     xbitmaps
 )
@@ -350,6 +350,9 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${brainvisa_shared_library_dependencies[@]} \
     ${build_dependencies[@]}
 
+# freeze lftp package to version 4.8.1-1ubuntu0.1 because 4.8.1-1ubuntu0.2
+# has a bug (https://bugs.launchpad.net/ubuntu/+source/lftp/+bug/1904601)
+$SUDO apt-mark hold lftp
 
 ###############################################################################
 # Free disk space by removing APT caches
