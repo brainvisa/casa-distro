@@ -702,6 +702,23 @@ def create_user_image(
         )
         if retcode != 0:
             sys.exit('make install-runtime failed, aborting.')
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'post-install'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make install-runtime failed, aborting.')
     if install and install_doc:
         retcode = run_container(
             config=config,
