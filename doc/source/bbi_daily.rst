@@ -56,9 +56,14 @@ take inspiration from it to create your own personalized set-up.
    is the possibility to revoke it at any time. It is recommended to use one
    token per BrainVISA Build Environment and name the token accordingly.
 
+
+   :warning: You should make this file non-readable by others, e.g. create it
+             with::
+               chmod 0600 jenkins_auth
+
 4. Download the ``casa-dev`` image::
 
-     wget http://brainvisa.info/download/casa-dev-ubuntu-18.04.sif
+     wget https://brainvisa.info/download/casa-dev-ubuntu-18.04.sif
 
    :note: Until the BrainVISA 5.0 release, you need to replace
           ``brainvisa.info`` by ``new.brainvisa.info``. Also, you need to
@@ -70,7 +75,7 @@ take inspiration from it to create your own personalized set-up.
 
      cd "$CASA_BASE_DIRECTORY"
      mkdir brainvisa-master-ubuntu-18.04
-     singularity run --bind "$(pwd)"/brainvisa-master-ubuntu-18.04:/casa/setup \
+     singularity run --bind ./brainvisa-master-ubuntu-18.04:/casa/setup \
          casa-dev-ubuntu-18.04.sif distro=brainvisa branch=master
 
 6. Edit the ``conf/svn.secret`` file with your BioProj login and password.
@@ -97,18 +102,24 @@ take inspiration from it to create your own personalized set-up.
           name=brainvisa-master-ubuntu-18.04-nightly
 
     - ``environment_name`` is the name of the development environment.
-    - ``name`` is the full name of the created user image. We change it from the
-    default, because we need it to be fully explicit: it will be the named
-    displayed on the Jenkins page.
+    - ``name`` is the full name of the created user image. We change it from
+      the default, because we need it to be fully explicit: this name will be
+      the name of the build on the Jenkins page.
 
 11. Install the *environment* for your new user image::
 
       cd "$CASA_BASE_DIRECTORY"
       mkdir brainvisa-master-ubuntu-18.04-nightly
-      singularity run --bind "$(pwd)"/brainvisa-master-ubuntu-18.04-nightly:/casa/setup \
+      singularity run --bind ./brainvisa-master-ubuntu-18.04-nightly:/casa/setup \
           brainvisa-master-ubuntu-18.04-nightly.sif
 
-12. Check that the whole ``bbi_daily`` process is able to run successfully::
+12. Put the reference test data in place. Best is to copy it from a known-good
+    source. Beware that it must be copied *in both environments*:
+
+    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/tests/ref/``
+    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04-nightly/tests/ref/``
+
+13. Check that the whole ``bbi_daily`` process is able to run successfully::
 
       "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin \
           bbi_daily dev_tests=no user_tests=no
@@ -116,7 +127,7 @@ take inspiration from it to create your own personalized set-up.
     Beware that the output of each step is displayed only when that step is
     finished, so the command may seem to hang for a long time.
 
-13. Set the ``bbi_command`` to run on a regular basis using ``crontab -e``::
+14. Set the ``bbi_command`` to run on a regular basis using ``crontab -e``::
 
       MAILTO=your.email@host.example
       37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
