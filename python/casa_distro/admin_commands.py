@@ -685,28 +685,13 @@ def create_user_image(
                                    **metadata)
 
     if install:
+        # install_doc and install_test also depend on install-runtime and
+        # will do it again
         retcode = run_container(
             config=config,
             command=['make',
                      'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
                      'install-runtime'],
-            gui=False,
-            opengl="container",
-            root=False,
-            cwd='/casa/host/build',
-            env={},
-            image=None,
-            container_options=None,
-            base_directory=base_directory,
-            verbose=verbose
-        )
-        if retcode != 0:
-            sys.exit('make install-runtime failed, aborting.')
-        retcode = run_container(
-            config=config,
-            command=['make',
-                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                     'post-install'],
             gui=False,
             opengl="container",
             root=False,
@@ -755,6 +740,24 @@ def create_user_image(
         )
         if retcode != 0:
             sys.exit('make install-test failed, aborting.')
+    if install:
+        retcode = run_container(
+            config=config,
+            command=['make',
+                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                     'post-install'],
+            gui=False,
+            opengl="container",
+            root=False,
+            cwd='/casa/host/build',
+            env={},
+            image=None,
+            container_options=None,
+            base_directory=base_directory,
+            verbose=verbose
+        )
+        if retcode != 0:
+            sys.exit('make post-install failed, aborting.')
 
     metadata_file = output + '.json'
 
