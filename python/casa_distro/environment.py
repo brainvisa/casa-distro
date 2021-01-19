@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import fnmatch
+import getpass
 from glob import glob
 import json
 import os
@@ -585,7 +586,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
 class BBIDaily:
     def __init__(self,
                  jenkins=None):
-        self.bbe_name = 'BBE-{0}-{1}'.format(os.getlogin(),
+        self.bbe_name = 'BBE-{0}-{1}'.format(getpass.getuser(),
                                              socket.gethostname())
         self.casa_distro_src = osp.dirname(osp.dirname(
             osp.dirname(__file__)))
