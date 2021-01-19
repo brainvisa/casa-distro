@@ -685,13 +685,17 @@ def create_user_image(
                                    **metadata)
 
     if install:
+        install_targets = ['install-runtime']
+        install_targets += ['install-doc'] if install_doc else []
+        install_targets += ['install-test'] if install_test else []
         # install_doc and install_test also depend on install-runtime and
         # will do it again
         retcode = run_container(
             config=config,
-            command=['make',
-                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                     'install-runtime'],
+            command=[
+                'make',
+                'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+            ] + install_targets,
             gui=False,
             opengl="container",
             root=False,
@@ -703,44 +707,8 @@ def create_user_image(
             verbose=verbose
         )
         if retcode != 0:
-            sys.exit('make install-runtime failed, aborting.')
-    if install and install_doc:
-        retcode = run_container(
-            config=config,
-            command=['make',
-                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                     'install-doc'],
-            gui=False,
-            opengl="container",
-            root=False,
-            cwd='/casa/host/build',
-            env={},
-            image=None,
-            container_options=None,
-            base_directory=base_directory,
-            verbose=verbose
-        )
-        if retcode != 0:
-            sys.exit('make install-doc failed, aborting.')
-    if install and install_test:
-        retcode = run_container(
-            config=config,
-            command=['make',
-                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                     'install-test'],
-            gui=False,
-            opengl="container",
-            root=False,
-            cwd='/casa/host/build',
-            env={},
-            image=None,
-            container_options=None,
-            base_directory=base_directory,
-            verbose=verbose
-        )
-        if retcode != 0:
-            sys.exit('make install-test failed, aborting.')
-    if install:
+            sys.exit('make ' + ' '.join(install_targets)
+                     + ' failed, aborting.')
         retcode = run_container(
             config=config,
             command=['make',
