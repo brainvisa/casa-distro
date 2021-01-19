@@ -107,7 +107,7 @@ class BrainVISAJenkins:
         task        : name of the task that is performed by this build
                       (e.g. src, configure, build, etc.)
         result      : integer value representing the result of the build
-                      any no zero value means failure
+                      any non-zero value means failure
         log         : console output of the build
         duration    : (optional) duration of the build in milliseconds
         description : (optional) description text attached to the build

@@ -14,11 +14,14 @@ import subprocess
 import sys
 import time
 
+from casa_distro.six.moves import shlex_quote
+
 from casa_distro import (share_directories,
                          singularity,
                          vbox)
 from casa_distro.web import url_listdir, urlopen
 from casa_distro import downloader
+
 
 bv_maker_branches = {
     'latest_release': 'latest_release',
@@ -735,32 +738,38 @@ class BBIDaily:
         whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
         values are a list of commands to run to perform the test.
         '''
-        o = subprocess.check_output([self.casa_distro,
-                                     'run',
-                                     'name={0}'.format(config['name']),
-                                     'cwd=/casa/host/build',
-                                     '--',
-                                     'ctest', '--print-labels'],
-                                    bufsize=-1)
+        cmd = [
+            self.casa_distro,
+            'run',
+            'name={0}'.format(config['name']),
+            'cwd=/casa/host/build',
+            '--',
+            'ctest', '--print-labels'
+        ]
+        # universal_newlines is the old name to request text-mode (text=True)
+        o = subprocess.check_output(cmd, bufsize=-1,
+                                    universal_newlines=True)
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
+        log_lines = ['$ ' + ' '.join(shlex_quote(arg) for arg in cmd),
+                     o, '\n']
         tests = {}
         for label in labels:
-            p = subprocess.Popen(
-                [
-                    self.casa_distro,
-                    'run',
-                    'name={0}'.format(config['name']),
-                    'cwd=/casa/host/build',
-                    'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
-                    '--',
-                    'ctest', '-V', '-L',
-                    '^{0}$'.format(label)
-                ] + config.get('ctest_options', []),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                bufsize=-1,
-            )
+            cmd = [
+                self.casa_distro,
+                'run',
+                'name={0}'.format(config['name']),
+                'cwd=/casa/host/build',
+                'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
+                '--',
+                'ctest', '-V', '-L',
+                '^{0}$'.format(label)
+            ] + config.get('ctest_options', [])
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, bufsize=-1,
+                                 universal_newlines=True)
             o, stderr = p.communicate()
+            log_lines += ['$ ' + ' '.join(shlex_quote(arg) for arg in cmd),
+                          o, '\n']
             if p.returncode != 0:
                 # We want to hide stderr unless ctest returns a nonzero exit
                 # code. In the case of test filtering where no tests are
@@ -777,6 +786,9 @@ class BBIDaily:
                         if ': Test command:' in o[i]]
             if commands:  # skip empty command lists
                 tests[label] = commands
+        log_lines += ['Final test dictionary:',
+                      json.dumps(tests, indent=4, separators=(',', ': '))]
+        self.log(config['name'], 'get test commands', 0, '\n'.join(log_lines))
         return tests
 
     def update_user_image(self, user_config, dev_config,
