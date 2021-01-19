@@ -584,8 +584,11 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
 
 
 class BBIDaily:
-    def __init__(self,
-                 jenkins=None):
+    def __init__(self, base_directory, jenkins=None):
+        # This environment variable must be set by the caller of BBIDaily, to
+        # ensure that all recursively called instances of casa_distro will use
+        # the correct base_directory.
+        assert os.environ['CASA_BASE_DIRECTORY'] == base_directory
         self.bbe_name = 'BBE-{0}-{1}'.format(getpass.getuser(),
                                              socket.gethostname())
         self.casa_distro_src = osp.dirname(osp.dirname(
@@ -668,6 +671,7 @@ class BBIDaily:
             result, log = self.call_output([self.casa_distro,
                                             'bv_maker',
                                             'name={0}'.format(config['name']),
+                                            '--',
                                             step])
             duration = int(1000 * (time.time() - start))
             self.log(environment, step, result, log, duration=duration)
@@ -735,6 +739,7 @@ class BBIDaily:
                                      'run',
                                      'name={0}'.format(config['name']),
                                      'cwd=/casa/host/build',
+                                     '--',
                                      'ctest', '--print-labels'],
                                     bufsize=-1)
         labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
@@ -746,8 +751,8 @@ class BBIDaily:
                     'run',
                     'name={0}'.format(config['name']),
                     'cwd=/casa/host/build',
-                    'env=BRAINVISA_TEST_REMOTE_COMMAND'
-                    '=echo',
+                    'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
+                    '--',
                     'ctest', '-V', '-L',
                     '^{0}$'.format(label)
                 ] + config.get('ctest_options', []),

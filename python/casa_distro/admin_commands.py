@@ -858,6 +858,10 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     update_user_images = boolean_value(update_user_images)
     user_tests = boolean_value(user_tests)
 
+    # Ensure that all recursively called instances of casa_distro will use
+    # the correct base_directory.
+    os.environ['CASA_BASE_DIRECTORY'] = base_directory
+
     if jenkins_server:
         # Import jenkins only if necessary to avoid  dependency
         # on requests module
@@ -870,7 +874,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
                                    jenkins_password)
     else:
         jenkins = None
-    bbi_daily = BBIDaily(jenkins=jenkins)
+    bbi_daily = BBIDaily(base_directory, jenkins=jenkins)
 
     if update_casa_distro:
         # Update casa_distro with git and restart with update_casa_distro=no
