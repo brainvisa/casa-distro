@@ -596,9 +596,12 @@ class BBIDaily:
                                              socket.gethostname())
         self.casa_distro_src = osp.dirname(osp.dirname(
             osp.dirname(__file__)))
-        self.casa_distro = osp.join(self.casa_distro_src, 'bin',
-                                    'casa_distro')
-        self.casa_distro_admin = self.casa_distro + '_admin'
+        casa_distro = osp.join(self.casa_distro_src, 'bin',
+                               'casa_distro')
+        casa_distro_admin = osp.join(self.casa_distro_src, 'bin',
+                                     'casa_distro_admin')
+        self.casa_distro_cmd = [sys.executable, casa_distro]
+        self.casa_distro_admin_cmd = [sys.executable, casa_distro_admin]
         self.jenkins = jenkins
         if self.jenkins:
             if not self.jenkins.job_exists(self.bbe_name):
@@ -648,9 +651,8 @@ class BBIDaily:
         start = time.time()
         log = []
         for image in images:
-            result, output = self.call_output([self.casa_distro,
-                                               'pull_image',
-                                               'image={0}'.format(image)])
+            result, output = self.call_output(self.casa_distro_cmd + [
+                'pull_image', 'image={0}'.format(image)])
             log.append(output)
             if result:
                 break
@@ -671,11 +673,12 @@ class BBIDaily:
         failed = None
         for step in steps:
             start = time.time()
-            result, log = self.call_output([self.casa_distro,
-                                            'bv_maker',
-                                            'name={0}'.format(config['name']),
-                                            '--',
-                                            step])
+            result, log = self.call_output(self.casa_distro_cmd + [
+                'bv_maker',
+                'name={0}'.format(config['name']),
+                '--',
+                step,
+            ])
             duration = int(1000 * (time.time() - start))
             self.log(environment, step, result, log, duration=duration)
             if result:
@@ -702,8 +705,7 @@ class BBIDaily:
                 if test_config['type'] == 'run':
                     command = command.replace('/casa/host/build',
                                               '/casa/install')
-                result, output = self.call_output([
-                    self.casa_distro,
+                result, output = self.call_output(self.casa_distro_cmd + [
                     'run',
                     'name={0}'.format(test_config['name']),
                     'env=BRAINVISA_TEST_RUN_DATA_DIR=/casa/host/tests/test,'
@@ -738,8 +740,7 @@ class BBIDaily:
         whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
         values are a list of commands to run to perform the test.
         '''
-        cmd = [
-            self.casa_distro,
+        cmd = self.casa_distro_cmd + [
             'run',
             'name={0}'.format(config['name']),
             'cwd=/casa/host/build',
@@ -754,8 +755,7 @@ class BBIDaily:
                      o, '\n']
         tests = {}
         for label in labels:
-            cmd = [
-                self.casa_distro,
+            cmd = self.casa_distro_cmd + [
                 'run',
                 'name={0}'.format(config['name']),
                 'cwd=/casa/host/build',
@@ -803,8 +803,7 @@ class BBIDaily:
         image = user_config['image']
         if osp.exists(image):
             os.remove(image)
-        result, log = self.call_output([
-            self.casa_distro_admin,
+        result, log = self.call_output(self.casa_distro_admin_cmd + [
             'create_user_image',
             'version={0}'.format(user_config['version']),
             'name={0}'.format(user_config['name']),
