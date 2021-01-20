@@ -440,7 +440,7 @@ class Launchers(Qt.QWidget):
         for prog in ('x-terminal-emulator', 'lxterm', 'konsole',
                      'gnome-terminal', 'xterm'):
             if distutils.spawn.find_executable(prog):
-                self.launch('xterm')
+                self.launch(prog)
                 break
 
     def _launch_terminal(self):
