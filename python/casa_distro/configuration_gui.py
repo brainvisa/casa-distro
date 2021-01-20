@@ -405,7 +405,7 @@ class Launchers(Qt.QWidget):
             Qt.QSize(self.icon_size, self.icon_size))
 
         term_icon = Qt.QPixmap(
-            '/usr/share/icons/breeze/apps/64/utilities-terminal.svg')
+            '/usr/share/icons/Humanity/apps/64/terminal.svg')
         self._terminal_btn = Qt.QPushButton(Qt.QIcon(term_icon), 'TERMINAL')
         self._terminal_btn.setIconSize(
             Qt.QSize(self.icon_size, self.icon_size))
@@ -436,7 +436,12 @@ class Launchers(Qt.QWidget):
         self.launch('anatomist')
 
     def _launch_xterm(self):
-        self.launch('xterm')
+        import distutils.spawn
+        for prog in ('x-terminal-emulator', 'lxterm', 'konsole',
+                     'gnome-terminal', 'xterm'):
+            if distutils.spawn.find_executable(prog):
+                self.launch('xterm')
+                break
 
     def _launch_terminal(self):
         self.launch('bash')
