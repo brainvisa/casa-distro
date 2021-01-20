@@ -110,7 +110,7 @@ def setup_user(setup_dir='/casa/setup'):
     print(os.environ.get('CASA_HOST_DIR', ''))
     print()
     print('Now you can add in your $HOME/.bashrc config file:\n')
-    print('export PATH="%s:$PATH"' % os.environ.get('CASA_HOST_DIR', ''))
+    print('export PATH="%s/bin:$PATH"' % os.environ.get('CASA_HOST_DIR', ''))
     print()
     print('then you can run programs like "bv", "anatomist", "brainvisa" etc.')
 
