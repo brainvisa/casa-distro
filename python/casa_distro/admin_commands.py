@@ -560,7 +560,7 @@ def create_user_image(
         generate='yes',
         upload='no',
         verbose=True):
-    """Create a run image given a development environment.
+    """Create a "user" image given a development environment.
     The development environment is selected among existing ones its
     distro and system or simply by its name. Only developement environments
     using the master branch are considered.
@@ -571,11 +571,11 @@ def create_user_image(
       installation directory. This modify the development environment by
       updating its installation directory.
 
-    - generate: generate a new image for the run environment. The ne image is
-      based on base_image and the installation directory of the development
-      environment is copied into the image in /casa/install.
+    - generate: generate a new image for the developement environment. The ne
+      image is based on base_image and the installation directory of the
+      development environment is copied into the image in /casa/install.
 
-    - upload: upload the run image on BrainVISA web site.
+    - upload: upload the user image on BrainVISA web site.
 
 
     Parameters
@@ -673,7 +673,7 @@ def create_user_image(
 
     metadata = {
         'name': name,
-        'type': 'run',
+        'type': 'user',
         'distro': config['distro'],
         'system': config['system'],
         'version': version,
