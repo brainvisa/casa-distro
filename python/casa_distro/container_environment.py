@@ -105,6 +105,14 @@ def setup_user(setup_dir='/casa/setup'):
               indent=4, separators=(',', ': '))
 
     prepare_environment_homedir(osp.join(setup_dir, 'home'))
+    print('The software is setup in a new user environment, in the directory:')
+    print()
+    print(os.environ.get('CASA_HOST_DIR', ''))
+    print()
+    print('Now you can add in your $HOME/.bashrc config file:\n')
+    print('export PATH="%s:$PATH"' % os.environ.get('CASA_HOST_DIR', ''))
+    print()
+    print('then you can run programs like "bv", "anatomist", "brainvisa" etc.')
 
 
 def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
