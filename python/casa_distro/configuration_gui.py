@@ -479,20 +479,66 @@ class ConfigEditor(Qt.QWidget):
             traits.TraitListObject: traits.List,
         }
         default_traits = [
-            ('casa_distro_compatibility', traits.Str('3')),
-            ('name', traits.Str('')),
-            ('distro', traits.Str('opensource')),
-            ('system', traits.Str('')),
-            ('branch', traits.Str('')),
-            ('version', traits.Str('')),
-            ('type', traits.Str('user')),
-            ('image', traits.Str('')),
-            ('container_type', traits.Str('singularity')),
-            ('systems', traits.ListUnicode(['ubuntu-18.04'])),
-            ('env', traits.Dict(traits.Str(), traits.Str(), {})),
-            ('gui_env', traits.DictStrStr({})),
-            ('container_options', traits.ListUnicode([])),
-            ('container_gui_options', traits.ListUnicode([])),
+            ('casa_distro_compatibility',
+             traits.Str(
+                 '3', desc='Version of casa-distro to be used with this '
+                 'environment. <b>Change it with care, only if you know what '
+                 'you are doing</b>.')),
+            ('name', traits.Str(
+                '', desc='Name of the environment. Must be unique within a '
+                'base casa-distro directory, if the casa_distro command is '
+                'used to manage several environments.')),
+            ('distro', traits.Str(
+                'opensource', desc='Projects set name. Normally "opensource", '
+                '"brainvisa", "cea", "web". Other sets may be defined. '
+                'Changing it after the initial setup has no effect.')),
+            ('system', traits.Str(
+                '', desc='Name of the Linux system running inside the '
+                'container. It should not be modified.')),
+        ]
+        if conf.get('type', '') == 'user':
+            default_traits.append(('version', traits.Str(
+                '', desc='BrainVISA release version. It should not be '
+                'modified.')))
+        else:
+            default_traits.append(('branch', traits.Str(
+                '', desc='Projects sources branch: "master", "integration", '
+                '"latest_release", "release_candidate". Changing it after '
+                'the initial setup has no effect.')))
+
+        default_traits += [
+            ('type', traits.Str(
+                'user', desc='image type: <ul>'
+                '<li>"user": user image with the BrainVISA distribution,</li> '
+                '<li>"run": bare system to run programs, without BrainVISA '
+                'installed in it,</li> <li>"dev": development system for '
+                'developers.</li></ul><b>Do not modify this value.</b>')),
+            ('image', traits.Str(
+                '', desc='virtual image file. Changing it will use a '
+                'different system / development image. It may be useful '
+                'during development / testing but is also dangerous. It is '
+                'generally pointless to modify it for user images. However it '
+                'may be used to update after moving the image file.')),
+            ('container_type', traits.Str(
+                'singularity', desc='virtual container system. <b>Do '
+                'not modify this value.</b>')),
+            ('systems', traits.ListUnicode(
+                ['ubuntu-18.04'], desc='Supported systems. <b>Do not modify '
+                'this value.</b>')),
+            ('env', traits.Dict(
+                traits.Str(), traits.Str(), {}, desc='environment variables '
+                'passed to the container')),
+            ('gui_env', traits.DictStrStr(
+                {}, desc='environment variables passed to the container, only '
+                'in the case of a run with graphical options enabled '
+                '(gui=true)')),
+            ('container_options', traits.ListUnicode(
+                [], desc='options passed to the container system program. '
+                'They are "native" options, specific to the container system '
+                'used.')),
+            ('container_gui_options', traits.ListUnicode(
+                [], desc='options passed to the container system program, in '
+                'the context of a graphical run (gui=true)')),
         ]
         for name, trait in default_traits:
             if not self.controller.trait(name):
