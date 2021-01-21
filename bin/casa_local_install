@@ -36,6 +36,8 @@ class Installer:
         self.log_file = log_file
         if not osp.exists(self.log_file):
             self.log = {}
+	else:
+	    self.log = json.load(open(self.log_file))
 
     def run_user(self, command):
         '''
@@ -80,14 +82,14 @@ class Installer:
         stderr = sys.stderr
         sys.stderr = sys.stdout = log
         try:
-            step(osp.dirname(build_file), builder)
+            step(osp.dirname(build_file), self)
+            self.log.setdefault(builder.name, {})[step.__name__] = \
+                {'output': open(log.name, 'r').read()}
         finally:
             sys.stderr = stderr
             sys.stdout = stdout
             log.flush()
-            self.log.setdefault(builder.name, {})[step.__name__] = \
-                {'output': open(log.name, 'r').read()}
-            json.dump(open(self.log_file, 'w'))
+            json.dump(self.log, open(self.log_file, 'w'))
 
     def get_builder(self, build_file):
         v = {}
@@ -99,7 +101,7 @@ class Installer:
         return v['builder']
 
 
-log_file = '/tmp/casa_local_install.log'
+log_file = '/etc/casa_local_install.log'
 installer = Installer(log_file=log_file)
 
 for builder_name, steps in installer.log.items():
@@ -115,7 +117,7 @@ if len(sys.argv) > 1:
         'ubuntu-18.04', 'build_image.py')
     builder = installer.get_builder(build_file)
     steps_todo = [i for i in (j.__name__ for j in builder.steps)
-                  if i not in installer.log.get(type, {})]
+                  if i not in installer.log.get(builder.name, {})]
     for step_name in steps_todo:
         print(builder.name, '/', step_name, 'todo')
 
