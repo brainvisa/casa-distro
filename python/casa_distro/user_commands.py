@@ -534,6 +534,8 @@ def setup_dev(distro='opensource',
         options.append('distro=%s' % distro['name'])
     if system:
         options.append('system=%s' % system)
+    if name:
+        options.append('name=%s' % name)
 
     run_container(
         metadata,
