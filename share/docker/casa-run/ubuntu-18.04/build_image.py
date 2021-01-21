@@ -7,13 +7,16 @@
 
 import os.path as osp
 
-from casa_distro import six
+from casa_distro.builder import ImageBuilder
 
 
-def install(base_dir, builder, verbose):
-    if verbose:
-        six.print_('Creating /casa and other directories in', builder.name,
-                   file=verbose, flush=True)
+builder = ImageBuilder('casa-run')
+
+
+@builder.step
+def casa_dir(base_dir, builder):
+    'Creating /casa and other directories'
+
     builder.run_root('if [ ! -e /casa ]; then mkdir /casa; fi')
     builder.run_root('if [ ! -e /casa/host ]; then mkdir /casa/host; fi')
     builder.run_root('if [ ! -e /casa/home ]; then mkdir /casa/home; fi')
@@ -25,9 +28,11 @@ def install(base_dir, builder, verbose):
     # Used in Singularity only
     builder.run_root('if [ ! -e /host ]; then mkdir /host; fi')
 
-    if verbose:
-        six.print_('Copying files in', builder.name,
-                   file=verbose, flush=True)
+
+@builder.step
+def copy_files(base_dir, builder):
+    'Copying files'
+
     for f in ('install_apt_dependencies.sh',
               'build_dependencies.sh',
               'neurodebian.sources.list',
@@ -49,10 +54,6 @@ def install(base_dir, builder, verbose):
 
     builder.copy_user(osp.join(base_dir, 'bashrc'),
                       '/casa')
-
-    if verbose:
-        six.print_('Copying entrypoint in', builder.name,
-                   file=verbose, flush=True)
     builder.copy_root(osp.join(base_dir, 'entrypoint'),
                       '/usr/local/bin/')
     builder.run_root('chmod a+rx /usr/local/bin/entrypoint')
@@ -60,27 +61,39 @@ def install(base_dir, builder, verbose):
     # copy a software-only mesa libGL in /usr/local/lib
     builder.copy_root(osp.join(base_dir, 'mesa'), '/usr/local/lib/')
 
-    if verbose:
-        six.print_('Running install_apt_dependencies.sh',
-                   file=verbose, flush=True)
+
+@builder.step
+def apt_dependencies(base_dir, builder):
+    'Running install_apt_dependencies.sh'
+
     builder.run_root('/opt/install_apt_dependencies.sh')
-    if verbose:
-        six.print_('Running install_pip_dependencies.sh',
-                   file=verbose, flush=True)
+
+
+@builder.step
+def pip_dependencies(base_dir, builder):
+    'Running install_pip_dependencies.sh'
+
     builder.run_root('/opt/install_pip_dependencies.sh')
-    if verbose:
-        six.print_('Running install_compiled_dependencies.sh',
-                   file=verbose, flush=True)
+
+
+@builder.step
+def compiled_dependencies(base_dir, builder):
+    'Running install_compiled_dependencies.sh'
+
     builder.run_root('/opt/install_compiled_dependencies.sh')
 
-    if verbose:
-        six.print_('Running cleanup_build_dependencies.sh',
-                   file=verbose, flush=True)
+
+@builder.step
+def cleanup_build_dependencies(base_dir, builder):
+    'Running cleanup_build_dependencies.sh'
+
     builder.run_root('/opt/cleanup_build_dependencies.sh')
 
-    if verbose:
-        six.print_('Cleanup files in', builder.name,
-                   file=verbose, flush=True)
+
+@builder.step
+def cleanup_files(base_dir, builder):
+    'Cleanup files'
+
     builder.run_root('rm -f /opt/neurodebian-key.gpg '
                      '/opt/neurodebian.sources.list '
                      '/opt/install_apt_dependencies.sh '
