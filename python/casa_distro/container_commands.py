@@ -55,7 +55,7 @@ def setup_dev(distro, branch='master', system=None, dir='/casa/setup',
         Target environment directory
     {name}
     """
-    env_setup_dev(dir, distro, branch, system, name=name)
+    env_setup_dev(dir, distro=distro, branch=branch, system=system, name=name)
 
 
 @command

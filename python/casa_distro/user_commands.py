@@ -328,7 +328,7 @@ def setup_user(distro=None,
 
     run_container(
         selected,
-        command=['casa_container', 'setup_user'],
+        command=[],
         gui=False,
         opengl='container',
         root=False,
@@ -537,7 +537,7 @@ def setup_dev(distro='opensource',
 
     run_container(
         metadata,
-        command=['casa_container', 'setup_dev'] + options,
+        command=options,
         gui=False,
         opengl='container',
         root=False,
