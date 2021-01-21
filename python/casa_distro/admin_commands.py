@@ -673,7 +673,7 @@ def create_user_image(
 
     metadata = {
         'name': name,
-        'type': 'user',
+        'type': 'run',
         'distro': config['distro'],
         'system': config['system'],
         'version': version,
@@ -746,6 +746,7 @@ def create_user_image(
         # Add image file md5 hash to JSON metadata file
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
+        metadata['type'] = 'user'
         json.dump(metadata, open(metadata_file, 'w'),
                   indent=4, separators=(',', ': '))
 

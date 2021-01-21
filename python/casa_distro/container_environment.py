@@ -76,7 +76,7 @@ def setup_user(setup_dir='/casa/setup'):
 
     environment = {
         'casa_distro_compatibility': str(casa_distro.version_major),
-        'type': 'run',
+        'type': 'user',
         'container_type': 'singularity',
     }
     environment['distro'] = os.getenv('CASA_DISTRO')
