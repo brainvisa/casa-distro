@@ -27,7 +27,6 @@ if not pypath or not osp.exists(pypath):
           file=sys.stderr)
     sys.exit(1)
 
-
 sys.path.insert(0, pypath)
 
 from casa_distro.command import main  # noqa: E402
