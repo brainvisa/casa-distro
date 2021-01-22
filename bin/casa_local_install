@@ -36,8 +36,8 @@ class Installer:
         self.log_file = log_file
         if not osp.exists(self.log_file):
             self.log = {}
-	else:
-	    self.log = json.load(open(self.log_file))
+        else:
+            self.log = json.load(open(self.log_file))
 
     def run_user(self, command):
         '''
@@ -124,6 +124,11 @@ if len(sys.argv) > 1:
 if len(sys.argv) > 2:
     step_name = sys.argv[2]
     if step_name == 'next':
-        step_name = steps_todo[0]
-    print('Performing', builder.name, '/', step_name)
-    installer.perform_step(build_file, step_name)
+        step_names = [steps_todo[0]]
+    elif step_name == 'all':
+        step_names = steps_todo
+    else:
+        step_names = [step_name]
+    for step_name in step_names:
+        print('Performing', builder.name, '/', step_name)
+        installer.perform_step(build_file, step_name)

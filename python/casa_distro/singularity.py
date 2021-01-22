@@ -161,15 +161,17 @@ Bootstrap: localimage
         v = {}
         print('build_file:', build_file)
         exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
-        if 'install' not in v:
+        if 'builder' not in v:
             raise RuntimeError(
-                'No install function defined in %s' % build_file)
-        install_function = v['install']
+                'No builder defined in %s' % build_file)
+        image_builder = v['builder']
 
         recipe_builder = RecipeBuilder(output)
-        install_function(base_dir=osp.dirname(build_file),
-                         builder=recipe_builder,
-                         verbose=verbose)
+        for step in image_builder:
+            if verbose:
+                print('Performing:', step.__doc__, file=verbose)
+            step(base_dir=osp.dirname(build_file),
+                 builder=recipe_builder)
         recipe_builder.write(recipe)
         if verbose:
             print('---------- Singularity recipe ----------', file=verbose)

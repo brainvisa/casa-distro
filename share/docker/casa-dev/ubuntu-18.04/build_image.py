@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 import os.path as osp
 
-from casa_distro import six
+from casa_distro.builder import ImageBuilder
 
 
-def install(base_dir, builder, verbose):
-    if verbose:
-        six.print_('Copying files in', builder.name,
-                   file=verbose, flush=True)
+builder = ImageBuilder('casa-run')
+
+
+@builder.step
+def copying_files(base_dir, builder):
+    'Copying files'
+
     for f in ('install_apt_dev_dependencies.sh',
               'install_pip_dev_dependencies.sh',
               'install_compiled_dev_dependencies.sh',
@@ -35,35 +38,44 @@ def install(base_dir, builder, verbose):
                       '/casa/')
     builder.run_user('chmod a+rx /casa/list-shared-libs-paths.sh')
 
-    if verbose:
-        six.print_('Running install_apt_dev_dependencies.sh',
-                   file=verbose, flush=True)
+
+@builder.step
+def apt_dev_dependencies(base_dir, builder):
+    'Install apt dependencies for developement'
+
     builder.run_root('/opt/install_apt_dev_dependencies.sh')
-    if verbose:
-        six.print_('Running install_pip_dev_dependencies.sh',
-                   file=verbose, flush=True)
+
+
+@builder.step
+def pip_dev_dependencies(base_dir, builder):
+    'Install pip dependencies for developement'
     builder.run_root('/opt/install_pip_dev_dependencies.sh')
-    if verbose:
-        six.print_('Running install_compiled_dev_dependencies.sh',
-                   file=verbose, flush=True)
+
+
+@builder.step
+def compiled_dev_dependencies(base_dir, builder):
+    'Install compiled dependencies for developement'
     builder.run_root('/opt/install_compiled_dev_dependencies.sh')
 
-    if verbose:
-        six.print_('Installing casa-distro in /casa/casa-distro',
-                   file=verbose, flush=True)
+
+@builder.step
+def install_casa_distro(base_dir, builder):
+    'Install casa_distro'
     builder.install_casa_distro('/casa/casa-distro')
 
-    if verbose:
-        six.print_('Running install_casa_dev_components.sh',
-                   file=verbose, flush=True)
+
+@builder.step
+def casa_dev_components(base_dir, builder):
+    'Install casa components for developement'
     builder.run_root('/opt/install_casa_dev_components.sh')
 
     builder.copy_root(osp.join(base_dir, 'gitignore'), '/etc')
     builder.run_root('git config --system core.excludesfile /etc/gitignore')
 
-    if verbose:
-        six.print_('Cleanup files in', builder.name,
-                   file=verbose, flush=True)
+
+@builder.step
+def cleanup(base_dir, builder):
+    'Cleanup installation files'
     builder.run_root('rm -f /opt/install_apt_dev_dependencies.sh '
                      '/opt/build_sip_pyqt.sh '
                      '/opt/install_pip_dev_dependencies.sh '
