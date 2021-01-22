@@ -64,8 +64,12 @@ function _complete_casa_distro_option_()
         COMPREPLY=($(compgen -W "singularity docker vbox" -- "${word}"))
         ;;
     name|environment_name)
-        local names=`casa_distro list base_directory=$CASA_DEFAULT_REPOSITORY | grep -E -v '^(  [a-z])'`
-        COMPREPLY=($(compgen -W "$names" -- "${word}"))
+        if [ -z "$CASA_ENVIRONMENT" ]; then
+            local names=`casa_distro list base_directory=$CASA_DEFAULT_REPOSITORY | grep -E -v '^(  [a-z])'`
+            COMPREPLY=($(compgen -W "$names" -- "${word}"))
+        else
+            COMPREPLY=($(compgen -W "" -- "${word}"))
+        fi
         ;;
     image|base_image)
         # take existing singularity images
@@ -117,7 +121,7 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
-    gui|verbose|force|root|install|generate|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests)
+    gui|verbose|force|root|install|generate|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests|full)
         COMPREPLY=($(compgen -W "True False true false 1 0 yes no Yes No" -- "${word}"))
         ;;
     opengl)
@@ -128,6 +132,9 @@ function _complete_casa_distro_option_()
         ;;
     type)
         COMPREPLY=($(compgen -W "run dev system" -- "${word}"))
+        ;;
+    format)
+        COMPREPLY=($(compgen -W "text rst" -- "${word}"))
         ;;
     esac
 }
@@ -225,7 +232,7 @@ function _complete_casa_distro_()
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
     local cmd_list="help distro list list_images setup_user setup_dev shell update pull_image run mrun bv_maker delete clean_images"
-    local opt_list="-r --repository -h --help -v --verbose --version"
+    local opt_list="-h --help -v --verbose --version"
     local cmd_wd_num=1
 
     # find if 1st option is -r
@@ -281,7 +288,7 @@ function _complete_casa_distro_()
 
         case "$cmd" in
         help)
-            COMPREPLY=($(compgen -W "$cmd_list" -- "${word}"))
+            COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
             ;;
         bv_maker)
             # use casa-distro options first
@@ -437,7 +444,7 @@ get_completions(){
 EOF
 
         COMPREPLY=($(${COMP_WORDS[0]} -- bash -i -l -c ". ~/.bashrc && . $tmp && get_completions $new_line"))
-        rm $tmp
+        rm -f $tmp
 
     fi
 }
@@ -448,7 +455,7 @@ function _complete_casa_distro_admin_()
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
     local cmd_list="help download_image create_base_image publish_base_image create_user_image singularity_deb bbi_daily"
-    local opt_list="-r --repository -h --help -v --verbose --version"
+    local opt_list="-h --help -v --verbose --version"
     local cmd_wd_num=1
 
     # find if 1st option is -r
@@ -495,7 +502,7 @@ function _complete_casa_distro_admin_()
 
         case "$cmd" in
         help)
-            COMPREPLY=($(compgen -W "$cmd_list" -- "${word}"))
+            COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
             ;;
         download_image)
             COMPREPLY=($(compgen -W "type= filename= url= output= container_type= verbose=" -- "${word}"))
@@ -522,6 +529,50 @@ function _complete_casa_distro_admin_()
 }
 
 
+function _complete_casa_container_()
+{
+    local word=${COMP_WORDS[COMP_CWORD]}
+    local line=${COMP_LINE}
+    local cmd_list="help setup_user setup_dev config_gui"
+    local opt_list="-h --help -v --verbose --version"
+    local cmd_wd_num=1
+
+    case $(( COMP_CWORD - cmd_wd_num )) in
+    0)
+        COMPREPLY=($(compgen -W "$cmd_list $opt_list" -- "${word}"))
+        if [ -n "$COMPREPLY" ]; then
+            COMPREPLY="$COMPREPLY "
+        fi
+        ;;
+    *)
+        local cmd=${COMP_WORDS[cmd_wd_num]}
+
+        if [ "$word" = "=" ] \
+             || [ "${COMP_WORDS[$(( COMP_CWORD - 1 ))]}" = "=" ]; then
+            # after = sign: complete an option value
+            _complete_casa_distro_option_
+            return
+        fi
+
+        case "$cmd" in
+        help)
+            COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
+            ;;
+        setup_user)
+            COMPREPLY=($(compgen -W "dir=" -- "${word}"))
+            ;;
+        setup_dev)
+            COMPREPLY=($(compgen -W "distro= branch= system= dir= name=" -- "${word}"))
+            ;;
+        config_gui)
+            COMPREPLY=($(compgen -W "" -- "${word}"))
+            ;;
+        esac
+        ;;
+    esac
+
+}
+
 
 # complete -W "help create list update update_image shell run mrun bv_maker create_writable_image root_shell" casa_distro
 # complete -W "help package_casa_distro publish_casa_distro create_release_plan update_release_plan html_release_plan create_latest_release create_docker update_docker publish_docker create_singularity publish_singularity publish_build_workflows" casa_distro_admin
@@ -529,3 +580,6 @@ function _complete_casa_distro_admin_()
 complete -F _complete_casa_distro_ -o nospace -o default casa_distro
 complete -F _complete_casa_distro_admin_ -o nospace -o default casa_distro_admin
 complete -F _complete_bv_ -o nospace -o default bv
+if [ -n "$CASA_ENVIRONMENT" ]; then
+    complete -F _complete_casa_container_ -o nospace -o default casa_container
+fi
