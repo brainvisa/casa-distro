@@ -10,6 +10,7 @@ import tempfile
 import time
 
 import casa_distro.six as six
+from .image_builder import get_image_builder
 
 
 def vbox_manage_command(cmd_options):
@@ -349,12 +350,13 @@ class VBoxMachine:
         # a temporary location and then copied at their final location
         # without preserving the mode.
         if osp.isdir(source_file):
-            dest = osp.join(self.tmp_dir, osp.basename(source_file))
-            self.run_root('mkdir "{dest}"'.format(dest=dest))
+            f = os.path.basename(source_file)
+            # Force Linux path even if executing Python on Windows
+            dest = '{}/{}'.format(self.tmp_dir, f)
+            self.run_root('mkdir "{}"'.format(dest))
             vbox_manage(['guestcontrol', '--username', 'root',
                          '--password', self.root_password, self.name, 'copyto',
                          '--recursive', source_file, dest])
-            f = os.path.basename(source_file)
             self.run_root('cp -r --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" '
                           '&& rm -r "{tmp}/{f}"'.format(tmp=self.tmp_dir,
                                                         f=f,
@@ -433,19 +435,17 @@ class VBoxMachine:
             installation process.
         """
 
-        v = {}
-        exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
-        if 'install' not in v:
-            raise RuntimeError(
-                'No install function defined in {0}'.format(build_file))
-        install_function = v['install']
+        image_builder = get_image_builder(build_file)
 
         self.start_and_wait(verbose=verbose, gui=gui)
         self.run_root(
             'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
-        install_function(base_dir=osp.dirname(build_file),
-                         builder=self,
-                         verbose=verbose)
+        
+        for step in image_builder.steps:
+            if verbose:
+                print('Performing:', step.__doc__, file=verbose)
+            step(base_dir=osp.dirname(build_file),
+                 builder=self)
 
 
 def vbox_import_image(image, vbox_machine, output,
