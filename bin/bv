@@ -142,13 +142,19 @@ else:
                 'appropriately.')
 
 casa_distro = None
-for i in (('host', 'src', 'development', 'casa-distro', '*'),
-          ('src', 'development', 'casa-distro', '*'),
-          ('host', 'src', 'development', 'casa-distro'),
-          ('src', 'development', 'casa-distro'),
-          ('host', 'src', 'casa-distro'),
-          ('src', 'casa-distro'),
-          ('casa-distro',)):
+if real_bv.startswith(osp.join(environment_dir, '')):
+    paths = ((osp.split(osp.relpath(osp.dirname(osp.dirname(real_bv)),
+                                    environment_dir))), )
+else:
+    paths = (('src', 'development', 'casa-distro', 'master'),  # master 1st
+             ('src', 'development', 'casa-distro', '*'),
+             ('host', 'src', 'development', 'casa-distro', '*'),
+             ('host', 'src', 'development', 'casa-distro'),
+             ('src', 'development', 'casa-distro'),
+             ('host', 'src', 'casa-distro'),
+             ('src', 'casa-distro'),
+             ('casa-distro',))
+for i in paths:
     for casa_distro_src in glob.glob(osp.join(environment_dir, *i)):
         if osp.exists(osp.join(casa_distro_src, 'python', 'casa_distro',
                                '__init__.py')):
