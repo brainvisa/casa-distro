@@ -255,7 +255,46 @@ class MountManager(Qt.QWidget):
             print('QWebEngineView failed, using QWebView')
             self.help_widget = Qt.QWebView()
         self.help_widget.setWindowTitle('How to configure mount points')
-        help_text = '''<h1>How to configure mount points</h1>
+        help_text = '''<style>
+body {
+    font-family: sans-serif;
+    border-width: 10px;
+    border-color: #8880A0;
+    border-style: solid;
+    border-radius: 6px;
+    margin: 0px;
+    padding: 10px;
+    text-align: justify;
+}
+
+a {
+    color: #2878A2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+h1 {
+    background-color: #C8D0EF;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+    margin-bottom: 0px;
+    color: #2878A2;
+}
+
+h2 {
+    background-color: #B0C0EB;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 5px;
+}
+</style>
+<h1>How to configure mount points</h1>
 <p>Mount points allow to see the host system directories from the container. They are needed to read and write files. Some mount points are automatically configured in <b>bv</b> / <b>Casa-Distro</b>, but additional mount points may be added by the user.
 </p>
 
@@ -281,6 +320,11 @@ Once the host-side directory has been chosen, it is displayed as the first colum
 </p>
 <p>
 After mount points have been edited, they must be validated (using the "OK" button in the configuration GUI), and <tt>bv</tt> must be restarted using the new mounts.
+</p>
+
+<h2>Other configuration issues and useful mounts</h2>
+<p>
+See the <a href="https://brainvisa.info/configuration.html">BrainVisa configuration section</a> on the web site
 </p>
 '''  # noqa: E501
         self.help_widget.setHtml(help_text)
