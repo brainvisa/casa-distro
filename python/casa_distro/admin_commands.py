@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import zipfile
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
@@ -558,6 +559,7 @@ def create_user_image(
         install_doc='yes',
         install_test='yes',
         generate='yes',
+        zip='yes',
         upload='no',
         verbose=True):
     """Create a "user" image given a development environment.
@@ -623,6 +625,10 @@ def create_user_image(
         default={generate_default}
         If "true", "yes" or "1", perform the image creation step.
         If "false", "no" or "0", skip this step
+    zip
+        default={zip_default}
+        If "true", "yes" or "1", zip the installed files for an "online"
+        installation.
     upload
         default={upload_default}
         If "true", "yes" or "1", upload the image on BrainVISA web site.
@@ -727,6 +733,32 @@ def create_user_image(
         if retcode != 0:
             sys.exit('make post-install failed, aborting.')
 
+    zip_archive = osp.join(config['directory'],
+                           '%(distro)s-%(version)s-%(system)s.zip' % metadata)
+    zip_json = '%s.json' % zip_archive
+
+    if zip:
+        with zipfile.ZipFile(zip_archive, 'w', allowZip64=True,
+                             compression=zipfile.ZIP_DEFLATED) as zip:
+            for root, dirs, files in os.walk(osp.join(config['directory'],
+                                                      'install')):
+                rel = osp.relpath(root, osp.join(config['directory'],
+                                                 'install'))
+                for dir in dirs:
+                    zip.write(osp.join(root, dir), osp.join(rel, dir))
+                for file in files:
+                    zip.write(osp.join(root, file), osp.join(rel, file))
+        zip_meta = {
+            'md5': file_hash(zip_archive),
+            'size': os.stat(zip_archive).st_size,
+            'distro': config['distro'],
+            'system': config['system'],
+            'version': version,
+            'creation_time': datetime.datetime.now().isoformat(),
+        }
+        with open(zip_json, 'w') as jf:
+            json.dump(zip_meta, jf, indent=4, separators=(',', ': '))
+
     metadata_file = output + '.json'
 
     if generate:
@@ -751,8 +783,14 @@ def create_user_image(
                   indent=4, separators=(',', ': '))
 
     if upload:
-        subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                               metadata_file, output, publish_url])
+        files = []
+        if osp.exists(output):
+            files += [metadata_file, output]
+        if osp.exists(zip_json):
+            files += [zip_json, zip_archive]
+        if files:
+            subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r']
+                                  + files + [publish_url])
 
 
 @command
