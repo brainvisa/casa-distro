@@ -17,8 +17,15 @@ def vbox_manage_command(cmd_options):
     Return the command to be executed with subprocess.*call()
     to run VBoxManage (or VBoxManage.exe) command.
     '''
-    # TODO: Not implemented for Windows
-    return ['VBoxManage'] + cmd_options
+    if os.name == 'nt':
+        from casa_distro.environment import find_in_path
+
+        executable = find_in_path('VBoxManage.exe')
+        if executable is None:
+            executable = '\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe' 
+    else:
+        executable = 'VBoxManage'
+    return [executable] + cmd_options
 
 
 def vbox_manage(cmd_options, output=False):
@@ -85,6 +92,11 @@ def create_image(base, base_metadata,
         if verbose:
             six.print_('Create a', disk_size, 'MiB system disk in', output,
                        file=verbose, flush=True)
+        print('!!!', ['createmedium',
+                    '--filename', output,
+                     '--size', disk_size,
+                     '--format', 'VDI',
+                     '--variant', 'Standard'])
         vbox_manage(['createmedium',
                     '--filename', output,
                      '--size', disk_size,
