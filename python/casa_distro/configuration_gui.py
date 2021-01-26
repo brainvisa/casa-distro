@@ -146,6 +146,7 @@ class InstallEditor(Qt.QDialog):
 
     def accept(self):
         from casa_distro.container_environment import setup_user
+        import threading
 
         if not self.validation_btns.button(Qt.QDialogButtonBox.Ok).hasFocus():
             return
@@ -171,8 +172,13 @@ class InstallEditor(Qt.QDialog):
                 wait.show()
                 wait.setValue(0)
                 Qt.QApplication.instance().processEvents()
-                Qt.QApplication.instance().processEvents()
-                setup_user(setup_dir='/casa/host', rw_install=True)
+                thread = threading.Thread(
+                    target=setup_user,
+                    kwargs=dict(setup_dir='/casa/host', rw_install=True))
+                thread.start()
+                while thread.is_alive():
+                    thread.join(0.1)
+                    Qt.QApplication.instance().processEvents()
                 wait.setValue(1)
                 Qt.QApplication.instance().processEvents()
                 wait.close()
@@ -181,24 +187,42 @@ class InstallEditor(Qt.QDialog):
         distros = [item.text() for item in self.distros.selectedItems()]
         if distros:
             wait = Qt.QProgressDialog('Installing read-write from download...',
-                                      'Abort', 0, len(distros))
+                                      'Cancel', 0, len(distros))
             wait.setWindowModality(Qt.Qt.WindowModal)
             wait.show()
             Qt.QApplication.instance().processEvents()
             url = self.url_edit.text()
             installed = []
+            cancel_done = False
             for n, distro in enumerate(distros):
                 wait.setLabelText('installing distro: <b>%s</b>' % distro)
                 Qt.QApplication.instance().processEvents()
                 wait.setValue(n)
-                print('install:', distro)
                 Qt.QApplication.instance().processEvents()
                 if wait.wasCanceled():
+                    print('Cancel.')
                     break
-                Qt.QApplication.instance().processEvents()
-                setup_user(setup_dir='/casa/host', distro=distro, url=url)
+                thread = threading.Thread(
+                    target=setup_user,
+                    kwargs=dict(setup_dir='/casa/host', distro=distro,
+                                url=url))
+                thread.start()
+                while thread.is_alive():
+                    if wait.wasCanceled():
+                        if not cancel_done:
+                            print('cancelling after the current install '
+                                  '(which cannot be interrupted)...')
+                            wait.setLabelText(
+                                '<b>Cancelling....</b> finishing to install '
+                                '<br/><b>%s</b> (not interruptible) first...'
+                                % distro)
+                            wait.setCancelButton(None)
+                            wait.show()
+                            Qt.QApplication.instance().processEvents()
+                            cancel_done = True
+                    thread.join(0.1)
+                    Qt.QApplication.instance().processEvents()
                 installed.append(distro)
-                Qt.QApplication.instance().processEvents()
             wait.setValue(n)
             Qt.QApplication.instance().processEvents()
             wait.close()
