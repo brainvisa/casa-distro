@@ -27,6 +27,5 @@ set -x  # display commands before running them
 export DEBIAN_FRONTEND=noninteractive
 # -E option allow to pass environment variables through sudo
 sudo -E apt-mark auto ${build_dependencies[@]}
-sudo -E apt-get -o APT::Autoremove::RecommendsImportant=0 \
-                -o APT::Autoremove::SuggestsImportant=0 \
+sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \
                 autoremove --yes

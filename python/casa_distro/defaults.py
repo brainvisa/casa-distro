@@ -6,7 +6,7 @@ import os.path as osp
 
 default_base_directory = os.environ.get('CASA_BASE_DIRECTORY')
 if not default_base_directory:
-    default_base_directory = osp.expanduser('~/casa_distro')
+    default_base_directory = osp.join(osp.expanduser('~'), 'casa_distro')
 
 publish_server = os.environ.get('BRAINVISA_PUBLISH_SERVER', 'brainvisa.info')
 publish_login = os.environ.get('BRAINVISA_PUBLISH_LOGIN', 'brainvisa')

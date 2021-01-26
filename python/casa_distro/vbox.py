@@ -10,6 +10,7 @@ import tempfile
 import time
 
 import casa_distro.six as six
+from .image_builder import get_image_builder
 
 
 def vbox_manage_command(cmd_options):
@@ -17,8 +18,15 @@ def vbox_manage_command(cmd_options):
     Return the command to be executed with subprocess.*call()
     to run VBoxManage (or VBoxManage.exe) command.
     '''
-    # TODO: Not implemented for Windows
-    return ['VBoxManage'] + cmd_options
+    if os.name == 'nt':
+        from casa_distro.environment import find_in_path
+
+        executable = find_in_path('VBoxManage.exe')
+        if executable is None:
+            executable = '\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe' 
+    else:
+        executable = 'VBoxManage'
+    return [executable] + cmd_options
 
 
 def vbox_manage(cmd_options, output=False):
@@ -85,6 +93,11 @@ def create_image(base, base_metadata,
         if verbose:
             six.print_('Create a', disk_size, 'MiB system disk in', output,
                        file=verbose, flush=True)
+        print('!!!', ['createmedium',
+                    '--filename', output,
+                     '--size', disk_size,
+                     '--format', 'VDI',
+                     '--variant', 'Standard'])
         vbox_manage(['createmedium',
                     '--filename', output,
                      '--size', disk_size,
@@ -158,11 +171,11 @@ def create_image(base, base_metadata,
         raise NotImplementedError('Creation of image of type {0} is not yet '
                                   'implemented for VirtualBox'.format(type))
 
-
 def create_user_image(base_image,
                       dev_config,
                       version,
                       output,
+                      force,
                       base_directory,
                       verbose):
     install_dir = osp.join(dev_config['directory'], 'install')
@@ -265,8 +278,9 @@ class VBoxMachine:
         info = self.vm_info()
         if info['VMState'] == 'poweroff':
             if verbose:
-                print('Starting', self.name, 'and waiting for it to be ready',
-                      file=verbose, flush=True)
+                six.print_('Starting', self.name,
+                          'and waiting for it to be ready',
+                          file=verbose, flush=True)
             self.start(gui=gui)
             command = self._run_user_command('echo')
             for i in range(attempts):
@@ -336,12 +350,13 @@ class VBoxMachine:
         # a temporary location and then copied at their final location
         # without preserving the mode.
         if osp.isdir(source_file):
-            dest = osp.join(self.tmp_dir, osp.basename(source_file))
-            self.run_root('mkdir "{dest}"'.format(dest=dest))
+            f = os.path.basename(source_file)
+            # Force Linux path even if executing Python on Windows
+            dest = '{}/{}'.format(self.tmp_dir, f)
+            self.run_root('mkdir "{}"'.format(dest))
             vbox_manage(['guestcontrol', '--username', 'root',
                          '--password', self.root_password, self.name, 'copyto',
                          '--recursive', source_file, dest])
-            f = os.path.basename(source_file)
             self.run_root('cp -r --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" '
                           '&& rm -r "{tmp}/{f}"'.format(tmp=self.tmp_dir,
                                                         f=f,
@@ -398,6 +413,12 @@ class VBoxMachine:
                          'copyto', '--target-directory', dest_dir,
                          source])
 
+
+    def install_casa_distro(self, dest):
+        """This is a no op because we do not use casa_distro with VirtualBox"""
+        pass
+
+
     def install(self,
                 build_file,
                 verbose=None,
@@ -414,19 +435,17 @@ class VBoxMachine:
             installation process.
         """
 
-        v = {}
-        exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
-        if 'install' not in v:
-            raise RuntimeError(
-                'No install function defined in {0}'.format(build_file))
-        install_function = v['install']
+        image_builder = get_image_builder(build_file)
 
         self.start_and_wait(verbose=verbose, gui=gui)
         self.run_root(
             'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
-        install_function(base_dir=osp.dirname(build_file),
-                         builder=self,
-                         verbose=verbose)
+        
+        for step in image_builder.steps:
+            if verbose:
+                print('Performing:', step.__doc__, file=verbose)
+            step(base_dir=osp.dirname(build_file),
+                 builder=self)
 
 
 def vbox_import_image(image, vbox_machine, output,

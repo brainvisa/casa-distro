@@ -652,8 +652,9 @@ def create_user_image(
                                 branch=branch,
                                 system=system,
                                 name=environment_name,
-                                container_type=container_type)
-    container_type = config['container_type']
+                                container_type='singularity')
+    if container_type != 'vbox':
+        container_type = config['container_type']
     if container_type == 'singularity':
         extension = '.sif'
         module = casa_distro.singularity
@@ -986,3 +987,77 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
             log.extend('  - {0}'.format(i) for i in failed_tasks)
         bbi_daily.log(bbi_daily.bbe_name, 'finished',
                       (1 if failed_tasks else 0), '\n'.join(log))
+
+
+@command
+def local_install(type, steps=None, system='*', 
+                  log_file='/etc/casa_local_install.log'):
+    '''
+    Run the installation procedure to create a run or dev image on the
+    local machine. Installation can be don step by step. This command 
+    is typically used in a VirtualBox machine to debug image creation
+    scenario.
+
+    Parameters
+    ----------
+    
+    type
+        Type of image to install. Either "run" or "dev".
+    
+    steps
+        default={steps_default}
+
+        Installation steps to perform. If not given, the steps not yet 
+        done are displayed. Can be a comma separated list of step names
+        or "all" to perform all steps not already done or "next" to perform
+        only the next undone step.
+    
+    system
+        default={system_default}
+
+        System to used when searching for an image builder file. This is
+        used as a shell pattern, the default value match any system.
+    
+    log_file
+        default={log_file_default}
+
+        File where information about steps that have been performed is stored.
+    '''
+    installer = LocalInstaller(log_file=log_file)
+
+    for builder_name, steps in installer.log.items():
+        for step_name in steps:
+            print(builder_name, '/', step_name, 'done')
+
+    pattern = osp.join(osp.dirname(osp.dirname(osp.dirname(
+        casa_distro.__file__))),
+        'share', 'docker', 'casa-{}'.format(type),
+        system, 'build_image.py')
+    build_files = glob.glob(pattern)
+    if not build_files:
+        raise ValueError('No file corresponds to pattern {}'.format(pattern))
+    elif len(build_files) > 1:
+        raise ValueError('Several build files found: {}'.format(', '.join(build_files)))
+    build_file = build_files[0]
+
+    builder = get_image_builder(build_file)
+    steps_todo = [i for i in (j.__name__ for j in builder.steps)
+                  if i not in installer.log.get(builder.name, {})]
+        
+    if not action:
+        for step in builder.steps:
+            if step.__name__ in installer.log.get(builder.name, {}):
+                status = 'done'
+            else:
+                status = 'to do'
+            print(builder.name, '/', step_name, status)
+        step_names = []
+    elif action == 'next':
+        step_names = [steps_todo[0]]
+    elif action == 'all':
+        step_names = steps_todo
+    else:
+        step_names = [action]
+    for step_name in step_names:
+        print('Performing', builder.name, '/', step_name)
+        installer.perform_step(build_file, step_name)
