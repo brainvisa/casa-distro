@@ -14,6 +14,7 @@ import tempfile
 import getpass
 
 from . import six
+from .image_builder import get_image_builder
 
 
 class RecipeBuilder:
@@ -158,19 +159,15 @@ Bootstrap: localimage
 '''.format(base=base,  # noqa: E501
            system=metadata['system'],
            type=type))
-        v = {}
-        print('build_file:', build_file)
-        exec(compile(open(build_file, "rb").read(), build_file, 'exec'), v, v)
-        if 'install' not in v:
-            raise RuntimeError(
-                'No install function defined in %s' % build_file)
-        install_function = v['install']
+        image_builder = get_image_builder(build_file)
 
-        recipe_builder = RecipeBuilder(output)
-        install_function(base_dir=osp.dirname(build_file),
-                         builder=recipe_builder,
-                         verbose=verbose)
-        recipe_builder.write(recipe)
+        installer = RecipeBuilder(output)
+        for step in image_builder.steps:
+            if verbose:
+                print('Performing:', step.__doc__, file=verbose)
+            step(base_dir=osp.dirname(build_file),
+                 builder=installer)
+        installer.write(recipe)
         if verbose:
             print('---------- Singularity recipe ----------', file=verbose)
             print(open(recipe.name).read(), file=verbose)

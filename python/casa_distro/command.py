@@ -345,5 +345,9 @@ def main(meant_for_container=False):
         sys.stderr.flush()
         print('\nERROR SUMMARY (details above): {0}:'.format(e),
               file=sys.stderr)
-        sys.exit(os.EX_USAGE)
+        try:
+            sys.exit(os.EX_USAGE)
+        except AttributeError:
+            # On Windows os.EX_USAGE is not defined
+            sys.exit(1)
     sys.exit(result)
