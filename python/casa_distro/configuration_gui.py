@@ -148,10 +148,8 @@ class InstallEditor(Qt.QDialog):
         from casa_distro.container_environment import setup_user
 
         if not self.validation_btns.button(Qt.QDialogButtonBox.Ok).hasFocus():
-            print('NOT VALID !')
             return
 
-        print('OK')
         super(InstallEditor, self).accept()
 
         if hasattr(self, 'unpack_btn') and self.unpack_btn.isChecked():
@@ -165,7 +163,6 @@ class InstallEditor(Qt.QDialog):
                     do_it = False
                 else:
                     shutil.rmtree('/casa/host/install')
-            print('do it:', do_it)
 
             if do_it:
                 wait = Qt.QProgressDialog('Installing read-write locally...',
@@ -183,7 +180,6 @@ class InstallEditor(Qt.QDialog):
 
         distros = [item.text() for item in self.distros.selectedItems()]
         if distros:
-            print('distros:', distros)
             wait = Qt.QProgressDialog('Installing read-write from download...',
                                       'Abort', 0, len(distros))
             wait.setWindowModality(Qt.Qt.WindowModal)
