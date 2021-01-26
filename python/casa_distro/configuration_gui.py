@@ -100,13 +100,15 @@ class InstallEditor(Qt.QDialog):
         self.update_distros()
 
         validation_btns = Qt.QDialogButtonBox(
-            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel)
+            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel
+            | Qt.QDialogButtonBox.Help)
         layout.addWidget(validation_btns)
         validation_btns.button(Qt.QDialogButtonBox.Ok).setDefault(False)
         validation_btns.button(Qt.QDialogButtonBox.Ok).setAutoDefault(False)
 
         validation_btns.accepted.connect(self.accept)
         validation_btns.rejected.connect(self.reject)
+        validation_btns.helpRequested.connect(self.help)
         self.validation_btns = validation_btns
 
     def url_changed(self):
@@ -168,6 +170,7 @@ class InstallEditor(Qt.QDialog):
             if do_it:
                 wait = Qt.QProgressDialog('Installing read-write locally...',
                                           None, 0, 1)
+                wait.setWindowTitle('Install in progress')
                 wait.setWindowModality(Qt.Qt.WindowModal)
                 wait.show()
                 wait.setValue(0)
@@ -188,6 +191,10 @@ class InstallEditor(Qt.QDialog):
         if distros:
             wait = Qt.QProgressDialog('Installing read-write from download...',
                                       'Cancel', 0, len(distros))
+            wait.setWindowTitle('Install in progress')
+            if len(distros) == 1:
+                # cannot cancel inside a single install
+                wait.setCancelButton(None)
             wait.setWindowModality(Qt.Qt.WindowModal)
             wait.show()
             Qt.QApplication.instance().processEvents()
@@ -235,6 +242,112 @@ class InstallEditor(Qt.QDialog):
                 new_conf['distro'] = 'custom'
                 with open(self.conf_path, 'w') as f:
                     json.dump(new_conf, f, indent=4)
+
+    def help(self):
+        print('help')
+        try:
+            self.help_widget = QtWebEngineWidgets.QWebEngineView()
+        except Exception:
+            print('QWebEngineView failed, using QWebView')
+            self.help_widget = Qt.QWebView()
+        self.help_widget.setWindowTitle('Managing install')
+        help_text = '''<style>
+body {
+    font-family: sans-serif;
+    border-width: 10px;
+    border-color: #8880A0;
+    border-style: solid;
+    border-radius: 6px;
+    margin: 0px;
+    padding: 10px;
+    text-align: justify;
+}
+
+a {
+    color: #2878A2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+h1 {
+    background-color: #C8D0EF;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+    margin-bottom: 0px;
+    color: #2878A2;
+}
+
+h2 {
+    background-color: #B0C0EB;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+div.note {
+    background-color: #f0f0ff;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+div.code {
+    background-color: #f0fff0;
+    border-style: solid none solid none;
+    border-width: 1px;
+    border-radius: 0px;
+    padding: 3px;
+    border-color: #d0d090;
+}
+</style>
+<h1>Managing BrainVISA installation options</h1>
+
+<h2>Different kinds of BrainVISA installations</h2>
+<p>The default installation method is using a read-only container image. It is the most convenient, faster to install, and "safe". This is what you get when you download a BrainVisa image and perform the default setup.
+</p>
+<p>However this install method is not modular: you cannot install additional toolboxes, because the installed files reside inside the container image, which is read-only. Thus it is possible to install BrainVISA on the host filesystem, which will be modifiable, and will allow installing additional tools. There are two ways to do it:
+</p>
+<p>
+    <ul>
+        <li>"local" install: the files already present within the already installed, read-only image, will be copied on the host filesystem. You thus get identical contents to the original image, but they will now be modifiable.
+        </li>
+        <li>from downloads: The BrainVISA programs files will be downloaded from the web site. This method has 2 advantages:
+            <ul>
+                <li>It can be used from an image wich does not contain the files (a "run" system image, without the BrainVISA distribution in it), which is lighter than the full one, and may be shared between several installs.
+                </li>
+                <li>Downloading offers the option to download a different "distro" (set of packages and toolboxes), and may be used several times over the same install. This is thus a means of installing additional tolboxes when they are available on the web site.
+                </li>
+            </ul>
+            However a network connection has to be active during install, with sufficient bandwidth. Installing the standard "brainvisa" distro from a full "user" image has the same result as the "local" install: it just consumes network bandwith without any benefit.
+        </li>
+    </ul>
+</p>
+
+<h2>Installing distros</h2>
+<p>It is possible to both install the "local" distro (normally the "brainvisa" distro) in read-write mode, then add additional downloaded ones. To do so, check the local install option, and select additional distros.
+</p>
+<p>Inside the container, the read-only install directorty is:
+<div class="code">/casa/install</div>
+The read-write install location will be:
+<div class="code">/casa/host/install</div>
+</p>
+<div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or may python language modules, do not support installation split accross several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
+</div>
+<p>In the downloads list, the available packages for your container system and version are displayed at the given URL. It could be possible to change the URL to another server which distributes its own distros (toolboxes).
+</p>
+<p>Several distros can be selected. They will all be installed when "OK" is clicked. There are no dependencies checks between distros/toolboxes, and they will be processed in the order they are displayed to the user, so their installation should be independent.
+</p>
+
+'''  # noqa: E501
+        self.help_widget.setHtml(help_text)
+        self.help_widget.show()
 
 
 class CasaLauncher(Qt.QDialog):
@@ -347,7 +460,8 @@ class CasaLauncher(Qt.QDialog):
             self.block_launchers()
 
     def edit_install(self):
-        dialog = InstallEditor(self.conf, self.conf_path)
+        dialog = InstallEditor(self.conf, self.conf_path, self)
+        dialog.setWindowModality(Qt.Qt.WindowModal)
         if dialog.exec_() == dialog.Accepted:
             self.update_install_status()
 
