@@ -88,7 +88,7 @@ def download_install(install_dir, distro, version, url):
 
 
 def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
-               version=None, url=None):
+               version=None, url='https://brainvisa.info/download'):
     """
     Initialize a user environment directory.
     This function is supposed to be called from a user image.

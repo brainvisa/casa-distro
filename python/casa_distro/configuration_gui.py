@@ -14,6 +14,8 @@ import subprocess
 import os
 import collections
 import glob
+import os.path as osp
+import shutil
 
 try:
     from soma.qt_gui.qt_backend import Qt
@@ -41,6 +43,178 @@ except ImportError:
         'As a result, some configuration edition capabilities will not be '
         'available.\n\n'
         'You normally just run the "bv" script from the host.')
+
+
+class InstallEditor(Qt.QDialog):
+    def __init__(self, conf, conf_path, parent=None):
+        super(InstallEditor, self).__init__(parent)
+
+        self.conf = conf
+        self.conf_path = conf_path
+        self.url = ''
+
+        layout = Qt.QVBoxLayout()
+        self.setLayout(layout)
+        self.setWindowTitle('BrainVISA Install options')
+
+        cinstl = Qt.QHBoxLayout()
+        layout.addLayout(cinstl)
+
+        inst_type = 'None'
+        if os.path.exists('/casa/host/install/bin/bv_env'):
+            inst_type = '<font color="#008000">read-write</font>'
+        elif os.path.exists('/casa/install/bin/bv_env'):
+            inst_type = '<font color="#800000">read-only</font>'
+        distro = self.conf['distro']
+        dist_text = ''
+        if inst_type != 'None':
+            dist_text = ' (<b>%s</b>)' % distro
+
+        cinst0 = Qt.QLabel('<b>Current install:</b> %s%s'
+                           % (inst_type, dist_text))
+        cinstl.addWidget(cinst0)
+
+        if 'read-only' in inst_type:
+            inst_rwl = Qt.QGroupBox('install read-write locally:')
+            layout.addWidget(inst_rwl)
+            inst_rwl_l = Qt.QVBoxLayout()
+            inst_rwl.setLayout(inst_rwl_l)
+            self.unpack_btn = Qt.QCheckBox('install')
+            inst_rwl_l.addWidget(self.unpack_btn)
+
+        dl_grp = Qt.QGroupBox('install read-write from downloads:')
+        layout.addWidget(dl_grp)
+        dl_grp_l = Qt.QVBoxLayout()
+        dl_grp.setLayout(dl_grp_l)
+        hb = Qt.QGridLayout()
+        dl_grp_l.addLayout(hb)
+        hb.addWidget(Qt.QLabel('url:'), 0, 0)
+        self.url_edit = Qt.QLineEdit('https://brainvisa.info/download')
+        hb.addWidget(self.url_edit, 0, 1)
+        hb.addWidget(Qt.QLabel('distro:'), 1, 0)
+        self.distros = Qt.QListWidget()
+        hb.addWidget(self.distros, 1, 1)
+        self.distros.setSelectionMode(self.distros.ExtendedSelection)
+        self.url_edit.editingFinished.connect(self.url_changed)
+
+        self.update_distros()
+
+        validation_btns = Qt.QDialogButtonBox(
+            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel)
+        layout.addWidget(validation_btns)
+        validation_btns.button(Qt.QDialogButtonBox.Ok).setDefault(False)
+        validation_btns.button(Qt.QDialogButtonBox.Ok).setAutoDefault(False)
+
+        validation_btns.accepted.connect(self.accept)
+        validation_btns.rejected.connect(self.reject)
+        self.validation_btns = validation_btns
+
+    def url_changed(self):
+        self.update_distros()
+
+    def update_distros(self):
+        from casa_distro.web import url_listdir, urlopen
+
+        url = self.url_edit.text()
+        if self.url == url:
+            return
+
+        self.url = url
+
+        sel_distros = [item.text() for item in self.distros.selectedItems()]
+        self.distros.clear()
+
+        try:
+            items = url_listdir(osp.join(url, self.conf['version']))
+            for distro in items:
+                if distro.endswith('/'):
+                    distro = distro[:-1]
+                ditem = osp.join(url, self.conf['version'], distro,
+                                 self.conf['system'])
+                dzip = osp.join(ditem,
+                                '%s-%s-%s' % (distro, self.conf['version'],
+                                              self.conf['system']))
+                djson = '%s.json' % dzip
+                if urlopen(djson) and urlopen(dzip):
+                    self.distros.addItem(distro)
+                    if distro in sel_distros:
+                        self.distros.item(
+                            self.distros.count() - 1).setSelected(True)
+
+        except Exception:
+            pass
+
+    def accept(self):
+        from casa_distro.container_environment import setup_user
+
+        if not self.validation_btns.button(Qt.QDialogButtonBox.Ok).hasFocus():
+            print('NOT VALID !')
+            return
+
+        print('OK')
+        super(InstallEditor, self).accept()
+
+        if hasattr(self, 'unpack_btn') and self.unpack_btn.isChecked():
+            do_it = True
+            if osp.exists('/casa/host/install'):
+                res = Qt.QMessageBox.question(
+                    None, 'Erase install ?',
+                    'An older installation exists. Erase it ?')
+                print('res:', res)
+                if res != Qt.QMessageBox.Yes:
+                    do_it = False
+                else:
+                    shutil.rmtree('/casa/host/install')
+            print('do it:', do_it)
+
+            if do_it:
+                wait = Qt.QProgressDialog('Installing read-write locally...',
+                                          None, 0, 1)
+                wait.setWindowModality(Qt.Qt.WindowModal)
+                wait.show()
+                wait.setValue(0)
+                Qt.QApplication.instance().processEvents()
+                Qt.QApplication.instance().processEvents()
+                setup_user(setup_dir='/casa/host', rw_install=True)
+                wait.setValue(1)
+                Qt.QApplication.instance().processEvents()
+                wait.close()
+                del wait
+
+        distros = [item.text() for item in self.distros.selectedItems()]
+        if distros:
+            print('distros:', distros)
+            wait = Qt.QProgressDialog('Installing read-write from download...',
+                                      'Abort', 0, len(distros))
+            wait.setWindowModality(Qt.Qt.WindowModal)
+            wait.show()
+            Qt.QApplication.instance().processEvents()
+            url = self.url_edit.text()
+            installed = []
+            for n, distro in enumerate(distros):
+                wait.setLabelText('installing distro: <b>%s</b>' % distro)
+                Qt.QApplication.instance().processEvents()
+                wait.setValue(n)
+                print('install:', distro)
+                Qt.QApplication.instance().processEvents()
+                if wait.wasCanceled():
+                    break
+                Qt.QApplication.instance().processEvents()
+                setup_user(setup_dir='/casa/host', distro=distro, url=url)
+                installed.append(distro)
+                Qt.QApplication.instance().processEvents()
+            wait.setValue(n)
+            Qt.QApplication.instance().processEvents()
+            wait.close()
+            del wait
+            if self.conf['distro'] not in installed or len(installed) != 1:
+                print('distro has changed.')
+                self.conf['distro'] = 'custom'
+                with open(self.conf_path) as f:
+                    new_conf = json.load(f)
+                new_conf['distro'] = 'custom'
+                with open(self.conf_path, 'w') as f:
+                    json.dump(new_conf, f, indent=4)
 
 
 class CasaLauncher(Qt.QDialog):
@@ -76,6 +250,15 @@ class CasaLauncher(Qt.QDialog):
         self._conf_btn = Qt.QPushButton('...')
         conf_line.addWidget(self._conf_btn)
 
+        if self.conf['type'] in ('run', 'user'):
+            inst_line = Qt.QHBoxLayout()
+            self.install_label = Qt.QLabel()
+            self.update_install_status()
+            inst_line.addWidget(self.install_label)
+            inst_line.addStretch(1)
+            self._inst_btn = Qt.QPushButton('...')
+            inst_line.addWidget(self._inst_btn)
+
         self._launchers = Launchers()
 
         self._errors_label = Qt.QLabel()
@@ -86,6 +269,8 @@ class CasaLauncher(Qt.QDialog):
         self._main_layout.addWidget(Qt.QLabel('<b>Mount points:</b>'))
         self._main_layout.addWidget(self._mount_manager)
         self._main_layout.addLayout(conf_line)
+        if inst_line:
+            self._main_layout.addLayout(inst_line)
         self._main_layout.addWidget(self._launchers)
         self._main_layout.addWidget(self._errors_label)
         self._main_layout.addWidget(self._validation_btns)
@@ -96,6 +281,8 @@ class CasaLauncher(Qt.QDialog):
         self._mount_manager.valueChanged.connect(self.block_launchers)
         self._launchers.launched.connect(self.close_and_launch)
         self._conf_btn.clicked.connect(self.edit_configuration)
+        if hasattr(self, '_inst_btn'):
+            self._inst_btn.clicked.connect(self.edit_install)
 
     def save_conf(self):
         if self._mount_manager.check_all_mounts():
@@ -138,6 +325,22 @@ class CasaLauncher(Qt.QDialog):
             self.conf.update(config_edit.edited_config())
             self._mount_manager.update_ui()
             self.block_launchers()
+
+    def edit_install(self):
+        dialog = InstallEditor(self.conf, self.conf_path)
+        if dialog.exec_() == dialog.Accepted:
+            self.update_install_status()
+
+    def update_install_status(self):
+        inst_type = 'None'
+        if os.path.exists('/casa/host/install/bin/bv_env'):
+            inst_type = '<font color="#008000">read-write</font>'
+        elif os.path.exists('/casa/install/bin/bv_env'):
+            inst_type = '<font color="#800000">read-only</font>'
+        distro = self.conf['distro']
+        self.install_label.setText(
+                '<b>BrainVisa Installation:</b> %s - <b>%s</b> distro'
+                % (inst_type, distro))
 
     # def closeEvent(self, *args, **kwargs):
     #     super(Qt.QDialog, self).closeEvent(*args, **kwargs)
