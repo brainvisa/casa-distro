@@ -79,6 +79,8 @@ def download_install(install_dir, distro, version, url):
                              use_tmp=True,
                              md5_check=metadata['md5'],
                              callback=downloader.stdout_progress)
+    if not osp.exists(install_dir):
+        os.makedirs(install_dir)
     try:
         subprocess.check_call(['unzip', local_zip], cwd=install_dir)
     finally:
