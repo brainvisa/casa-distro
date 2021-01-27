@@ -44,6 +44,8 @@ except ImportError:
         'available.\n\n'
         'You normally just run the "bv" script from the host.')
 
+from casa_distro.container_environment import is_writable
+
 
 class InstallEditor(Qt.QDialog):
     def __init__(self, conf, conf_path, parent=None):
@@ -61,13 +63,15 @@ class InstallEditor(Qt.QDialog):
         layout.addLayout(cinstl)
 
         inst_type = 'None'
-        if os.path.exists('/casa/host/install/bin/bv_env'):
+        if (os.path.exists('/casa/host/install/bin/bv_env')
+                or (os.path.exists('/casa/install/bin/bv_env')
+                    and is_writable('/casa/install'))):
             inst_type = '<font color="#008000">read-write</font>'
         elif os.path.exists('/casa/install/bin/bv_env'):
             inst_type = '<font color="#800000">read-only</font>'
-        distro = self.conf['distro']
         dist_text = ''
         if inst_type != 'None':
+            distro = self.conf['distro']
             dist_text = ' (<b>%s</b>)' % distro
 
         cinst0 = Qt.QLabel('<b>Current install:</b> %s%s'
@@ -312,7 +316,7 @@ div.code {
 <h2>Different kinds of BrainVISA installations</h2>
 <p>The default installation method is using a read-only container image. It is the most convenient, faster to install, and "safe". This is what you get when you download a BrainVisa image and perform the default setup.
 </p>
-<p>However this install method is not modular: you cannot install additional toolboxes, because the installed files reside inside the container image, which is read-only. Thus it is possible to install BrainVISA on the host filesystem, which will be modifiable, and will allow installing additional tools. There are two ways to do it:
+<p>However this install method is not modular: you cannot install additional toolboxes, because the installed files reside inside the container image, which is read-only. Thus it is possible to install BrainVISA on the host filesystem, which will be modifiable, and will allow installing additional tools. <em>This is not needed in a VirtualBox image, where you have a read-write accesss to the contents.</em> There are two ways to perform the read-write install:
 </p>
 <p>
     <ul>
@@ -338,7 +342,7 @@ div.code {
 The read-write install location will be:
 <div class="code">/casa/host/install</div>
 </p>
-<div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or may python language modules, do not support installation split accross several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
+<div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or many python language modules, do not support installation split accross several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
 </div>
 <p>In the downloads list, the available packages for your container system and version are displayed at the given URL. It could be possible to change the URL to another server which distributes its own distros (toolboxes).
 </p>
@@ -467,18 +471,19 @@ class CasaLauncher(Qt.QDialog):
 
     def update_install_status(self):
         inst_type = 'None'
-        if os.path.exists('/casa/host/install/bin/bv_env'):
+        if (os.path.exists('/casa/host/install/bin/bv_env')
+                or (os.path.exists('/casa/install/bin/bv_env')
+                    and is_writable('/casa/install'))):
             inst_type = '<font color="#008000">read-write</font>'
         elif os.path.exists('/casa/install/bin/bv_env'):
             inst_type = '<font color="#800000">read-only</font>'
-        distro = self.conf['distro']
+        dist_text = ''
+        if inst_type != 'None':
+            distro = self.conf['distro']
+            dist_text = ' (<b>%s</b>)' % distro
         self.install_label.setText(
                 '<b>BrainVisa Installation:</b> %s - <b>%s</b> distro'
-                % (inst_type, distro))
-
-    # def closeEvent(self, *args, **kwargs):
-    #     super(Qt.QDialog, self).closeEvent(*args, **kwargs)
-    #     print('CLOSE!!!!')
+                % (inst_type, dist_text))
 
 
 class MountManager(Qt.QWidget):

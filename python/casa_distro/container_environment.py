@@ -10,6 +10,7 @@ import shutil
 import sys
 import time
 import subprocess
+import tempfile
 
 import casa_distro
 from casa_distro.environment import (prepare_environment_homedir, copytree, cp)
@@ -87,6 +88,16 @@ def download_install(install_dir, distro, version, url):
         os.unlink(local_zip)
 
 
+def is_writable(dir):
+    try:
+        x = tempfile.mkstemp(dir=dir)
+    except Exception:
+        return False
+    os.close(x[0])
+    os.unlink(x[1])
+    return True
+
+
 def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
                version=None, url='https://brainvisa.info/download'):
     """
@@ -112,14 +123,20 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
         distro = 'brainvisa'
     if distro is not None:
         print('Downloading BrainVisa distro %s from the web site...' % distro)
-        install_dir = osp.join(setup_dir, 'install')
+        if not is_writable('/casa/install'):
+            install_dir = osp.join(setup_dir, 'install')
         if version is None:
             version = os.environ['CASA_VERSION']
         download_install(install_dir, distro, version, url)
     elif rw_install:
-        print('copying BrainVisa installation into a writable directory...')
-        shutil.copytree('/casa/install', osp.join(setup_dir, 'install'))
-        install_dir = osp.join(setup_dir, 'install')
+        if is_writable('/casa_install'):
+            print('The install directory is already writable. No need to copy '
+                  'files.')
+        else:
+            print('copying BrainVisa installation into a writable '
+                  'directory...')
+            shutil.copytree('/casa/install', osp.join(setup_dir, 'install'))
+            install_dir = osp.join(setup_dir, 'install')
 
     create_environment_bin_commands(osp.dirname(bv), bin)
     create_environment_bin_commands(osp.join(install_dir, 'bin'), bin)
