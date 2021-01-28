@@ -13,21 +13,21 @@ function _complete_casa_distro_option_()
     # get repository location
     if [ "${COMP_WORDS[1]}" = "-r" ] \
         || [  "${COMP_WORDS[1]}" = "--repository" ]; then
-        local CASA_DEFAULT_REPOSITORY="${COMP_WORDS[2]}"
+        local CASA_BASE_DIRECTORY="${COMP_WORDS[2]}"
         local cmd="${COMP_WORDS[3]}"
     else
         local cmd="${COMP_WORDS[1]}"
     fi
     # TODO: catch cmd option build_workflows_repository
-    if [ -z "$CASA_DEFAULT_REPOSITORY" ]; then
-        local CASA_DEFAULT_REPOSITORY="$HOME/casa_distro"
+    if [ -z "$CASA_BASE_DIRECTORY" ]; then
+        local CASA_BASE_DIRECTORY="$HOME/casa_distro"
     fi
 
     local SHARE=$(realpath $(realpath $(dirname $(realpath $(which casa_distro))))/../share)
     if [ -d "$SHARE"/casa-distro-* ]; then
         SHARE="$SHARE"/casa-distro-*
     fi
-    local SHARE_DIRS="${SHARE} ${CASA_DEFAULT_REPOSITORY}/share ${HOME}/.config/casa-distro ${HOME}/.casa-distro"
+    local SHARE_DIRS="${SHARE} ${CASA_BASE_DIRECTORY}/share ${HOME}/.config/casa-distro ${HOME}/.casa-distro"
 
     case "$opt" in
     distro)
@@ -65,7 +65,7 @@ function _complete_casa_distro_option_()
         ;;
     name|environment_name)
         if [ -z "$CASA_ENVIRONMENT" ]; then
-            local names=`casa_distro list base_directory=$CASA_DEFAULT_REPOSITORY | grep -E -v '^(  [a-z])'`
+            local names=`casa_distro list base_directory=$CASA_BASE_DIRECTORY | grep -E -v '^(  [a-z])'`
             COMPREPLY=($(compgen -W "$names" -- "${word}"))
         else
             COMPREPLY=($(compgen -W "" -- "${word}"))
@@ -73,7 +73,7 @@ function _complete_casa_distro_option_()
         ;;
     image|base_image)
         # take existing singularity images
-        local images=$CASA_DEFAULT_REPOSITORY/*.sif
+        local images=$CASA_BASE_DIRECTORY/*.sif
 #         for f in $images
 #         do
 #             local b=$(basename "$f")
@@ -84,7 +84,7 @@ function _complete_casa_distro_option_()
     image_names)
         if [ "$cmd" = "publish_singularity" ] || [ "$cmd" = "clean_images" ]; then
             # take existing singularity images
-            local images=$CASA_DEFAULT_REPOSITORY/*.simg
+            local images=$CASA_BASE_DIRECTORY/*.simg
         fi
         if [ "$cmd" = "create_docker" ]; then
             local nimages
@@ -155,17 +155,17 @@ function _complete_casa_distro_image_names_tag_()
     # get repository location
     if [ "${COMP_WORDS[1]}" = "-r" ] \
         || [  "${COMP_WORDS[1]}" = "--repository" ]; then
-        local CASA_DEFAULT_REPOSITORY="${COMP_WORDS[2]}"
+        local CASA_BASE_DIRECTORY="${COMP_WORDS[2]}"
         local cmd="${COMP_WORDS[3]}"
     else
         local cmd="${COMP_WORDS[1]}"
     fi
-    if [ -z "$CASA_DEFAULT_REPOSITORY" ]; then
-        local CASA_DEFAULT_REPOSITORY="$HOME/casa_distro"
+    if [ -z "$CASA_BASE_DIRECTORY" ]; then
+        local CASA_BASE_DIRECTORY="$HOME/casa_distro"
     fi
 
     if [ "$cmd" = "publish_singularity" ]; then
-        local images=$CASA_DEFAULT_REPOSITORY/*.simg
+        local images=$CASA_BASE_DIRECTORY/*.simg
     fi
     local nimages=""
     for f in $images
@@ -191,7 +191,7 @@ function _complete_casa_distro_image_names_tag_()
         if [ -d "$SHARE"/casa-distro-* ]; then
             SHARE="$SHARE"/casa-distro-*
         fi
-        local SHARE_DIRS="${SHARE} ${CASA_DEFAULT_REPOSITORY}/share ${HOME}/.config/casa-distro ${HOME}/.casa-distro"
+        local SHARE_DIRS="${SHARE} ${CASA_BASE_DIRECTORY}/share ${HOME}/.config/casa-distro ${HOME}/.casa-distro"
 
         local nimages
         local image_dir=$(basename ${image})
