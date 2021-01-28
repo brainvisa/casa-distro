@@ -387,6 +387,7 @@ class CasaLauncher(Qt.QDialog):
         self._conf_btn = Qt.QPushButton('...')
         conf_line.addWidget(self._conf_btn)
 
+        inst_line = None
         if self.conf['type'] in ('run', 'user'):
             inst_line = Qt.QHBoxLayout()
             self.install_label = Qt.QLabel()
