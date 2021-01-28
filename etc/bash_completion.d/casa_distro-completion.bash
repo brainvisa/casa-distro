@@ -121,7 +121,7 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
-    gui|verbose|force|root|install|generate|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests|full)
+    gui|verbose|force|root|install|install_doc|install_test|generate|zip|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests|full|rw_install)
         COMPREPLY=($(compgen -W "True False true false 1 0 yes no Yes No" -- "${word}"))
         ;;
     opengl)
@@ -514,7 +514,7 @@ function _complete_casa_distro_admin_()
             COMPREPLY=($(compgen -W "type= image= container_type= verbose=" -- "${word}"))
             ;;
         create_user_image)
-            COMPREPLY=($(compgen -W "version= name= base_image= distro= system= environment_name= container_type= base_directory= install= generate= upload= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "version= name= base_image= distro= branch= system= environment_name= container_type= force= base_directory= install= install_doc= install_test= generate= zip= upload= verbose=" -- "${word}"))
             ;;
         singularity_deb)
             COMPREPLY=($(compgen -W "system= output= base= version= go_version=" -- "${word}"))
@@ -559,7 +559,7 @@ function _complete_casa_container_()
             COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
             ;;
         setup_user)
-            COMPREPLY=($(compgen -W "dir=" -- "${word}"))
+            COMPREPLY=($(compgen -W "dir= rw_install= distro= version= url=" -- "${word}"))
             ;;
         setup_dev)
             COMPREPLY=($(compgen -W "distro= branch= system= dir= name=" -- "${word}"))
