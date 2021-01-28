@@ -318,6 +318,12 @@ def main(meant_for_container=False):
             allows_kwargs = False
         else:
             args.append(i)
+            # don't allow command options after a non-kw argument, so that
+            # the remaining is passed as positional arguments and may be used
+            # as part of a sub-command. ex:
+            # casa_distro run bash -c 'name=brainvisa-opensource printenv name'
+            # will run the command
+            allows_kwargs = False
     try:
         if not kwargs and args == ['-h'] or args == ['--help']:
             h = commands['help']
