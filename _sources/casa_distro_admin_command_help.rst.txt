@@ -1,0 +1,476 @@
+Casa_distro is the BrainVISA suite distribution swiss knife.
+It allows to setup a virtual environment and launch BrainVISA software.
+See http://brainivsa.info/casa-distro and
+https://github.com/brainvisa/casa-distro for more information
+
+Version : 3.0.0
+
+usage::
+
+    casa_distro_admin <general options> <command> [<command parameters>...]
+
+general optional arguments:
+    -v, --verbose   Display as much information as possible.
+    --version       Display casa-distro version number and exit.
+    -h, --help      Display help message and exit.
+                    If used after command name, display only the help of this
+                    command.
+
+Common parameters:
+==================
+Most commands accept more or less the same parameters.
+
+Many subcommands need :ref:`environment` selection specifications: :ref:`see the documentation on how to specify an environment <environment_options>`.
+
+base_directory
+    default= ``$HOME/casa_distro``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_BASE_DIRECTORY`` environment variable.
+
+Commands:
+=========
+
+----
+help
+----
+Print global help or help about a command.
+
+Parameters
+----------
+format
+    format help text in a given text format. Valid values are "text"
+    (default) for raw text, or rst (RST/sphinx format).
+full
+    if ``true`` or ``yes`` or ``1``, display each subcommand parameters
+    documentation in the general help.
+
+---------------
+singularity_deb
+---------------
+Create a Debian package to install Singularity.
+Perform the whole installation process from a rw system and Singularity
+source. Then put the result in a *.deb file.
+
+Parameters
+----------
+system
+    Name of the system for the output file.
+    If dockerhub is not given, a value is built based on this parameter
+
+output
+    default=singularity-container-{version}-{system}.deb
+    Location of the resulting Debian package file.
+
+dockerhub
+    default=name of the system replacing "-" by ":"
+    Name of the base image system to pull from DockerHub.
+
+version
+    default=3.7.0
+    Version of Singularity to use. This must be a valid release version.
+
+go_version
+    default=1.15.6
+    Version of Go language to install during Singularity building process.
+    Go language is not included in the final package.
+
+----------------
+singularity_debs
+----------------
+Create all required Singularity debian packages in a directory.
+Packages that must be build have a corresponding
+singularity-container-*.deb.json file with the following structure:
+
+{
+  "singularity_version": "3.7.0", required Singularity version
+  "go_version": "1.15.6",          Go version to use to build Singularity
+  "system": {
+    "name": "ubuntu",             Name of the target system
+    "version": "20.04",            Version of the targer system
+    "dockerhub": "ubuntu:20.04"   System image to pull on DockerHub
+  }
+}
+
+The command makes sure that all .deb files corresponding to a *.deb.json
+file exists. If not, they are created with singularity_deb command.
+
+Parameters
+----------
+directory
+    Name of directory containing JSON files and where deb files might be
+    created
+
+--------------
+download_image
+--------------
+Download an image from brainvisa.info web site
+
+Parameters
+----------
+type
+    type of image to publish. Either "system" for a base system image, or
+    "run" for an image used in a user environment, or "dev" for a developer
+    image.
+filename
+url
+output
+container_type
+force
+verbose
+    default=True
+
+    Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+-----------------
+create_base_image
+-----------------
+Create a new virtual image
+
+Creating the casa-system image:
+
+- For Singularity you need to run these commands in order to create the
+  casa-system image:
+
+      cd "$CASA_BASE_DIRECTORY"
+      singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
+      casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif
+
+- For VirtualBox: TODO
+
+Parameters
+----------
+type
+    type of image to publish. Either "system" for a base system image, or
+    "run" for an image used in a user environment, or "dev" for a developer
+    image.
+
+:ref:`name <env_name>`
+    default=casa-{type}-{system}
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+
+base
+    Source file use to buld the image. The default value depends on image
+    type and container type.
+
+output
+    default=/casa/home/casa_distro/{name}.{extension}
+
+    File location where the image is created.
+
+container_type
+    default=singularity
+
+    Type of virtual appliance to use. Either "singularity", "vbox" or
+    "docker".
+
+memory
+    default=8192
+
+    For vbox container type only. Size in MiB of memory allocated for
+    virtual machine.
+
+disk_size
+    default=131072
+    For vbox container type only. Size in MiB of maximum disk size of
+    virtual machine.
+
+gui
+    default=no
+
+    For vbox container type only. If value is "yes", "true" or "1", display
+    VirtualBox window.
+
+cleanup
+    default=yes
+
+    If "no", "false" or "0", do not cleanup after a failure during image
+    building. This may allow to debug a problem after the failure. For
+    instance, with Singularity one can use a command like :
+      sudo singularity run --writable
+      /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
+
+force
+    default=no
+
+    If ``yes``, ``true`` or 1, erase existing image without asking any
+    question.
+
+verbose
+    default=True
+
+    Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+------------------
+publish_base_image
+------------------
+Upload an image to BrainVISA web site.
+Upload is done with rsync in the following remote directory:
+
+  brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/
+
+This directory location can be customized with
+the following environment variables:
+    BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+    BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+    BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
+
+Parameters
+----------
+
+type
+    type of image to publish. Either "system" for a base system image, or
+    "run" for an image used in a user environment, or "dev" for a developer
+    image.
+
+:ref:`image`
+    Force usage of a specific virtual image instead of the one defined
+    in the environment configuration.
+
+container_type
+    default=singularity
+    Type of virtual appliance to use. Either "singularity", "vbox" or
+    "docker".
+
+verbose
+    default=True
+
+    Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+-----------------
+create_user_image
+-----------------
+Create a "user" image given a development environment.
+The development environment is selected among existing ones its
+distro and system or simply by its name. Only developement environments
+using the master branch are considered.
+This command can perform three steps. Each step can be ignored by setting
+the corresponding option to "no" :
+
+- install: perform an installation of the development environment into its
+  installation directory. This modify the development environment by
+  updating its installation directory.
+
+- generate: generate a new image for the developement environment. The ne
+  image is based on base_image and the installation directory of the
+  development environment is copied into the image in /casa/install.
+
+- upload: upload the user image on BrainVISA web site.
+
+
+Parameters
+----------
+version [REQUIRED]
+    Version of the release to create.
+name
+    default={distro}-{version}
+    Name given to the created image.
+base_image
+    default={base_directory}/casa-run-{system}{extension}
+    Name of the "run" image used to generate the new user image
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+environment_name
+    If given, select dev environment by its name.
+container_type
+    default=None
+    Type of virtual appliance to use. Either "singularity", "vbox" or
+    "docker".
+force
+    default=no
+    If "yes", "true" or 1, erase existing image without asking any
+    question.
+base_directory
+    default= ``$HOME/casa_distro``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_BASE_DIRECTORY`` environment variable.
+install
+    default=yes
+    If "true", "yes" or "1", perform the installation steps:
+    'make install-runtime', as well as 'make install-doc' and
+    'make install-test', depending on the install_doc and install_test
+    parameters.
+    If "false", "no" or "0", skip all installation steps
+install_doc
+    default=yes
+    If "true", "yes" or "1", run 'make install-doc' as part of the install
+    step.
+    If "false", "no" or "0", skip this step
+install_test
+    default=yes
+    If "true", "yes" or "1", run 'make install-test' as part of the install
+    step.
+    If "false", "no" or "0", skip this step
+generate
+    default=yes
+    If "true", "yes" or "1", perform the image creation step.
+    If "false", "no" or "0", skip this step
+upload
+    default=no
+    If "true", "yes" or "1", upload the image on BrainVISA web site.
+    If "false", "no" or "0", skip this step
+    Upload is done with rsync in the following remote directory:
+
+      brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/
+
+    This directory location can be customized with
+    the following environment variables:
+      BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+      BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+      BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
+verbose
+    default=True
+
+    Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+---------
+bbi_daily
+---------
+BrainVISA Build infrastructure: daily/nightly automated tests
+
+See :doc:`bbi_daily` for a complete introduction to automated tests.
+
+In BrainVISA Build Infrastructure (BBI), there are be some machines
+that are be targeted to do some builds and tests. This command is
+used to perform these tasks and is be typically used in a crontab
+on each machine. It does the following things (and log progress and
+results in Jenkins server) :
+
+- Update casa_distro to latest master version and restart for the next
+  steps
+- Parse all configured environments selected with a filter as with mrun
+  command
+- Update dev and run images used by selected environments from BrainVISA
+  site
+- For all selected dev environments, perform the following tasks :
+    - bv_maker sources
+    - bv_maker configure
+    - bv_maker build
+    - bv_maker doc
+    - perform all tests (as bv_maker test)
+- For all selected user environments
+    - find the corresponding dev environment
+    - recreate the user environment image with casa_distro_admin
+      create_user_image
+    - perform all tests defined in the correponding dev environment
+      but execute them in the user environment
+
+
+Parameters
+----------
+:ref:`type <env_type>`
+    default=None
+
+    If given, select environment having the given type.
+:ref:`distro`
+    default=None
+
+    If given, select environment having the given distro name.
+:ref:`branch`
+    default=None
+
+    If given, select environment having the given branch.
+:ref:`system`
+    default=None
+
+    If given, select environments having the given system name.
+:ref:`name <env_name>`
+    default=None
+
+    If given, select environment by its name. It replaces type, distro,
+    branch and system and is shorter to select one.
+version
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
+jenkins_server
+    default = None
+    Base URL of the Jenkins server used to send logs (e.g.
+    https://brainvisa.info/builds). If none is given, logs are
+    written to standard output.
+jenkins_auth
+    default = {base_directory}/jenkins_auth
+    Name of a file containing user name and password (can be a token)
+    to use to contact Jenkins server REST API. The file must have only
+    two lines with login on first line and password on second.
+update_casa_distro
+    default = yes
+    If true, yes or 1, update casa_distro
+update_base_images
+    default = yes
+    Boolean indicating if the update images step must be done
+bv_maker_steps
+    default = sources,configure,build,doc
+    Coma separated list of bv_maker commands to perform on dev
+    environments. May be empty to do nothing.
+dev_tests
+    default = yes
+    Boolean indicating if the tests must be performed on dev environments
+update_user_images
+    default = yes
+    Boolean indicating if images of user environment must be recreated
+user_tests
+    default = yes
+    Boolean indicating if the tests must be performed on user environments
+base_directory
+    default= ``$HOME/casa_distro``
+
+    Directory where images and environments are stored. This parameter
+    can be passed on the commandline, or set via the
+    ``CASA_BASE_DIRECTORY`` environment variable.
+verbose
+    default=None
+
+    Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+-------------
+local_install
+-------------
+Run the installation procedure to create a run or dev image on the
+local machine. Installation can be don step by step. This command
+is typically used in a VirtualBox machine to debug image creation
+scenario.
+
+Parameters
+----------
+
+type
+    Type of image to install. Either "run" or "dev".
+
+steps
+    default=None
+
+    Installation steps to perform. If not given, the steps not yet
+    done are displayed. Can be a comma separated list of step names
+    or "all" to perform all steps not already done or "next" to perform
+    only the next undone step.
+
+system
+    default=*
+
+    System to used when searching for an image builder file. This is
+    used as a shell pattern, the default value match any system.
+
+log_file
+    default=/etc/casa_local_install.log
+
+    File where information about steps that have been performed is stored.
+
+action
+    default=None
+
+    "next", "all"

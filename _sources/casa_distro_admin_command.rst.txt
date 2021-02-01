@@ -1,68 +1,66 @@
-===================================
-Using the casa_distro_admin command
-===================================
+=============================
+The casa_distro_admin command
+=============================
 
-``casa_distro_admin`` command is the part of casa-distro which is not needed for regular users / developers: it allows to create docker and singularity system images, push them on a server to be downloadable by regular users, and to manage brainisa distributions release plans.
+Creation and publication of casa-distro releases and container images.
 
-The admin part has been separated from the other ``casa_distro`` command, both for sake of clarity, and because the admin part is bigger since it contains everything needed to build system images, including some precompiled software for various operating systems, some libraries source code, etc. All this makes the casa-distro complete packages more than 100MB large, whereas the user part is only 300 or 400 KB zipped.
-
-Subcommands
-===========
-
-help
-----
-
-package_casa_distro
--------------------
-
-publish_casa_distro
--------------------
-
-create_release_plan
--------------------
-
-update_release_plan
--------------------
-
-publish_release_plan
---------------------
-
-apply_release_plan
-------------------
-
-create_docker
--------------
-
-update_docker
--------------
-
-publish_docker
---------------
-
-create_singularity
-------------------
-
-*create_singularity* converts a docker image into a singularity image. To do so it needs to unpack the docker image into a temporary directory, and re-pack it in a different way. It requires
-
-* sudo / root privileges: the user has to be allowed to run sodo commands, the password will be asked when needed.
-* lots of temporary disk space. It may be needed to setup the following environment variables while running ``casa_distro_admin create_singularity``:
-    * ``TMPDIR``
-    * ``SINGULARITY_TMPDIR``
-    * ``SINGULARITY_CACHEDIR``
-
-And *create_docker* needs to have run before, or the docker image should have been pulled. Thus docker is required at this point in the current way things have been impemented (this may change in the future).
+.. include:: casa_distro_admin_command_help.rst
 
 
-publish_singularity
--------------------
+Images and releases creation
+============================
 
-publish_build_workflows
------------------------
+.. Distribution creation
+.. +++++++++++++++++++++
+..
+.. The creation of a distribution is a four steps process :
+..
+.. #. **Create release plan:** selection of the software components that
+..    are going to be upgraded in the next release of the distribution.
+.. #. **Apply release plan:** update the version of generic branches
+..    (*latest\_release*, *bug\_fix* and *trunk*) in the source code of all
+..    projects according to the release plan.
+.. #. **Compilation, testing and packaging:** creation of environments,
+..    tests execution and packages creation for the new distribution.
+.. #. **Distribution deployment:** make distributions and packages
+..    available for users.
+..
+.. All these steps are done by CASA admin team using ``casa_distro`` command. The
+.. release plan is discussed with distros managers and eventually modified before
+.. being applied. The current status of the release plan can be found on a
+.. `BioProj wiki page <https://bioproj.extra.cea.fr/redmine/projects/catidev/wiki/Release_plan>`_.
+
+
+A casa-distro release is done by a member of the BrainVISA team using the ``casa_distro_admin`` command. This document contains all the steps that are necessary to build and publish all versions of casa-distro images.
+
+Creation a base VirtualBox image
+================================
+
+The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an *.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL `<http://brainvisa.info/casa-distro/casa-<iso_name>.ova>`_ where `<iso name>̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso`, the uploaded image name would be `casa-ubuntu-18.04.4-desktop-amd64.ova`.
+
+1) Install VirtualBox version 6 or greater
+2) Download an Ubuntu iso file from internet (any Debain based distro may work but only recent Ubuntu LTS are tested).
+3) Run `casa_distro_admin create_system` to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)
+4) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
+5) Perform system updates and install kernel module creation packages :
+
+.. code::
+
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install gcc make perl
+
+6) Set root password to "brainvisa" (this is necessary to automatically connect to the VM to perform post-install)
+7) Reboot the VM
+8) Download and install VirtualBox guest additions
+9) Shut down the VM
+10) Configure the VM in VirualBox (especially 3D acceleration, processors and memory)
 
 
 Managing container images
 =========================
 
+----------------------
 Singularity and Docker
 ----------------------
 
@@ -70,6 +68,7 @@ In a general way, we designed casa-distro first using `Docker <https://www.docke
 
 Thus, to build a singularity image, one needs to use first ``casa_distro_admin create_docker``, then ``casa_distro_admin create_singularity``.
 
+--------------
 Sharing images
 --------------
 
@@ -81,6 +80,7 @@ Singularity did not have a public hub by the time we started casa-distro, so ``p
 
 Downloading and updating images do not need any access rights, they are public.
 
+--------------------
 Designing new images
 --------------------
 

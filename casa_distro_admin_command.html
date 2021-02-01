@@ -218,7 +218,7 @@ branch and system and is shorter to select one.</p>
 <dd>Source file use to buld the image. The default value depends on image
 type and container type.</dd>
 <dt>output</dt>
-<dd><p class="first">default=/home/dr144257/casa_distro/{name}.{extension}</p>
+<dd><p class="first">default=/casa/home/casa_distro/{name}.{extension}</p>
 <p class="last">File location where the image is created.</p>
 </dd>
 <dt>container_type</dt>
@@ -601,13 +601,13 @@ Such an image definition directory should contain at least two files:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">casa_distro_docker.yaml</span></code> is a Yaml file definig dependencies, name and tags for the image. Ex:</li>
 </ul>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">dependencies</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">../../casa-dev</span>
-<span class="l l-Scalar l-Scalar-Plain">image_sources</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">pytorch</span>
-    <span class="l l-Scalar l-Scalar-Plain">tags</span><span class="p p-Indicator">:</span>
+<span class="nt">image_sources</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pytorch</span>
+    <span class="nt">tags</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ubuntu-16.04</span>
-    <span class="l l-Scalar l-Scalar-Plain">visibility</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">public</span>
+    <span class="nt">visibility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">public</span>
 </pre></div>
 </div>
 <ul class="simple">
