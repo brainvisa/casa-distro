@@ -1,0 +1,122 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>The bv command &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
+    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The casa_distro command" href="casa_distro_command.html" />
+    <link rel="prev" title="Developping in the Casa-Distro BrainVISA environment" href="developer.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_command.html" title="The casa_distro command"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="developer.html" title="Developping in the Casa-Distro BrainVISA environment"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-bv-command">
+<h1>The <code class="docutils literal"><span class="pre">bv</span></code> command<a class="headerlink" href="#the-bv-command" title="Permalink to this headline">¶</a></h1>
+<p>usage: bv [-h] [-v] [command…]</p>
+<p>Command used to start any BrainVISA related program.</p>
+<p>It is meant to be used from outside a container, and runs commands inside a
+container.</p>
+<p>Used without parameter, it starts a graphical interface
+allowing the configuration of the environment.</p>
+<dl class="docutils">
+<dt>optional arguments:</dt>
+<dd><table class="first docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show this help message and exit</td></tr>
+</tbody>
+</table>
+<p class="last">-v, –verbose</p>
+</dd>
+</dl>
+<p>Currently bv is just a shorthand to the “casa_distro run” command, and follows
+the same syntax and options. In the future it will change to more
+“conventional” arguments syntax (say, “–opengl container” instead of
+“opengl=container”).</p>
+<p>See the doc in casa_distro:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">help</span> <span class="n">run</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="developer.html"
+                        title="previous chapter">Developping in the Casa-Distro BrainVISA environment</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="casa_distro_command.html"
+                        title="next chapter">The casa_distro command</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_command.html" title="The casa_distro command"
+             >next</a></li>
+        <li class="right" >
+          <a href="developer.html" title="Developping in the Casa-Distro BrainVISA environment"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>

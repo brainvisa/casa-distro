@@ -1,0 +1,291 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Technical issues &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
+    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Developping in the Casa-Distro BrainVISA environment" href="developer.html" />
+    <link rel="prev" title="Casa-distro concepts" href="concepts.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="developer.html" title="Developping in the Casa-Distro BrainVISA environment"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="concepts.html" title="Casa-distro concepts"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="technical-issues">
+<h1>Technical issues<a class="headerlink" href="#technical-issues" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>The <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install casa-distro and a released, compiled, version of BrainVISA. This is what a “regular user” needs.</li>
+<li>Developers can find information on the <a class="reference internal" href="developer.html"><span class="doc">Developping in the Casa-Distro BrainVISA environment</span></a> section.</li>
+</ul>
+<p>This document explains how to setup and use some container systems (Singularity, Docker), and tries to solve some technical issues which can occur when using them.</p>
+<div class="section" id="containers-and-distributed-execution">
+<h2>Containers and distributed execution<a class="headerlink" href="#containers-and-distributed-execution" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://brainvisa.info">BrainVISA</a> can perform distributed execution, using <a class="reference external" href="../soma-workflow-1.0/sphinx/index.html">Soma-Workflow</a>.</p>
+<p>But soma-workflow distributed execution, in its current released version, will not spawn Docker or Singularity (or casa_distro run) in remote processing. We have made modifications in the <a class="reference external" href="https://github.com/neurospin/soma-workflow">github/master branch</a> (which is included in brainvisa/master branches) to add support for it. However it needs some additional configuration on server side to specify how to run the containers.</p>
+<p>Alternately, in an installed <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a>, commands are also available via “run scripts”, located in <code class="docutils literal"><span class="pre">&lt;environment&gt;/host/host_bin/</span></code>. If this directory is in the computing resource <code class="docutils literal"><span class="pre">PATH</span></code> environment variable, then the commands will run the container transparently.</p>
+<p>For commands run directly through the <code class="docutils literal"><span class="pre">python</span></code> command, more work will be required because the system <code class="docutils literal"><span class="pre">python</span></code> is, of course, not overloaded in BrainVISA/Casa run scripts.</p>
+<p>Remember that software running that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on <code class="docutils literal"><span class="pre">casa_distro</span></code> commandline, or in the file <code class="docutils literal"><span class="pre">container_options</span></code> item in <code class="docutils literal"><span class="pre">&lt;casa_distro_environment&gt;/host/conf/casa_distro.json</span></code>.</p>
+</div>
+<div class="section" id="developing-in-containers">
+<h2>Developing in containers<a class="headerlink" href="#developing-in-containers" title="Permalink to this headline">¶</a></h2>
+<p>See also the BrainVisa developers site: <a class="reference external" href="https://brainvisa.github.io/">https://brainvisa.github.io/</a></p>
+<div class="section" id="using-git">
+<h3>Using Git<a class="headerlink" href="#using-git" title="Permalink to this headline">¶</a></h3>
+<p>Both git ans svn are used in Brainvisa projects sources. svn will probably be completely replaced with git.</p>
+<p>git URLs use https by default. It’s OK for anonymous download and update, but they require manual authentication for each push, thus it’s painful. If you have a github account, you can use ssh with a ssh key instead. See <a class="reference external" href="https://brainvisa.github.io/contributing.html">https://brainvisa.github.io/contributing.html</a></p>
+<p>Once done git will automatically use ssh. But then ssh needs to be working…</p>
+</div>
+<div class="section" id="using-ssh">
+<h3>Using ssh<a class="headerlink" href="#using-ssh" title="Permalink to this headline">¶</a></h3>
+<p>git and ssh may be used either on the host side (since sources are actually stored on the host filesystem), or within the container. As users may have ssh keys and have already registered them in GitHub, they will want to reuse their host ssh keys.</p>
+<p>On Linux (or Mac) hosts, it is possible.</p>
+<p>Singularity 3 does not allow to mount the host <code class="docutils literal"><span class="pre">.ssh</span></code> directory into the already mounted container home directory. So there are 2 other options:</p>
+<ol class="arabic">
+<li><p class="first">copy the host <code class="docutils literal"><span class="pre">.ssh</span></code> directory into the container home:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>cp -a <span class="s2">&quot;/host/</span><span class="nv">$CASA_HOST_HOME</span><span class="s2">/.ssh&quot;</span> ~/
+</pre></div>
+</div>
+<p>But copying private ssh keys is not recommended for security reasons.</p>
+</li>
+<li><dl class="first docutils">
+<dt>use a ssh agent:</dt>
+<dd><ul class="first last">
+<li><p class="first">install <code class="docutils literal"><span class="pre">keychain</span></code>. On debian-based Linux distributions, this is:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sudo apt-get install keychain
+</pre></div>
+</div>
+</li>
+<li><p class="first">add in your host <code class="docutils literal"><span class="pre">$HOME/.bash_profile</span></code> file:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">eval</span> <span class="k">$(</span>keychain --eval --agents ssh id_rsa<span class="k">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+</div>
+<div class="section" id="troubleshooting">
+<span id="id1"></span><h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<p>Typical problems are listed here.</p>
+<div class="section" id="opengl-is-not-working-or-is-slow">
+<span id="opengl-troubleshooting"></span><h3>OpenGL is not working, or is slow<a class="headerlink" href="#opengl-is-not-working-or-is-slow" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="with-docker">
+<h4>with docker<a class="headerlink" href="#with-docker" title="Permalink to this headline">¶</a></h4>
+<p>Several options are needed to enable display and OpenGL. Normally casa_distro tries to set them up and should do the best it can.</p>
+<p>On machines with nvidia graphics cards and nvidia proprietary drivers, casa_distro will add options to mount the host system drivers and OpenGL libraries into the container in order to have hardware 3D rendering.</p>
+<p>Options are setup in the <code class="docutils literal"><span class="pre">casa_distro.json</span></code> file so you can check and edit them. Therefore, the detection of nvidia drivers is done on the host machine at the time of build workflow creation: if the build workflow is shared accross several machines on a network, this config may not suit all machines running the container.</p>
+<p>However it does not seem to work when ssh connections and remote display are involved.</p>
+</div>
+<div class="section" id="with-singularity">
+<span id="sing-opengl"></span><h4>with singularity<a class="headerlink" href="#with-singularity" title="Permalink to this headline">¶</a></h4>
+<p>There are several ways to use OpenGL in singularity, depending on the host system, the 3D hardware, the X server, the type of user/ssh connection.</p>
+<p>Our container images include  a software-only Mesa implementation of OpenGL, which can be used if other solutions fail.</p>
+<p>Casa-distro tries to use “reasonable” settings but cannot always detect the best option. Thus the user can control the behavior using the <code class="docutils literal"><span class="pre">opengl</span></code> option in <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">run</span></code>, <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">shell</span></code>, <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">mrun</span></code> and <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code> subcommands. This option can take several values: <code class="docutils literal"><span class="pre">auto</span></code>, <code class="docutils literal"><span class="pre">container</span></code>, <code class="docutils literal"><span class="pre">nv</span></code>, or <code class="docutils literal"><span class="pre">software</span></code>. The default is, of course, <code class="docutils literal"><span class="pre">auto</span></code>.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">auto</span></code>: performs auto-detection: same as <code class="docutils literal"><span class="pre">nv</span></code> if an NVidia device is detected on a host linux system, otherwise same as <code class="docutils literal"><span class="pre">container</span></code>, unless we detect a case where that is known to fail (in which case we would use <code class="docutils literal"><span class="pre">software</span></code>).</li>
+<li><code class="docutils literal"><span class="pre">container</span></code>: passes no special options to Singularity: the mesa installed in the container is used</li>
+<li><code class="docutils literal"><span class="pre">nv</span></code> tries to mount the proprietary NVidia driver of the host (linux) system in the container</li>
+<li><code class="docutils literal"><span class="pre">software</span></code> sets <code class="docutils literal"><span class="pre">LD_LIBRARY_PATH</span></code> to use a software-only OpenGL rendering. This solution is the slowest but is a fallback when no other solution works.</li>
+</ul>
+<p>There are cases where the nvidia option makes things worse (see ssh connections below). If you ever need to disable the nvidia option, you can add an option <code class="docutils literal"><span class="pre">opengl=software</span></code> or <code class="docutils literal"><span class="pre">opengl=container</span></code> to <code class="docutils literal"><span class="pre">run</span></code>, <code class="docutils literal"><span class="pre">shell</span></code> and other subcommands:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>casa_distro run <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> <span class="nv">opengl</span><span class="o">=</span>software glxinfo
+</pre></div>
+</div>
+<p>If it is OK, you can set this option in the build workflow <code class="docutils literal"><span class="pre">casa_distro.json</span></code> config, under the <code class="docutils literal"><span class="pre">&quot;container_gui_env&quot;</span></code> key:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">{</span>
+    <span class="s2">&quot;casa_distro_compatibility&quot;</span>: <span class="s2">&quot;3&quot;</span>,
+    <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;brainvida-5.0&quot;</span>,
+    <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;/home/bilbo/casa_distro/brainvisa-5.0.sif&quot;</span>,
+    <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;user&quot;</span>,
+    <span class="s2">&quot;system&quot;</span>: <span class="s2">&quot;ubuntu-18.04&quot;</span>,
+    <span class="s2">&quot;container_type&quot;</span>: <span class="s2">&quot;singularity&quot;</span>,
+    <span class="s2">&quot;distro&quot;</span>: <span class="s2">&quot;brainvisa&quot;</span>,
+    <span class="s2">&quot;container_options&quot;</span>: <span class="o">[</span>
+        <span class="s2">&quot;--softgl&quot;</span>,
+    <span class="o">]</span>,
+    <span class="c1"># ...</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Via a ssh connection:</dt>
+<dd><dl class="first last docutils">
+<dt>same host, different user:</dt>
+<dd><code class="docutils literal"><span class="pre">xhost</span> <span class="pre">+</span></code> must have been used on the host system. Works (as long as
+the <code class="docutils literal"><span class="pre">XAUTHORITY</span></code> env variable points to the <code class="docutils literal"><span class="pre">.Xauthority</span></code> file from
+the host user home directory).</dd>
+<dt>different host:</dt>
+<dd><p class="first">I personally could not make it work using the <code class="docutils literal"><span class="pre">nv</span></code> option. But
+actually outside of casa-distro or any container, it doesn’t work
+either. Remote GLX rendering has always been a very delicate thing…</p>
+<p class="last">It works for me using the software Mesa rendering (slow). So at this point, using casa_distro actually makes it possible to render OpenGL when the host system cannot (or not directly)…</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="on-macos-systems">
+<span id="mac-sing-troubleshooting"></span><h3>On MacOS systems<a class="headerlink" href="#on-macos-systems" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="singularity-is-not-working-it-s-just-doing-nothing">
+<h4>Singularity is not working, it’s just doing nothing<a class="headerlink" href="#singularity-is-not-working-it-s-just-doing-nothing" title="Permalink to this headline">¶</a></h4>
+<p>Singularity for Mac is available as a beta at the time this document is written (but with no updates nor news in more than a year). It somewhat works but we sometimes ended up with a “silent” virtual machine which seems to do just nothing. But it should work in principle, and sometimes does ;)</p>
+<p>We experienced this behaviour on MacOS 10.11 using Singularity Desktop 3.3-beta for Mac. We had to upgrade the system (to 10.15) and then it worked. But then after a few days became silent again, for certain users, using certain images… but it still worked for our BrainVisa images…</p>
+</div>
+<div class="section" id="gui-is-not-working-in-singularity">
+<h4>GUI is not working in singularity<a class="headerlink" href="#gui-is-not-working-in-singularity" title="Permalink to this headline">¶</a></h4>
+<p>Graphical commands (brainvisa, anatomist, others…) should run through a X11 server. Xquartz is installed in MacOS systems, but need to be started, and a bit configured.</p>
+<ul>
+<li><p class="first">open Xquartz, either using the desktop / finder icon, or by running a X command such as:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>xhost +
+</pre></div>
+</div>
+</li>
+<li><p class="first">in the Xquartz preferences menu, go to “security” and check the option to enable network connections (tcp) to the X server</p>
+</li>
+<li><p class="first">quit the server, it needs to be restarted</p>
+</li>
+<li><dl class="first docutils">
+<dt>run</dt>
+<dd><div class="first highlight-bash"><div class="highlight"><pre><span></span>xhost +
+</pre></div>
+</div>
+<p class="last">to enable other users / apps to use the graphical server (this will start Xquartz, if not already running). Note that this command needs to be run again each time the Xquartz server is stopped / restarted.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">You should use the <code class="docutils literal"><span class="pre">opengl=software</span></code> option in <code class="docutils literal"><span class="pre">casa_distro</span></code> otherwise 3D will likely crash the programs.</p>
+</li>
+<li><p class="first">now graphical applications should run inside singularity containers. 3D hardware is not used however, rendering is using a software rendering, so it is not fast.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="virtualbox-images-are-crashing-when-booting">
+<span id="mac-vbox-troubleshooting"></span><h4>VirtualBox images are crashing when booting<a class="headerlink" href="#virtualbox-images-are-crashing-when-booting" title="Permalink to this headline">¶</a></h4>
+<p>I personally had trouble getting the VirtualBox image to actually run on MacOS 10.15. The virtual machine consistently crashed at boot time. After inspecting the logs I found out that the sound card support might be the cause, and I had to use a “fake sound device” in the virtualbox image settings. Then it appeared that all graphics display was notably slow (either 2D and 3D), whatever video / accelerated 3D support options. And icons and fonts in the virtual machine were microscopic, almost impossible to read, and difficult if even possible to configure in the linux desktop. The “zoom factor x2” option in virtualbox was very handy for that, but reduced the actual resolution by a factor of 2 if I understand. Apart from these limitations, the software was running.</p>
+</div>
+</div>
+<div class="section" id="on-windows-systems">
+<span id="win-sing-troubleshooting"></span><h3>On Windows systems<a class="headerlink" href="#on-windows-systems" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="installing-singularity-on-windows">
+<h4>Installing Singularity on Windows<a class="headerlink" href="#installing-singularity-on-windows" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Singularity may be a bit touchy to install on Windows, it needs Windows 10 with linux subsystem (WSL2) plus other internal options (hyper-V something). It’s possible, not easy.</li>
+<li>Once singularity is working, to be able to run graphical programs, a X server must be installed. Several ones exist for Windows, several are free, but most of them do not support hardware-accelerated 3D. <a class="reference external" href="https://sourceforge.net/projects/xming/">Xming</a> supports hardware acceleration, but has gone commercial. The latest free implementation was released in 2016, and seems to work. Microsoft is possibly working on another implementation.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Technical issues</a><ul>
+<li><a class="reference internal" href="#containers-and-distributed-execution">Containers and distributed execution</a></li>
+<li><a class="reference internal" href="#developing-in-containers">Developing in containers</a><ul>
+<li><a class="reference internal" href="#using-git">Using Git</a></li>
+<li><a class="reference internal" href="#using-ssh">Using ssh</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#opengl-is-not-working-or-is-slow">OpenGL is not working, or is slow</a><ul>
+<li><a class="reference internal" href="#with-docker">with docker</a></li>
+<li><a class="reference internal" href="#with-singularity">with singularity</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#on-macos-systems">On MacOS systems</a><ul>
+<li><a class="reference internal" href="#singularity-is-not-working-it-s-just-doing-nothing">Singularity is not working, it’s just doing nothing</a></li>
+<li><a class="reference internal" href="#gui-is-not-working-in-singularity">GUI is not working in singularity</a></li>
+<li><a class="reference internal" href="#virtualbox-images-are-crashing-when-booting">VirtualBox images are crashing when booting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#on-windows-systems">On Windows systems</a><ul>
+<li><a class="reference internal" href="#installing-singularity-on-windows">Installing Singularity on Windows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="concepts.html"
+                        title="previous chapter">Casa-distro concepts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="developer.html"
+                        title="next chapter">Developping in the Casa-Distro BrainVISA environment</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="developer.html" title="Developping in the Casa-Distro BrainVISA environment"
+             >next</a></li>
+        <li class="right" >
+          <a href="concepts.html" title="Casa-distro concepts"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>
