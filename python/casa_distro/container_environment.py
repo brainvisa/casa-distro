@@ -144,6 +144,7 @@ def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
     bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
                   'bin', 'bv')
     shutil.copy(bv, osp.join(bin, 'bv'))
+    create_environment_bin_commands('/casa/brainvisa-cmake/bin', bin)
 
     casa_distro_dir = osp.join(setup_dir, 'casa-distro')
     install_casa_distro(casa_distro_dir)
