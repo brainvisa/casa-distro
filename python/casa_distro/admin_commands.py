@@ -34,6 +34,7 @@ import casa_distro.singularity
 import casa_distro.vbox
 from casa_distro.hash import file_hash
 from casa_distro.web import url_listdir, urlopen
+from .image_builder import get_image_builder, LocalInstaller
 
 
 _true_str = re.compile('^(?:yes|true|y|1)$', re.I)
@@ -1055,38 +1056,45 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def local_install(type, steps=None, system='*', 
-                  log_file='/etc/casa_local_install.log'):
+def local_install(type, steps=None, system='*',
+                  log_file='/etc/casa_local_install.log',
+                  action=None):
     '''
     Run the installation procedure to create a run or dev image on the
-    local machine. Installation can be don step by step. This command 
+    local machine. Installation can be don step by step. This command
     is typically used in a VirtualBox machine to debug image creation
     scenario.
 
     Parameters
     ----------
-    
+
     type
         Type of image to install. Either "run" or "dev".
-    
+
     steps
         default={steps_default}
 
-        Installation steps to perform. If not given, the steps not yet 
+        Installation steps to perform. If not given, the steps not yet
         done are displayed. Can be a comma separated list of step names
         or "all" to perform all steps not already done or "next" to perform
         only the next undone step.
-    
+
     system
         default={system_default}
 
         System to used when searching for an image builder file. This is
         used as a shell pattern, the default value match any system.
-    
+
     log_file
         default={log_file_default}
 
         File where information about steps that have been performed is stored.
+
+    action
+        default={action_default}
+
+        "next", "all"
+
     '''
     installer = LocalInstaller(log_file=log_file)
 
@@ -1102,13 +1110,14 @@ def local_install(type, steps=None, system='*',
     if not build_files:
         raise ValueError('No file corresponds to pattern {}'.format(pattern))
     elif len(build_files) > 1:
-        raise ValueError('Several build files found: {}'.format(', '.join(build_files)))
+        raise ValueError('Several build files found: {}'.format(
+                             ', '.join(build_files)))
     build_file = build_files[0]
 
     builder = get_image_builder(build_file)
     steps_todo = [i for i in (j.__name__ for j in builder.steps)
                   if i not in installer.log.get(builder.name, {})]
-        
+
     if not action:
         for step in builder.steps:
             if step.__name__ in installer.log.get(builder.name, {}):
