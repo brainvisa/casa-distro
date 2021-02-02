@@ -5,6 +5,8 @@ import json
 import os
 import os.path as osp
 import subprocess
+import tempfile
+
 
 class LocalInstaller:
     '''
