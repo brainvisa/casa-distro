@@ -218,7 +218,13 @@ Bootstrap: localimage
     if [ -d /casa/setup ]; then
         /casa/casa-distro/cbin/casa_container setup_user "$@"
     elif [ $# -ne 0 ]; then
-        /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
+        if [ -f /casa/host/install/bin/bv_env ]; then
+            # try r/w install
+            /usr/local/bin/entrypoint /casa/host/install/bin/bv_env "$@"
+        else
+            # otherwise use the builtin (read-only) install in the image
+            /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
+        fi
     else
         echo 'The Singularity image has been run without arguments, and'
         echo 'without a setup mount point.'

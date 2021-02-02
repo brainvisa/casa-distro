@@ -14,11 +14,15 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import zipfile
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
                                   default_download_url,
-                                  publish_url)
+                                  publish_url,
+                                  publish_login,
+                                  publish_server,
+                                  publish_dir)
 from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
@@ -29,7 +33,7 @@ from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
 from casa_distro.hash import file_hash
-from casa_distro.web import url_listdir
+from casa_distro.web import url_listdir, urlopen
 from .image_builder import get_image_builder, LocalInstaller
 
 
@@ -559,6 +563,7 @@ def create_user_image(
         install_doc='yes',
         install_test='yes',
         generate='yes',
+        zip='yes',
         upload='no',
         verbose=True):
     """Create a "user" image given a development environment.
@@ -624,6 +629,10 @@ def create_user_image(
         default={generate_default}
         If "true", "yes" or "1", perform the image creation step.
         If "false", "no" or "0", skip this step
+    zip
+        default={zip_default}
+        If "true", "yes" or "1", zip the installed files for an "online"
+        installation.
     upload
         default={upload_default}
         If "true", "yes" or "1", upload the image on BrainVISA web site.
@@ -645,6 +654,7 @@ def create_user_image(
     install_test = check_boolean('install_test', install_test)
     generate = check_boolean('generate', generate)
     upload = check_boolean('upload', upload)
+    zip = check_boolean('zip', zip)
 
     verbose = verbose_file(verbose)
     config = select_environment(base_directory,
@@ -672,6 +682,9 @@ def create_user_image(
                                                            extension=extension,
                                                            **kwargs)
     force = boolean_value(force)
+
+    # update distro name
+    distro = config['distro']
 
     metadata = {
         'name': name,
@@ -729,6 +742,34 @@ def create_user_image(
         if retcode != 0:
             sys.exit('make post-install failed, aborting.')
 
+    zip_archive = osp.join(config['directory'],
+                           '%(distro)s-%(version)s-%(system)s.zip' % metadata)
+    zip_json = '%s.json' % zip_archive
+
+    if zip:
+        print('Creating zip file for distro', distro, '...')
+        with zipfile.ZipFile(zip_archive, 'w', allowZip64=True,
+                             compression=zipfile.ZIP_DEFLATED) as zip:
+            for root, dirs, files in os.walk(osp.join(config['directory'],
+                                                      'install')):
+                rel = osp.relpath(root, osp.join(config['directory'],
+                                                 'install'))
+                for dir in dirs:
+                    zip.write(osp.join(root, dir), osp.join(rel, dir))
+                for file in files:
+                    zip.write(osp.join(root, file), osp.join(rel, file))
+        zip_meta = {
+            'md5': file_hash(zip_archive),
+            'size': os.stat(zip_archive).st_size,
+            'distro': distro,
+            'system': config['system'],
+            'version': version,
+            'creation_time': datetime.datetime.now().isoformat(),
+        }
+        with open(zip_json, 'w') as jf:
+            json.dump(zip_meta, jf, indent=4, separators=(',', ': '))
+        print('zip file created:', zip_archive)
+
     metadata_file = output + '.json'
 
     if generate:
@@ -753,8 +794,32 @@ def create_user_image(
                   indent=4, separators=(',', ': '))
 
     if upload:
-        subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                               metadata_file, output, publish_url])
+        files = []
+        if osp.exists(output):
+            files += [metadata_file, output]
+        print('uploading files to server:')
+        if files:
+            subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r']
+                                  + files + [publish_url])
+        if osp.exists(zip_json):
+            print('uploading zip distro...')
+            files = [zip_json, zip_archive]
+            rdir = osp.join(version, distro, config['system'])
+            # test if the remote dir exists
+            try:
+                u = urlopen(osp.join(default_download_url, rdir))
+                if u.code == 404:
+                    # not found (python2 doesn't produce an error)
+                    raise ValueError('URL not found')
+            except Exception:
+                # needs an additional ssh connection to create the dirs.
+                subprocess.check_call([
+                    'ssh',
+                    '%s@%s' % (publish_login, publish_server),
+                    'mkdir -p %s' % osp.join(publish_dir, rdir)])
+
+            subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r']
+                                  + files + [osp.join(publish_url, rdir)])
 
 
 @command
