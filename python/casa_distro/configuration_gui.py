@@ -83,15 +83,24 @@ class InstallEditor(Qt.QDialog):
             layout.addWidget(inst_rwl)
             inst_rwl_l = Qt.QVBoxLayout()
             inst_rwl.setLayout(inst_rwl_l)
-            self.unpack_btn = Qt.QCheckBox('install')
+            self.unpack_btn = Qt.QCheckBox('install from internal image')
             inst_rwl_l.addWidget(self.unpack_btn)
 
-        dl_grp = Qt.QGroupBox('install read-write from downloads:')
+        dl_grp = Qt.QGroupBox('install toolboxes from downloads:')
+        self.dl_grp = dl_grp
         layout.addWidget(dl_grp)
         dl_grp_l = Qt.QVBoxLayout()
         dl_grp.setLayout(dl_grp_l)
+        if 'read-only' in inst_type:
+            self.prereq_warn = Qt.QLabel(
+                'Install from internal image must be checked\n'
+                'before additional toolboxes can be installed')
+            dl_grp_l.addWidget(self.prereq_warn)
+        self.dl_wid = Qt.QWidget()
+        dl_grp_l.addWidget(self.dl_wid)
         hb = Qt.QGridLayout()
-        dl_grp_l.addLayout(hb)
+        hb.setContentsMargins(0, 0, 0, 0)
+        self.dl_wid.setLayout(hb)
         hb.addWidget(Qt.QLabel('url:'), 0, 0)
         self.url_edit = Qt.QLineEdit('https://brainvisa.info/download')
         hb.addWidget(self.url_edit, 0, 1)
@@ -101,7 +110,13 @@ class InstallEditor(Qt.QDialog):
         self.distros.setSelectionMode(self.distros.ExtendedSelection)
         self.url_edit.editingFinished.connect(self.url_changed)
 
-        self.update_distros()
+        if 'read-only' in inst_type:
+            self.dl_wid.hide()
+            self.dl_grp.setEnabled(False)
+        else:
+            self.update_distros()
+
+        layout.addStretch(1)
 
         validation_btns = Qt.QDialogButtonBox(
             Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel
@@ -110,6 +125,8 @@ class InstallEditor(Qt.QDialog):
         validation_btns.button(Qt.QDialogButtonBox.Ok).setDefault(False)
         validation_btns.button(Qt.QDialogButtonBox.Ok).setAutoDefault(False)
 
+        if hasattr(self, 'unpack_btn'):
+            self.unpack_btn.toggled.connect(self.local_install_checked)
         validation_btns.accepted.connect(self.accept)
         validation_btns.rejected.connect(self.reject)
         validation_btns.helpRequested.connect(self.help)
@@ -117,6 +134,17 @@ class InstallEditor(Qt.QDialog):
 
     def url_changed(self):
         self.update_distros()
+
+    def local_install_checked(self, checked):
+        if checked:
+            self.prereq_warn.hide()
+            self.dl_wid.show()
+            self.dl_grp.setEnabled(True)
+            self.update_distros()
+        else:
+            self.dl_wid.hide()
+            self.prereq_warn.show()
+            self.dl_grp.setEnabled(False)
 
     def update_distros(self):
         from casa_distro.web import url_listdir, urlopen
