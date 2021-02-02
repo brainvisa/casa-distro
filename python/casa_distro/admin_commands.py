@@ -1059,7 +1059,7 @@ def local_install(type, steps=None, system='*',
                 status = 'done'
             else:
                 status = 'to do'
-            print(builder.name, '/', step_name, status)
+            print(builder.name, '/', step.__name__, status)
         step_names = []
     elif action == 'next':
         step_names = [steps_todo[0]]
