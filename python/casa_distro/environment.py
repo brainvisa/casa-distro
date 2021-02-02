@@ -254,6 +254,12 @@ def iter_environments(base_directory, **filter):
             '/casa/host': '{directory}',
             '/host': '/',
         }
+        if 'WSL_DISTRO_NAME' in os.environ:
+            # On Winows/WSL2, /dev/shm is a symlink to /run/shm. This
+            # is supposed to be a directory like device stored in memory.
+            # To avoid failur of some programs, /run/shm is mounted as
+            # /tmp so that it behave like a writable directory as expected.
+            config['mounts']['/run/shm'] = '/tmp'
         config['env'] = {
             'CASA_ENVIRONMENT': '{name}',
             'CASA_SYSTEM': '{system}',
