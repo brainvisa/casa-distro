@@ -993,7 +993,8 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
 @command
 def local_install(type, steps=None, system='*',
                   log_file='/etc/casa_local_install.log',
-                  action=None):
+                  action=None,
+                  user='brainvisa'):
     '''
     Run the installation procedure to create a run or dev image on the
     local machine. Installation can be don step by step. This command
@@ -1028,10 +1029,21 @@ def local_install(type, steps=None, system='*',
     action
         default={action_default}
 
-        "next", "all"
+        If not given, list the possible actions for the selected type and
+        indicate if they were done or not. Can have one of the following
+        values:
+          "next" : perform the nex action not already done
+          "all" : perform all action not already done
+          coma separated list of acions : perform all selected actions
+              even if they were already done
 
+    user
+        default={user_default}
+
+        Name of the user account to use for non root commands.
     '''
-    installer = LocalInstaller(log_file=log_file)
+    installer = LocalInstaller(log_file=log_file,
+                               user=user)
 
     for builder_name, steps in installer.log.items():
         for step_name in steps:
@@ -1059,14 +1071,14 @@ def local_install(type, steps=None, system='*',
                 status = 'done'
             else:
                 status = 'to do'
-            print(builder.name, '/', step_name, status)
+            print(builder.name, '/', step.__name__, status)
         step_names = []
     elif action == 'next':
         step_names = [steps_todo[0]]
     elif action == 'all':
         step_names = steps_todo
     else:
-        step_names = [action]
+        step_names = ','.split(action)
     for step_name in step_names:
         print('Performing', builder.name, '/', step_name)
         installer.perform_step(build_file, step_name)
