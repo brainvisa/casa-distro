@@ -142,9 +142,9 @@ else:
                 'appropriately.')
 
 casa_distro = None
-if real_bv.startswith(osp.join(environment_dir, '')):
-    paths = ((osp.split(osp.relpath(osp.dirname(osp.dirname(real_bv)),
-                                    environment_dir))), )
+if real_bv.startswith(osp.join(environment_dir, 'src')):
+    renv = osp.relpath(osp.dirname(osp.dirname(real_bv)), environment_dir)
+    paths = (osp.split(renv), )
 else:
     paths = (('src', 'development', 'casa-distro', 'master'),  # master 1st
              ('src', 'development', 'casa-distro', '*'),
