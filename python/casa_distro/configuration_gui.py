@@ -44,7 +44,9 @@ except ImportError:
         'available.\n\n'
         'You normally just run the "bv" script from the host.')
 
-from casa_distro.container_environment import is_writable
+from casa_distro.container_environment import (is_writable,
+                                               user_config_filename)
+from casa_distro.environment import update_config
 
 
 class InstallEditor(Qt.QDialog):
@@ -391,6 +393,14 @@ class CasaLauncher(Qt.QDialog):
         with open(conf_path, 'r') as conf_file:
             self.conf = json.load(conf_file)
 
+        user_config_file = user_config_filename()
+        for additional_config_file in [user_config_file] \
+            + [c for c in self.conf.get('config_files', [])
+               if c != user_config_file]:
+            if osp.exists(additional_config_file):
+                with open(additional_config_file) as f:
+                    update_config(self.conf, json.load(f))
+
         self.setup_ui()
         self.setup_links()
 
@@ -453,9 +463,31 @@ class CasaLauncher(Qt.QDialog):
     def save_conf(self):
         if self._mount_manager.check_all_mounts():
             print('SAVE')
-            with open(self.conf_path, 'w') as conf_file:
-                json.dump(self.conf, conf_file, indent=4)
+            conf_wo_mounts = dict(self.conf)
+            mounts = self.conf.get('mounts', {})
+            if 'mounts' in self.conf:
+                del conf_wo_mounts['mounts']
+            try:
+                with open(self.conf_path, 'w') as conf_file:
+                    json.dump(conf_wo_mounts, conf_file, indent=4)
+            except (IOError, OSError):
+                # read-only shared environent ?
+                pass
+            user_config_file = user_config_filename()
+            if osp.exists(user_config_file):
+                with open(user_config_file) as f:
+                    uconf = json.load(f)
+            else:
+                uconf = {}
+            if mounts or 'mounts' in uconf:
+                if not osp.isdir(osp.dirname(user_config_file)):
+                    os.makedirs(osp.dirname(user_config_file))
+                uconf['mounts'] = mounts
+                with open(user_config_file, 'w') as f:
+                    json.dump(uconf, f, indent=4)
+
             self.accept()
+
         else:
             # Redondent with errors in MountManager errors
             # Could be used to regroup errors from software conf in the future

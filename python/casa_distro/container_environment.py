@@ -17,6 +17,21 @@ from casa_distro.environment import (prepare_environment_homedir, copytree, cp)
 from casa_distro import downloader
 
 
+def user_config_filename():
+    """
+    Get the user configuration file for casa-distro. This user config is
+    outside of environments in order to allow configuration of read-only shared
+    environments.
+    """
+    xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '')
+    if not xdg_config_home:
+        host_home = os.environ['CASA_HOST_HOME']
+        xdg_config_home = osp.join(host_home, '.config')
+    user_config_file = osp.join(xdg_config_home,
+                                'casa-distro', 'casa_distro_3.json')
+    return user_config_file
+
+
 def install_casa_distro(dest):
     source = osp.dirname(osp.dirname(osp.dirname(__file__)))
     for i in ('bin', 'cbin', 'python', 'etc', 'share'):

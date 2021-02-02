@@ -231,6 +231,20 @@ def casa_distro_directory():
     return _casa_distro_directory
 
 
+def user_config_filename():
+    """
+    Get the user configuration file for casa-distro. This user config is
+    outside of environments in order to allow configuration of read-only shared
+    environments.
+    """
+    xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '')
+    if not xdg_config_home:
+        xdg_config_home = osp.expanduser('~/.config')
+    user_config_file = osp.join(xdg_config_home,
+                                'casa-distro', 'casa_distro_3.json')
+    return user_config_file
+
+
 def iter_environments(base_directory, **filter):
     """
     Iterate over environments created with "setup" or "setup_dev" commands
@@ -275,11 +289,7 @@ def iter_environments(base_directory, **filter):
 
         update_config(config, environment_config)
 
-        xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '')
-        if not xdg_config_home:
-            xdg_config_home = osp.expanduser('~/.config')
-        user_config_file = osp.join(xdg_config_home,
-                                    'casa-distro', 'casa_distro_3.json')
+        user_config_file = user_config_filename()
         for additional_config_file in [user_config_file]:
             if osp.exists(additional_config_file):
                 config['config_files'].append(additional_config_file)
