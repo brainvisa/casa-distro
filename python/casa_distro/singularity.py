@@ -17,6 +17,9 @@ from . import six
 from .image_builder import get_image_builder
 
 
+MINIMUM_SINGULARITY_VERSION = (3, 0, 0)
+
+
 class RecipeBuilder:
 
     '''
@@ -270,7 +273,8 @@ Bootstrap: localimage
                           cwd='/')
 
 
-_singularity_version = None
+_singularity_raw_version = None
+_singularity_run_help = None
 
 
 def singularity_major_version():
@@ -278,23 +282,27 @@ def singularity_major_version():
 
 
 def singularity_version():
-    global _singularity_version
+    raw_version = singularity_raw_version()
+    m = re.search(r'([0-9]+(\.[0-9]+)*)', raw_version)
+    if m:
+        version = m.group(1)
+        return tuple(int(x) for x in version.split('.'))
+    else:
+        raise RuntimeError(
+            'Cannot determine singularity numerical version : '
+            'version string = "{0}"'.format(raw_version))
 
-    if _singularity_version is None:
+
+def singularity_raw_version():
+    global _singularity_raw_version
+    if _singularity_raw_version is None:
         output = subprocess.check_output(
-            ['singularity', '--version'], bufsize=-1).decode('utf-8')
-        m = re.match(r'^([\d.]*).*$', output.split()[-1])
-        if m:
-            version = m.group(1)
-            _singularity_version = [int(x) for x in version.split('.')]
-        else:
-            raise RuntimeError(
-                'Cannot determine singularity numerical version : '
-                'version string = "{0}"'.format(output))
-    return _singularity_version
-
-
-_singularity_run_help = None
+            ['singularity', '--version'],
+            universal_newlines=True,  # backward-compatible text=True
+            bufsize=-1,
+        )
+        _singularity_raw_version = output.strip()
+    return _singularity_raw_version
 
 
 def singularity_run_help():
@@ -303,19 +311,25 @@ def singularity_run_help():
     versions and systems.
     """
     global _singularity_run_help
-
-    if _singularity_run_help:
-        return _singularity_run_help
-
-    output = subprocess.check_output(['singularity', 'help',
-                                      'run'], bufsize=-1).decode('utf-8')
-    return output
+    if _singularity_run_help is None:
+        try:
+            _singularity_run_help = subprocess.check_output(
+                ['singularity', 'help', 'run'],
+                universal_newlines=True,  # backward-compatible text=True
+                bufsize=-1,
+            )
+        except OSError:
+            sys.exit('Cannot execute singularity. Please install '
+                     'Singularity {0} or later (see https://brainvisa.info/).'
+                     .format('.'.join(str(i)
+                                      for i in MINIMUM_SINGULARITY_VERSION)))
+    return _singularity_run_help
 
 
 def singularity_has_option(option):
     doc = singularity_run_help()
-    return doc.find(' %s ' % option) >= 0 or doc.find('|%s ' % option) >= 0 \
-        or doc.find(' %s|' % option) >= 0 or doc.find('|%s|') >= 0
+    match = re.search(r'(\s|\|)' + re.escape(option) + r'(\s|\|)', doc)
+    return match is not None
 
 
 def _X_has_proprietary_nvidia():
@@ -578,7 +592,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     else:
         raise ValueError('Invalid value for the opengl option')
 
-    if singularity_version()[:3] == [3, 3, 0] and sys.platform == 'darwin':
+    if singularity_version()[:3] == (3, 3, 0) and sys.platform == 'darwin':
         # the beta of singularity 3.3 for Mac doesn't pass envars in any way
         # (no --env option, --home doesn't work, SINGULARITYENV_something vars
         # are not transmitted). We work around this using a mount and a bash
@@ -638,7 +652,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         verbose.flush()
 
     try:
-        return subprocess.call(singularity, env=container_env)
+        retval = subprocess.call(singularity, env=container_env)
     except KeyboardInterrupt:
         pass  # avoid displaying a stack trace
     finally:
@@ -647,6 +661,19 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
                 shutil.rmtree(temp)
             else:
                 os.unlink(temp)
+    if retval == 255:
+        # This exit code is returned by Singularity 2 when it is given a .sif
+        # image.
+        if singularity_version() < MINIMUM_SINGULARITY_VERSION:
+            print('Your version of Singularity ({0}) is not supported, '
+                  'please install Singularity {1} or later '
+                  '(see https://brainvisa.info/).'
+                  .format(
+                      singularity_raw_version(),
+                      '.'.join(str(i) for i in MINIMUM_SINGULARITY_VERSION),
+                  )
+                  , file=sys.stderr)
+    return retval
 
 
 def setup(type, distro, branch, system, name, base_directory, image,
