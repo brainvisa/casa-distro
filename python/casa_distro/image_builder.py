@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function
+
+import json
+import os
+import os.path as osp
+import subprocess
+import sys
+import tempfile
 
 class LocalInstaller:
     '''
@@ -43,8 +51,7 @@ class LocalInstaller:
         Perform a single installation step
         '''
         if os.getuid() != 0:
-            print('ERROR: This command must be executed as root')
-            sys.exit(1)
+            raise SystemError('This command must be executed as root')
 
         builder = get_image_builder(build_file)
         for step in builder.steps:

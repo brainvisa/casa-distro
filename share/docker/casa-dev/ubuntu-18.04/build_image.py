@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path as osp
 
-from casa_distro.builder import ImageBuilder
+from casa_distro.image_builder import ImageBuilder
 
 
 builder = ImageBuilder('casa-run')
@@ -44,6 +44,17 @@ def apt_dev_dependencies(base_dir, builder):
     'Install apt dependencies for developement'
 
     builder.run_root('/opt/install_apt_dev_dependencies.sh')
+
+
+@builder.step
+def fix_wsl2(base_dir, builder):
+    'Fix image to be compatible with Windows/WSL2'
+
+    # After apt_dev_dependencies, /run/shm is a symlink to /dev/shm
+    # But, on Winows/WSL2, /dev/shm is a symlink to /run/shm. Therefore
+    # The /run/shm is removed from the image and will be mounted by
+    # casa_distro according to the host system.
+    builder.run_root('if [ -L /run/shm ]; then rm /run/shm; fi')
 
 
 @builder.step

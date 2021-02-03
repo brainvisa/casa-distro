@@ -9,9 +9,27 @@ import platform
 import shutil
 import sys
 import time
+import subprocess
+import tempfile
 
 import casa_distro
 from casa_distro.environment import (prepare_environment_homedir, copytree, cp)
+from casa_distro import downloader
+
+
+def user_config_filename():
+    """
+    Get the user configuration file for casa-distro. This user config is
+    outside of environments in order to allow configuration of read-only shared
+    environments.
+    """
+    xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '')
+    if not xdg_config_home:
+        host_home = os.environ['CASA_HOST_HOME']
+        xdg_config_home = osp.join(host_home, '.config')
+    user_config_file = osp.join(xdg_config_home,
+                                'casa-distro', 'casa_distro_3.json')
+    return user_config_file
 
 
 def install_casa_distro(dest):
@@ -50,7 +68,53 @@ def create_environment_bin_commands(source, dest):
         os.symlink('bv', script)
 
 
-def setup_user(setup_dir='/casa/setup'):
+def download_install(install_dir, distro, version, url):
+    system = os.environ['CASA_SYSTEM']
+    distro_url = osp.join(url, version, distro, system, '%s-%s-%s.zip'
+                          % (distro, version, system))
+    print('download:', distro_url)
+    local_zip = osp.join('/tmp', osp.basename(distro_url))
+    json_url = '%s.json' % distro_url
+    try:
+        f = None
+        try:
+            f = downloader.urlopen(json_url)
+            if f.getcode() == 404:
+                return
+            metadata = json.loads(f.read().decode('utf-8'))
+        except Exception as e:
+            print('%s could not be read:' % json_url, e)
+            return
+    finally:
+        if f:
+            f.close()
+        del f
+
+    downloader.download_file(distro_url, local_zip,
+                             allow_continue=True,
+                             use_tmp=True,
+                             md5_check=metadata['md5'],
+                             callback=downloader.stdout_progress)
+    if not osp.exists(install_dir):
+        os.makedirs(install_dir)
+    try:
+        subprocess.check_call(['unzip', local_zip], cwd=install_dir)
+    finally:
+        os.unlink(local_zip)
+
+
+def is_writable(dir):
+    try:
+        x = tempfile.mkstemp(dir=dir)
+    except Exception:
+        return False
+    os.close(x[0])
+    os.unlink(x[1])
+    return True
+
+
+def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
+               version=None, url='https://brainvisa.info/download'):
     """
     Initialize a user environment directory.
     This function is supposed to be called from a user image.
@@ -68,8 +132,29 @@ def setup_user(setup_dir='/casa/setup'):
                   'bin', 'bv')
     dest = osp.join(bin, 'bv')
     shutil.copy(bv, dest)
+
+    install_dir = '/casa/install'
+    if distro is None and not osp.exists('/casa/install'):
+        distro = 'brainvisa'
+    if distro is not None:
+        print('Downloading BrainVisa distro %s from the web site...' % distro)
+        if not is_writable('/casa/install'):
+            install_dir = osp.join(setup_dir, 'install')
+        if version is None:
+            version = os.environ['CASA_VERSION']
+        download_install(install_dir, distro, version, url)
+    elif rw_install:
+        if is_writable('/casa_install'):
+            print('The install directory is already writable. No need to copy '
+                  'files.')
+        else:
+            print('copying BrainVisa installation into a writable '
+                  'directory...')
+            shutil.copytree('/casa/install', osp.join(setup_dir, 'install'))
+            install_dir = osp.join(setup_dir, 'install')
+
     create_environment_bin_commands(osp.dirname(bv), bin)
-    create_environment_bin_commands('/casa/install/bin', bin)
+    create_environment_bin_commands(osp.join(install_dir, 'bin'), bin)
 
     casa_distro_dir = osp.join(setup_dir, 'casa-distro')
     install_casa_distro(casa_distro_dir)
@@ -99,6 +184,7 @@ def setup_user(setup_dir='/casa/setup'):
     else:
         environment['name'] = '{}-{}'.format(environment['distro'],
                                              time.strftime('%Y%m%d'))
+
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),
@@ -144,6 +230,7 @@ def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
     bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
                   'bin', 'bv')
     shutil.copy(bv, osp.join(bin, 'bv'))
+    create_environment_bin_commands('/casa/brainvisa-cmake/bin', bin)
 
     casa_distro_dir = osp.join(setup_dir, 'casa-distro')
     install_casa_distro(casa_distro_dir)

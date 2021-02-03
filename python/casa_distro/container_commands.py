@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+import os
 # from casa_distro import six
-from casa_distro.command import command
+from casa_distro.command import command, check_boolean
 from casa_distro.container_environment import (setup_user as env_setup_user,
                                                setup_dev as env_setup_dev)
 
 
 @command
-def setup_user(dir='/casa/setup'):
+def setup_user(dir='/casa/setup', rw_install=False, distro=None,
+               version=os.environ.get('CASA_VERSION'),
+               url='https://brainvisa.info/download'):
     """
     Create all necessary directories and files to setup a user environement.
 
@@ -24,8 +27,31 @@ def setup_user(dir='/casa/setup'):
     dir
         dir={dir_default}
         Target environment directory
+
+    rw_install
+        {rw_install_default}
+        if true, install in a read-write directory /casa/host/install in the
+        container but on the host filesystem. This install allows to add
+        external toolboxes on top of the standard BrainVisa install
+
+    distro
+        {distro_default}
+        if specified, the install will download the BrainVisa distro from the
+        web site, and install it in a writable directory /casa/host/install in
+        the container, like with the rw_install mode above.
+
+    version
+        {version_default}
+        version of the Brainvisa distribution to be downloaded (for use with
+        the distro option).
+
+    url
+        {url_default}
+        download URL for use with the distro option.
     """
-    env_setup_user(dir)
+    rw_install = check_boolean('rw_install', rw_install)
+    env_setup_user(dir, rw_install=rw_install, distro=distro, version=version,
+                   url=url)
 
 
 @command

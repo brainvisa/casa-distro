@@ -14,6 +14,8 @@ import subprocess
 import os
 import collections
 import glob
+import os.path as osp
+import shutil
 
 try:
     from soma.qt_gui.qt_backend import Qt
@@ -42,6 +44,345 @@ except ImportError:
         'available.\n\n'
         'You normally just run the "bv" script from the host.')
 
+from casa_distro.container_environment import (is_writable,
+                                               user_config_filename)
+from casa_distro.environment import update_config
+
+
+class InstallEditor(Qt.QDialog):
+    def __init__(self, conf, conf_path, parent=None):
+        super(InstallEditor, self).__init__(parent)
+
+        self.conf = conf
+        self.conf_path = conf_path
+        self.url = ''
+
+        layout = Qt.QVBoxLayout()
+        self.setLayout(layout)
+        self.setWindowTitle('BrainVISA Install options')
+
+        cinstl = Qt.QHBoxLayout()
+        layout.addLayout(cinstl)
+
+        inst_type = 'None'
+        if (os.path.exists('/casa/host/install/bin/bv_env')
+                or (os.path.exists('/casa/install/bin/bv_env')
+                    and is_writable('/casa/install'))):
+            inst_type = '<font color="#008000">read-write</font>'
+        elif os.path.exists('/casa/install/bin/bv_env'):
+            inst_type = '<font color="#800000">read-only</font>'
+        dist_text = ''
+        if inst_type != 'None':
+            distro = self.conf['distro']
+            dist_text = ' (<b>%s</b>)' % distro
+
+        cinst0 = Qt.QLabel('<b>Current install:</b> %s%s'
+                           % (inst_type, dist_text))
+        cinstl.addWidget(cinst0)
+
+        if 'read-only' in inst_type:
+            inst_rwl = Qt.QGroupBox('install read-write locally:')
+            layout.addWidget(inst_rwl)
+            inst_rwl_l = Qt.QVBoxLayout()
+            inst_rwl.setLayout(inst_rwl_l)
+            self.unpack_btn = Qt.QCheckBox('install from internal image')
+            inst_rwl_l.addWidget(self.unpack_btn)
+
+        dl_grp = Qt.QGroupBox('install toolboxes from downloads:')
+        self.dl_grp = dl_grp
+        layout.addWidget(dl_grp)
+        dl_grp_l = Qt.QVBoxLayout()
+        dl_grp.setLayout(dl_grp_l)
+        if 'read-only' in inst_type:
+            self.prereq_warn = Qt.QLabel(
+                'Install from internal image must be checked\n'
+                'before additional toolboxes can be installed')
+            dl_grp_l.addWidget(self.prereq_warn)
+        self.dl_wid = Qt.QWidget()
+        dl_grp_l.addWidget(self.dl_wid)
+        hb = Qt.QGridLayout()
+        hb.setContentsMargins(0, 0, 0, 0)
+        self.dl_wid.setLayout(hb)
+        hb.addWidget(Qt.QLabel('url:'), 0, 0)
+        self.url_edit = Qt.QLineEdit('https://brainvisa.info/download')
+        hb.addWidget(self.url_edit, 0, 1)
+        hb.addWidget(Qt.QLabel('distro:'), 1, 0)
+        self.distros = Qt.QListWidget()
+        hb.addWidget(self.distros, 1, 1)
+        self.distros.setSelectionMode(self.distros.ExtendedSelection)
+        self.url_edit.editingFinished.connect(self.url_changed)
+
+        if 'read-only' in inst_type:
+            self.dl_wid.hide()
+            self.dl_grp.setEnabled(False)
+        else:
+            self.update_distros()
+
+        layout.addStretch(1)
+
+        validation_btns = Qt.QDialogButtonBox(
+            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel
+            | Qt.QDialogButtonBox.Help)
+        layout.addWidget(validation_btns)
+        validation_btns.button(Qt.QDialogButtonBox.Ok).setDefault(False)
+        validation_btns.button(Qt.QDialogButtonBox.Ok).setAutoDefault(False)
+
+        if hasattr(self, 'unpack_btn'):
+            self.unpack_btn.toggled.connect(self.local_install_checked)
+        validation_btns.accepted.connect(self.accept)
+        validation_btns.rejected.connect(self.reject)
+        validation_btns.helpRequested.connect(self.help)
+        self.validation_btns = validation_btns
+
+    def url_changed(self):
+        self.update_distros()
+
+    def local_install_checked(self, checked):
+        if checked:
+            self.prereq_warn.hide()
+            self.dl_wid.show()
+            self.dl_grp.setEnabled(True)
+            self.update_distros()
+        else:
+            self.dl_wid.hide()
+            self.prereq_warn.show()
+            self.dl_grp.setEnabled(False)
+
+    def update_distros(self):
+        from casa_distro.web import url_listdir, urlopen
+
+        url = self.url_edit.text()
+        if self.url == url:
+            return
+
+        self.url = url
+
+        sel_distros = [item.text() for item in self.distros.selectedItems()]
+        self.distros.clear()
+
+        try:
+            items = url_listdir(osp.join(url, self.conf['version']))
+            for distro in items:
+                if distro.endswith('/'):
+                    distro = distro[:-1]
+                ditem = osp.join(url, self.conf['version'], distro,
+                                 self.conf['system'])
+                dzip = osp.join(ditem,
+                                '%s-%s-%s' % (distro, self.conf['version'],
+                                              self.conf['system']))
+                djson = '%s.json' % dzip
+                if urlopen(djson) and urlopen(dzip):
+                    self.distros.addItem(distro)
+                    if distro in sel_distros:
+                        self.distros.item(
+                            self.distros.count() - 1).setSelected(True)
+
+        except Exception:
+            pass
+
+    def accept(self):
+        from casa_distro.container_environment import setup_user
+        import threading
+
+        if not self.validation_btns.button(Qt.QDialogButtonBox.Ok).hasFocus():
+            return
+
+        super(InstallEditor, self).accept()
+
+        if hasattr(self, 'unpack_btn') and self.unpack_btn.isChecked():
+            do_it = True
+            if osp.exists('/casa/host/install'):
+                res = Qt.QMessageBox.question(
+                    None, 'Erase install ?',
+                    'An older installation exists. Erase it ?')
+                print('res:', res)
+                if res != Qt.QMessageBox.Yes:
+                    do_it = False
+                else:
+                    shutil.rmtree('/casa/host/install')
+
+            if do_it:
+                wait = Qt.QProgressDialog('Installing read-write locally...',
+                                          None, 0, 1)
+                wait.setWindowTitle('Install in progress')
+                wait.setWindowModality(Qt.Qt.WindowModal)
+                wait.show()
+                wait.setValue(0)
+                Qt.QApplication.instance().processEvents()
+                thread = threading.Thread(
+                    target=setup_user,
+                    kwargs=dict(setup_dir='/casa/host', rw_install=True))
+                thread.start()
+                while thread.is_alive():
+                    thread.join(0.1)
+                    Qt.QApplication.instance().processEvents()
+                wait.setValue(1)
+                Qt.QApplication.instance().processEvents()
+                wait.close()
+                del wait
+
+        distros = [item.text() for item in self.distros.selectedItems()]
+        if distros:
+            wait = Qt.QProgressDialog('Installing read-write from download...',
+                                      'Cancel', 0, len(distros))
+            wait.setWindowTitle('Install in progress')
+            if len(distros) == 1:
+                # cannot cancel inside a single install
+                wait.setCancelButton(None)
+            wait.setWindowModality(Qt.Qt.WindowModal)
+            wait.show()
+            Qt.QApplication.instance().processEvents()
+            url = self.url_edit.text()
+            installed = []
+            cancel_done = False
+            for n, distro in enumerate(distros):
+                wait.setLabelText('installing distro: <b>%s</b>' % distro)
+                Qt.QApplication.instance().processEvents()
+                wait.setValue(n)
+                Qt.QApplication.instance().processEvents()
+                if wait.wasCanceled():
+                    print('Cancel.')
+                    break
+                thread = threading.Thread(
+                    target=setup_user,
+                    kwargs=dict(setup_dir='/casa/host', distro=distro,
+                                url=url))
+                thread.start()
+                while thread.is_alive():
+                    if wait.wasCanceled():
+                        if not cancel_done:
+                            print('cancelling after the current install '
+                                  '(which cannot be interrupted)...')
+                            wait.setLabelText(
+                                '<b>Cancelling....</b> finishing to install '
+                                '<br/><b>%s</b> (not interruptible) first...'
+                                % distro)
+                            wait.setCancelButton(None)
+                            wait.show()
+                            Qt.QApplication.instance().processEvents()
+                            cancel_done = True
+                    thread.join(0.1)
+                    Qt.QApplication.instance().processEvents()
+                installed.append(distro)
+            wait.setValue(n)
+            Qt.QApplication.instance().processEvents()
+            wait.close()
+            del wait
+            if self.conf['distro'] not in installed or len(installed) != 1:
+                print('distro has changed.')
+                self.conf['distro'] = 'custom'
+                with open(self.conf_path) as f:
+                    new_conf = json.load(f)
+                new_conf['distro'] = 'custom'
+                with open(self.conf_path, 'w') as f:
+                    json.dump(new_conf, f, indent=4)
+
+    def help(self):
+        print('help')
+        try:
+            self.help_widget = QtWebEngineWidgets.QWebEngineView()
+        except Exception:
+            print('QWebEngineView failed, using QWebView')
+            self.help_widget = Qt.QWebView()
+        self.help_widget.setWindowTitle('Managing install')
+        help_text = '''<style>
+body {
+    font-family: sans-serif;
+    border-width: 10px;
+    border-color: #8880A0;
+    border-style: solid;
+    border-radius: 6px;
+    margin: 0px;
+    padding: 10px;
+    text-align: justify;
+}
+
+a {
+    color: #2878A2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+h1 {
+    background-color: #C8D0EF;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+    margin-bottom: 0px;
+    color: #2878A2;
+}
+
+h2 {
+    background-color: #B0C0EB;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+div.note {
+    background-color: #f0f0ff;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+div.code {
+    background-color: #f0fff0;
+    border-style: solid none solid none;
+    border-width: 1px;
+    border-radius: 0px;
+    padding: 3px;
+    border-color: #d0d090;
+}
+</style>
+<h1>Managing BrainVISA installation options</h1>
+
+<h2>Different kinds of BrainVISA installations</h2>
+<p>The default installation method is using a read-only container image. It is the most convenient, faster to install, and "safe". This is what you get when you download a BrainVisa image and perform the default setup.
+</p>
+<p>However this install method is not modular: you cannot install additional toolboxes, because the installed files reside inside the container image, which is read-only. Thus it is possible to install BrainVISA on the host filesystem, which will be modifiable, and will allow installing additional tools. <em>This is not needed in a VirtualBox image, where you have a read-write accesss to the contents.</em> There are two ways to perform the read-write install:
+</p>
+<p>
+    <ul>
+        <li>"local" install: the files already present within the already installed, read-only image, will be copied on the host filesystem. You thus get identical contents to the original image, but they will now be modifiable.
+        </li>
+        <li>from downloads: The BrainVISA programs files will be downloaded from the web site. This method has 2 advantages:
+            <ul>
+                <li>It can be used from an image wich does not contain the files (a "run" system image, without the BrainVISA distribution in it), which is lighter than the full one, and may be shared between several installs.
+                </li>
+                <li>Downloading offers the option to download a different "distro" (set of packages and toolboxes), and may be used several times over the same install. This is thus a means of installing additional tolboxes when they are available on the web site.
+                </li>
+            </ul>
+            However a network connection has to be active during install, with sufficient bandwidth. Installing the standard "brainvisa" distro from a full "user" image has the same result as the "local" install: it just consumes network bandwith without any benefit.
+        </li>
+    </ul>
+</p>
+
+<h2>Installing distros</h2>
+<p>It is possible to both install the "local" distro (normally the "brainvisa" distro) in read-write mode, then add additional downloaded ones. To do so, check the local install option, and select additional distros.
+</p>
+<p>Inside the container, the read-only install directorty is:
+<div class="code">/casa/install</div>
+The read-write install location will be:
+<div class="code">/casa/host/install</div>
+</p>
+<div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or many python language modules, do not support installation split accross several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
+</div>
+<p>In the downloads list, the available packages for your container system and version are displayed at the given URL. It could be possible to change the URL to another server which distributes its own distros (toolboxes).
+</p>
+<p>Several distros can be selected. They will all be installed when "OK" is clicked. There are no dependencies checks between distros/toolboxes, and they will be processed in the order they are displayed to the user, so their installation should be independent.
+</p>
+
+'''  # noqa: E501
+        self.help_widget.setHtml(help_text)
+        self.help_widget.show()
+
 
 class CasaLauncher(Qt.QDialog):
 
@@ -51,6 +392,14 @@ class CasaLauncher(Qt.QDialog):
 
         with open(conf_path, 'r') as conf_file:
             self.conf = json.load(conf_file)
+
+        user_config_file = user_config_filename()
+        for additional_config_file in [user_config_file] \
+            + [c for c in self.conf.get('config_files', [])
+               if c != user_config_file]:
+            if osp.exists(additional_config_file):
+                with open(additional_config_file) as f:
+                    update_config(self.conf, json.load(f))
 
         self.setup_ui()
         self.setup_links()
@@ -76,6 +425,16 @@ class CasaLauncher(Qt.QDialog):
         self._conf_btn = Qt.QPushButton('...')
         conf_line.addWidget(self._conf_btn)
 
+        inst_line = None
+        if self.conf['type'] in ('run', 'user'):
+            inst_line = Qt.QHBoxLayout()
+            self.install_label = Qt.QLabel()
+            self.update_install_status()
+            inst_line.addWidget(self.install_label)
+            inst_line.addStretch(1)
+            self._inst_btn = Qt.QPushButton('...')
+            inst_line.addWidget(self._inst_btn)
+
         self._launchers = Launchers()
 
         self._errors_label = Qt.QLabel()
@@ -86,6 +445,8 @@ class CasaLauncher(Qt.QDialog):
         self._main_layout.addWidget(Qt.QLabel('<b>Mount points:</b>'))
         self._main_layout.addWidget(self._mount_manager)
         self._main_layout.addLayout(conf_line)
+        if inst_line:
+            self._main_layout.addLayout(inst_line)
         self._main_layout.addWidget(self._launchers)
         self._main_layout.addWidget(self._errors_label)
         self._main_layout.addWidget(self._validation_btns)
@@ -96,13 +457,37 @@ class CasaLauncher(Qt.QDialog):
         self._mount_manager.valueChanged.connect(self.block_launchers)
         self._launchers.launched.connect(self.close_and_launch)
         self._conf_btn.clicked.connect(self.edit_configuration)
+        if hasattr(self, '_inst_btn'):
+            self._inst_btn.clicked.connect(self.edit_install)
 
     def save_conf(self):
         if self._mount_manager.check_all_mounts():
             print('SAVE')
-            with open(self.conf_path, 'w') as conf_file:
-                json.dump(self.conf, conf_file, indent=4)
+            conf_wo_mounts = dict(self.conf)
+            mounts = self.conf.get('mounts', {})
+            if 'mounts' in self.conf:
+                del conf_wo_mounts['mounts']
+            try:
+                with open(self.conf_path, 'w') as conf_file:
+                    json.dump(conf_wo_mounts, conf_file, indent=4)
+            except (IOError, OSError):
+                # read-only shared environent ?
+                pass
+            user_config_file = user_config_filename()
+            if osp.exists(user_config_file):
+                with open(user_config_file) as f:
+                    uconf = json.load(f)
+            else:
+                uconf = {}
+            if mounts or 'mounts' in uconf:
+                if not osp.isdir(osp.dirname(user_config_file)):
+                    os.makedirs(osp.dirname(user_config_file))
+                uconf['mounts'] = mounts
+                with open(user_config_file, 'w') as f:
+                    json.dump(uconf, f, indent=4)
+
             self.accept()
+
         else:
             # Redondent with errors in MountManager errors
             # Could be used to regroup errors from software conf in the future
@@ -139,9 +524,27 @@ class CasaLauncher(Qt.QDialog):
             self._mount_manager.update_ui()
             self.block_launchers()
 
-    # def closeEvent(self, *args, **kwargs):
-    #     super(Qt.QDialog, self).closeEvent(*args, **kwargs)
-    #     print('CLOSE!!!!')
+    def edit_install(self):
+        dialog = InstallEditor(self.conf, self.conf_path, self)
+        dialog.setWindowModality(Qt.Qt.WindowModal)
+        if dialog.exec_() == dialog.Accepted:
+            self.update_install_status()
+
+    def update_install_status(self):
+        inst_type = 'None'
+        if (os.path.exists('/casa/host/install/bin/bv_env')
+                or (os.path.exists('/casa/install/bin/bv_env')
+                    and is_writable('/casa/install'))):
+            inst_type = '<font color="#008000">read-write</font>'
+        elif os.path.exists('/casa/install/bin/bv_env'):
+            inst_type = '<font color="#800000">read-only</font>'
+        dist_text = ''
+        if inst_type != 'None':
+            distro = self.conf['distro']
+            dist_text = ' (<b>%s</b>)' % distro
+        self.install_label.setText(
+                '<b>BrainVisa Installation:</b> %s - <b>%s</b> distro'
+                % (inst_type, dist_text))
 
 
 class MountManager(Qt.QWidget):
