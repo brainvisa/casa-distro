@@ -7,6 +7,7 @@ import os
 import os.path as osp
 import platform
 import shutil
+import stat
 import sys
 import time
 import subprocess
@@ -62,10 +63,13 @@ def create_environment_bin_commands(source, dest):
     for command in commands:
         if command in exclude_from_bin:
             continue
-        script = osp.join(dest, command)
-        if osp.exists(script):
-            os.remove(script)
-        os.symlink('bv', script)
+        source_command = osp.join(source, command)
+        if not os.stat(source_command).st_mode & stat.S_IXUSR:
+            continue  # skip non-executable files (e.g. bv_env.sh)
+        dest_link = osp.join(dest, command)
+        if osp.exists(dest_link):
+            os.remove(dest_link)
+        os.symlink('bv', dest_link)
 
 
 def download_install(install_dir, distro, version, url):
