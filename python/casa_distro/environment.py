@@ -352,7 +352,9 @@ def image_remote_location(container_type, image_name, url):
     return '%s/%s' % (url, osp.basename(image_name))
 
 
-def update_container_image(container_type, image_name, url, force=False,
+def update_container_image(container_type, image_name, url,
+                           base_directory=casa_distro_directory(),
+                           force=False,
                            verbose=None, new_only=False):
     """
     Download a container image.
@@ -365,6 +367,8 @@ def update_container_image(container_type, image_name, url, force=False,
         image filename (full path)
     url: str
         pattern (e.g. 'https://brainvisa.info/download/{container_type}')
+    base_directory: str
+        Directory where images and environments are stored.
     force: bool
         download image even if it seems up-to-date
     verbose: file
@@ -376,7 +380,7 @@ def update_container_image(container_type, image_name, url, force=False,
     remote_image = image_remote_location(container_type, image_name, url)
 
     if not os.path.isabs(image_name) and not osp.exists(image_name):
-        image_name = osp.join(casa_distro_directory(), image_name)
+        image_name = osp.join(base_directory, image_name)
 
     image = osp.basename(image_name)
 

@@ -303,8 +303,9 @@ def setup_user(distro=None,
         print('download image url:', url,
               file=verbose)
 
-    update_container_image(container_type, image, url, new_only=True,
-                           verbose=verbose)
+    update_container_image(container_type, image, url,
+                           base_directory=base_directory,
+                           new_only=True, verbose=verbose)
 
     output = output.format(distro=distro,
                            version=version,
@@ -504,8 +505,9 @@ def setup_dev(distro='opensource',
         print('output:', output,
               file=verbose)
 
-    update_container_image(container_type, image, url, new_only=True,
-                           verbose=verbose)
+    update_container_image(container_type, image, url,
+                           base_directory=base_directory,
+                           new_only=True, verbose=verbose)
 
     if writable and container_type != 'singularity':
         raise ValueError(
@@ -755,8 +757,9 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
               file=verbose)
 
     for container_type, image in images_to_update:
-        update_container_image(container_type, image, verbose=verbose,
-                               url=url, force=force)
+        update_container_image(container_type, image,
+                               base_directory=base_directory,
+                               verbose=verbose, url=url, force=force)
     if not images_to_update:
         print('No build workflow match selection criteria',
               file=sys.stderr)
