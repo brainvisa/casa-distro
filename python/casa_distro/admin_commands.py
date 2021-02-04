@@ -2,7 +2,6 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
-from fnmatch import fnmatchcase
 import glob
 import json
 import os
@@ -27,13 +26,12 @@ from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
                                      run_container,
-                                     select_environment,
-                                     update_container_image)
+                                     select_environment)
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
 from casa_distro.hash import file_hash
-from casa_distro.web import url_listdir, urlopen
+from casa_distro.web import urlopen
 from .image_builder import get_image_builder, LocalInstaller
 
 
@@ -211,65 +209,6 @@ def singularity_debs(directory):
                             dockerhub=dockerhub,
                             version=singularity_version,
                             go_version=go_version)
-
-
-@command
-def download_image(type,
-                   filename='casa-{type}-*.{extension}',
-                   url=default_download_url,
-                   output=osp.join(
-                       default_base_directory, '{filename}'),
-                   container_type='singularity',
-                   force=False,
-                   verbose=True):
-    """
-    Download an image from brainvisa.info web site
-
-    Parameters
-    ----------
-    type
-        type of image to publish. Either "system" for a base system image, or
-        "run" for an image used in a user environment, or "dev" for a developer
-        image.
-    filename
-    url
-    output
-    container_type
-    force
-    {verbose}
-    """
-    verbose = verbose_file(verbose)
-
-    if type not in ('system', 'run', 'dev'):
-        raise ValueError('Unsupported image type: {0}'.format(type))
-
-    if container_type == 'singularity':
-        extension = 'sif'
-    elif container_type == 'vbox':
-        extension = 'vdi'
-    else:
-        raise ValueError('Unsupported container type: %s' % container_type)
-
-    filename = filename.format(type=type, extension=extension)
-    url = url.format(container_type=container_type)
-    filenames = [i for i in url_listdir(url)
-                 if fnmatchcase(i, filename)]
-    if len(filenames) == 0:
-        raise ValueError(
-            'Cannot find file corresponding to pattern {0} in {1}'
-            .format(filename, url)
-        )
-    elif len(filenames) > 1:
-        raise ValueError(
-            'Several image files found in {1}: {0}'
-            .format(', '.join(filenames), url)
-        )
-    filename = filenames[0]
-    output = output.format(filename=filename)
-    output = osp.expandvars(osp.expanduser(output))
-
-    update_container_image(container_type, output, url, force=force,
-                           verbose=verbose, new_only=False)
 
 
 @command
