@@ -454,7 +454,7 @@ function _complete_casa_distro_admin_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help download_image create_base_image publish_base_image create_user_image singularity_deb bbi_daily"
+    local cmd_list="help create_base_image publish_base_image create_user_image singularity_deb bbi_daily"
     local opt_list="-h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -503,9 +503,6 @@ function _complete_casa_distro_admin_()
         case "$cmd" in
         help)
             COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
-            ;;
-        download_image)
-            COMPREPLY=($(compgen -W "type= filename= url= output= container_type= verbose=" -- "${word}"))
             ;;
         create_base_image)
             COMPREPLY=($(compgen -W "type= name= base= output= container_type= memory= disk_size= gui= cleanup= verbose=" -- "${word}"))
