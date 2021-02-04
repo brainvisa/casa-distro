@@ -444,7 +444,8 @@ def setup_dev(distro='opensource',
               file=verbose)
 
     if branch not in ('latest_release', 'master', 'integration'):
-        raise ValueError('Invalid branch : {0}'.format(branch))
+        print('Warning: the branch: {0} is not officially supported and may '
+              'not exist'.format(branch), file=sys.stderr)
     if verbose:
         print('Branch:', branch,
               file=verbose)
