@@ -22,12 +22,21 @@ sudo git lfs install --system --skip-repo
 # allow attach gdb to a process
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
+mkdir /casa/bootstrap
+cat <<EOF > /casa/bootstrap/README.txt
+This directory contains a version of brainvisa-cmake that can be used
+for doing the first compilation in an empty dev environment. It is
+placed last on the PATH in the image, so the version that is compiled as
+part of a BrainVISA build tree will take precedence after the first
+successful build.
+EOF
+
 # Install a version of brainvisa-cmake
-git clone https://github.com/brainvisa/brainvisa-cmake.git \
-          "$CASA_SRC"/development/brainvisa-cmake/master
-mkdir /tmp/brainvisa-cmake
+git clone --depth=1 https://github.com/brainvisa/brainvisa-cmake.git \
+    /tmp/brainvisa-cmake
 cd /tmp/brainvisa-cmake
-cmake -DCMAKE_INSTALL_PREFIX=/casa/brainvisa-cmake $CASA_SRC/development/brainvisa-cmake/master
+cmake -DCMAKE_INSTALL_PREFIX=/casa/bootstrap/brainvisa-cmake .
+make -j$(nproc)
 make install
-cd ..
+cd /tmp
 rm -rf /tmp/brainvisa-cmake
