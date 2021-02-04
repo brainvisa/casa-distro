@@ -64,8 +64,13 @@ def create_environment_bin_commands(source, dest):
         if command in exclude_from_bin:
             continue
         source_command = osp.join(source, command)
-        if not os.stat(source_command).st_mode & stat.S_IXUSR:
-            continue  # skip non-executable files (e.g. bv_env.sh)
+        try:
+            if not os.stat(source_command).st_mode & stat.S_IXUSR:
+                continue  # skip non-executable files (e.g. bv_env.sh)
+        except OSError:
+            # avoid skipping commands that do not have a binary (casa_distro
+            # and casa_distro_admin)
+            pass
         dest_link = osp.join(dest, command)
         if osp.exists(dest_link):
             os.remove(dest_link)
