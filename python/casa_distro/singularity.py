@@ -48,6 +48,9 @@ class RecipeBuilder:
     def copy_root(self, source_file, dest_dir):
         '''
         Copy a file in VM as root
+
+        Warning: if the target already exists and is a directory, files will be
+        copied to the wrong location (inside this directory).
         '''
         self.sections.setdefault('files', []).append(
             '%s %s' % (source_file,
@@ -56,6 +59,9 @@ class RecipeBuilder:
     def copy_user(self, source_file, dest_dir):
         '''
         Copy a file in VM as self.user
+
+        Warning: if the target already exists and is a directory, files will be
+        copied to the wrong location (inside this directory).
         '''
         self.sections.setdefault('files', []).append(
             '%s %s' % (source_file,
