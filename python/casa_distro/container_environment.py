@@ -218,19 +218,76 @@ def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
     if not osp.exists(setup_dir):
         os.makedirs(setup_dir)
 
-    all_subdirs = ('conf', 'src', 'build', 'install',)
+    all_subdirs = ['conf', 'src', 'build', 'install', 'bootstrap', 'bin']
     for subdir in all_subdirs:
         if not osp.exists(osp.join(setup_dir, subdir)):
             os.makedirs(osp.join(setup_dir, subdir))
-
-    bin = osp.join(setup_dir, 'bin')
-    if not osp.exists(bin):
-        os.makedirs(bin)
+    bin_dir = osp.join(setup_dir, 'bin')
 
     bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
                   'bin', 'bv')
-    shutil.copy(bv, osp.join(bin, 'bv'))
-    create_environment_bin_commands('/casa/brainvisa-cmake/bin', bin)
+    shutil.copy(bv, osp.join(bin_dir, 'bv'))
+
+    with open(osp.join(setup_dir, 'bootstrap', 'README.txt'), 'w') as f:
+        f.write('''\
+You should never need to use the contents of this directory directly,
+instead use bin/bv_maker that is at the top-level of your environment
+directory to bootstrap your first BrainVISA compilation.
+
+This directory contains a version of casa-distro and brainvisa-cmake
+that can be used for doing the first compilation in an empty dev
+environment. In fact, after a successful build this directory is never
+used anymore, you may as well delete it if you wish.
+
+- Whenever casa-distro sources are present in
+  src/development/casa-distro, they will be used instead of the
+  casa-distro that is in this directory (bin/bv takes charge of choosing
+  the correct version).
+
+- The brainvisa-cmake subdirectory is placed last on the PATH in the
+  image, so the version that is compiled as part of a BrainVISA build
+  tree will take precedence after the first successful build.
+''')
+
+    print('Bootstrapping brainvisa-cmake...')
+    tmpdir = None
+    try:
+        tmpdir = tempfile.mkdtemp(prefix='brainvisa-cmake')
+        retval = subprocess.call([
+            'git', 'clone', '--depth=1',
+            '--branch', branch,
+            'https://github.com/brainvisa/brainvisa-cmake.git', tmpdir,
+        ])
+        if retval != 0:
+            # If brainvisa-cmake does not have the requested branch, fall back
+            # to the default branch (master).
+            subprocess.check_call([
+                'git', 'clone', '--depth=1',
+                'https://github.com/brainvisa/brainvisa-cmake.git', tmpdir,
+            ])
+        subprocess.check_call([
+            'cmake',
+            '-DCMAKE_INSTALL_PREFIX=' + osp.join(
+                setup_dir, 'bootstrap', 'brainvisa-cmake'),
+            '.'],
+            cwd=tmpdir)
+        subprocess.check_call(['make', 'install'], cwd=tmpdir)
+    except subprocess.CalledProcessError:
+        print('WARNING: error while boostrapping brainvisa-cmake, '
+              'your first compilation will use the older version '
+              'that is included in the image (this is usually fine).',
+              file=sys.stderr)
+        create_environment_bin_commands(
+            '/casa/bootstrap/brainvisa-cmake/bin', bin_dir)
+    else:
+        create_environment_bin_commands(
+            osp.join(setup_dir, 'bootstrap', 'brainvisa-cmake', 'bin'),
+            bin_dir)
+        print('brainvisa-cmake bootstrapped successfully.')
+    finally:
+        if tmpdir:
+            shutil.rmtree(tmpdir)
+            tmpdir = None
 
     casa_distro_dir = osp.join(setup_dir, 'casa-distro')
     install_casa_distro(casa_distro_dir)
