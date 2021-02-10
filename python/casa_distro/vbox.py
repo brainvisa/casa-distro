@@ -179,7 +179,7 @@ def create_image(base, base_metadata,
                      gui=gui)
         vbox.stop(verbose=verbose)
         vbox.export(output=output, verbose=verbose)
-        vbox.remove()
+        vbox.remove(delete=True, verbose=verbose)
     else:
         raise NotImplementedError('Creation of image of type {0} is not yet '
                                   'implemented for VirtualBox'.format(type))
@@ -212,7 +212,9 @@ def create_user_image(base_image,
     vm.run_user("/bin/sed -i '$a if [ -e /casa/install/bin/bv_env.sh ]\\; "
                 "then source /casa/install/bin/bv_env.sh /casa/install\\; fi' "
                 "/home/brainvisa/.bashrc")
-    # vm.remove(verbose=verbose)
+    vm.stop(verbose=verbose)
+    vm.export(output=output, verbose=verbose)
+    vm.remove(delete=True, verbose=verbose)
 
 
 class VBoxMachine:
@@ -319,15 +321,16 @@ class VBoxMachine:
             else:
                 raise RuntimeError('Failed to stop VM {0}'.format(self.name))
 
-    def remove(self, verbose=None):
+    def remove(self, delete=False, verbose=None):
         '''
-        Remove a VM from VirtualBox without deleting the image file
+        Remove a VM from VirtualBox, delete parameter allows to control the
+        deletion of associated files.
         '''
         if self.exists():
             self.stop(verbose=verbose)
             if verbose:
-                six.print_('Removing', self.name,
-                           file=verbose, flush=True)
+                six.print_(('Delete' if delete else 'Unregister'), 'VM',
+                           self.name, file=verbose, flush=True)
 
             vbox_manage(['unregistervm', self.name])
 
