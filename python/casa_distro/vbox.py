@@ -12,6 +12,7 @@ import uuid
 
 import casa_distro.six as six
 from .image_builder import get_image_builder
+from .log import boolean_value
 
 
 def vbox_manage_command(cmd_options):
@@ -67,108 +68,120 @@ def vbox_list_vms(running=False):
 def create_image(base, base_metadata,
                  output, metadata,
                  build_file,
-                 cleanup,
-                 memory,
-                 disk_size,
-                 gui,
-                 verbose,
-                 **kwargs):
+                 memory='8192',
+                 video_memory='50',
+                 disk_size='131072',
+                 gui='no',
+                 verbose=None):
+    gui = boolean_value(gui)
     type = metadata['type']
     name = metadata['name']
+    vdi = output[:-3] + 'vdi'
     if type == 'system':
-        # Create a machine in VirtualBox, set some parameters and start it.
-        if verbose:
-            six.print_('Create Linux 64 bits virtual machine',
-                       file=verbose, flush=True)
-        vbox_manage(['createvm',
-                     '--name', name,
-                     '--ostype', 'Ubuntu_64',
-                     '--register'])
-        if verbose:
-            six.print_('Set memory to', memory, 'MiB and allow booting on DVD',
-                       file=verbose, flush=True)
-        vbox_manage(['modifyvm', name,
-                     '--memory', memory,
-                     '--boot1', 'dvd',
-                     '--nic1', 'nat'])
-        if verbose:
-            six.print_('Create a', disk_size, 'MiB system disk in', output,
-                       file=verbose, flush=True)
-        print('!!!', ['createmedium',
-                      '--filename', output,
-                      '--size', disk_size,
-                      '--format', 'VDI',
-                      '--variant', 'Standard'])
-        vbox_manage(['createmedium',
-                     '--filename', output,
-                     '--size', disk_size,
-                     '--format', 'VDI',
-                     '--variant', 'Standard'])
-        if verbose:
-            six.print_('Create a SATA controller in the VM',
-                       file=verbose, flush=True)
-        vbox_manage(['storagectl', name,
-                     '--name', '%s_SATA' % name,
-                     '--add', 'sata'])
-        if verbose:
-            six.print_('Attach the system disk to the machine',
-                       file=verbose, flush=True)
-        vbox_manage(['storageattach', name,
-                    '--storagectl', '%s_SATA' % name,
-                     '--medium', output,
-                     '--port', '1',
-                     '--type', 'hdd'])
-        if verbose:
-            six.print_('Attach', base, 'to the DVD',
-                       file=verbose, flush=True)
-        vbox_manage(['storageattach', name,
-                    '--storagectl', '%s_SATA' % name,
-                     '--port', '0',
-                     '--type', 'dvddrive',
-                     '--medium', base])
-        if verbose:
-            six.print_('Start the new virtual machine',
-                       file=verbose, flush=True)
-        vbox_manage(['startvm', name])
+        vm = VBoxMachine(name)
+        if vm.exists():
+            vbox_manage(['export', name, '-o', output, '--ovf20'])
+        else:
+            # Create a machine in VirtualBox, set some parameters and start it.
+            if verbose:
+                six.print_('Create Linux 64 bits virtual machine',
+                           file=verbose, flush=True)
+            vbox_manage(['createvm',
+                         '--name', name,
+                         '--ostype', 'Ubuntu_64',
+                         '--register'])
+            if verbose:
+                six.print_('Set memory to', memory,
+                           'MiB and allow booting on DVD',
+                           file=verbose, flush=True)
+            vbox_manage(['modifyvm', name,
+                         '--memory', memory,
+                         '--vram', video_memory,
+                         '--boot1', 'dvd',
+                         '--nic1', 'nat'])
+            if verbose:
+                six.print_('Create a', disk_size, 'MiB system disk in', vdi,
+                           file=verbose, flush=True)
+                vbox_manage(['createmedium',
+                             '--filename', vdi,
+                             '--size', disk_size,
+                             '--format', 'VDI',
+                             '--variant', 'Standard'])
+            if verbose:
+                six.print_('Create a SATA controller in the VM',
+                           file=verbose, flush=True)
+            vbox_manage(['storagectl', name,
+                         '--name', '%s_SATA' % name,
+                         '--add', 'sata'])
+            if verbose:
+                six.print_('Attach the system disk to the machine',
+                           file=verbose, flush=True)
+            vbox_manage(['storageattach', name,
+                         '--storagectl', '%s_SATA' % name,
+                         '--medium', vdi,
+                         '--port', '1',
+                         '--type', 'hdd'])
+            if verbose:
+                six.print_('Attach', base, 'to the DVD',
+                           file=verbose, flush=True)
+            vbox_manage(['storageattach', name,
+                         '--storagectl', '%s_SATA' % name,
+                         '--port', '0',
+                         '--type', 'dvddrive',
+                         '--medium', base])
+            if verbose:
+                six.print_('Start the new virtual machine',
+                           file=verbose, flush=True)
+            vbox_manage(['startvm', name])
 
-        msg = '''VirtualBox machine created. Now, perform the following steps:
-        1) Perform Ubuntu minimal installation with an autologin account named
-        "brainvisa" and with password "brainvisa"
+            msg = '''VirtualBox machine created. Now, perform the following
+            steps:
 
-        2) Perform system updates and install packages required for kernel
-        module creation :
+            1) Perform Ubuntu minimal installation with an autologin account
+               named "brainvisa" and with password "brainvisa"
 
-                sudo apt update
-                sudo apt upgrade
-                sudo apt install gcc make perl
+            2) Perform system updates and install packages required for kernel
+               module creation :
 
-        3) Disable automatic software update in "Update" tab of Software &
-        Updates properties. Otherwise installation may fail because
-        installation database is locked.
+                    sudo apt update
+                    sudo apt upgrade
+                    sudo apt install gcc make perl
 
-        4) Set root password to "brainvisa" (this is necessary to automatically
-        connect to the VM to perform post-install)
+            3) Disable automatic software update in "Update" tab of Software &
+               Updates properties. Otherwise installation may fail because
+               installation database is locked.
 
-        5) Reboot the VM
+            4) Disable screen saver.
 
-        6) Download and install VirtualBox guest additions
+            5) Set root password to "brainvisa" (this is necessary to
+               automatically connect to the VM to perform post-install)
 
-        7) Shut down the VM
+            6) Reboot the VM
 
-        8) Configure the VM in VirualBox (especially 3D acceleration,
-        processors and memory)
-        '''
+            7) Download and install VirtualBox guest additions
+
+            8) Shut down the VM
+
+            9) Check and adjust the VM in VirualBox (especially 3D
+               acceleration, processors and memory)
+
+            10) restart the command to export the VM to OVA format
+
+            11) You can manually remove the VM and its associated files from
+                VirtualBox.
+            '''
         return (None, msg)
     elif type in ('run', 'dev'):
         if base:
-            vbox_import_image(base, name, output,
-                              verbose=verbose,
-                              memory=memory,
-                              disk_size=disk_size)
+            vbox_import_image(base, name,
+                              verbose=verbose)
         vbox = VBoxMachine(name)
         vbox.install(build_file=build_file,
                      verbose=verbose,
                      gui=gui)
+        vbox.stop(verbose=verbose)
+        vbox.export(output=output, verbose=verbose)
+        vbox.remove(delete=True, verbose=verbose)
 
         return (vbox.image_id, None)
 
@@ -194,7 +207,7 @@ def create_user_image(base_image,
             "-delete option to remove associated files (be sure of what you "
             "do). If it is running, you can switch it off with : VBoxManage "
             "controlvm '{0}' poweroff".format(vm_name))
-    vbox_import_image(base_image, vm_name, output, verbose=verbose)
+    vbox_import_image(base_image, vm_name, verbose=verbose)
     vm.start_and_wait(verbose=verbose)
     if verbose:
         six.print_('Copying', install_dir, 'to /casa/install in VM',
@@ -205,7 +218,9 @@ def create_user_image(base_image,
                 "then source /casa/install/bin/bv_env.sh /casa/install\\; fi' "
                 "/home/brainvisa/.bashrc")
     vm.run_user('echo "%s" > /casa/image_id' % vm.image_id)
-    # vm.remove(verbose=verbose)
+    vm.stop(verbose=verbose)
+    vm.export(output=output, verbose=verbose)
+    vm.remove(delete=True, verbose=verbose)
 
     return (vm.image_id, None)
 
@@ -316,15 +331,16 @@ class VBoxMachine:
             else:
                 raise RuntimeError('Failed to stop VM {0}'.format(self.name))
 
-    def remove(self, verbose=None):
+    def remove(self, delete=False, verbose=None):
         '''
-        Remove a VM from VirtualBox without deleting the image file
+        Remove a VM from VirtualBox, delete parameter allows to control the
+        deletion of associated files.
         '''
         if self.exists():
             self.stop(verbose=verbose)
             if verbose:
-                six.print_('Removing', self.name,
-                           file=verbose, flush=True)
+                six.print_(('Delete' if delete else 'Unregister'), 'VM',
+                           self.name, file=verbose, flush=True)
 
             vbox_manage(['unregistervm', self.name])
 
@@ -456,11 +472,26 @@ class VBoxMachine:
             step(base_dir=osp.dirname(build_file),
                  builder=self)
 
+    def export(self, output, verbose=None):
+        """Export VM to OVA format"""
 
-def vbox_import_image(image, vbox_machine, output,
-                      verbose=None,
-                      memory='8192',
-                      disk_size='131072'):
+        if verbose:
+            six.print_('Exporting', self.name, 'to', output,
+                       file=verbose, flush=True)
+        vbox_manage(['export', self.name, '-o', output, '--ovf20'])
+
+
+def vbox_import_image(image, vbox_machine, verbose=None):
+    if verbose:
+        six.print_('Importing', image, 'to', vbox_machine,
+                   file=verbose, flush=True)
+    vbox_manage(['import', image, '--vsys', '0', '--vmname', vbox_machine])
+
+
+def vbox_import_vdi(image, vbox_machine, output,
+                    verbose=None,
+                    memory='8192',
+                    disk_size='131072'):
     if verbose:
         six.print_('Copying', image, 'to', output,
                    file=verbose, flush=True)
