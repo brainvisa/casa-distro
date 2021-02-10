@@ -589,6 +589,23 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
         raise NotImplementedError('run command is not implemented for Docker')
     else:
         raise ValueError('Invalid container type: {0}'.format(container_type))
+
+    # check image compatibility
+    if image is not None:
+        eimage = image
+    else:
+        eimage = config.get('image')
+    cid = config.get('image_id')
+    if os.path.exists(eimage + '.json') and cid:
+        with open(eimage + '.json') as f:
+            image_meta = json.load(f)
+
+        if cid != image_meta.get('md5'):
+            compat = image_meta.get('compatibility', [])
+            if cid not in compat:
+                raise ValueError('The selected image is incompatible with the '
+                                 'environment to run')
+
     env = (env.copy() if env else {})
     branch = config.get('branch')
     if branch:

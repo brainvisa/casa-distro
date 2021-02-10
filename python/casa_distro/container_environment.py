@@ -194,6 +194,12 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
         environment['name'] = '{}-{}'.format(environment['distro'],
                                              time.strftime('%Y%m%d'))
 
+    # keep image ID in metadata
+    if osp.exists(environment['image'] + '.json'):
+        with open(environment['image'] + '.json') as f:
+            image_meta = json.load(f)
+        environment['image_id'] = image_meta.get('md5')
+
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),

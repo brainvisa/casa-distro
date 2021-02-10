@@ -378,6 +378,9 @@ def create_base_image(type,
         metadata['origin'] = origin
     elif type == 'system':
         metadata['origin'] = os.path.basename(base)
+    if type == 'dev':
+        metadata['origin_run'] = base_metadata['md5']
+    metadata['compatibility'] = []
 
     if verbose:
         print('Creating', output, file=verbose)
@@ -626,10 +629,28 @@ def create_user_image(
         'version': version,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
+        'origin_dev': config.get('md5'),
     }
     base_image = base_image.format(base_directory=base_directory,
                                    extension=extension,
                                    **metadata)
+    with open('%s.json' % base_image) as f:
+        base_metadata = json.load(f)
+    metadata['origin_run'] = base_metadata.get('md5')
+
+    # check whether the dev environment image is compatibe with the base run
+    # image
+    if 'origin_run' not in config:
+        print('warning, dev image does not have run image info. '
+              'Cannot check consistency.', file=sys.stderr)
+    else:
+        if metadata['origin_run'] != config.get('origin_run'):
+            # not the same: smells rotten but the run image may be compatibe
+            # with the (older) used for the dev image
+            compat = base_metadata.get('compatibility', [])
+            if config.get('origin_run') not in compat:
+                raise ValueError(
+                    'The base run image is not compatible with the dev image')
 
     if install:
         install_targets = ['install-runtime']
