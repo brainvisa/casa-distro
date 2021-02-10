@@ -218,12 +218,8 @@ def create_base_image(type,
                       output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
                       container_type='singularity',
-                      memory='8192',
-                      disk_size='131072',
-                      gui='no',
-                      cleanup='yes',
-                      force='no',
-                      verbose=True):
+                      verbose=True,
+                      **kwargs):
     """Create a new virtual image
 
     Creating the casa-system image:
@@ -261,25 +257,10 @@ def create_base_image(type,
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
 
-    memory
-        default={memory_default}
+    {verbose}
 
-        For vbox container type only. Size in MiB of memory allocated for
-        virtual machine.
-
-    disk_size
-        default={disk_size_default}
-        For vbox container type only. Size in MiB of maximum disk size of
-        virtual machine.
-
-    gui
-        default={gui_default}
-
-        For vbox container type only. If value is "yes", "true" or "1", display
-        VirtualBox window.
-
-    cleanup
-        default={cleanup_default}
+    cleanup (allowed only if container_type=singularity)
+        default=yes
 
         If "no", "false" or "0", do not cleanup after a failure during image
         building. This may allow to debug a problem after the failure. For
@@ -287,19 +268,35 @@ def create_base_image(type,
           sudo singularity run --writable
           /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
 
-    force
-        default={force_default}
+    force (allowed only if container_type=singularity)
+        default=no
 
         If ``yes``, ``true`` or 1, erase existing image without asking any
         question.
 
-    {verbose}
+    memory (allowed only if container_type=vbox)
+        default=8192
 
+        Size in MiB of memory allocated for virtual machine.
+
+    video_memory (allowed only if container_type=vbox)
+        default=50
+
+        Size in MiB of video memory allocated for virtual machine.
+
+    disk_size (allowed only if container_type=vbox)
+        default=131072
+
+        For vbox container type only. Size in MiB of maximum disk size of
+        virtual machine.
+
+    gui (allowed only if container_type=vbox)
+        default=no
+
+        For vbox container type only. If value is "yes", "true" or "1", display
+        VirtualBox window.
     """
     verbose = verbose_file(verbose)
-    gui = boolean_value(gui)
-    cleanup = boolean_value(cleanup)
-    force = boolean_value(force)
 
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
@@ -309,7 +306,7 @@ def create_base_image(type,
         extension = 'sif'
     elif container_type == 'vbox':
         origin_extension = 'iso'
-        extension = 'vdi'
+        extension = 'ova'
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
@@ -400,12 +397,8 @@ def create_base_image(type,
     msg = module.create_image(base, base_metadata,
                               output, metadata,
                               build_file=build_file,
-                              cleanup=cleanup,
-                              force=force,
                               verbose=verbose,
-                              memory=memory,
-                              disk_size=disk_size,
-                              gui=gui)
+                              **kwargs)
     if msg:
         print(msg)
     elif osp.isfile(output):
@@ -455,7 +448,7 @@ def publish_base_image(type,
     if container_type == 'singularity':
         extension = 'sif'
     elif container_type == 'vbox':
-        extension = 'vdi'
+        extension = 'ova'
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
@@ -609,7 +602,7 @@ def create_user_image(
         extension = '.sif'
         module = casa_distro.singularity
     elif container_type == 'vbox':
-        extension = '.vdi'
+        extension = '.ova'
         module = casa_distro.vbox
     else:
         raise ValueError('Unsupported container type: {0}'.format(

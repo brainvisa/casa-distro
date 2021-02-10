@@ -15,6 +15,7 @@ import getpass
 
 from . import six
 from .image_builder import get_image_builder
+from .log import boolean_value
 
 
 MINIMUM_SINGULARITY_VERSION = (3, 0, 0)
@@ -110,9 +111,12 @@ def _singularity_build_command(cleanup=True, force=False, fakeroot=True):
 def create_image(base, base_metadata,
                  output, metadata,
                  build_file,
-                 cleanup,
-                 force,
-                 verbose, **kwargs):
+                 cleanup='yes',
+                 force='no',
+                 verbose=None):
+    cleanup = boolean_value(cleanup)
+    force = boolean_value(force)
+
     type = metadata['type']
     if type == 'system':
         shutil.copy(base, output)
