@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import tempfile
 import getpass
+import uuid
 
 from . import six
 from .image_builder import get_image_builder
@@ -32,6 +33,8 @@ class RecipeBuilder:
         self.tmp_dir = None
         self.user = None
         self.sections = {}
+        # identify image/build with a unique identifier
+        self.image_id = str(uuid.uuid4())
 
     def run_user(self, command):
         '''
@@ -113,6 +116,11 @@ def create_image(base, base_metadata,
                  cleanup,
                  force,
                  verbose, **kwargs):
+    '''
+    Returns
+    -------
+    uuid, msg: tuple
+    '''
     type = metadata['type']
     if type == 'system':
         shutil.copy(base, output)
@@ -205,6 +213,8 @@ Bootstrap: localimage
                 print(file=sys.stderr)
             raise
 
+        return (installer.image_id, None)
+
 
 def create_user_image(base_image,
                       dev_config,
@@ -213,6 +223,11 @@ def create_user_image(base_image,
                       force,
                       base_directory,
                       verbose):
+    '''
+    Returns
+    -------
+    uuid, msg: tuple
+    '''
     recipe = tempfile.NamedTemporaryFile(mode='wt')
     recipe.write('''\
 Bootstrap: localimage
@@ -270,6 +285,7 @@ Bootstrap: localimage
     rb.install_casa_distro('/casa/casa-distro')
     rb.run_user('touch /casa/install/share/brainvisa-share-*/'
                 'database-*.sqlite')
+    rb.run_user('echo "%s" > /casa/image_id' % rb.image_id)
     rb.write(recipe)
     recipe.flush()
 
@@ -283,6 +299,8 @@ Bootstrap: localimage
     # permission issue with --fakeroot and NFS root_squash.
     subprocess.check_call(build_command + [output, recipe.name],
                           cwd='/')
+
+    return (rb.image_id, None)
 
 
 _singularity_raw_version = None

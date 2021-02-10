@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import uuid
 
 import casa_distro.six as six
 from .image_builder import get_image_builder
@@ -23,7 +24,7 @@ def vbox_manage_command(cmd_options):
 
         executable = find_in_path('VBoxManage.exe')
         if executable is None:
-            executable = '\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe' 
+            executable = '\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe'
     else:
         executable = 'VBoxManage'
     return [executable] + cmd_options
@@ -80,26 +81,26 @@ def create_image(base, base_metadata,
             six.print_('Create Linux 64 bits virtual machine',
                        file=verbose, flush=True)
         vbox_manage(['createvm',
-                    '--name', name,
+                     '--name', name,
                      '--ostype', 'Ubuntu_64',
                      '--register'])
         if verbose:
             six.print_('Set memory to', memory, 'MiB and allow booting on DVD',
                        file=verbose, flush=True)
         vbox_manage(['modifyvm', name,
-                    '--memory', memory,
+                     '--memory', memory,
                      '--boot1', 'dvd',
                      '--nic1', 'nat'])
         if verbose:
             six.print_('Create a', disk_size, 'MiB system disk in', output,
                        file=verbose, flush=True)
         print('!!!', ['createmedium',
-                    '--filename', output,
-                     '--size', disk_size,
-                     '--format', 'VDI',
-                     '--variant', 'Standard'])
+                      '--filename', output,
+                      '--size', disk_size,
+                      '--format', 'VDI',
+                      '--variant', 'Standard'])
         vbox_manage(['createmedium',
-                    '--filename', output,
+                     '--filename', output,
                      '--size', disk_size,
                      '--format', 'VDI',
                      '--variant', 'Standard'])
@@ -107,7 +108,7 @@ def create_image(base, base_metadata,
             six.print_('Create a SATA controller in the VM',
                        file=verbose, flush=True)
         vbox_manage(['storagectl', name,
-                    '--name', '%s_SATA' % name,
+                     '--name', '%s_SATA' % name,
                      '--add', 'sata'])
         if verbose:
             six.print_('Attach the system disk to the machine',
@@ -130,7 +131,7 @@ def create_image(base, base_metadata,
                        file=verbose, flush=True)
         vbox_manage(['startvm', name])
 
-        return '''VirtualBox machine created. Now, perform the following steps:
+        msg = '''VirtualBox machine created. Now, perform the following steps:
         1) Perform Ubuntu minimal installation with an autologin account named
         "brainvisa" and with password "brainvisa"
 
@@ -157,6 +158,7 @@ def create_image(base, base_metadata,
         8) Configure the VM in VirualBox (especially 3D acceleration,
         processors and memory)
         '''
+        return (None, msg)
     elif type in ('run', 'dev'):
         if base:
             vbox_import_image(base, name, output,
@@ -167,9 +169,13 @@ def create_image(base, base_metadata,
         vbox.install(build_file=build_file,
                      verbose=verbose,
                      gui=gui)
+
+        return (vbox.image_id, None)
+
     else:
         raise NotImplementedError('Creation of image of type {0} is not yet '
                                   'implemented for VirtualBox'.format(type))
+
 
 def create_user_image(base_image,
                       dev_config,
@@ -198,7 +204,10 @@ def create_user_image(base_image,
     vm.run_user("/bin/sed -i '$a if [ -e /casa/install/bin/bv_env.sh ]\\; "
                 "then source /casa/install/bin/bv_env.sh /casa/install\\; fi' "
                 "/home/brainvisa/.bashrc")
+    vm.run_user('echo "%s" > /casa/image_id' % vm.image_id)
     # vm.remove(verbose=verbose)
+
+    return (vm.image_id, None)
 
 
 class VBoxMachine:
@@ -218,6 +227,8 @@ class VBoxMachine:
         self.user_password = 'brainvisa'
         self.root_password = 'brainvisa'
         self.tmp_dir = '/tmp/casa_distro'
+        # identify image/build with a unique identifier
+        self.image_id = str(uuid.uuid4())
 
     def exists(self):
         '''
@@ -279,8 +290,8 @@ class VBoxMachine:
         if info['VMState'] == 'poweroff':
             if verbose:
                 six.print_('Starting', self.name,
-                          'and waiting for it to be ready',
-                          file=verbose, flush=True)
+                           'and waiting for it to be ready',
+                           file=verbose, flush=True)
             self.start(gui=gui)
             command = self._run_user_command('echo')
             for i in range(attempts):
@@ -413,11 +424,9 @@ class VBoxMachine:
                          'copyto', '--target-directory', dest_dir,
                          source])
 
-
     def install_casa_distro(self, dest):
         """This is a no op because we do not use casa_distro with VirtualBox"""
         pass
-
 
     def install(self,
                 build_file,
@@ -440,7 +449,7 @@ class VBoxMachine:
         self.start_and_wait(verbose=verbose, gui=gui)
         self.run_root(
             'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
-        
+
         for step in image_builder.steps:
             if verbose:
                 print('Performing:', step.__doc__, file=verbose)

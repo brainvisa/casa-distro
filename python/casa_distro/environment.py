@@ -600,7 +600,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
         with open(eimage + '.json') as f:
             image_meta = json.load(f)
 
-        if cid != image_meta.get('md5'):
+        if cid != image_meta.get('image_id'):
             compat = image_meta.get('compatibility', [])
             if cid not in compat:
                 raise ValueError('The selected image is incompatible with the '

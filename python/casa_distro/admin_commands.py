@@ -382,7 +382,7 @@ def create_base_image(type,
     elif type == 'system':
         metadata['origin'] = os.path.basename(base)
     if type == 'dev':
-        metadata['origin_run'] = base_metadata['md5']
+        metadata['origin_run'] = base_metadata['image_id']
     metadata['compatibility'] = []
 
     if verbose:
@@ -400,22 +400,141 @@ def create_base_image(type,
     else:
         module = casa_distro.singularity
 
-    msg = module.create_image(base, base_metadata,
-                              output, metadata,
-                              build_file=build_file,
-                              cleanup=cleanup,
-                              force=force,
-                              verbose=verbose,
-                              memory=memory,
-                              disk_size=disk_size,
-                              gui=gui)
+    image_id, msg = module.create_image(base, base_metadata,
+                                        output, metadata,
+                                        build_file=build_file,
+                                        cleanup=cleanup,
+                                        force=force,
+                                        verbose=verbose,
+                                        memory=memory,
+                                        disk_size=disk_size,
+                                        gui=gui)
     if msg:
         print(msg)
     elif osp.isfile(output):
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
+        metadata['image_id'] = image_id
         json.dump(metadata, open(metadata_output, 'w'),
                   indent=4, separators=(',', ': '))
+
+
+def create_numbered_file(url, filename, metadata):
+    script = '''from __future__ import print_function
+import os, sys
+import json
+import glob
+import re
+import hashlib
+
+def file_hash(path, blocksize=2**20):
+    m = hashlib.md5()
+    with open(path, 'rb') as f:
+        while True:
+            buf = f.read(blocksize)
+            if not buf:
+                break
+            m.update(buf)
+    return m.hexdigest()
+
+def check_image(metadata, meta_filename):
+    'True if meta_filename is up-to-date'
+
+    if not os.path.exists(os.path.splitext(meta_filename)[0]):
+        return False
+    image_id = metadata['image_id']
+    with open(meta_filename) as f:
+        imeta = json.load(f)
+    if imeta.get('image_id') == image_id:
+        md5 = file_hash(os.path.splitext(meta_filename)[0])
+        if md5 == imeta['md5']:
+            return True
+    return False
+
+try:
+
+    filename = "%s"
+    metadata = %s
+    done = False
+    num = None
+
+    filename_base, ext = os.path.splitext(filename)
+    if ext == '.json':
+        filename_base, ext2 = os.path.splitext(filename_base)
+        ext = ''.join([ext2, ext])
+
+    filename_pattern = '%%s-%%%%s%%s' %% (filename_base, ext)
+
+    if os.path.exists(filename):
+        if check_image(metadata, filename):
+            print(filename)
+            print('-- up-to-date --')
+            sys.exit(0)
+
+        e = glob.glob(filename_pattern %% '*')
+        if e:
+            for en in e:
+                if check_image(metadata, en):
+                    print(en)
+                    print('-- up-to-date --')
+                    sys.exit(0)
+
+            nums = sorted(
+                [int(re.match(filename_pattern %% '([0-9]+)', x).group(1))
+                for x in e])
+            num = nums[-1] + 1
+        else:
+            num = 1
+
+    while not done:
+        if num is not None:
+            new_filename = filename_pattern %% str(num)
+        else:
+            new_filename = filename
+        try:
+            fd = os.open(new_filename, os.O_CREAT | os.O_EXCL)
+            os.close(fd)
+            done = True
+            print(new_filename)
+            with open(new_filename, 'w') as f:
+                json.dump(metadata, f)
+        except OSError:
+            if num is None:
+                num = 1
+            else:
+                num += 1
+
+finally:
+    os.unlink(sys.argv[0])
+''' % (filename, repr(metadata))
+
+    script_filename = tempfile.mkstemp()
+    os.close(script_filename[0])
+
+    try:
+
+        with open(script_filename[1], 'w') as f:
+            f.write(script)
+
+        cmd = ['ssh', url, 'tempfile']
+        remote_script_filename = subprocess.check_output(cmd).strip()
+
+        subprocess.check_call(['rsync',
+                               script_filename[1],
+                               '%s:%s' % (url, remote_script_filename)])
+
+        cmd = ['ssh', url]
+        cmd += ['python', remote_script_filename]
+
+        final_filename = subprocess.check_output(cmd).strip()
+        up_to_date = False
+        if final_filename.endswith('-- up-to-date --'):
+            up_to_date = True
+            final_filename = final_filename.split('\n')[0].strip()
+        return (final_filename, up_to_date)
+
+    finally:
+        os.unlink(script_filename[1])
 
 
 @command
@@ -470,8 +589,12 @@ def publish_base_image(type,
             # Raise appropriate error for non existing file
             open(image)
         elif len(images) > 1:
-            raise ValueError(
-                'Several image files found : {0}'.format(', '.join(images)))
+            # remove symlinks because they appear as duplicates
+            images = [im for im in images if not osp.islink(im)]
+            if len(images) > 1:
+                raise ValueError(
+                    'Several image files found : {0}'.format(
+                        ', '.join(images)))
         image = images[0]
 
     # Add image file md5 hash to JSON metadata file
@@ -482,8 +605,25 @@ def publish_base_image(type,
     json.dump(metadata, open(metadata_file, 'w'),
               indent=4, separators=(',', ': '))
 
+    url, remote_path = publish_url.split(':', 1)
+    remote_metadata_file = osp.join(remote_path, osp.basename(metadata_file))
+
+    final_metafile, up_to_date = create_numbered_file(
+        url, remote_metadata_file, metadata)
+    if up_to_date:
+        print('Image %s is up-to-date on the server'
+              % osp.basename(final_metafile))
+        return
+
+    final_imagefile = osp.splitext(final_metafile)[0]
+    image_path, image_base = osp.split(image)
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
-                           metadata_file, image, publish_url])
+                           image, '%s:%s' % (url, final_imagefile)])
+    # symlink numbered filename on local filesystem
+    if osp.basename(final_imagefile) != image_base:
+        os.symlink(image, osp.join(image_path, osp.basename(final_imagefile)))
+        os.symlink(metadata_file,
+                   osp.join(image_path, osp.basename(final_metafile)))
 
 
 @command
@@ -636,14 +776,14 @@ def create_user_image(
         'version': version,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
-        'origin_dev': config.get('md5'),
+        'origin_dev': config.get('image_id'),
     }
     base_image = base_image.format(base_directory=base_directory,
                                    extension=extension,
                                    **metadata)
     with open('%s.json' % base_image) as f:
         base_metadata = json.load(f)
-    metadata['origin_run'] = base_metadata.get('md5')
+    metadata['origin_run'] = base_metadata.get('image_id')
 
     # check whether the dev environment image is compatibe with the base run
     # image
@@ -736,19 +876,20 @@ def create_user_image(
         output_dir = osp.dirname(output)
         if not osp.exists(output_dir):
             os.makedirs(output_dir)
-        msg = module.create_user_image(base_image=base_image,
-                                       dev_config=config,
-                                       version=version,
-                                       output=output,
-                                       force=force,
-                                       base_directory=base_directory,
-                                       verbose=verbose)
+        image_id, msg = module.create_user_image(base_image=base_image,
+                                                 dev_config=config,
+                                                 version=version,
+                                                 output=output,
+                                                 force=force,
+                                                 base_directory=base_directory,
+                                                 verbose=verbose)
         if msg:
             print(msg)
 
         # Add image file md5 hash to JSON metadata file
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
+        metadata['image_id'] = image_id
         metadata['type'] = 'user'
         json.dump(metadata, open(metadata_file, 'w'),
                   indent=4, separators=(',', ': '))

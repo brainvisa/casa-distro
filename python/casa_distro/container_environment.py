@@ -195,10 +195,10 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
                                              time.strftime('%Y%m%d'))
 
     # keep image ID in metadata
-    if osp.exists(environment['image'] + '.json'):
-        with open(environment['image'] + '.json') as f:
-            image_meta = json.load(f)
-        environment['image_id'] = image_meta.get('md5')
+    if osp.exists('/casa/image_id'):
+        with open('/casa/image_id') as f:
+            image_id = f.readline().strip()
+        environment['image_id'] = image_id
 
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
@@ -342,6 +342,12 @@ used anymore, you may as well delete it if you wish.
                 raise ValueError('No image found')
     environment['image'] = image
     environment['name'] = name
+    # keep image ID in metadata
+    if osp.exists('/casa/image_id'):
+        with open('/casa/image_id') as f:
+            image_id = f.readline().strip()
+        environment['image_id'] = image_id
+
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
                             'casa_distro.json'), 'w'),

@@ -51,6 +51,7 @@ def copy_files(base_dir, builder):
     builder.copy_user(osp.join(base_dir, 'environment.sh'),
                       '/casa')
     builder.run_user('chmod a+rx /casa/environment.sh')
+    builder.run_user('echo "%s" > /casa/image_id' % builder.image_id)
 
     builder.copy_user(osp.join(base_dir, 'bashrc'),
                       '/casa')
