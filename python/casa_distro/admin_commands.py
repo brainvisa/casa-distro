@@ -537,7 +537,7 @@ finally:
 
         final_filename = num_output[0]
         num = num_output[1]
-        if not num:
+        if not num or num == 'None':
             num = 0
         up_to_date = False
         if len(num_output) >= 3 and num_output[2] == '-- up-to-date --':
