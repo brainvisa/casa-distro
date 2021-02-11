@@ -213,11 +213,12 @@ def singularity_debs(directory):
 
 @command
 def create_base_image(type,
-                      name='casa-{type}-{system}',
+                      name='casa-{type}-{system}-{image_version}',
                       base=None,
                       output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
                       container_type='singularity',
+                      image_version='1.0',
                       verbose=True,
                       **kwargs):
     """Create a new virtual image
@@ -256,6 +257,11 @@ def create_base_image(type,
 
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
+
+    image_version
+        default={image_version_default}
+
+        Version (or branch) of the image
 
     {verbose}
 
@@ -350,7 +356,7 @@ def create_base_image(type,
         version = '.'.join(version.split('.')[:2])
         system = '%s-%s' % (distro, version)
 
-    name = name.format(type=type, system=system)
+    name = name.format(type=type, system=system, image_version=image_version)
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            system=system,
                                                            extension=extension)
@@ -372,6 +378,7 @@ def create_base_image(type,
         'system': system,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
+        'image_version': image_version,
     }
     origin = base_metadata.get('origin')
     if origin:
