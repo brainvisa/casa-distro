@@ -197,8 +197,8 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
     # keep image ID in metadata
     if osp.exists('/casa/image_id'):
         with open('/casa/image_id') as f:
-            image_id = f.readline().strip()
-        environment['image_id'] = image_id
+            image_id = json.load(f)
+        environment['image_id'] = image_id['image_id']
 
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',
@@ -345,8 +345,9 @@ used anymore, you may as well delete it if you wish.
     # keep image ID in metadata
     if osp.exists('/casa/image_id'):
         with open('/casa/image_id') as f:
-            image_id = f.readline().strip()
-        environment['image_id'] = image_id
+            image_id = json.load(f)
+        environment['image_id'] = image_id['image_id']
+        environment['image_version'] = image_id['image_version']
 
     json.dump(environment,
               open(osp.join(setup_dir, 'conf',

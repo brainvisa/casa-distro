@@ -390,32 +390,53 @@ def update_container_image(container_type, image_name, url,
         return  # don't update
 
     json_url = '%s.json' % remote_image
-    try:
-        f = None
-        try:
-            f = urlopen(json_url)
-            if f.getcode() == 404:
-                return
-            metadata = json.loads(f.read().decode('utf-8'))
-        except Exception as e:
-            print('%s could not be read:' % json_url, e)
-            return
-    finally:
-        if f:
-            f.close()
-        del f
 
-    if image not in url_listdir(url):
-        if image.endswith('.simg') and not verbose:
-            # probably a casa-distro 2 image: don't even warn
-            return
-        print('File {image_name} does not exist and cannot be downloaded '
-              'from {remote_image}'.format(
-                  image_name=image, remote_image=remote_image))
+    # retreive list of compatible images
+    images = url_listdir(osp.dirname(json_url))
+    image_url_base, image_ext = osp.splitext(remote_image)
+    image_url_pattern = re.compile(
+        osp.basename(image_url_base)
+        + '(-([0-9]+))?\%s\.json' % image_ext)  # noqa: W605
+    images_dict = {}
+    for image_url in images:
+        m = image_url_pattern.match(image_url)
+        if m:
+            images_dict[m.group(2)] = '%s/%s' % (osp.dirname(json_url),
+                                                 image_url)
+
+    local_metadata = {}
+    if osp.exists(metadata_file):
+        local_metadata = json.load(open(metadata_file))
+    image_version = local_metadata.get('image_version')
+
+    for num in reversed(sorted(images_dict.keys())):
+        json_url = images_dict[num]
+        try:
+            f = None
+            try:
+                f = urlopen(json_url)
+                if f.getcode() == 404:
+                    continue
+                metadata = json.loads(f.read().decode('utf-8'))
+            except Exception as e:
+                print('%s could not be read:' % json_url, e)
+        finally:
+            if f:
+                f.close()
+            del f
+        if image_version and metadata.get('image_version') != image_version:
+            # mispatching
+            continue
+        # check compatibility ?
+        break
+    else:
+        print('no matching image found for', image)
         return
 
+    remote_image = json_url[:-5]
+    # image_name = osp.join(base_directory, osp.basename(remote_image))
+
     if not force and osp.exists(metadata_file):
-        local_metadata = json.load(open(metadata_file))
         if local_metadata.get('md5') == metadata.get('md5') \
                 and local_metadata.get('size') == metadata.get('size') \
                 and osp.isfile(image_name) \
@@ -601,10 +622,14 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
             image_meta = json.load(f)
 
         if cid != image_meta.get('image_id'):
-            compat = image_meta.get('compatibility', [])
-            if cid not in compat:
-                raise ValueError('The selected image is incompatible with the '
-                                 'environment to run')
+            # check if image_version matches
+            civ = config.get('image_version')
+            if not civ and civ != image_meta.get('image_version'):
+                # not the same version: check compatibility list
+                compat = image_meta.get('compatibility', [])
+                if cid not in compat:
+                    raise ValueError('The selected image is incompatible with '
+                                     'the environment to run')
 
     env = (env.copy() if env else {})
     branch = config.get('branch')
