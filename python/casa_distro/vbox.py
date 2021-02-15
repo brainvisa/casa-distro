@@ -176,6 +176,7 @@ def create_image(base, base_metadata,
             vbox_import_image(base, name,
                               verbose=verbose)
         vbox = VBoxMachine(name)
+        vbox.image_version = metadata['image_version']
         vbox.install(build_file=build_file,
                      verbose=verbose,
                      gui=gui)
@@ -217,7 +218,8 @@ def create_user_image(base_image,
     vm.run_user("/bin/sed -i '$a if [ -e /casa/install/bin/bv_env.sh ]\\; "
                 "then source /casa/install/bin/bv_env.sh /casa/install\\; fi' "
                 "/home/brainvisa/.bashrc")
-    vm.run_user('echo "%s" > /casa/image_id' % vm.image_id)
+    vm.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
+                % vm.image_id)
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
     vm.remove(delete=True, verbose=verbose)

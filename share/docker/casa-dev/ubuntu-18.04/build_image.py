@@ -25,7 +25,10 @@ def copying_files(base_dir, builder):
     builder.copy_user(osp.join(base_dir, 'dev-environment.sh'),
                       '/casa')
     builder.run_user('chmod a+rx /casa/dev-environment.sh')
-    builder.run_user('echo "%s" > /casa/image_id' % builder.image_id)
+    builder.run_user('echo "{\\"image_id\\": \\"%s\\", '
+                     '\\"image_version\\": \\"%s\\"}"'
+                     ' > /casa/image_id' % (builder.image_id,
+                                            builder.image_version))
 
     builder.copy_root(osp.realpath(osp.join(base_dir, 'svn')),
                       '/usr/local/bin')

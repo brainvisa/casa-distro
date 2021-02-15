@@ -182,6 +182,7 @@ Bootstrap: localimage
         image_builder = get_image_builder(build_file)
 
         installer = RecipeBuilder(output)
+        installer.image_version = metadata['image_version']
         for step in image_builder.steps:
             if verbose:
                 print('Performing:', step.__doc__, file=verbose)
@@ -288,7 +289,8 @@ Bootstrap: localimage
     rb.install_casa_distro('/casa/casa-distro')
     rb.run_user('touch /casa/install/share/brainvisa-share-*/'
                 'database-*.sqlite')
-    rb.run_user('echo "%s" > /casa/image_id' % rb.image_id)
+    rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
+                % rb.image_id)
     rb.write(recipe)
     recipe.flush()
 

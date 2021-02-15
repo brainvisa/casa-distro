@@ -213,11 +213,12 @@ def singularity_debs(directory):
 
 @command
 def create_base_image(type,
-                      name='casa-{type}-{system}',
+                      name='casa-{type}-{system}-{image_version}',
                       base=None,
                       output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
                       container_type='singularity',
+                      image_version='1.0',
                       verbose=True,
                       **kwargs):
     """Create a new virtual image
@@ -256,6 +257,11 @@ def create_base_image(type,
 
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
+
+    image_version
+        default={image_version_default}
+
+        Version (or branch) of the image
 
     {verbose}
 
@@ -350,7 +356,7 @@ def create_base_image(type,
         version = '.'.join(version.split('.')[:2])
         system = '%s-%s' % (distro, version)
 
-    name = name.format(type=type, system=system)
+    name = name.format(type=type, system=system, image_version=image_version)
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            system=system,
                                                            extension=extension)
@@ -372,6 +378,7 @@ def create_base_image(type,
         'system': system,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
+        'image_version': image_version,
     }
     origin = base_metadata.get('origin')
     if origin:
@@ -461,20 +468,23 @@ try:
     if os.path.exists(filename):
         if check_image(metadata, filename):
             print(filename)
+            print()
             print('-- up-to-date --')
             sys.exit(0)
 
         e = glob.glob(filename_pattern %% '*')
         if e:
-            for en in e:
+            nums = sorted(
+                [int(re.match(filename_pattern %% '([0-9]+)', x).group(1))
+                 for x in e])
+
+            for en, i in zip(e, nums):
                 if check_image(metadata, en):
                     print(en)
+                    print(i)
                     print('-- up-to-date --')
                     sys.exit(0)
 
-            nums = sorted(
-                [int(re.match(filename_pattern %% '([0-9]+)', x).group(1))
-                for x in e])
             num = nums[-1] + 1
         else:
             num = 1
@@ -489,8 +499,10 @@ try:
             os.close(fd)
             done = True
             print(new_filename)
+            print(num)
+            metadata['build_number'] = num
             with open(new_filename, 'w') as f:
-                json.dump(metadata, f)
+                json.dump(metadata, f, indent=4, separators=(',', ': '))
         except OSError:
             if num is None:
                 num = 1
@@ -519,12 +531,18 @@ finally:
         cmd = ['ssh', url]
         cmd += ['python', remote_script_filename]
 
-        final_filename = subprocess.check_output(cmd).strip()
+        num_output = [x.strip()
+                      for x in
+                      subprocess.check_output(cmd).strip().split('\n')]
+
+        final_filename = num_output[0]
+        num = num_output[1]
+        if not num or num == 'None':
+            num = 0
         up_to_date = False
-        if final_filename.endswith('-- up-to-date --'):
+        if len(num_output) >= 3 and num_output[2] == '-- up-to-date --':
             up_to_date = True
-            final_filename = final_filename.split('\n')[0].strip()
-        return (final_filename, up_to_date)
+        return (final_filename, int(num), up_to_date)
 
     finally:
         os.unlink(script_filename[1])
@@ -595,18 +613,20 @@ def publish_base_image(type,
     metadata = json.load(open(metadata_file))
     metadata['size'] = os.stat(image).st_size
     metadata['md5'] = file_hash(image)
-    json.dump(metadata, open(metadata_file, 'w'),
-              indent=4, separators=(',', ': '))
 
     url, remote_path = publish_url.split(':', 1)
     remote_metadata_file = osp.join(remote_path, osp.basename(metadata_file))
 
-    final_metafile, up_to_date = create_numbered_file(
+    final_metafile, num, up_to_date = create_numbered_file(
         url, remote_metadata_file, metadata)
     if up_to_date:
         print('Image %s is up-to-date on the server'
               % osp.basename(final_metafile))
         return
+    metadata['build_number'] = num
+
+    json.dump(metadata, open(metadata_file, 'w'),
+              indent=4, separators=(',', ': '))
 
     final_imagefile = osp.splitext(final_metafile)[0]
     image_path, image_base = osp.split(image)
