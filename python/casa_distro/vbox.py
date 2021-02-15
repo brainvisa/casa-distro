@@ -341,8 +341,10 @@ class VBoxMachine:
             if verbose:
                 six.print_(('Delete' if delete else 'Unregister'), 'VM',
                            self.name, file=verbose, flush=True)
-
-            vbox_manage(['unregistervm', self.name])
+            cmd = ['unregistervm', self.name]
+            if delete:
+                cmd.append('--delete')
+            vbox_manage(cmd)
 
     def _run_user_command(self, command):
         '''
