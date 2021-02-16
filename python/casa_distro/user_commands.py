@@ -375,7 +375,7 @@ def setup_dev(distro='opensource',
         System to use with this environment. By default, it uses the first
         supported system of the selected distro.
     image_version
-        default={image_version_deault}
+        default={image_version_default}
         developer image version
     name
         default={name_default}
