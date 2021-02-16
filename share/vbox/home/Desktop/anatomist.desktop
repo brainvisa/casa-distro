@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Anatomist
+Comment=Launch Anatomist
+Terminal=false
+Exec=/casa/install/bin/bv_env anatomist
+# The content of the following pattern will be replaced by a real file name by
+# casa-distro when copying this file in the virtual image.
+Icon={install_dir}/share/axon-*/icons/anaIcon_small.png

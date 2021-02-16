@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+import configparser
+import glob
 import os
 import os.path as osp
 import re
@@ -210,6 +212,26 @@ def create_user_image(base_image,
             "controlvm '{0}' poweroff".format(vm_name))
     vbox_import_image(base_image, vm_name, verbose=verbose)
     vm.start_and_wait(verbose=verbose)
+    # Copy desktop shortcut files after finding the appropriate share directoy
+    # containing icon files.
+    tmp = tempfile.mkdtemp()
+    try:
+        d = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
+                     'share', 'vbox', 'home', 'Desktop')
+        for i in os.listdir(d):
+            c = configparser.ConfigParser()
+            c.optionxform = str
+            c.read_file(open(osp.join(d, i)))
+            icon = glob.glob(c['Desktop Entry']['Icon'].format(
+                install_dir=install_dir))[0]
+            c['Desktop Entry']['Icon'] = icon.replace(install_dir,
+                                                      '/casa/install')
+            f = osp.join(tmp, i)
+            c.write(open(f, 'w'))
+            vm.copy_user(f, '/home/brainvisa/Desktop')
+    finally:
+        shutil.rmtree(tmp)
+
     if verbose:
         six.print_('Copying', install_dir, 'to /casa/install in VM',
                    file=verbose, flush=True)
@@ -220,6 +242,7 @@ def create_user_image(base_image,
                 "/home/brainvisa/.bashrc")
     vm.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                 % vm.image_id)
+
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
     vm.remove(delete=True, verbose=verbose)
