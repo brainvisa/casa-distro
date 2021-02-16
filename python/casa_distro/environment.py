@@ -319,7 +319,8 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
     If you with to trigger the environment-driven mode without filtering, just
     select "*" as one of the environment filter variables.
     """
-    if filter.get('name') or filter.get('system') or filter.get('distro') \
+    if filter.get('name') or filter.get('system') \
+            or filter.get('image_version') or filter.get('distro') \
             or filter.get('branch') or filter.get('type'):
         # select by environment
         for config in iter_environments(base_directory,
@@ -327,6 +328,8 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
                                         distro=filter.get('distro'),
                                         branch=filter.get('branch'),
                                         system=filter.get('system'),
+                                        image_version=filter.get(
+                                            'image_version'),
                                         name=filter.get('name'),
                                         image=filter.get('image')):
             image = (config['container_type'], config['image'])

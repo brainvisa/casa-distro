@@ -79,8 +79,15 @@ def create_environment_bin_commands(source, dest):
 
 def download_install(install_dir, distro, version, url):
     system = os.environ['CASA_SYSTEM']
+    image_version = ''
+    if osp.exists('/casa/image_id'):
+        with open('/casa/image_id') as f:
+            image_id = json.load(f)
+        image_version = image_id.get('image_version')
+    if image_version is None:
+        image_version = system
     distro_url = osp.join(url, version, distro, system, '%s-%s-%s.zip'
-                          % (distro, version, system))
+                          % (distro, version, image_version))
     print('download:', distro_url)
     local_zip = osp.join('/tmp', osp.basename(distro_url))
     json_url = '%s.json' % distro_url
@@ -220,15 +227,23 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
 
 
 def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
-              system=None, image=None, name=None):
+              system=None, image_version=None, image=None, name=None):
     if not system:
         system = os.getenv('CASA_SYSTEM')
     if not system:
         system = \
             '-'.join(platform.linux_distribution()[:2]).lower()
+    if not image_version:
+        if osp.exists('/casa/image_id'):
+            with open('/casa/image_id') as f:
+                image_id = json.load(f)
+            image_version = image_id.get('image_version')
+    iver = image_version
+    if not image_version:
+        iver = system  # old nomenclature
 
     if name is None:
-        name = '-'.join([distro, branch, system])
+        name = '-'.join([distro, branch, iver])
 
     if not osp.exists(setup_dir):
         os.makedirs(setup_dir)
@@ -328,6 +343,7 @@ used anymore, you may as well delete it if you wish.
         'distro': distro,
         'type': 'dev',
         'system': system,
+        'image_version': image_version,
         'branch': branch,
         'container_type': 'singularity',
     })

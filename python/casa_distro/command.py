@@ -62,6 +62,10 @@ param_help = {
 {indent}default={system_default}
 
 {indent}If given, select environments having the given system name.''',
+    'image_version': ''':ref:`image_version`
+{indent}default={image_version_default}
+
+{indent}If given, select environments having the given image version.''',
     'name': ''':ref:`name <env_name>`
 {indent}default={name_default}
 
