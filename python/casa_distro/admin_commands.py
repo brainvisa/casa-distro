@@ -213,7 +213,7 @@ def singularity_debs(directory):
 
 @command
 def create_base_image(type,
-                      name='casa-{type}-{system}-{image_version}',
+                      name='casa-{type}-{image_version}',
                       base=None,
                       output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
