@@ -643,7 +643,7 @@ def publish_base_image(type,
 def create_user_image(
         version,
         name='{distro}-{version}',
-        base_image='{base_directory}/casa-run-{system}{extension}',
+        base_image='{base_directory}/casa-run-{system}-*{extension}',
         distro=None,
         branch=None,
         system=None,
@@ -791,9 +791,16 @@ def create_user_image(
         'creation_time': datetime.datetime.now().isoformat(),
         'origin_dev': config.get('image_id'),
     }
-    base_image = base_image.format(base_directory=base_directory,
-                                   extension=extension,
-                                   **metadata)
+    base_image_pattern = base_image.format(base_directory=base_directory,
+                                           extension=extension,
+                                           **metadata)
+    base_images = glob.glob(base_image_pattern)
+    if len(base_images) > 1:
+        raise ValueError('Found several images: {}'.format(', '.join(
+            base_images)))
+    elif not base_images:
+        raise ValueError('Cannot find file: {}'.format(base_image_pattern))
+    base_image = base_images[0]
     with open('%s.json' % base_image) as f:
         base_metadata = json.load(f)
     metadata['origin_run'] = base_metadata.get('image_id')
