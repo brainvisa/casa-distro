@@ -1097,7 +1097,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
         # Associate run environments to corresponding dev environment
         for i in range(len(run_configs)):
             config = run_configs[i]
-            key = (config['distro'], u'master', config['system'],
+            key = (config['distro'], config['branch'], config['system'],
                    config['image_version'])
             dev_config = dev_configs.get(key)
             if dev_config is None:
