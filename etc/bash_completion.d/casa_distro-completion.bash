@@ -121,7 +121,7 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
-    gui|verbose|force|root|install|install_doc|install_test|generate|zip|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests|full|rw_install)
+    gui|verbose|force|root|install|install_doc|install_test|generate|zip|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests|full|rw_install|cleanup)
         COMPREPLY=($(compgen -W "True False true false 1 0 yes no Yes No" -- "${word}"))
         ;;
     opengl)
@@ -135,6 +135,12 @@ function _complete_casa_distro_option_()
         ;;
     format)
         COMPREPLY=($(compgen -W "text rst" -- "${word}"))
+        ;;
+    action)
+        COMPREPLY=($(compgen -W "next all casa_dir copy_files apt_dependencies pip_dependencies compiled_dependencies cleanup_build_dependencies cleanup_files copying_files apt_dev_dependencies fix_wsl2 pip_dev_dependencies compiled_dev_dependencies install_casa_distro casa_dev_components cleanup" -- "${word}"))
+        ;;
+    bv_maker_steps)
+        COMPREPLY=($(compgen -W "info status sources configure build doc test pack install_pack test_pack testref testref_pack" -- "${word}"))
         ;;
     esac
 }
@@ -292,7 +298,7 @@ function _complete_casa_distro_()
             ;;
         bv_maker)
             # use casa-distro options first
-            COMPREPLY1=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
+            COMPREPLY1=($(compgen -W "type= distro= branch= system= image_version= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             # delegate to bv_maker completion
             COMP_WORDS=("${COMP_WORDS[@]:1}")
             COMP_CWORD=$(( COMP_CWORD - 1 ))
@@ -303,34 +309,34 @@ function _complete_casa_distro_()
             COMPREPLY=($(compgen -W "distro= version= name= container_type= image= writable= system= base_directory= url= output= force= verbose=" -- "${word}"))
             ;;
         setup_dev)
-            COMPREPLY=($(compgen -W "distro= name= container_type= image= writable= branch= system= base_directory= url= output= force= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "distro= name= container_type= image= writable= branch= system= image_version= base_directory= url= output= force= verbose=" -- "${word}"))
             ;;
         list)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= verbose= json=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= version= name= base_directory= verbose= json=" -- "${word}"))
             ;;
         list_images)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= image= base_directory= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= version= name= image= base_directory= verbose=" -- "${word}"))
             ;;
         mrun)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= version= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         run)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= version= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         shell)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= version= base_directory= gui= opengl= root= image= cwd= env= container_options= verbose=" -- "${word}"))
             ;;
         update)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= writable= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= base_directory= writable= verbose=" -- "${word}"))
             ;;
         pull_image)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= image= url= force= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= version= base_directory= image= url= force= verbose=" -- "${word}"))
             ;;
         delete)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= base_directory= interactive=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= version= base_directory= interactive=" -- "${word}"))
             ;;
         clean_images)
-            COMPREPLY=($(compgen -W "base_directory= image= distro= branch= system= name= type= verbose= interactive=" -- "${word}"))
+            COMPREPLY=($(compgen -W "base_directory= image= distro= branch= system= image_version= name= version= type= verbose= interactive=" -- "${word}"))
             ;;
         esac
         ;;
@@ -454,7 +460,7 @@ function _complete_casa_distro_admin_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help create_base_image publish_base_image create_user_image singularity_deb bbi_daily"
+    local cmd_list="help create_base_image publish_base_image create_user_image singularity_deb singularity_debs bbi_daily local_install"
     local opt_list="-h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -505,19 +511,25 @@ function _complete_casa_distro_admin_()
             COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
             ;;
         create_base_image)
-            COMPREPLY=($(compgen -W "type= name= base= output= container_type= memory= disk_size= gui= cleanup= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= name= base= output= container_type= image_version= force= memory= video_memory= disk_size= gui= cleanup= verbose=" -- "${word}"))
             ;;
         publish_base_image)
             COMPREPLY=($(compgen -W "type= image= container_type= verbose=" -- "${word}"))
             ;;
         create_user_image)
-            COMPREPLY=($(compgen -W "version= name= base_image= distro= branch= system= environment_name= container_type= force= base_directory= install= install_doc= install_test= generate= zip= upload= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "version= name= base_image= distro= branch= system= image_version= environment_name= container_type= output= force= base_directory= install= install_doc= install_test= generate= zip= upload= verbose=" -- "${word}"))
             ;;
         singularity_deb)
-            COMPREPLY=($(compgen -W "system= output= base= version= go_version=" -- "${word}"))
+            COMPREPLY=($(compgen -W "system= output= dockerhub= version= go_version=" -- "${word}"))
+            ;;
+        singularity_debs)
+            COMPREPLY=($(compgen -W "directory=" -- "${word}"))
             ;;
         bbi_daily)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= name= version= jenkins_server= jenkins_auth= update_casa_distro= update_base_images= bv_maker_steps= dev_tests= update_user_images= user_tests= base_directory= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= version= jenkins_server= jenkins_auth= jenkins_password= update_casa_distro= update_base_images= bv_maker_steps= dev_tests= update_user_images= user_tests= base_directory= verbose=" -- "${word}"))
+            ;;
+        local_install)
+            COMPREPLY=($(compgen -W "type= steps= system= log_file= action= user=" -- "${word}"))
             ;;
         esac
         ;;
@@ -559,7 +571,7 @@ function _complete_casa_container_()
             COMPREPLY=($(compgen -W "dir= rw_install= distro= version= url=" -- "${word}"))
             ;;
         setup_dev)
-            COMPREPLY=($(compgen -W "distro= branch= system= dir= name=" -- "${word}"))
+            COMPREPLY=($(compgen -W "distro= branch= system= image_version= dir= name=" -- "${word}"))
             ;;
         config_gui)
             COMPREPLY=($(compgen -W "" -- "${word}"))
