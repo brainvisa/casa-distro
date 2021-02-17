@@ -374,9 +374,7 @@ def setup_dev(distro='opensource',
     system
         System to use with this environment. By default, it uses the first
         supported system of the selected distro.
-    image_version
-        default={image_version_default}
-        developer image version
+    {image_version}
     name
         default={name_default}
         Name of the environment. No other environment must have the same name
@@ -649,7 +647,7 @@ def list_command(type=None, distro=None, branch=None, system=None,
 
 @command
 def run(type=None, distro=None, branch=None, system=None, image_version=None,
-        name=None, version=None,
+        version=None, name=None,
         base_directory=casa_distro_directory(),
         gui=True,
         opengl="auto",
@@ -724,7 +722,7 @@ def run(type=None, distro=None, branch=None, system=None, image_version=None,
 
 @command
 def pull_image(distro=None, branch=None, system=None, image_version=None,
-               name=None, type=None,
+               version=None, name=None, type=None,
                image='*', base_directory=casa_distro_directory(),
                url=default_download_url,
                force=False, verbose=None):
@@ -745,6 +743,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
     {branch}
     {system}
     {image_version}
+    {version}
     {name}
     {base_directory}
     {image}
@@ -763,6 +762,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
                                         distro=distro, branch=branch,
                                         system=system,
                                         image_version=image_version,
+                                        version=version,
                                         name=name, type=type,
                                         image=image))
 
@@ -788,7 +788,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
 
 @command
 def list_images(distro=None, branch=None, system=None, image_version=None,
-                name=None, type=None,
+                version=None, name=None, type=None,
                 image='*', base_directory=casa_distro_directory(),
                 verbose=None):
     '''List the locally installed container images.
@@ -807,6 +807,7 @@ def list_images(distro=None, branch=None, system=None, image_version=None,
     {branch}
     {system}
     {image_version}
+    {version}
     {name}
     {type}
     {image}
@@ -818,6 +819,7 @@ def list_images(distro=None, branch=None, system=None, image_version=None,
                                         distro=distro, branch=branch,
                                         system=system,
                                         image_version=image_version,
+                                        version=version,
                                         name=name, type=type,
                                         image=image))
 
@@ -1005,7 +1007,7 @@ def bv_maker(type='dev', distro=None, branch=None, system=None,
 
 @command
 def clean_images(distro=None, branch=None, system=None,
-                 image_version=None, name=None, type=None,
+                 image_version=None, version=None, name=None, type=None,
                  image=None, verbose=False,
                  base_directory=casa_distro_directory(), interactive=True):
     '''
@@ -1026,6 +1028,7 @@ def clean_images(distro=None, branch=None, system=None,
     {branch}
     {system}
     {image_version}
+    {version}
     {name}
     {type}
     {image}
@@ -1041,6 +1044,7 @@ def clean_images(distro=None, branch=None, system=None,
                                         distro=distro, branch=branch,
                                         system=system,
                                         image_version=image_version,
+                                        version=version,
                                         name=name, type=type,
                                         image=image))
 
@@ -1064,7 +1068,7 @@ def clean_images(distro=None, branch=None, system=None,
 
 @command
 def delete(type=None, distro=None, branch=None, system=None,
-           image_version=None, name=None,
+           image_version=None, version=None, name=None,
            base_directory=casa_distro_directory(),
            interactive=True):
     """
@@ -1083,6 +1087,7 @@ def delete(type=None, distro=None, branch=None, system=None,
     {branch}
     {system}
     {image_version}
+    {version}
     {name}
     {base_directory}
     interactive
@@ -1104,6 +1109,7 @@ def delete(type=None, distro=None, branch=None, system=None,
                                     branch=branch,
                                     system=system,
                                     image_version=image_version,
+                                    version=version,
                                     name=name):
         if interactive:
             confirm = interactive_input(
