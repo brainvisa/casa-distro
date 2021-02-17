@@ -404,8 +404,11 @@ def update_container_image(container_type, image_name, url,
     for image_url in images:
         m = image_url_pattern.match(image_url)
         if m:
-            images_dict[m.group(2)] = '%s/%s' % (osp.dirname(json_url),
-                                                 image_url)
+            if m.group(2) is None:
+                num = 0
+            else:
+                num = int(m.group(2))
+            images_dict[num] = '%s/%s' % (osp.dirname(json_url), image_url)
 
     local_metadata = {}
     if osp.exists(metadata_file):
@@ -428,7 +431,7 @@ def update_container_image(container_type, image_name, url,
                 f.close()
             del f
         if image_version and metadata.get('image_version') != image_version:
-            # mispatching
+            # mismatching
             continue
         # check compatibility ?
         break
