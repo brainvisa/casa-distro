@@ -643,7 +643,7 @@ def publish_base_image(type,
 def create_user_image(
         version,
         name='{distro}-{version}',
-        base_image='{base_directory}/casa-run-{system}{extension}',
+        base_image='{base_directory}/casa-run-{image_version}{extension}',
         distro=None,
         branch=None,
         system=None,
@@ -799,6 +799,10 @@ def create_user_image(
                                    **metadata)
     with open('%s.json' % base_image) as f:
         base_metadata = json.load(f)
+        if base_metadata.get('image_id') != config.get('origin_run'):
+            print('mismatching run images in dev metadata and the one found '
+                  'here.', file=sys.stderr)
+            # TODO check compatibility or/and look for another one
     metadata['origin_run'] = base_metadata.get('image_id')
 
     # check whether the dev environment image is compatibe with the base run
