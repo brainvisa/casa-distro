@@ -789,6 +789,7 @@ def create_user_image(
         'type': 'run',
         'distro': config['distro'],
         'system': config['system'],
+        'image_version': config['image_version'],
         'version': version,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
