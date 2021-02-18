@@ -1044,7 +1044,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
     os.environ['CASA_BASE_DIRECTORY'] = base_directory
 
     if jenkins_server:
-        # Import jenkins only if necessary to avoid  dependency
+        # Import jenkins only if necessary to avoid dependency
         # on requests module
         from casa_distro.jenkins import BrainVISAJenkins
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-import configparser
 import glob
 import os
 import os.path as osp
@@ -15,6 +14,13 @@ import uuid
 import casa_distro.six as six
 from .image_builder import get_image_builder
 from .log import boolean_value
+
+try:
+    import configparser
+except ImportError:
+    # configparser is only used in admin commands, we can work with user
+    # commands without it
+    configparser = None
 
 
 def vbox_manage_command(cmd_options):
