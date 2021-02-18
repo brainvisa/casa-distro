@@ -203,6 +203,12 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
             # hope the image was in the current directory, we cannot do better
             image = osp.join(os.getenv('SINGCWD'), sing_name)
             environment['image'] = image
+        print(
+            '** WARING **\n'
+            'We could not determine automatically from the container '
+            'where the container image is. Please edit the file '
+            '/casa/host/conf/casa_distro.json (in the container) and '
+            'fix the path to the image file on the host filesystem.')
     if not image:
         environment['image'] = '/unknown.sif'
     environment['name'] = osp.splitext(sing_name)[0]
@@ -368,6 +374,12 @@ used anymore, you may as well delete it if you wish.
                 # hope the image was in the current directory, we cannot
                 # do better
                 image = osp.join(os.getenv('SINGCWD'), sing_name)
+            print(
+                '** WARING **\n'
+                'We could not determine automatically from the container '
+                'where the container image is. Please edit the file '
+                '/casa/host/conf/casa_distro.json (in the container) and '
+                'fix the path to the image file on the host filesystem.')
         if not image:
             images = glob(osp.join(osp.expanduser(
                 '~/casa_distro/casa-dev-*.sif')))
