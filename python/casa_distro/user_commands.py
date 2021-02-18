@@ -239,7 +239,6 @@ def setup_user(distro=None,
 
     if distro is None or version is None or system is None:
         selected = None
-        selected_file = None
         for metadata_file in glob.glob(osp.join(base_directory,
                                                 'run', '*.json')):
             metadata = json.load(open(metadata_file))
@@ -252,7 +251,6 @@ def setup_user(distro=None,
                         'version and system to select only one')
                 metadata['image'] = metadata_file[:metadata_file.rfind('.')]
                 selected = metadata
-                selected_file = metadata_file
         if selected is None:
             raise ValueError(
                 'No release found. Please adjust, distro, version and system '
@@ -343,12 +341,13 @@ def setup_user(distro=None,
         verbose=verbose)
 
     # check / fix image name which may be wrong on mac/singularity 3 beta
-    with open(selected_file) as f:
+    conf_file = osp.join(output, 'conf', 'casa_distro.json')
+    with open(conf_file) as f:
         metadata = json.load(f)
     if metadata['image'] != image:
         print('Fixing image path in config. You can ignore the previous '
               'warning about it.')
-        with open(selected_file, 'w') as f:
+        with open(conf_file, 'w') as f:
             json.dump(metadata, f, indent=4, separators=(',', ': '))
 
 
