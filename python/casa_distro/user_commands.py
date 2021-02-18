@@ -345,7 +345,7 @@ def setup_user(distro=None,
     with open(conf_file) as f:
         metadata = json.load(f)
     if metadata['image'] != image:
-        print('Fixing image path in config. You can ignore the previous '
+        print('Fixing image path in config. You can ignore any previous '
               'warning about it.')
         with open(conf_file, 'w') as f:
             json.dump(metadata, f, indent=4, separators=(',', ': '))
@@ -576,7 +576,7 @@ def setup_dev(distro='opensource',
     with open(conf_file) as f:
         metadata = json.load(f)
     if metadata['image'] != image:
-        print('Fixing image path in config. You can ignore the previous '
+        print('Fixing image path in config. You can ignore any previous '
               'warning about it.')
         with open(conf_file, 'w') as f:
             json.dump(metadata, f, indent=4, separators=(',', ': '))
