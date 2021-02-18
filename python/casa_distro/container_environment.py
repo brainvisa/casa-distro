@@ -192,12 +192,21 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
     if 'CASA_VERSION' in os.environ:
         environment['version'] = os.environ['CASA_VERSION']
     environment['image'] = os.getenv('SINGULARITY_CONTAINER')
-    if not environment['image']:
+    # test consistency: on Mac there is a problem here
+    image = environment['image']
+    sing_name = os.getenv('SINGULARITY_NAME')
+    if image and osp.basename(image) != sing_name:
+        # on mac/singularity 3 beta, we get:
+        # SINGULARITY_CONTAINER=/dev/sda
+        # SINGULARITY_NAME=brainvisa-5.0.0-test10.sif
+        if 'SINGCWD' in os.environ:
+            # hope the image was in the current directory, we cannot do better
+            image = osp.join(os.getenv('SINGCWD'), sing_name)
+            environment['image'] = image
+    if not image:
         environment['image'] = '/unknown.sif'
-    if environment['image'] != '/unknown.sif':
-        environment['name'] = \
-            osp.splitext(osp.basename(environment['image']))[00]
-    else:
+    environment['name'] = osp.splitext(sing_name)[0]
+    if not environment['name']:
         environment['name'] = '{}-{}'.format(environment['distro'],
                                              time.strftime('%Y%m%d'))
 
@@ -349,6 +358,16 @@ used anymore, you may as well delete it if you wish.
     })
     if image is None:
         image = os.getenv('SINGULARITY_CONTAINER')
+        # test consistency: on Mac there is a problem here
+        sing_name = os.getenv('SINGULARITY_NAME')
+        if image and osp.basename(image) != sing_name:
+            # on mac/singularity 3 beta, we get:
+            # SINGULARITY_CONTAINER=/dev/sda
+            # SINGULARITY_NAME=brainvisa-5.0.0-test10.sif
+            if 'SINGCWD' in os.environ:
+                # hope the image was in the current directory, we cannot
+                # do better
+                image = osp.join(os.getenv('SINGCWD'), sing_name)
         if not image:
             images = glob(osp.join(osp.expanduser(
                 '~/casa_distro/casa-dev-*.sif')))
