@@ -213,7 +213,7 @@ def singularity_debs(directory):
 
 @command
 def create_base_image(type,
-                      name='casa-{type}-{system}-{image_version}',
+                      name='casa-{type}-{image_version}',
                       base=None,
                       output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
@@ -643,10 +643,11 @@ def publish_base_image(type,
 def create_user_image(
         version,
         name='{distro}-{version}',
-        base_image='{base_directory}/casa-run-{system}-*{extension}',
+        base_image='{base_directory}/casa-run-{image_version}{extension}',
         distro=None,
         branch=None,
         system=None,
+        image_version=None,
         environment_name=None,
         container_type=None,
         output=osp.join(
@@ -692,6 +693,7 @@ def create_user_image(
     {distro}
     {branch}
     {system}
+    {image_version}
     environment_name
         If given, select dev environment by its name.
     container_type
@@ -757,6 +759,7 @@ def create_user_image(
                                 distro=distro,
                                 branch=branch,
                                 system=system,
+                                image_version=image_version,
                                 name=environment_name,
                                 container_type='singularity')
     if container_type != 'vbox':
@@ -786,6 +789,7 @@ def create_user_image(
         'type': 'run',
         'distro': config['distro'],
         'system': config['system'],
+        'image_version': config['image_version'],
         'version': version,
         'container_type': container_type,
         'creation_time': datetime.datetime.now().isoformat(),
@@ -803,6 +807,10 @@ def create_user_image(
     base_image = base_images[0]
     with open('%s.json' % base_image) as f:
         base_metadata = json.load(f)
+        if base_metadata.get('image_id') != config.get('origin_run'):
+            print('mismatching run images in dev metadata and the one found '
+                  'here.', file=sys.stderr)
+            # TODO check compatibility or/and look for another one
     metadata['origin_run'] = base_metadata.get('image_id')
 
     # check whether the dev environment image is compatibe with the base run
@@ -883,6 +891,7 @@ def create_user_image(
             'size': os.stat(zip_archive).st_size,
             'distro': distro,
             'system': config['system'],
+            'image_version': config['image_version'],
             'version': version,
             'creation_time': datetime.datetime.now().isoformat(),
         }
@@ -944,7 +953,8 @@ def create_user_image(
 
 
 @command
-def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
+def bbi_daily(type=None, distro=None, branch=None, system=None,
+              image_version=None, name=None,
               version=None,
               jenkins_server=None,
               jenkins_auth='{base_directory}/jenkins_auth',
@@ -993,6 +1003,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     {distro}
     {branch}
     {system}
+    {image_version}
     {name}
     {version}
     jenkins_server
@@ -1040,7 +1051,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
     os.environ['CASA_BASE_DIRECTORY'] = base_directory
 
     if jenkins_server:
-        # Import jenkins only if necessary to avoid  dependency
+        # Import jenkins only if necessary to avoid dependency
         # on requests module
         from casa_distro.jenkins import BrainVISAJenkins
 
@@ -1078,14 +1089,17 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
                                         distro=distro,
                                         branch=branch,
                                         system=system,
+                                        image_version=image_version,
                                         name=name,
                                         version=version):
             if config['type'] == 'dev':
-                key = (config['distro'], config['branch'], config['system'])
+                key = (config['distro'], config['branch'], config['system'],
+                       config['image_version'])
                 if key in dev_configs:
                     raise RuntimeError('Several dev environment found for '
-                                       'distro={0}, branch={1} and '
-                                       'system={1}'.format(*key))
+                                       'distro={0}, branch={1}, '
+                                       'system={2} and '
+                                       'image_version={3}'.format(*key))
                 dev_configs[key] = config
                 images.add(config['image'])
             elif config['type'] == 'run':
@@ -1095,12 +1109,14 @@ def bbi_daily(type=None, distro=None, branch=None, system=None, name=None,
         # Associate run environments to corresponding dev environment
         for i in range(len(run_configs)):
             config = run_configs[i]
-            key = (config['distro'], u'master', config['system'])
+            key = (config['distro'], config['branch'], config['system'],
+                   config['image_version'])
             dev_config = dev_configs.get(key)
             if dev_config is None:
                 raise RuntimeError('No dev environment found for '
-                                   'distro={0}, branch={1} and '
-                                   'system={1}'.format(*key))
+                                   'distro={0}, branch={1}, '
+                                   'system={2} and '
+                                   'image_version={3}'.format(*key))
             run_configs[i] = (config, dev_config)
         dev_configs = list(dev_configs.values())
 

@@ -79,8 +79,15 @@ def create_environment_bin_commands(source, dest):
 
 def download_install(install_dir, distro, version, url):
     system = os.environ['CASA_SYSTEM']
+    image_version = ''
+    if osp.exists('/casa/image_id'):
+        with open('/casa/image_id') as f:
+            image_id = json.load(f)
+        image_version = image_id.get('image_version')
+    if image_version is None:
+        image_version = system
     distro_url = osp.join(url, version, distro, system, '%s-%s-%s.zip'
-                          % (distro, version, system))
+                          % (distro, version, image_version))
     print('download:', distro_url)
     local_zip = osp.join('/tmp', osp.basename(distro_url))
     json_url = '%s.json' % distro_url
@@ -185,12 +192,27 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
     if 'CASA_VERSION' in os.environ:
         environment['version'] = os.environ['CASA_VERSION']
     environment['image'] = os.getenv('SINGULARITY_CONTAINER')
-    if not environment['image']:
+    # test consistency: on Mac there is a problem here
+    image = environment['image']
+    sing_name = os.getenv('SINGULARITY_NAME')
+    if image and osp.basename(image) != sing_name:
+        # on mac/singularity 3 beta, we get:
+        # SINGULARITY_CONTAINER=/dev/sda
+        # SINGULARITY_NAME=brainvisa-5.0.0-test10.sif
+        if 'SINGCWD' in os.environ:
+            # hope the image was in the current directory, we cannot do better
+            image = osp.join(os.getenv('SINGCWD'), sing_name)
+            environment['image'] = image
+        print(
+            '** WARING **\n'
+            'We could not determine automatically from the container '
+            'where the container image is. Please edit the file '
+            '/casa/host/conf/casa_distro.json (in the container) and '
+            'fix the path to the image file on the host filesystem.')
+    if not image:
         environment['image'] = '/unknown.sif'
-    if environment['image'] != '/unknown.sif':
-        environment['name'] = \
-            osp.splitext(osp.basename(environment['image']))[00]
-    else:
+    environment['name'] = osp.splitext(sing_name)[0]
+    if not environment['name']:
         environment['name'] = '{}-{}'.format(environment['distro'],
                                              time.strftime('%Y%m%d'))
 
@@ -220,15 +242,23 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
 
 
 def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
-              system=None, image=None, name=None):
+              system=None, image_version=None, image=None, name=None):
     if not system:
         system = os.getenv('CASA_SYSTEM')
     if not system:
         system = \
             '-'.join(platform.linux_distribution()[:2]).lower()
+    if not image_version:
+        if osp.exists('/casa/image_id'):
+            with open('/casa/image_id') as f:
+                image_id = json.load(f)
+            image_version = image_id.get('image_version')
+    iver = image_version
+    if not image_version:
+        iver = system  # old nomenclature
 
     if name is None:
-        name = '-'.join([distro, branch, system])
+        name = '-'.join([distro, branch, iver])
 
     if not osp.exists(setup_dir):
         os.makedirs(setup_dir)
@@ -328,11 +358,28 @@ used anymore, you may as well delete it if you wish.
         'distro': distro,
         'type': 'dev',
         'system': system,
+        'image_version': image_version,
         'branch': branch,
         'container_type': 'singularity',
     })
     if image is None:
         image = os.getenv('SINGULARITY_CONTAINER')
+        # test consistency: on Mac there is a problem here
+        sing_name = os.getenv('SINGULARITY_NAME')
+        if image and osp.basename(image) != sing_name:
+            # on mac/singularity 3 beta, we get:
+            # SINGULARITY_CONTAINER=/dev/sda
+            # SINGULARITY_NAME=brainvisa-5.0.0-test10.sif
+            if 'SINGCWD' in os.environ:
+                # hope the image was in the current directory, we cannot
+                # do better
+                image = osp.join(os.getenv('SINGCWD'), sing_name)
+            print(
+                '** WARING **\n'
+                'We could not determine automatically from the container '
+                'where the container image is. Please edit the file '
+                '/casa/host/conf/casa_distro.json (in the container) and '
+                'fix the path to the image file on the host filesystem.')
         if not image:
             images = glob(osp.join(osp.expanduser(
                 '~/casa_distro/casa-dev-*.sif')))

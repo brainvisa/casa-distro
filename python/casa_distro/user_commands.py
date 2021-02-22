@@ -59,11 +59,11 @@ def display_summary(status):
 
     global_failed = False
     first_start = None
-    for (d, b, s), (es, bwf_dir) in six.iteritems(status):
+    for (d, b, s, iv), (es, bwf_dir) in six.iteritems(status):
         status = es.get_status_mapped()
         if status != '':
-            message = '%s distro=%s branch=%s system=%s: %s' % (status, d,
-                                                                b, s, bwf_dir)
+            message = '%s distro=%s branch=%s system=%s image_version=%s: %s' \
+                % (status, d, b, s, iv, bwf_dir)
             start = es.start_time
             if start:
                 if first_start is None:
@@ -340,16 +340,28 @@ def setup_user(distro=None,
         base_directory=base_directory,
         verbose=verbose)
 
+    # check / fix image name which may be wrong on mac/singularity 3 beta
+    conf_file = osp.join(output, 'conf', 'casa_distro.json')
+    with open(conf_file) as f:
+        metadata = json.load(f)
+    if metadata['image'] != image:
+        print('Fixing image path in config. You can ignore any previous '
+              'warning about it.')
+        metadata['image'] = image
+        with open(conf_file, 'w') as f:
+            json.dump(metadata, f, indent=4, separators=(',', ': '))
+
 
 @command
 def setup_dev(distro='opensource',
               branch='master',
               system=None,
-              name='{distro}-{branch}-{system}',
+              image_version='1.0',
+              name='{distro}-{branch}-{image_version}',
               container_type=None,
               writable=None,
               base_directory=casa_distro_directory(),
-              image='{base_directory}/casa-dev-{system}{extension}',
+              image='{base_directory}/casa-dev-{image_version}{extension}',
               url=default_download_url + '/{container_type}',
               output='{base_directory}/{name}',
               # vm_memory='8192',
@@ -373,6 +385,7 @@ def setup_dev(distro='opensource',
     system
         System to use with this environment. By default, it uses the first
         supported system of the selected distro.
+    {image_version}
     name
         default={name_default}
         Name of the environment. No other environment must have the same name
@@ -465,7 +478,7 @@ def setup_dev(distro='opensource',
 
     name = name.format(distro=distro['name'],
                        branch=branch,
-                       system=system)
+                       image_version=image_version)
     if verbose:
         print('name:', name,
               file=verbose)
@@ -479,6 +492,7 @@ def setup_dev(distro='opensource',
     image = image.format(distro=distro['name'],
                          branch=branch,
                          system=system,
+                         image_version=image_version,
                          base_directory=base_directory,
                          container_type=container_type,
                          extension=extension)
@@ -489,6 +503,7 @@ def setup_dev(distro='opensource',
     url = url.format(distro=distro['name'],
                      branch=branch,
                      system=system,
+                     image_version=image_version,
                      base_directory=base_directory,
                      container_type=container_type,
                      extension=extension)
@@ -499,6 +514,7 @@ def setup_dev(distro='opensource',
     output = output.format(distro=distro['name'],
                            branch=branch,
                            system=system,
+                           image_version=image_version,
                            base_directory=base_directory,
                            name=name,
                            extension=extension)
@@ -520,6 +536,7 @@ def setup_dev(distro='opensource',
         'distro': distro['name'],
         'branch': branch,
         'system': system,
+        'image_version': image_version,
         'container_type': container_type,
         'image': image,
     }
@@ -537,6 +554,8 @@ def setup_dev(distro='opensource',
         options.append('distro=%s' % distro['name'])
     if system:
         options.append('system=%s' % system)
+    if image_version:
+        options.append('image_version=%s' % image_version)
     if name:
         options.append('name=%s' % name)
 
@@ -552,6 +571,17 @@ def setup_dev(distro='opensource',
         container_options=None,
         base_directory=base_directory,
         verbose=verbose)
+
+    # check / fix image name which may be wrong on mac/singularity 3 beta
+    conf_file = osp.join(output, 'conf', 'casa_distro.json')
+    with open(conf_file) as f:
+        metadata = json.load(f)
+    if metadata['image'] != image:
+        print('Fixing image path in config. You can ignore any previous '
+              'warning about it.')
+        metadata['image'] = image
+        with open(conf_file, 'w') as f:
+            json.dump(metadata, f, indent=4, separators=(',', ': '))
 
 
 @command
@@ -573,7 +603,8 @@ def distro():
 # command name in the command-line is not the same as the corresponding
 # Python function.
 @command('list')
-def list_command(type=None, distro=None, branch=None, system=None, name=None,
+def list_command(type=None, distro=None, branch=None, system=None,
+                 image_version=None, name=None,
                  base_directory=casa_distro_directory(),
                  json='no',
                  verbose=None):
@@ -585,6 +616,7 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
     {distro}
     {branch}
     {system}
+    {image_version}
     {name}
     {base_directory}
     json
@@ -608,13 +640,14 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
                                     distro=distro,
                                     branch=branch,
                                     system=system,
+                                    image_version=image_version,
                                     name=name):
         if json_output:
             json_result.append(config)
         else:
             print(config['name'])
             for i in ('type', 'distro', 'branch', 'version', 'system',
-                      'container_type', 'image'):
+                      'image_version', 'container_type', 'image'):
                 v = config.get(i)
                 if v is not None:
                     print('  %s:' % i, config[i])
@@ -635,8 +668,8 @@ def list_command(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def run(type=None, distro=None, branch=None, system=None,
-        name=None, version=None,
+def run(type=None, distro=None, branch=None, system=None, image_version=None,
+        version=None, name=None,
         base_directory=casa_distro_directory(),
         gui=True,
         opengl="auto",
@@ -660,6 +693,7 @@ def run(type=None, distro=None, branch=None, system=None,
     {distro}
     {branch}
     {system}
+    {image_version}
     {name}
     {version}
     {base_directory}
@@ -681,6 +715,7 @@ def run(type=None, distro=None, branch=None, system=None,
                                 distro=distro,
                                 branch=branch,
                                 system=system,
+                                image_version=image_version,
                                 name=name,
                                 version=version)
     if container_options:
@@ -708,7 +743,8 @@ def run(type=None, distro=None, branch=None, system=None,
 
 
 @command
-def pull_image(distro=None, branch=None, system=None, name=None, type=None,
+def pull_image(distro=None, branch=None, system=None, image_version=None,
+               version=None, name=None, type=None,
                image='*', base_directory=casa_distro_directory(),
                url=default_download_url,
                force=False, verbose=None):
@@ -728,6 +764,8 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
     {distro}
     {branch}
     {system}
+    {image_version}
+    {version}
     {name}
     {base_directory}
     {image}
@@ -744,7 +782,10 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
     verbose = verbose_file(verbose)
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
-                                        system=system, name=name, type=type,
+                                        system=system,
+                                        image_version=image_version,
+                                        version=version,
+                                        name=name, type=type,
                                         image=image))
 
     if not images_to_update and image not in (None, '') and '*' not in image:
@@ -753,7 +794,7 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
             images_to_update = [(container_type, image)]
 
     if verbose:
-        print('images_to_update:\n %s'
+        print('images_to_update:\n%s'
               % '\n'.join(['%s\t: %s' % i for i in images_to_update]),
               file=verbose)
 
@@ -768,7 +809,8 @@ def pull_image(distro=None, branch=None, system=None, name=None, type=None,
 
 
 @command
-def list_images(distro=None, branch=None, system=None, name=None, type=None,
+def list_images(distro=None, branch=None, system=None, image_version=None,
+                version=None, name=None, type=None,
                 image='*', base_directory=casa_distro_directory(),
                 verbose=None):
     '''List the locally installed container images.
@@ -786,6 +828,8 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
     {distro}
     {branch}
     {system}
+    {image_version}
+    {version}
     {name}
     {type}
     {image}
@@ -795,14 +839,18 @@ def list_images(distro=None, branch=None, system=None, name=None, type=None,
     '''
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
-                                        system=system, name=name, type=type,
+                                        system=system,
+                                        image_version=image_version,
+                                        version=version,
+                                        name=name, type=type,
                                         image=image))
 
     print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
 
 
 @command
-def shell(type=None, distro=None, branch=None, system=None, name=None,
+def shell(type=None, distro=None, branch=None, system=None, image_version=None,
+          name=None,
           version=None,
           base_directory=casa_distro_directory(),
           gui=True,
@@ -823,6 +871,7 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
     {distro}
     {branch}
     {system}
+    {image_version}
     {name}
     {version}
     {base_directory}
@@ -836,6 +885,7 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
     {verbose}
     '''
     run(type=type, distro=distro, branch=branch, system=system,
+        image_version=image_version,
         name=name,
         version=version,
         base_directory=base_directory,
@@ -851,7 +901,8 @@ def shell(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def mrun(type=None, distro=None, branch=None, system=None, name=None,
+def mrun(type=None, distro=None, branch=None, system=None,
+         image_version=None, name=None,
          version=None,
          base_directory=casa_distro_directory(),
          gui=True,
@@ -879,6 +930,7 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
     {distro}
     {branch}
     {system}
+    {image_version}
     {name}
     {version}
     {base_directory}
@@ -913,6 +965,7 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
                                     distro=distro,
                                     branch=branch,
                                     system=system,
+                                    image_version=image_version,
                                     name=name,
                                     version=version):
 
@@ -936,7 +989,8 @@ def mrun(type=None, distro=None, branch=None, system=None, name=None,
 
 
 @command
-def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
+def bv_maker(type='dev', distro=None, branch=None, system=None,
+             image_version=None, name=None,
              base_directory=casa_distro_directory(),
              env=None, image=None, container_options=[], args_list=[],
              verbose=None):
@@ -950,6 +1004,7 @@ def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
     {distro}
     {branch}
     {system}
+    {image_version}
     {name}
     {base_directory}
     {env}
@@ -960,6 +1015,7 @@ def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
     '''
     args_list = ['bv_maker'] + args_list
     return run(type=type, distro=distro, branch=branch, system=system,
+               image_version=image_version,
                name=name,
                base_directory=base_directory,
                gui=False,
@@ -972,7 +1028,8 @@ def bv_maker(type='dev', distro=None, branch=None, system=None, name=None,
 
 
 @command
-def clean_images(distro=None, branch=None, system=None, name=None, type=None,
+def clean_images(distro=None, branch=None, system=None,
+                 image_version=None, version=None, name=None, type=None,
                  image=None, verbose=False,
                  base_directory=casa_distro_directory(), interactive=True):
     '''
@@ -992,6 +1049,8 @@ def clean_images(distro=None, branch=None, system=None, name=None, type=None,
     {distro}
     {branch}
     {system}
+    {image_version}
+    {version}
     {name}
     {type}
     {image}
@@ -1005,7 +1064,10 @@ def clean_images(distro=None, branch=None, system=None, name=None, type=None,
 
     images_to_update = list(iter_images(base_directory=base_directory,
                                         distro=distro, branch=branch,
-                                        system=system, name=name, type=type,
+                                        system=system,
+                                        image_version=image_version,
+                                        version=version,
+                                        name=name, type=type,
                                         image=image))
 
     print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
@@ -1013,7 +1075,8 @@ def clean_images(distro=None, branch=None, system=None, name=None, type=None,
     for container_type, image_name \
             in iter_images(base_directory=base_directory,
                            distro=distro, branch=branch,
-                           system=system, name=name, type=type,
+                           system=system, image_version=image_version,
+                           name=name, type=type,
                            image=image):
         if interactive:
             confirm = interactive_input(
@@ -1026,7 +1089,8 @@ def clean_images(distro=None, branch=None, system=None, name=None, type=None,
 
 
 @command
-def delete(type=None, distro=None, branch=None, system=None, name=None,
+def delete(type=None, distro=None, branch=None, system=None,
+           image_version=None, version=None, name=None,
            base_directory=casa_distro_directory(),
            interactive=True):
     """
@@ -1044,6 +1108,8 @@ def delete(type=None, distro=None, branch=None, system=None, name=None,
     {distro}
     {branch}
     {system}
+    {image_version}
+    {version}
     {name}
     {base_directory}
     interactive
@@ -1053,7 +1119,7 @@ def delete(type=None, distro=None, branch=None, system=None, name=None,
     """
     interactive = check_boolean('interactive', interactive)
     if not interactive and type is None and distro is None and system is None \
-            and name is None:
+            and image_version is None and name is None:
         raise RuntimeError(
             'Refusing to delete all environments without confirmation. '
             'Either use interactive=True, or provide an explicit pattern for '
@@ -1064,6 +1130,8 @@ def delete(type=None, distro=None, branch=None, system=None, name=None,
                                     distro=distro,
                                     branch=branch,
                                     system=system,
+                                    image_version=image_version,
+                                    version=version,
                                     name=name):
         if interactive:
             confirm = interactive_input(

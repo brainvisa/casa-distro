@@ -55,8 +55,8 @@ def setup_user(dir='/casa/setup', rw_install=False, distro=None,
 
 
 @command
-def setup_dev(distro, branch='master', system=None, dir='/casa/setup',
-              name=None):
+def setup_dev(distro, branch='master', system=None, image_version=None,
+              dir='/casa/setup', name=None):
     """
     Create all necessary directories and files to setup a developer
     environment.
@@ -76,12 +76,14 @@ def setup_dev(distro, branch='master', system=None, dir='/casa/setup',
     {distro}
     {branch}
     {system}
+    {image_version}
     dir
         dir={dir_default}
         Target environment directory
     {name}
     """
-    env_setup_dev(dir, distro=distro, branch=branch, system=system, name=name)
+    env_setup_dev(dir, distro=distro, branch=branch, system=system,
+                  image_version=image_version, name=name)
 
 
 @command
