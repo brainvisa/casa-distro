@@ -178,7 +178,7 @@ def create_image(base, base_metadata,
             11) You can manually remove the VM and its associated files from
                 VirtualBox.
             '''
-        return (uuid.uuid4(), msg)
+        return (str(uuid.uuid4()), msg)
     elif type in ('run', 'dev'):
         if base:
             vbox_import_image(base, name,

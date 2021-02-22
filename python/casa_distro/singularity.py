@@ -127,7 +127,7 @@ def create_image(base, base_metadata,
     type = metadata['type']
     if type == 'system':
         shutil.copy(base, output)
-        image_id = uuid.uuid4()
+        image_id = str(uuid.uuid4())
         return (image_id, None)
     else:
         recipe = tempfile.NamedTemporaryFile(mode='wt')
