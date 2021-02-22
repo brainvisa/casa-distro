@@ -324,11 +324,11 @@ def create_base_image(type,
         elif type == 'run':
             base = osp.join(
                 default_base_directory,
-                'casa-system-ubuntu-*.{extension}'.format(extension=extension))
+                'casa-system-*.{extension}'.format(extension=extension))
         else:
             base = osp.join(
                 default_base_directory,
-                'casa-run-ubuntu-*.{extension}'.format(extension=extension))
+                'casa-run-*.{extension}'.format(extension=extension))
 
     if not osp.exists(base):
         base_pattern = osp.expandvars(osp.expanduser(base))
