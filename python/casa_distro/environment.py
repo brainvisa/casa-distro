@@ -245,7 +245,7 @@ def user_config_filename():
     return user_config_file
 
 
-def iter_environments(base_directory, **filter):
+def iter_environments(base_directory=casa_distro_directory(), **filter):
     """
     Iterate over environments created with "setup" or "setup_dev" commands
     in the given
@@ -309,6 +309,76 @@ def iter_environments(base_directory, **filter):
             yield config
 
 
+def get_environment_image(config, base_directory=casa_distro_directory()):
+    """
+    Get the container image actually used by the given environment.
+    It may be an updated version of the initial image.
+    """
+    image = config['image']
+    image_id = config.get('image_id')
+    if image_id:
+        images = list(iter_images(base_directory=base_directory,
+                                  type='run',
+                                  image_id=image_id))
+        if images:
+            return images[0]
+    images = list(iter_images(
+            base_directory=base_directory,
+            type=config.get('type'),
+            image_version=config.get('image_version'),
+            container_type=config.get('container_type'),
+            system=config.get('system')))
+    img_confs = {}
+    for image in images:
+        with open('%s.json' % image[1]) as f:
+            conf = json.load(f)
+        bn = conf.get('build_number', 0)
+        conf['image'] = image[1]
+        if bn is None:
+            bn = 0
+        img_confs[bn] = conf
+    images = [img_confs[k]['image']
+              for k in sorted(img_confs.keys(), reverse=True)]
+    if images:
+        return images[0]
+    return (None, None)
+
+
+def get_run_image(image, base_directory=casa_distro_directory()):
+    """
+    Get the run image associated to a given dev or user image
+    """
+    image_json = '%s.json' % image
+    with open(image_json) as f:
+        image_meta = json.load(f)
+    run_id = image_meta.get('origin_run')
+    run_images = list(iter_images(base_directory=base_directory,
+                                  type='run',
+                                  image_id=run_id))
+    if not run_images:
+        run_images = list(iter_images(
+            base_directory=base_directory,
+            type='run',
+            image_version=image_meta.get('image_version'),
+            container_type=image_meta.get('container_type'),
+            system=image_meta.get('system')))
+        img_confs = {}
+        for image in run_images:
+            with open('%s.json' % image[1]) as f:
+                conf = json.load(f)
+            bn = conf.get('build_number', 0)
+            conf['image'] = image[1]
+            if bn is None:
+                bn = 0
+            img_confs[bn] = conf
+        run_images = [img_confs[k]['image'] for k in sorted(img_confs.keys())]
+    if run_images:
+        return run_images[0]
+    if image_meta['type'] == 'dev':
+        return image.replace('-dev-', '-run-')
+    return None
+
+
 def iter_images(base_directory=casa_distro_directory(), **filter):
     """
     Iterate over locally installed images, with filtering.
@@ -341,11 +411,12 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
     else:
         # select all environments first (some envd may refer to images which
         # are not present locally)
-        for config in iter_environments(base_directory):
-            image = (config['container_type'], config['image'])
-            if image[1] not in configs:
-                configs.add(image[1])
-                yield image
+        if not filter.get('image'):
+            for config in iter_environments(base_directory):
+                image = (config['container_type'], config['image'])
+                if image[1] not in configs:
+                    configs.add(image[1])
+                    yield image
         # select by images
         image_filter = filter.get('image')
         for image in singularity.iter_images(base_directory=base_directory):
