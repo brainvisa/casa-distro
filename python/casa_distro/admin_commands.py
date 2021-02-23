@@ -1122,12 +1122,12 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
         dev_configs = list(dev_configs.values())
 
         if update_base_images:
-            run_images = []
+            run_images = set()
             for image in images:
                 run_image = get_run_image(image, base_directory=base_directory)
                 if run_image:
-                    run_images.append(run_image)
-            if bbi_daily.update_base_images(list(images) + run_images):
+                    run_images.add(run_image)
+            if bbi_daily.update_base_images(images.union(run_images)):
                 succesful_tasks.append('update_base_images')
             else:
                 failed_tasks.append('update_base_images')
