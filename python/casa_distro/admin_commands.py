@@ -26,7 +26,8 @@ from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
                                      run_container,
-                                     select_environment)
+                                     select_environment,
+                                     get_run_image)
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
@@ -1121,7 +1122,12 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
         dev_configs = list(dev_configs.values())
 
         if update_base_images:
-            if bbi_daily.update_base_images(images):
+            run_images = []
+            for image in images:
+                run_image = get_run_image(image, base_directory=base_directory)
+                if run_image:
+                    run_images.append(run_image)
+            if bbi_daily.update_base_images(images + run_images):
                 succesful_tasks.append('update_base_images')
             else:
                 failed_tasks.append('update_base_images')
