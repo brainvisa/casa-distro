@@ -71,7 +71,7 @@ function _complete_casa_distro_option_()
             COMPREPLY=($(compgen -W "" -- "${word}"))
         fi
         ;;
-    image|base_image)
+    image|base_image|base)
         # take existing singularity images
         local images=$CASA_BASE_DIRECTORY/*.sif
 #         for f in $images
