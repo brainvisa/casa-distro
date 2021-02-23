@@ -404,6 +404,12 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
                                         name=filter.get('name'),
                                         image=filter.get('image')):
             image = (config['container_type'], config['image'])
+            if filter.get('type') == 'run':
+                # run / user environments may be linked to a user image
+                with open('%s.json' % image[1]) as f:
+                    image_meta = json.load(f)
+                if image_meta['type'] != filter['type']:
+                    continue
             if image[1] not in configs:
                 configs.add(image[1])
                 yield image
