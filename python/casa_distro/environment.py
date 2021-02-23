@@ -319,6 +319,7 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
     If you with to trigger the environment-driven mode without filtering, just
     select "*" as one of the environment filter variables.
     """
+    configs = set()  # avoid duplicates
     if filter.get('name') or filter.get('system') \
             or filter.get('image_version') or filter.get('distro') \
             or filter.get('branch') or filter.get('type'):
@@ -333,14 +334,24 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
                                         name=filter.get('name'),
                                         image=filter.get('image')):
             image = (config['container_type'], config['image'])
-            yield image
+            if image[1] not in configs:
+                configs.add(image[1])
+                yield image
 
     else:
+        # select all environments first (some envd may refer to images which
+        # are not present locally)
+        for config in iter_environments(base_directory):
+            image = (config['container_type'], config['image'])
+            if image[1] not in configs:
+                configs.add(image[1])
+                yield image
         # select by images
         image_filter = filter.get('image')
         for image in singularity.iter_images(base_directory=base_directory):
             if not image_filter or fnmatch.filter([image], image_filter):
-                yield ('singularity', image)
+                if image not in configs:
+                    yield ('singularity', image)
         # for image in docker.iter_images(base_directory=base_directory):
         #     if not filter or fnmatch.filter([image], filter):
         #         yield ('docker', image)

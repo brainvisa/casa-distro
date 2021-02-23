@@ -89,7 +89,7 @@ class RecipeBuilder:
 def iter_images(base_directory):
     for filename in os.listdir(base_directory):
         if filename.endswith('.sif') or filename.endswith('.simg'):
-            yield filename
+            yield osp.join(base_directory, filename)
 
 
 def _singularity_build_command(cleanup=True, force=False, fakeroot=True):
