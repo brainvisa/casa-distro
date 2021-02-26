@@ -787,7 +787,7 @@ def create_user_image(
 
     metadata = {
         'name': name,
-        'type': 'run',
+        'type': 'user',
         'distro': config['distro'],
         'system': config['system'],
         'image_version': config['image_version'],
@@ -920,7 +920,6 @@ def create_user_image(
         metadata['size'] = os.stat(output).st_size
         metadata['md5'] = file_hash(output)
         metadata['image_id'] = image_id
-        metadata['type'] = 'user'
         json.dump(metadata, open(metadata_file, 'w'),
                   indent=4, separators=(',', ': '))
 
@@ -1103,7 +1102,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
                                        'image_version={3}'.format(*key))
                 dev_configs[key] = config
                 images.add(config['image'])
-            elif config['type'] == 'run':
+            elif config['type'] in ('run', 'user'):
                 run_configs.append(config)
                 images.add(config['image'])
 

@@ -858,7 +858,7 @@ class BBIDaily:
             start = time.time()
             success = True
             for command in commands:
-                if test_config['type'] == 'run':
+                if test_config['type'] in ('run', 'user'):
                     command = command.replace('/casa/host/build',
                                               '/casa/install')
                 result, output = self.call_output(self.casa_distro_cmd + [
