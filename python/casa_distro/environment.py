@@ -586,19 +586,19 @@ def delete_image(container_type, image_name):
 
 def select_environment(base_directory, **kwargs):
     """
-    Select a single distro given its name or an existing distro directory.
+    Select a single environment given its name or an existing distro directory.
     """
     env_list = list(iter_environments(base_directory, **kwargs))
     if len(env_list) == 1:
         return env_list[0]
     if len(env_list) > 1:
         raise ValueError(
-            'Several distros found, use a more selective criterion: {0}'
+            'Several environments found, use a more selective criterion: {0}'
             .format(', '.join(i['name'] for i in env_list))
         )
-    raise ValueError('Cannot find any distro to perform requested action. '
-                     'base_directory="{0}", selection={1}'.format(
-                         base_directory, kwargs))
+    raise ValueError('Cannot find any environment to perform the requested. '
+                     'action. base_directory="{0}", selection={1}'
+                     .format(base_directory, kwargs))
 
 
 def prepare_environment_homedir(casa_home_host_path):
