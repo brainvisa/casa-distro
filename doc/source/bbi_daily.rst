@@ -117,13 +117,23 @@ take inspiration from it to create your own personalized set-up.
       singularity run --bind ./brainvisa-master-ubuntu-18.04-nightly:/casa/setup \
           brainvisa-master-ubuntu-18.04-nightly.sif
 
-10. Put the reference test data in place. Best is to copy it from a known-good
+10. Add the ``branch`` and ``image_version`` keys to the
+    ``conf/casa_distro.json`` of the user environment: these variables are not
+    set by setup_user, but they are necessary for ``bbi_daily`` to make the
+    correct link between the environment of the user image and the
+    corresponding dev environment.
+
+    :note: Issue `#246 <https://github.com/brainvisa/casa-distro/issues/246>`_
+           tracks progress on that issue, this workaround will become obsolete
+           once that issue is fixed.
+
+11. Put the reference test data in place. Best is to copy it from a known-good
     source. Beware that it must be copied *in both environments*:
 
     - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/tests/ref/``
     - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04-nightly/tests/ref/``
 
-11. Check that the whole ``bbi_daily`` process is able to run successfully::
+12. Check that the whole ``bbi_daily`` process is able to run successfully::
 
       "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin \
           bbi_daily
@@ -131,7 +141,7 @@ take inspiration from it to create your own personalized set-up.
     Beware that the output of each step is displayed only when that step is
     finished, so the command may seem to hang for a long time.
 
-12. Set the ``bbi_daily`` command to run on a regular basis using ``crontab -e``::
+13. Set the ``bbi_daily`` command to run on a regular basis using ``crontab -e``::
 
       MAILTO=your.email@host.example
       37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
