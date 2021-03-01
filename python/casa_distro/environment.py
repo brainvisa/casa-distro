@@ -601,6 +601,52 @@ def select_environment(base_directory, **kwargs):
                      .format(base_directory, kwargs))
 
 
+def standard_dirs_to_mount():
+    """List "standard" mount points that exist on the host machine.
+
+    Standard mount points include:
+    - directories defined by the Filesystem Hierarchy Standard where users may
+      store useful data;
+    - directories that are used in NeuroSpin for storing data or installed
+      software.
+    """
+    standard_dirs = (['/home', '/mnt', '/media', '/srv',
+                      '/neurospin', '/i2bm', '/shfj']
+                     + glob('/volatile*'))
+    for dirname in standard_dirs:
+        if os.path.isdir(dirname) and not os.path.islink(dirname):
+            yield dirname
+
+
+def prepare_user_config():
+    """Write an initial configuration file with "standard" mount points.
+
+    See standard_dirs_to_mount() for a list of "standard" mount points.
+    """
+    user_config_file = user_config_filename()
+    if os.path.exists(user_config_file):
+        return  # config file already exists, do nothing
+
+    auto_generated_config = {
+        'mounts': {dirname: dirname for dirname in standard_dirs_to_mount()},
+    }
+    user_config_dir = os.path.dirname(user_config_file)
+    try:
+        # the exist_ok parameter of os.makedirs does not exist in Python < 3.2)
+        os.makedirs(user_config_dir)
+    except OSError:
+        pass  # probably a FileExistsError
+    try:
+        with open(user_config_file, 'w') as f:
+            json.dump(auto_generated_config, f,
+                      indent=4, sort_keys=True, separators=(',', ': '))
+            f.write('\n')
+    except Exception:
+        print('Warning: could not create the user configuration file ({0})'
+              .format(user_config_file))
+        pass  # give up with a warning, this config file is not essential
+
+
 def prepare_environment_homedir(casa_home_host_path):
     """Create or complete a home directory for an environment.
 
@@ -688,10 +734,13 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
 
     config.setdefault('mounts', {})
     config['mounts']['/casa/home'] = host_path_of_container_home
+    for dirname in standard_dirs_to_mount():
+        config['mounts'].setdefault(dirname, dirname)
 
     # Prepare the home directory of the container (create it if needed, and
     # ensure that necessary files are present.)
     prepare_environment_homedir(host_path_of_container_home)
+    prepare_user_config()
 
     container_type = config.get('container_type')
     if container_type == 'singularity':

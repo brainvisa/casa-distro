@@ -523,6 +523,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     home_mount = False
     host_homedir = os.path.realpath(os.path.expanduser('~'))
     for dest, source in config.get('mounts', {}).items():
+        if not source:
+            continue  # a mount can be deactivated by setting it to None (null)
         source = source.format(**config)
         source = osp.expandvars(source)
         dest = dest.format(**config)
