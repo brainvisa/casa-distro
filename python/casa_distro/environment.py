@@ -940,7 +940,16 @@ class BBIDaily:
             commands = [o[i+3][o[i+3].find(':')+2:].strip()
                         for i in range(len(o))
                         if ': Test command:' in o[i]]
+            timeouts = [o[i+1][o[i+1].find(':')+2:].strip()
+                        for i in range(len(o))
+                        if ': Test command:' in o[i]]
+            timeouts = [x[x.find(':')+2:] for x in timeouts]
             if commands:  # skip empty command lists
+                for i, command in enumerate(commands):
+                    if float(timeouts[i]) < 9.999e+06:
+                        command = 'timeout -k 10 %s %s' % (timeouts[i],
+                                                           command)
+                        commands[i] = command
                 tests[label] = commands
         log_lines += ['Final test dictionary:',
                       json.dumps(tests, indent=4, separators=(',', ': '))]
