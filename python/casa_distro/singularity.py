@@ -342,7 +342,7 @@ def singularity_raw_version():
     return _singularity_raw_version
 
 
-def singularity_run_help():
+def singularity_run_help(error_msg=None):
     """
     Useful to get available commandline options, because they differ with
     versions and systems.
@@ -356,15 +356,21 @@ def singularity_run_help():
                 bufsize=-1,
             )
         except OSError:
-            sys.exit('Cannot execute singularity. Please install '
-                     'Singularity {0} or later (see https://brainvisa.info/).'
-                     .format('.'.join(str(i)
-                                      for i in MINIMUM_SINGULARITY_VERSION)))
+            strings = {
+                'singularity_version':
+                    '.'.join(str(i) for i in MINIMUM_SINGULARITY_VERSION)}
+            if not error_msg:
+                error_msg = 'Cannot execute singularity. Please install ' \
+                    'Singularity %(singularity_version)s or later (see ' \
+                    'https://brainvisa.info/).' % strings
+            else:
+                error_msg = error_msg % strings
+            sys.exit(error_msg)
     return _singularity_run_help
 
 
-def singularity_has_option(option):
-    doc = singularity_run_help()
+def singularity_has_option(option, error_msg=None):
+    doc = singularity_run_help(error_msg=error_msg)
     match = re.search(r'(\s|\|)' + re.escape(option) + r'(\s|\|)', doc)
     return match is not None
 
@@ -479,7 +485,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     temps = []
 
     singularity = ['singularity', 'run']
-    if singularity_has_option('--cleanenv'):
+    if singularity_has_option(
+            '--cleanenv', error_msg=config.get('container_failure_message',
+                                               None)):
         singularity.append('--cleanenv')
     if cwd and singularity_has_option('--pwd'):
         singularity += ['--pwd', cwd]
