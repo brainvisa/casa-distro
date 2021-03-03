@@ -660,7 +660,7 @@ def create_user_image(
         install_doc='yes',
         install_test='yes',
         generate='yes',
-        zip='yes',
+        zip='no',
         upload='no',
         verbose=True):
     """Create a "user" image given a development environment.
