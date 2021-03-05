@@ -21,9 +21,9 @@ mkdir "$BUILD"
 
 PYQT=PyQt5_gpl-5.12.1
 PYQT_WEBENGINE=PyQtWebEngine_gpl-5.12.1
-DL_URL_SIP="http://brainvisa.info/casa-distro/third-parties/sip-${SIP_VERSION}.tar.gz"
-DL_URL_PYQT="http://brainvisa.info/casa-distro/third-parties/${PYQT}.tar.gz"
-DL_URL_PYQT_WEBENGINE="http://brainvisa.info/casa-distro/third-parties/${PYQT_WEBENGINE}.tar.gz"
+DL_URL_SIP="http://brainvisa.info/download/casa-distro/third-parties/sip-${SIP_VERSION}.tar.gz"
+DL_URL_PYQT="http://brainvisa.info/download/casa-distro/third-parties/${PYQT}.tar.gz"
+DL_URL_PYQT_WEBENGINE="http://brainvisa.info/download/casa-distro/third-parties/${PYQT_WEBENGINE}.tar.gz"
 
 # download sources
 
