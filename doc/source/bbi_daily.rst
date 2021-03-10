@@ -75,35 +75,29 @@ take inspiration from it to create your own personalized set-up.
      wget https://brainvisa.info/download/casa-run-5.0.sif.json
      md5sum casa-run-5.0.sif
 
-   :note: Until the BrainVISA 5.0 release, you need to replace
-          ``brainvisa.info`` by ``new.brainvisa.info``. Also, you need to
-          export this environment variable for casa-distro to find the images
-          in later steps: ``export
-          BRAINVISA_PUBLISH_SERVER=new.brainvisa.info``.
-
 5. Create a directory for your development environment and set it up::
 
      cd "$CASA_BASE_DIRECTORY"
-     mkdir brainvisa-master-ubuntu-18.04
-     singularity run --bind ./brainvisa-master-ubuntu-18.04:/casa/setup \
-         casa-dev-ubuntu-18.04.sif distro=brainvisa branch=master
+     mkdir brainvisa-master-5.0
+     singularity run --bind ./brainvisa-master-5.0:/casa/setup \
+         casa-dev-5.0.sif distro=brainvisa branch=master
 
 6. Edit the ``conf/svn.secret`` file with your BioProj login and password.
 
 7. Check out and compile an initial build::
 
-     "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/bv_maker
+     "$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/bin/bv_maker
 
 8.  Create an inital user image. You may need to set the ``SINGULARITY_TMPDIR``
     environment variable to a disk with enough free space (about twice the size
     of the final user image)::
 
       export SINGULARITY_TMPDIR=/volatile/tmp
-      "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin \
+      "$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/bin/casa_distro_admin \
           create_user_image \
           version=nightly \
-          environment_name=brainvisa-master-ubuntu-18.04 \
-          name=brainvisa-master-ubuntu-18.04-nightly
+          environment_name=brainvisa-master-5.0 \
+          name=brainvisa-master-5.0-userimage
 
     - ``environment_name`` is the name of the development environment.
     - ``name`` is the full name of the created user image. We change it from
@@ -113,9 +107,9 @@ take inspiration from it to create your own personalized set-up.
 9.  Install the *environment* for your new user image::
 
       cd "$CASA_BASE_DIRECTORY"
-      mkdir brainvisa-master-ubuntu-18.04-nightly
-      singularity run --bind ./brainvisa-master-ubuntu-18.04-nightly:/casa/setup \
-          brainvisa-master-ubuntu-18.04-nightly.sif
+      mkdir brainvisa-master-5.0-userimage
+      singularity run --bind ./brainvisa-master-5.0-userimage:/casa/setup \
+          brainvisa-master-5.0-userimage.sif
 
 10. Add the ``branch`` and ``image_version`` keys to the
     ``conf/casa_distro.json`` of the user environment: these variables are not
@@ -130,12 +124,12 @@ take inspiration from it to create your own personalized set-up.
 11. Put the reference test data in place. Best is to copy it from a known-good
     source. Beware that it must be copied *in both environments*:
 
-    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/tests/ref/``
-    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04-nightly/tests/ref/``
+    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/tests/ref/``
+    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-5.0-userimage/tests/ref/``
 
 12. Check that the whole ``bbi_daily`` process is able to run successfully::
 
-      "$CASA_BASE_DIRECTORY"/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin \
+      "$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/bin/casa_distro_admin \
           bbi_daily
 
     Beware that the output of each step is displayed only when that step is
@@ -144,10 +138,10 @@ take inspiration from it to create your own personalized set-up.
 13. Set the ``bbi_daily`` command to run on a regular basis using ``crontab -e``::
 
       MAILTO=your.email@host.example
-      37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-ubuntu-18.04/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
+      37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-5.0/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
 
     :note: Remember to set all the needed environment variables, including
-           ``BRAINVISA_PUBLISH_SERVER``. ``PATH`` may need to be set
+           ``BRAINVISA_PUBLISH_SERVER`` if needed. ``PATH`` may need to be set
            additionally, in case your Singularity installation is under
            ``/usr/local`` (by default cron limits ``PATH`` to
            ``/usr/bin:/bin``).
