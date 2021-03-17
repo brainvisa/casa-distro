@@ -93,3 +93,4 @@ $PIP2 install -U 'ipython~=5.9.0' 'ipykernel~=4.10.1' 'tornado~=4.5.3' \
 $PIP2 install -U 'sphinx~=1.6.7'
 $PIP2 install 'nbsphinx~=0.4.3'
 $PIP2 install 'sphinx-gallery~=0.3.1'
+$PIP2 install 'jsonschema~=3.2.0'
