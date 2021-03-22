@@ -552,6 +552,25 @@ VirtualBox images are crashing when booting
 
 I personally had trouble getting the VirtualBox image to actually run on MacOS 10.15. The virtual machine consistently crashed at boot time. After inspecting the logs I found out that the sound card support might be the cause, and I had to use a "fake sound device" in the virtualbox image settings. Then it appeared that all graphics display was notably slow (either 2D and 3D), whatever video / accelerated 3D support options. And icons and fonts in the virtual machine were microscopic, almost impossible to read, and difficult if even possible to configure in the linux desktop. The "zoom factor x2" option in virtualbox was very handy for that, but reduced the actual resolution by a factor of 2 if I understand. Apart from these limitations, the software was running.
 
+We have a working install procedure from one of our friends using a Mac here:
+
+On a Mac Book Pro, with MacOs 10.15.7 and 16Gb of memory:
+
+* Install VirtualBox v 6.1
+* Import the Brainvisa VM
+* Disable sound (fake sound device)
+* Guests additions: run the Linux additions after mounting the CD and opening its contents.
+* Shutdown the virtual machine, go to its configuration, and in the 'Display' section, chose 'Graphics Controller: VMSVGA', tick 'Activate 3D acceleration' and increase the 'Video memory' to 128Mb.
+* setup shared directory to mount the computer filesystem (my user directory). For this I went into the 'shared directory' section of the VM configuration, and asked to have ``/media/olivier`` to point on my home directory (on my Mac: ``/Users/olivier``) .
+* There is an issue to fix before accessing ``/media/olivier``, because of a permission issue. It is fixed by typing the following into the terminal::
+
+    sudo usermod -aG vboxsf $(whoami)
+
+* reboot the VM.
+* there is still a keyboard mapping issue, it can probably be fixed in the linux desktop config somewhere.
+
+Good to go !
+
 
 .. _win_sing_troubleshooting:
 
