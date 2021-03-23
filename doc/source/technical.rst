@@ -16,6 +16,56 @@ Technical issues
 This document explains how to setup and use some container systems (Singularity, Docker), and tries to solve some technical issues which can occur when using them.
 
 
+Home directory and configuration files in casa-distro containers
+================================================================
+
+The virtual machine variant of ``casa-distro`` images (VirtualBox) are self-contained and are using an internal user (``brainvisa`` in |bv| distributions). The remaining of this section thus applies to the container-based variants of ``casa-distro`` (singularity and docker).
+
+To run the container, ``casa-distro`` (any of ``bv``, ``casa_distro`` and ``casa_distro_admin`` commands) is using an :ref:`environment` directory on the host filesystem. It is used to read configuration before starting the container, and to store files which may be shared between the container and the host filesystem.
+
+The environment directory may be a personal user installation (if a user installs BrainVisa, or a developer environment, for himself), which we name *user environment*, or a *shared enviroment* (if an administrator installs BrainVisa for all users on a network filesystem, typically). In the first case the user has full access to the environment files (he owns the directory and files), but in the second case the shared environment directory and files belong to the administrator, and are read-only for the user.
+
+
+Configuration files
+-------------------
+
+A first configuration file is read by ``casa-distro``, located on the host filesystem at the following location::
+
+    <environment_dir>/conf/casa_distro.json
+
+which, inside the container, is seen as::
+
+    /casa/host/conf/casa_distro.json
+
+This environment file is completed by a user file, which is located in the host system user directory, at the following location::
+
+    $HOME/.config/casa-distro/casa_distro_3.json
+
+The mount points configured in the ``bv`` graphical tool are saved in this latter file, which is shared across all environments run by the user.
+
+
+Home directory
+--------------
+
+Containers are running with the same user as the host system user, in order to have the same permissions and identity, especially in regards to files access and ownership. However they are running with a *separate user home directory*. The reasons is to avoid sharing copnfigs and paths which would be specific to the host system and those for the container, which may be incompatible.
+
+* In "user environments" (those owned by the user with read-write permissions on the environment directory), the container user home directory is located inside the environment directory. On host side, this is::
+
+      <environment_dir>/home/
+
+  Inside the container, the same directory is seen under::
+
+      /casa/host/home
+
+* In "shared environments", the user cannot write in the environment directory, thus the user home directory has to be outside of it. ``casa-distro`` is using the following location rule::
+
+      $HOME/.local/share/casa-distro/<environment_full_dir>
+
+  where ``<environment_full_dir>`` is obtained by replacing, in the full path of the environment directory, directory separators (``/`` on Unix systems or ``\`` on Windows systems) by underscores (``_``). Ex::
+
+    /opt/brainvisa/brainvisa-5.0.0  ->  $HOME/.local/share/casa-distro/opt_brainvisa_brainvisa-5.0.0
+
+
 Containers and distributed execution
 ====================================
 
