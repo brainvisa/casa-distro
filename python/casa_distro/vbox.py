@@ -218,20 +218,32 @@ def create_user_image(base_image,
             "controlvm '{0}' poweroff".format(vm_name))
     vbox_import_image(base_image, vm_name, verbose=verbose)
     vm.start_and_wait(verbose=verbose)
+
+    # Copy all VirtualBox specific files in home directory except Desktop
+    # that contains only shortcuts that are managed below
+    copy_to_home = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
+                            'share', 'vbox', 'home')
+    for i in os.listdir(copy_to_home):
+        if i == 'Desktop':
+            continue
+        vm.copy_user(osp.join(copy_to_home, i), '/home/brainvisa')
+
     # Copy desktop shortcut files after finding the appropriate share directoy
-    # containing icon files.
+    # containing icon files. Replace '{install_dir}' in icon Path by
+    # appropriate value.
     tmp = tempfile.mkdtemp()
     try:
-        d = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
-                     'share', 'vbox', 'home', 'Desktop')
+        d = osp.join(copy_to_home, 'Desktop')
         for i in os.listdir(d):
             c = configparser.ConfigParser()
             c.optionxform = str
             c.read_file(open(osp.join(d, i)))
             icon = glob.glob(c['Desktop Entry']['Icon'].format(
-                install_dir=install_dir))[0]
-            c['Desktop Entry']['Icon'] = icon.replace(install_dir,
-                                                      '/casa/install')
+                install_dir=install_dir))
+            if icon:
+                icon = icon[0]
+                c['Desktop Entry']['Icon'] = icon.replace(install_dir,
+                                                          '/casa/install')
             f = osp.join(tmp, i)
             c.write(open(f, 'w'))
             vm.copy_user(f, '/home/brainvisa/Desktop')
