@@ -71,11 +71,13 @@ Containers and distributed execution
 
 |bv| can perform distributed execution, using :soma-workflow:`Soma-Workflow <index.html>`.
 
-But soma-workflow distributed execution, in its current released version, will not spawn Docker or Singularity (or casa_distro run) in remote processing. We have made modifications in the `github/master branch <https://github.com/neurospin/soma-workflow>`_ (which is included in brainvisa/master branches) to add support for it. However it needs some additional configuration on server side to specify how to run the containers.
+in an installed :ref:`environment`, commands are also available via "run scripts", located in ``<environment>/host/bin/``. If this directory is in the computing resource nodes ``PATH`` environment variable, then the commands will run the container transparently.
 
-Alternately, in an installed :ref:`environment`, commands are also available via "run scripts", located in ``<environment>/host/host_bin/``. If this directory is in the computing resource ``PATH`` environment variable, then the commands will run the container transparently.
+Alternately, soma-workflow 3.1 brings support to spawn Docker or Singularity (or casa_distro) in remote processing. However it needs some additional configuration on server side to specify how to run the containers.
 
 For commands run directly through the ``python`` command, more work will be required because the system ``python`` is, of course, not overloaded in BrainVISA/Casa run scripts.
+
+Please read :soma-workflow:`Soma-Workflow documentation about it <install_config.html#running-servers-and-jobs-in-containers>`.
 
 Remember that software running that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the file ``container_options`` item in ``<casa_distro_environment>/host/conf/casa_distro.json``.
 
