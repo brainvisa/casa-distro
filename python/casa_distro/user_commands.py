@@ -753,17 +753,26 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
     image(s) to be downloaded:
 
     1. filtered by environment, using the ``name`` selector, or a combination
-       of ``distro``, ``branch``, and ``system``.
+       of ``distro``, ``branch``, and ``image_version``.
 
-    2. directly specifying a full image name, e.g.::
+           casa_distro pull_image type=dev image_version=5.0
 
-           casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+    2. directly specifying an image name (*not* including bulild_number),
+       e.g.::
+
+           casa_distro pull_image image=casa-run-5.0.sif
+
+    Note that even though the build number does not appear in the local image
+    name, this command will always pull the image with the highest
+    build_number, e.g. the image that is named casa-dev-5.0-1.sif on the server
+    will be downloaded to a file named casa-dev-5.0.sif.
 
     Parameters
     ----------
     {distro}
     {branch}
     {system}
+    {type}
     {image_version}
     {version}
     {name}
