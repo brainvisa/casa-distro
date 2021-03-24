@@ -77,7 +77,7 @@ Alternately, soma-workflow 3.1 brings support to spawn Docker or Singularity (or
 
 For commands run directly through the ``python`` command, more work will be required because the system ``python`` is, of course, not overloaded in BrainVISA/Casa run scripts.
 
-Please read :soma-workflow:`Soma-Workflow documentation about it <install_config.html#running-servers-and-jobs-in-containers>`.
+Please read :soma-workflow:`Soma-Workflow documentation about it <install_config.html#running-servers-and-jobs-in-a-container>`.
 
 Remember that software running that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the file ``container_options`` item in ``<casa_distro_environment>/host/conf/casa_distro.json``.
 
