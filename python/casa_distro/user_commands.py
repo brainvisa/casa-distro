@@ -801,6 +801,9 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
         if image.endswith('.sif') or image.endswith('.simg'):
             container_type = 'singularity'
             images_to_update = [(container_type, image)]
+        elif image.endswith('.ova') or image.endswith('.vdi'):
+            container_type = 'vbox'
+            images_to_update = [(container_type, image)]
 
     if verbose:
         print('images_to_update:\n%s'
