@@ -855,6 +855,7 @@ class BBIDaily:
     def update_base_images(self, images):
         start = time.time()
         log = []
+        result = None
         for image in images:
             result, output = self.call_output(self.casa_distro_cmd + [
                 'pull_image', 'image={0}'.format(image)])
