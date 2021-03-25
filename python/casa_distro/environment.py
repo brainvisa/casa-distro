@@ -611,7 +611,7 @@ def standard_dirs_to_mount():
       software.
     """
     standard_dirs = (['/home', '/mnt', '/media', '/srv',
-                      '/neurospin', '/i2bm', '/shfj']
+                      '/neurospin', '/i2bm', '/shfj', '/nfs']
                      + glob('/volatile*'))
     for dirname in standard_dirs:
         if os.path.isdir(dirname) and not os.path.islink(dirname):
