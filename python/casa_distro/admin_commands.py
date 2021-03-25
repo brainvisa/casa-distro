@@ -964,6 +964,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
               bv_maker_steps='sources,configure,build,doc',
               dev_tests='yes',
               update_user_images='yes',
+              install_doc='yes',
               user_tests='yes',
               base_directory=casa_distro_directory(),
               verbose=None):
@@ -1032,6 +1033,10 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
     update_user_images
         default = {update_user_images_default}
         Boolean indicating if images of user environment must be recreated
+    install_doc
+        default = {install_doc_default}
+        Boolean indicating if the documentation must be installed in user
+        images
     user_tests
         default = {user_tests_default}
         Boolean indicating if the tests must be performed on user environments
@@ -1044,6 +1049,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
     update_base_images = boolean_value(update_base_images)
     dev_tests = boolean_value(dev_tests)
     update_user_images = boolean_value(update_user_images)
+    install_doc = boolean_value(install_doc)
     user_tests = boolean_value(user_tests)
 
     # Ensure that all recursively called instances of casa_distro will use
@@ -1162,7 +1168,7 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
             if update_user_images:
                 success = bbi_daily.update_user_image(
                     config, dev_config,
-                    install_doc='doc' in bv_maker_steps,
+                    install_doc=install_doc,
                 )
                 if success:
                     succesful_tasks.append('{0}: update user image'.format(
