@@ -651,9 +651,7 @@ def create_user_image(
         image_version=None,
         environment_name=None,
         container_type=None,
-        output=osp.join(
-            default_base_directory,
-            '{name}{extension}'),
+        output='{base_directory}/{name}{extension}',
         force='no',
         base_directory=casa_distro_directory(),
         install='yes',
