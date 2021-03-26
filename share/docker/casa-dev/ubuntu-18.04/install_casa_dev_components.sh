@@ -19,6 +19,11 @@ sudo chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
 sudo git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
 sudo git lfs install --system --skip-repo
 
+# Prevent Git from guessing user name and "email" (user@hostname) because that
+# makes ugly commits that cannot always be traced back to the author/committer.
+git config --system user.useConfigOnly true
+
+
 # allow attach gdb to a process
 echo "kernel.yama.ptrace_scope = 0" > /etc/sysctl.d/10-ptrace.conf
 
