@@ -775,9 +775,12 @@ def create_user_image(
     name = name.format(version=version, **config)
     kwargs = config.copy()
     kwargs.pop('name', None)
-    output = osp.expandvars(osp.expanduser(output)).format(name=name,
-                                                           extension=extension,
-                                                           **kwargs)
+    output = osp.expandvars(osp.expanduser(output)).format(
+        name=name,
+        extension=extension,
+        base_directory=base_directory,
+        **kwargs
+    )
     force = boolean_value(force)
 
     # update distro name
