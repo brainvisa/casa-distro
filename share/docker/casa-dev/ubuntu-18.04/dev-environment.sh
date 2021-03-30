@@ -30,7 +30,7 @@ fi
 
 PATH=${PATH}:/usr/local/bin
 PATH=${PATH}:/casa/host/bootstrap/brainvisa-cmake/bin
-PATH=${PATH}:/casa/bootstrap/brainvisa-cmake
+PATH=${PATH}:/casa/bootstrap/brainvisa-cmake/bin
 LD_LIBRARY_PATH=/casa/host/lib:${LD_LIBRARY_PATH}
 export PATH LD_LIBRARY_PATH
 if [ -f "${CASA_BUILD}/bin/bv_env.sh" ] \
