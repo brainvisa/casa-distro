@@ -921,7 +921,11 @@ class BBIDaily:
                 ])
                 if result:
                     success = False
-                    log.append('FAILED: {0}\n'.format(command))
+                    if result in (124, 128+9):
+                        log.append('TIMED OUT\n')
+                    else:
+                        log.append('FAILED with exit code {0}: {1}\n'
+                                   .format(result, command))
                 else:
                     log.append('SUCCESS: {0}\n'.format(command))
                 log.append('-' * 80)
