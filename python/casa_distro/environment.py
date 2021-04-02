@@ -344,39 +344,15 @@ def get_environment_image(config, base_directory=casa_distro_directory()):
     return (None, None)
 
 
-def get_run_image(image, base_directory=casa_distro_directory()):
+def get_run_base_of_dev_image(image):
     """
-    Get the run image associated to a given dev or user image
+    Get the run image associated to a given dev image
     """
-    image_json = '%s.json' % image
-    with open(image_json) as f:
-        image_meta = json.load(f)
-    run_id = image_meta.get('origin_run')
-    run_images = list(iter_images(base_directory=base_directory,
-                                  type='run',
-                                  image_id=run_id))
-    if not run_images:
-        run_images = list(iter_images(
-            base_directory=base_directory,
-            type='run',
-            image_version=image_meta.get('image_version'),
-            container_type=image_meta.get('container_type'),
-            system=image_meta.get('system')))
-        img_confs = {}
-        for image in run_images:
-            with open('%s.json' % image[1]) as f:
-                conf = json.load(f)
-            bn = conf.get('build_number', 0)
-            conf['image'] = image[1]
-            if bn is None:
-                bn = 0
-            img_confs[bn] = conf
-        run_images = [img_confs[k]['image'] for k in sorted(img_confs.keys())]
-    if run_images:
-        return run_images[0]
-    if image_meta['type'] == 'dev':
-        return image.replace('-dev-', '-run-')
-    return None
+    # FIXME: this could yield a mismatch between casa-run and casa-dev
+    # versions. We should iterate on JSONs on the server until we find the run
+    # image with the correct uuid)
+    assert '-dev-' in image
+    return image.replace('-dev-', '-run-', 1)
 
 
 def iter_images(base_directory=casa_distro_directory(), **filter):
@@ -1001,7 +977,7 @@ class BBIDaily:
             if commands:  # skip empty command lists
                 for i, command in enumerate(commands):
                     if float(timeouts[i]) < 9.999e+06:
-                        command = 'timeout -k 10 %s %s' % (timeouts[i],
+                        command = 'timeout -k 10 %d %s' % (timeouts[i],
                                                            command)
                         commands[i] = command
                 tests[label] = commands
@@ -1009,6 +985,37 @@ class BBIDaily:
                       json.dumps(tests, indent=4, separators=(',', ': '))]
         self.log(config['name'], 'get test commands', 0, '\n'.join(log_lines))
         return tests
+
+    def recreate_user_env(self, user_config, dev_config):
+        environment = user_config['name']
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        **user_config)
+        start = time.time()
+        if not os.path.exists(user_config['directory']):
+            os.makedirs(user_config['directory'])
+        result, log = self.call_output([
+            'singularity', 'run',
+            '--bind', user_config['directory'] + ':/casa/setup:rw',
+            user_config['image'],
+        ])
+        if result == 0:
+            # Make the reference test data available in the user environment
+            # through a symlink to the dev environment
+            user_test_ref_dir = os.path.join(user_config['directory'],
+                                             'tests', 'ref')
+            dev_test_ref_dir = os.path.join(dev_config['directory'],
+                                            'tests', 'ref')
+            if not os.path.exists(user_test_ref_dir):
+                if not os.path.exists(os.path.dirname(user_test_ref_dir)):
+                    os.makedirs(os.path.dirname(user_test_ref_dir))
+                os.symlink(os.path.join('/host', dev_test_ref_dir),
+                           user_test_ref_dir)
+        duration = int(1000 * (time.time() - start))
+        self.log(user_config['name'], 'recreate user env', result, log,
+                 duration=duration)
+        return result == 0
 
     def update_user_image(self, user_config, dev_config,
                           install_doc=True,
@@ -1027,6 +1034,7 @@ class BBIDaily:
             'version={0}'.format(user_config['version']),
             'name={0}'.format(user_config['name']),
             'environment_name={0}'.format(dev_config['name']),
+            'output=' + image,
             'force=yes',
             'install_doc=' + str(install_doc),
             'install_test=' + str(install_test),

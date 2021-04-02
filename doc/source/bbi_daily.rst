@@ -20,7 +20,9 @@ logging detailed output to a Jenkins server:
 5. Install the compiled software in a new *user image* based on the
    ``casa-run`` image (the software is installed under ``/casa/install``);
 
-6. Run the tests in the user image.
+6. Install a fresh *user environment* from that user image.
+
+7. Run all tests in that user environment.
 
 
 Walkthrough
@@ -64,16 +66,11 @@ take inspiration from it to create your own personalized set-up.
 4. Download the ``casa-dev`` image using the link found on the Downloads page
    of <https://brainvisa.info/>. Also download the associated JSON file (to be
    extra safe, check that the md5sum of the image matches that stored in the
-   JSON file). Do the same for the ``casa-run`` image (it may not appear on the
-   Downloads page, just replace ``-dev-`` by ``-run-`` in the URL of the dev
-   image)::
+   JSON file).::
 
      wget https://brainvisa.info/download/casa-dev-5.0.sif
      wget https://brainvisa.info/download/casa-dev-5.0.sif.json
      md5sum casa-dev-5.0.sif
-     wget https://brainvisa.info/download/casa-run-5.0.sif
-     wget https://brainvisa.info/download/casa-run-5.0.sif.json
-     md5sum casa-run-5.0.sif
 
 5. Create a directory for your development environment and set it up::
 
@@ -84,64 +81,47 @@ take inspiration from it to create your own personalized set-up.
 
 6. Edit the ``conf/svn.secret`` file with your BioProj login and password.
 
-7. Check out and compile an initial build::
+7. Check out and compile an initial build while you do the rest of the
+   configuration (until you run ``bbi_daily``)::
 
      "$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/bin/bv_maker
 
-8.  Create an inital user image. You may need to set the ``SINGULARITY_TMPDIR``
-    environment variable to a disk with enough free space (about twice the size
-    of the final user image)::
+8. Put the reference test data in
+   ``"$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/tests/ref/``. Best is to copy
+   it from a known-good source.
 
-      export SINGULARITY_TMPDIR=/volatile/tmp
-      "$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/bin/casa_distro_admin \
-          create_user_image \
-          version=nightly \
-          environment_name=brainvisa-master-5.0 \
-          name=brainvisa-master-5.0-userimage
+9. ``bbi_daily`` will install the compiled software in a user image, create a
+   fresh user environment from that user image, and run tests in there. You can
+   control this process with a few optional parameters, that you should insert
+   in the ``conf/casa_distro.json`` of the dev environment, as a new dictionary
+   under the ``bbi_user_config`` key. Below is the list of keys in this
+   dictionary with their default values::
 
-    - ``environment_name`` is the name of the development environment.
-    - ``name`` is the full name of the created user image. We change it from
-      the default, because we need it to be fully explicit: this name will be
-      the name of the build on the Jenkins page.
+     "bbi_user_config": {
+         "name": "<dev_name>-userimage",
+         "directory": "<dev_directory>/../<user_name>",
+         "image": "{base_directory}/<user_name>{extension}",
+         "version": "%Y-%m-%d"
+     }
 
-9.  Install the *environment* for your new user image::
+   Note that the value of ``version`` will be interpreted by
+   :func:`time.strftime`.
 
-      cd "$CASA_BASE_DIRECTORY"
-      mkdir brainvisa-master-5.0-userimage
-      singularity run --bind ./brainvisa-master-5.0-userimage:/casa/setup \
-          brainvisa-master-5.0-userimage.sif
-
-10. Add the ``branch`` and ``image_version`` keys to the
-    ``conf/casa_distro.json`` of the user environment: these variables are not
-    set by setup_user, but they are necessary for ``bbi_daily`` to make the
-    correct link between the environment of the user image and the
-    corresponding dev environment.
-
-    :note: Issue `#246 <https://github.com/brainvisa/casa-distro/issues/246>`_
-           tracks progress on that issue, this workaround will become obsolete
-           once that issue is fixed.
-
-11. Put the reference test data in place. Best is to copy it from a known-good
-    source. Beware that it must be copied *in both environments*:
-
-    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/tests/ref/``
-    - ``"$CASA_BASE_DIRECTORY"/brainvisa-master-5.0-userimage/tests/ref/``
-
-12. Check that the whole ``bbi_daily`` process is able to run successfully::
+10. Check that the whole ``bbi_daily`` process is able to run successfully::
 
       "$CASA_BASE_DIRECTORY"/brainvisa-master-5.0/bin/casa_distro_admin \
           bbi_daily
 
-    Beware that the output of each step is displayed only when that step is
-    finished, so the command may seem to hang for a long time.
+    This will take a long time. Beware that the output of each step is
+    displayed only when that step is finished, so the command may seem to hang
+    for a long time.
 
-13. Set the ``bbi_daily`` command to run on a regular basis using ``crontab -e``::
+11. Set the ``bbi_daily`` command to run on a regular basis using ``crontab -e``::
 
       MAILTO=your.email@host.example
       37 5 * * * PATH=/usr/local/bin:/usr/bin:/bin CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly SINGULARITY_TMPDIR=/volatile/tmp /volatile/a-sac-ns-brainvisa/bbi_nightly/brainvisa-master-5.0/bin/casa_distro_admin bbi_daily jenkins_server='https://brainvisa.info/builds'
 
-    :note: Remember to set all the needed environment variables, including
-           ``BRAINVISA_PUBLISH_SERVER`` if needed. ``PATH`` may need to be set
-           additionally, in case your Singularity installation is under
-           ``/usr/local`` (by default cron limits ``PATH`` to
+    :note: Remember to set all the needed environment variables. ``PATH`` may
+           need to be set additionally, in case your Singularity installation
+           is under ``/usr/local`` (by default cron limits ``PATH`` to
            ``/usr/bin:/bin``).
