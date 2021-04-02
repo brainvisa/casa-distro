@@ -699,6 +699,9 @@ def create_user_image(
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
+    output
+        default={output_default}
+        Path of the output image.
     force
         default={force_default}
         If "yes", "true" or 1, erase existing image without asking any
