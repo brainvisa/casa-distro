@@ -3,26 +3,9 @@ Automated tests with bbi_daily
 ==============================
 
 BBI stands for *BrainVISA Build Infrastructure*. The ``casa_distro_admin
-bbi_daily`` command orchestrates this process in a given BBE (BrainVISA Build
-Environment, a directory that serves as a *base directory* for casa-distro).
-The ``bbi_daily`` command will run the following main steps, while (optionally)
-logging detailed output to a Jenkins server:
-
-1. Self-update casa_distro with ``git pull``;
-
-2. Update the ``casa-run`` and ``casa-dev`` images from the BrainVISA website;
-
-3. Run a compilation in a dev environment (``bv_maker sources``, ``bv_maker
-   configure``, ``bv_maker build``, ``bv_maker doc``);
-
-4. Run all tests that would be run by ``bv_maker test`` in the dev environment;
-
-5. Install the compiled software in a new *user image* based on the
-   ``casa-run`` image (the software is installed under ``/casa/install``);
-
-6. Install a fresh *user environment* from that user image.
-
-7. Run all tests in that user environment.
+bbi_daily`` command orchestrates automated builds and tests in a given *base
+directory*. This page is written as a guide to setting up automated tests, see
+:ref:`bbi-daily-help` for the reference documentation.
 
 
 Walkthrough
@@ -40,16 +23,13 @@ take inspiration from it to create your own personalized set-up.
 
    (with ``$USER`` being ``a-sac-ns-brainvisa`` in this case).
 
-2. Create a directory dedicated to the nightly builds and change to it::
+2. Create a directory dedicated to the nightly builds and ``cd`` into it::
 
      export CASA_BASE_DIRECTORY=/volatile/a-sac-ns-brainvisa/bbi_nightly
      mkdir "$CASA_BASE_DIRECTORY"
      cd "$CASA_BASE_DIRECTORY"
 
-   This directory will be the *base directory* for your *BrainVISA Build
-   Environment* (*BBE*).
-
-3. Create the ``jenkins_auth`` file in the *BBE base directory*. This text file
+3. Create the ``jenkins_auth`` file in the *base directory*. This text file
    must consist of two lines: the first line contains the username on the
    Jenkins server, the second line contains the *token* that can be generated
    in the Jenkins web interface (click on the user on top right corner, select

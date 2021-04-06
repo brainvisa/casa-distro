@@ -268,6 +268,9 @@ Commands:
                 # https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
                 command_doc = re.split(
                     r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
+            commands_summary.append('\n')
+            commands_summary.append('.. _' + command.replace('_', '-')
+                                    + '-help:')
             commands_summary.append('')
             commands_summary.append(indent + '-' * len(command))
             commands_summary.append(indent + command)
