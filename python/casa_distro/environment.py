@@ -1012,6 +1012,11 @@ class BBIDaily:
                     os.makedirs(os.path.dirname(user_test_ref_dir))
                 os.symlink(os.path.join('/host', dev_test_ref_dir),
                            user_test_ref_dir)
+
+            for command in (dev_config.get('bbi_user_config', {})
+                            .get('setup_commands', [])):
+                subprocess.check_call(command, shell=True,
+                                      cwd=user_config['directory'])
         duration = int(1000 * (time.time() - start))
         self.log(user_config['name'], 'recreate user env', result, log,
                  duration=duration)
