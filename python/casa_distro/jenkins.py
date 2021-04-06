@@ -2,6 +2,8 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import xml.sax.saxutils.escape as xmlescape
+
 import requests
 import six
 
@@ -80,9 +82,9 @@ class BrainVISAJenkins:
         environment : name of the casa_distro environment.
         metadata     : values that are added to the description of the job
         '''
-        description = '\n'.join(
+        description = xmlescape('\n'.join(
             ['environment = {0}'.format(environment)]
-            + ['{0} = {1}'.format(*i) for i in metadata.items()])
+            + ['{0} = {1}'.format(*i) for i in metadata.items()]))
         r = self.post('createItem',
                       params={'name': environment},
                       headers={'Content-Type': 'application/xml'},
@@ -119,10 +121,11 @@ class BrainVISAJenkins:
         hex_log = binascii.hexlify(log)
         r = self.post('job/{0}/postBuildResult'.format(environment),
                       headers={'Content-Type': 'application/xml'},
-                      data=self.build_xml.format(build=task,
-                                                 hex_log=hex_log,
-                                                 result=result,
-                                                 duration=duration or '0',
-                                                 description=(description
-                                                              or '')))
+                      data=self.build_xml.format(
+                          build=xmlescape(task),
+                          hex_log=hex_log,
+                          result=xmlescape(result),
+                          duration=xmlescape(duration or '0'),
+                          description=xmlescape(description or ''),
+                      ))
         r.raise_for_status()
