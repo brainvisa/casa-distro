@@ -122,10 +122,10 @@ class BrainVISAJenkins:
         r = self.post('job/{0}/postBuildResult'.format(environment),
                       headers={'Content-Type': 'application/xml'},
                       data=self.build_xml.format(
-                          build=xmlescape(task),
+                          build=xmlescape(str(task)),
                           hex_log=hex_log,
-                          result=xmlescape(result),
-                          duration=xmlescape(duration or '0'),
+                          result=xmlescape(str(result)),
+                          duration=xmlescape(str(duration) or '0'),
                           description=xmlescape(description or ''),
                       ))
         r.raise_for_status()
