@@ -33,8 +33,8 @@ class BrainVISAJenkins:
 
     build_xml = ('<run>'
                  '<log encoding="hexBinary">{hex_log}</log>'
-                 '<result>{result}</result>'
-                 '<duration>{duration}</duration>'
+                 '<result>{result:d}</result>'
+                 '<duration>{duration:d}</duration>'
                  '<displayName>{build}</displayName>'
                  '<description>{description}</description>'
                  '</run>')
@@ -124,8 +124,8 @@ class BrainVISAJenkins:
                       data=self.build_xml.format(
                           build=xmlescape(str(task)),
                           hex_log=hex_log,
-                          result=xmlescape(str(result)),
-                          duration=xmlescape(str(duration) or '0'),
+                          result=result or 0,
+                          duration=int(round(duration)) if duration else 0,
                           description=xmlescape(description or ''),
                       ))
         r.raise_for_status()
