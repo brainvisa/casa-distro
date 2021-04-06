@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import xml.sax.saxutils.escape as xmlescape
+from xml.sax.saxutils import escape as xmlescape
 
 import requests
 import six
