@@ -2,8 +2,8 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import json
 from xml.sax.saxutils import escape as xmlescape
+
 
 import requests
 import six
@@ -83,14 +83,13 @@ class BrainVISAJenkins:
         environment : name of the casa_distro environment.
         metadata     : values that are added to the description of the job
         '''
-        description = json.dumps(metadata,
-                                 indent=4, separators=(',', ': '),
-                                 sort_keys=True)
+        description = xmlescape('\n'.join(
+            ['environment = {0}'.format(environment)]
+            + ['{0} = {1}'.format(*i) for i in metadata.items()]))
         r = self.post('createItem',
                       params={'name': environment},
                       headers={'Content-Type': 'application/xml'},
-                      data=self.job_xml.format(
-                          description=xmlescape(description)))
+                      data=self.job_xml.format(description=description))
         r.raise_for_status()
 
     def delete_job(self, job):

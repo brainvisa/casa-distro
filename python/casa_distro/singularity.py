@@ -698,6 +698,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         # output.
         verbose.flush()
 
+    retval = 127
     try:
         retval = subprocess.call(singularity, env=container_env)
     except KeyboardInterrupt:
