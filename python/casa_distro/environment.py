@@ -977,7 +977,7 @@ class BBIDaily:
             if commands:  # skip empty command lists
                 for i, command in enumerate(commands):
                     if float(timeouts[i]) < 9.999e+06:
-                        command = 'timeout -k 10 %d %s' % (timeouts[i],
+                        command = 'timeout -k 10 %s %s' % (timeouts[i],
                                                            command)
                         commands[i] = command
                 tests[label] = commands
