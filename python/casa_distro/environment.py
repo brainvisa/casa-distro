@@ -811,7 +811,7 @@ class BBIDaily:
                              **kwargs)
         output, nothing = p.communicate()
         log = ['-'*40,
-               ' '.join("'{}'".format(i) for i in args),
+               '$ ' + ' '.join(shlex_quote(arg) for arg in args),
                '-'*40,
                output]
 
@@ -895,18 +895,18 @@ class BBIDaily:
                     '--',
                     'sh', '-c', command
                 ])
+                log.append('=' * 80)
+                log.append(output)
+                log.append('=' * 80)
                 if result:
                     success = False
                     if result in (124, 128+9):
-                        log.append('TIMED OUT\n')
+                        log.append('TIMED OUT (exit code {0})'.format(result))
                     else:
-                        log.append('FAILED with exit code {0}: {1}\n'
-                                   .format(result, command))
+                        log.append('FAILED with exit code {0}'
+                                   .format(result))
                 else:
-                    log.append('SUCCESS: {0}\n'.format(command))
-                log.append('-' * 80)
-                log.append(output)
-                log.append('=' * 80)
+                    log.append('SUCCESS (exit code {0})'.format(result))
             duration = int(1000 * (time.time() - start))
             self.log(environment, test, (0 if success else 1),
                      '\n'.join(log), duration=duration)
