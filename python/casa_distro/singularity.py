@@ -451,13 +451,19 @@ def _nv_libs_binds():
     _nv_libs_binds() adds the additional missing lib directory (tls/)
 
     '''
-    if not find_executable('nvidia-container-cli'):
-        # here nvidia-container-cli is not involved, we don't handle this.
-        return []
+    try:
+        with open(os.devnull, 'w') as devnull:
+            out_data = subprocess.check_output(
+                ['nvidia-container-cli', 'list', '--libraries'],
+                bufsize=-1, stderr=devnull,
+                universal_newlines=True,  # return decoded str instead of bytes
+            )
+    except OSError:
+        return []  # nvidia-container-cli not found
+    except subprocess.CalledProcessError:
+        return []  # nvidia-container-cli returns an error
 
-    out_data = subprocess.check_output(['nvidia-container-cli', 'list',
-                                        '--libraries'], bufsize=-1)
-    libs = out_data.decode(locale.getpreferredencoding()).strip().split()
+    libs = out_data.strip().split()
     added_libs = []
     for lib in libs:
         ldir, blib = osp.split(lib)
