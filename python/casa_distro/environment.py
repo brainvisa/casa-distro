@@ -805,8 +805,8 @@ class BBIDaily:
             print()
             print(log)
 
-    def call_output(self, *args, **kwargs):
-        p = subprocess.Popen(*args, stdout=subprocess.PIPE,
+    def call_output(self, args, **kwargs):
+        p = subprocess.Popen(args, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, bufsize=-1,
                              **kwargs)
         output, nothing = p.communicate()
