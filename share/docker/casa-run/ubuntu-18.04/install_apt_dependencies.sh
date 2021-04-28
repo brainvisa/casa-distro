@@ -116,6 +116,7 @@ generally_useful_packages=(
     jarwrapper
     java-common
     java-wrappers
+    strace
 )
 
 # Dependencies of headless Anatomist
