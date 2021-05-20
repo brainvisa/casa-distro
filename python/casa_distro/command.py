@@ -190,6 +190,7 @@ def help(command=None, format='text', full=False, file=None):
         if ``true`` or ``yes`` or ``1``, display each subcommand parameters
         documentation in the general help.
     """
+    print('HELP, format:', format)
     full = check_boolean('full', full)
     if file is None:
         file = sys.stdout
@@ -269,9 +270,10 @@ Commands:
                 command_doc = re.split(
                     r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
             commands_summary.append('\n')
-            commands_summary.append('.. _' + command.replace('_', '-')
-                                    + '-help:')
-            commands_summary.append('')
+            if format == 'rst':
+                commands_summary.append('.. _' + command.replace('_', '-')
+                                        + '-help:')
+                commands_summary.append('')
             commands_summary.append(indent + '-' * len(command))
             commands_summary.append(indent + command)
             commands_summary.append(indent + '-' * len(command))
