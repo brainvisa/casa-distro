@@ -629,7 +629,7 @@ def publish_base_image(type,
     json.dump(metadata, open(metadata_file, 'w'),
               indent=4, separators=(',', ': '))
 
-    final_imagefile = osp.splitext(final_metafile)[0]
+    final_imagefile = osp.splitext(final_metafile)[0].decode()
     image_path, image_base = osp.split(image)
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                            image, '%s:%s' % (url, final_imagefile)])
