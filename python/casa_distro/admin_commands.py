@@ -523,7 +523,7 @@ finally:
             f.write(script)
 
         cmd = ['ssh', url, 'tempfile']
-        remote_script_filename = subprocess.check_output(cmd).strip()
+        remote_script_filename = subprocess.check_output(cmd).strip().decode()
 
         subprocess.check_call(['rsync',
                                script_filename[1],
@@ -534,7 +534,8 @@ finally:
 
         num_output = [x.strip()
                       for x in
-                      subprocess.check_output(cmd).strip().split('\n')]
+                      subprocess.check_output(cmd).strip().decode().split(
+                          '\n')]
 
         final_filename = num_output[0]
         num = num_output[1]
@@ -629,7 +630,8 @@ def publish_base_image(type,
     json.dump(metadata, open(metadata_file, 'w'),
               indent=4, separators=(',', ': '))
 
-    final_imagefile = osp.splitext(final_metafile)[0].decode()
+    final_imagefile = osp.splitext(final_metafile)[0]
+    print('final_imagefile:', repr(final_imagefile))
     image_path, image_base = osp.split(image)
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                            image, '%s:%s' % (url, final_imagefile)])
