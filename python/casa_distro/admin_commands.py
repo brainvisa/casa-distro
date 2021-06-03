@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import traceback
 import zipfile
 
@@ -27,7 +28,7 @@ from casa_distro.environment import (BBIDaily,
                                      iter_environments,
                                      run_container,
                                      select_environment,
-                                     get_run_image)
+                                     get_run_base_of_dev_image)
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
@@ -653,9 +654,7 @@ def create_user_image(
         image_version=None,
         environment_name=None,
         container_type=None,
-        output=osp.join(
-            default_base_directory,
-            '{name}{extension}'),
+        output='{base_directory}/{name}{extension}',
         force='no',
         base_directory=casa_distro_directory(),
         install='yes',
@@ -703,6 +702,9 @@ def create_user_image(
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
+    output
+        default={output_default}
+        Path of the output image.
     force
         default={force_default}
         If "yes", "true" or 1, erase existing image without asking any
@@ -749,6 +751,7 @@ def create_user_image(
     {verbose}
 
     """
+    base_directory = os.path.abspath(base_directory)
     install = check_boolean('install', install)
     install_doc = check_boolean('install_doc', install_doc)
     install_test = check_boolean('install_test', install_test)
@@ -779,9 +782,12 @@ def create_user_image(
     name = name.format(version=version, **config)
     kwargs = config.copy()
     kwargs.pop('name', None)
-    output = osp.expandvars(osp.expanduser(output)).format(name=name,
-                                                           extension=extension,
-                                                           **kwargs)
+    output = osp.expandvars(osp.expanduser(output)).format(
+        name=name,
+        extension=extension,
+        base_directory=base_directory,
+        **kwargs
+    )
     force = boolean_value(force)
 
     # update distro name
@@ -955,9 +961,8 @@ def create_user_image(
 
 
 @command
-def bbi_daily(type=None, distro=None, branch=None, system=None,
+def bbi_daily(distro=None, branch=None, system=None,
               image_version=None, name=None,
-              version=None,
               jenkins_server=None,
               jenkins_auth='{base_directory}/jenkins_auth',
               jenkins_password=None,
@@ -966,48 +971,78 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
               bv_maker_steps='sources,configure,build,doc',
               dev_tests='yes',
               update_user_images='yes',
+              install_doc='yes',
+              recreate_user_envs='yes',
               user_tests='yes',
               base_directory=casa_distro_directory(),
               verbose=None):
     '''BrainVISA Build infrastructure: daily/nightly automated tests
 
-    See :doc:`bbi_daily` for a complete introduction to automated tests.
+    In BrainVISA Build Infrastructure (BBI), the ``casa_distro_admin
+    bbi_daily`` command orchestrates automated builds and tests in a given
+    *base directory*. The ``bbi_daily`` command will run the following steps,
+    while (optionally) logging detailed output to a Jenkins server. See
+    :doc:`nightly` for a complete introduction to automated tests.
 
-    In BrainVISA Build Infrastructure (BBI), there are be some machines
-    that are be targeted to do some builds and tests. This command is
-    used to perform these tasks and is be typically used in a crontab
-    on each machine. It does the following things (and log progress and
-    results in Jenkins server) :
+    1. Self-update casa_distro using 'git pull' and restart itself for the next
+       steps
+    2. Select *dev* environments based on the provided filters (distro, branch,
+       system, image_version, name)
+    3. Update casa-dev and casa-run images used by the selected environments to
+       the latest version available from the BrainVISA website
+    4. For every selected *dev* environment, perform the following tasks:
 
-    - Update casa_distro to latest master version and restart for the next
-      steps
-    - Parse all configured environments selected with a filter as with mrun
-      command
-    - Update dev and run images used by selected environments from BrainVISA
-      site
-    - For all selected dev environments, perform the following tasks :
-        - bv_maker sources
-        - bv_maker configure
-        - bv_maker build
-        - bv_maker doc
-        - perform all tests (as bv_maker test)
-    - For all selected user environments
-        - find the corresponding dev environment
-        - recreate the user environment image with casa_distro_admin
-          create_user_image
-        - perform all tests defined in the correponding dev environment
-          but execute them in the user environment
+       1. ``bv_maker sources``
+       2. ``bv_maker configure``
+       3. ``bv_maker build``
+       4. ``bv_maker doc``
+       5. perform all tests in the *dev* environment (running the same commands
+          as ``bv_maker test``)
+       6. create or update a user image with ``casa_distro_admin
+          create_user_image`` (i.e. install the compiled software in a new
+          *user image* based on the ``casa-run`` image, where the software is
+          installed under ``/casa/install``)
+       7. install that user image into  a fresh *user* environment (reference
+          test data are automatically linked from the *dev* environment)
+       8. perform all tests in that *user* environment
+
+    The process can be controlled with the command-line options described
+    below, as well as some configuration keys that can be added to the
+    ``casa_distro.json`` of each dev environment:
+
+    - ``ctest_options``: list of command-line options to pass to ``ctest`` on
+      the command-line. ``ctest`` is used for listing the tests, so you may
+      pass filtering options to restrict the set of tests being run (e.g.
+      ``["-R", "disco"]``).
+
+    - ``bbi_user_config``: an optional dictionary for customizing the creation
+      of a the user image and the user environment, where tests of the user
+      image will be run. This dictionary can contain these keys:
+
+      - ``name``: the name of the environment where the user image will be set
+        up. Default: ``dev_config['name'] + '-userimage'``
+      - ``directory``: the full path where the user environment will be set up.
+        **Warning: this directory is erased every time ``bbi_daily`` is run.**
+        Default: ``{{base_directory}} + name``
+      - ``image``: the full path where the user image will be created.
+        Default: ``{{base_directory}} + name + extension``
+      - ``version``: the version string that will be set in the user image,
+        e.g. available as the ``CASA_VERSION`` environment variable and as the
+        ``version`` metadata key. This value ``version`` is passed to
+        :func:`time.strftime`. Default: ``'%Y-%m-%d'``.
+      - ``setup_commands``: list of shell commands that will be run in the
+        newly created user environment. May be used to run post-setup tasks,
+        such as configuring additional files in the home directory of the user
+        (e.g. configuring MATLAB licences...).
 
 
     Parameters
     ----------
-    {type}
     {distro}
     {branch}
     {system}
     {image_version}
     {name}
-    {version}
     jenkins_server
         default = {jenkins_server_default}
         Base URL of the Jenkins server used to send logs (e.g.
@@ -1034,6 +1069,14 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
     update_user_images
         default = {update_user_images_default}
         Boolean indicating if images of user environment must be recreated
+    install_doc
+        default = {install_doc_default}
+        Boolean indicating if the documentation must be installed in user
+        images
+    recreate_user_envs
+        default = {recreate_user_envs_default}
+        Boolean indicating if user environments must be wiped and recreated
+        using singularity --bind <dir>:/casa/setup ...
     user_tests
         default = {user_tests_default}
         Boolean indicating if the tests must be performed on user environments
@@ -1046,7 +1089,10 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
     update_base_images = boolean_value(update_base_images)
     dev_tests = boolean_value(dev_tests)
     update_user_images = boolean_value(update_user_images)
+    install_doc = boolean_value(install_doc)
+    recreate_user_envs = boolean_value(recreate_user_envs)
     user_tests = boolean_value(user_tests)
+    base_directory = os.path.abspath(base_directory)
 
     # Ensure that all recursively called instances of casa_distro will use
     # the correct base_directory.
@@ -1081,54 +1127,26 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
     succesful_tasks = []
     failed_tasks = []
     try:
-
         # Parse selected environments
-        dev_configs = {}
-        run_configs = []
-        images = set()
-        for config in iter_environments(base_directory,
-                                        type=type,
-                                        distro=distro,
-                                        branch=branch,
-                                        system=system,
-                                        image_version=image_version,
-                                        name=name,
-                                        version=version):
-            if config['type'] == 'dev':
-                key = (config['distro'], config['branch'], config['system'],
-                       config['image_version'])
-                if key in dev_configs:
-                    raise RuntimeError('Several dev environment found for '
-                                       'distro={0}, branch={1}, '
-                                       'system={2} and '
-                                       'image_version={3}'.format(*key))
-                dev_configs[key] = config
-                images.add(config['image'])
-            elif config['type'] in ('run', 'user'):
-                run_configs.append(config)
-                images.add(config['image'])
-
-        # Associate run environments to corresponding dev environment
-        for i in range(len(run_configs)):
-            config = run_configs[i]
-            key = (config['distro'], config['branch'], config['system'],
-                   config['image_version'])
-            dev_config = dev_configs.get(key)
-            if dev_config is None:
-                raise RuntimeError('No dev environment found for '
-                                   'distro={0}, branch={1}, '
-                                   'system={2} and '
-                                   'image_version={3}'.format(*key))
-            run_configs[i] = (config, dev_config)
-        dev_configs = list(dev_configs.values())
+        dev_configs = list(iter_environments(base_directory,
+                                             type='dev',
+                                             distro=distro,
+                                             branch=branch,
+                                             system=system,
+                                             image_version=image_version,
+                                             name=name))
 
         if update_base_images:
-            run_images = set()
-            for image in images:
-                run_image = get_run_image(image, base_directory=base_directory)
-                if run_image:
-                    run_images.add(run_image)
-            if bbi_daily.update_base_images(images.union(run_images)):
+            # First, update dev images
+            dev_images = set(config['image'] for config in dev_configs)
+            success = bbi_daily.update_base_images(dev_images)
+            # Then, download the corresponding run image (iterate on JSONs on
+            # the server until we find the run image with the correct uuid)
+            run_images = set(get_run_base_of_dev_image(image)
+                             for image in dev_images)
+            success = bbi_daily.update_base_images(run_images)
+
+            if success:
                 succesful_tasks.append('update_base_images')
             else:
                 failed_tasks.append('update_base_images')
@@ -1136,48 +1154,83 @@ def bbi_daily(type=None, distro=None, branch=None, system=None,
         failed_dev_configs = set()
         if bv_maker_steps:
             bv_maker_steps = bv_maker_steps.split(',')
-        for config in dev_configs:
+        for dev_config in dev_configs:
             failed = None
             if bv_maker_steps:
-                succesful, failed = bbi_daily.bv_maker(config, bv_maker_steps)
-                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                succesful, failed = bbi_daily.bv_maker(dev_config,
+                                                       bv_maker_steps)
+                succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
                                        for i in succesful)
                 if failed:
-                    failed_tasks.append('{0}: {1}'.format(config['name'],
+                    failed_tasks.append('{0}: {1}'.format(dev_config['name'],
                                                           failed))
                 if failed:
-                    failed_dev_configs.add(config['name'])
+                    failed_dev_configs.add(dev_config['name'])
                     continue
             if dev_tests:
-                succesful, failed = bbi_daily.tests(config, config)
-                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
+                succesful, failed = bbi_daily.tests(dev_config, dev_config)
+                succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
                                        for i in succesful)
-                failed_tasks.extend('{0}: {1}'.format(config['name'], i)
+                failed_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
                                     for i in failed)
                 if failed:
-                    failed_dev_configs.add(config['name'])
+                    failed_dev_configs.add(dev_config['name'])
                     continue
 
-        for config, dev_config in run_configs:
-            if dev_config['name'] in failed_dev_configs:
-                continue
+            # TODO: implement tests in VirtualBox user images
+            extension = '.sif'
+
+            user_config = dev_config.get('bbi_user_config', {})
+            if 'name' not in user_config:
+                user_config['name'] = dev_config['name'] + '-userimage'
+            if 'directory' not in user_config:
+                user_config['directory'] = os.path.join(base_directory,
+                                                        user_config['name'])
+            if 'image' not in user_config:
+                user_config['image'] = os.path.join(
+                    base_directory, user_config['name'] + extension)
+            if 'version' not in user_config:
+                user_config['version'] = '%Y-%m-%d'
+            user_config['version'] = time.strftime(user_config['version'])
+
+            # Wipe the environment before updating the image, because the image
+            # may be inside of the user_config['directory'].
+            if recreate_user_envs and os.path.exists(user_config['directory']):
+                shutil.rmtree(user_config['directory'])
+
             if update_user_images:
                 success = bbi_daily.update_user_image(
-                    config, dev_config,
-                    install_doc='doc' in bv_maker_steps,
+                    user_config, dev_config,
+                    install_doc=install_doc,
                 )
                 if success:
                     succesful_tasks.append('{0}: update user image'.format(
-                        config['name']))
+                        user_config['name']))
                 else:
                     failed_tasks.append('{0}: update user image'.format(
-                        config['name']))
+                        user_config['name']))
                     continue
+
+            if (recreate_user_envs
+                    or not os.path.exists(user_config['directory'])):
+                success = bbi_daily.recreate_user_env(user_config, dev_config)
+                if success:
+                    succesful_tasks.append('{0}: recreate user env'.format(
+                        user_config['name']))
+                else:
+                    failed_tasks.append('{0}: recreate user env'.format(
+                        user_config['name']))
+                    continue
+
+            # Reload the full user config from the installed user environment
+            user_config = select_environment(user_config['directory'])
+
             if user_tests:
-                succesful, failed = bbi_daily.tests(config, dev_config)
-                succesful_tasks.extend('{0}: {1}'.format(config['name'], i)
-                                       for i in succesful)
-                failed_tasks.extend('{0}: {1}'.format(config['name'], i)
+                succesful, failed = bbi_daily.tests(user_config, dev_config)
+                succesful_tasks.extend(
+                    '{0}: {1}'.format(user_config['name'], i)
+                    for i in succesful)
+                failed_tasks.extend('{0}: {1}'.format(user_config['name'], i)
                                     for i in failed)
                 if failed:
                     continue

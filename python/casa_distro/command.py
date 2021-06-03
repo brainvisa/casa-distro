@@ -190,6 +190,7 @@ def help(command=None, format='text', full=False, file=None):
         if ``true`` or ``yes`` or ``1``, display each subcommand parameters
         documentation in the general help.
     """
+    print('HELP, format:', format)
     full = check_boolean('full', full)
     if file is None:
         file = sys.stdout

@@ -94,3 +94,11 @@ $PIP2 install -U 'sphinx~=1.6.7'
 $PIP2 install 'nbsphinx~=0.4.3'
 $PIP2 install 'sphinx-gallery~=0.3.1'
 $PIP2 install 'jsonschema~=3.2.0' 'attrs~=20.3.0'
+
+
+# Fix up the matplotlib configuration (the default backend, TkAgg, does not
+# work because the python-tk package is not installed in our images).
+# Unfortunately matplotlib does not look for a global matplotlibrc in /etc, so
+# we have to edit the file in /usr/local in place.
+sed -i -e 's/^\s*backend\s*:\s*TkAgg\s*$/backend      : Qt5Agg/' \
+    /usr/local/lib/python2.7/dist-packages/matplotlib/mpl-data/matplotlibrc
