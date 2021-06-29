@@ -145,37 +145,41 @@ def create_image(base, base_metadata,
             msg = '''VirtualBox machine created. Now, perform the following
             steps:
 
-            1) Perform Ubuntu minimal installation with an autologin account
-               named "brainvisa" and with password "brainvisa"
+            1)  Perform Ubuntu minimal installation with an autologin account
+                named "brainvisa" and with password "brainvisa"
 
-            2) Perform system updates and install packages required for kernel
-               module creation :
+            2)  Perform system updates and install packages required for kernel
+                module creation :
 
                     sudo apt update
                     sudo apt upgrade
                     sudo apt install gcc make perl
 
-            3) Disable automatic software update in "Update" tab of Software &
-               Updates properties. Otherwise installation may fail because
-               installation database is locked.
+            3)  Add brainvisa user to group vboxsf
 
-            4) Disable screen saver.
+                    sudo addgroup brainvisa vboxsf
 
-            5) Set root password to "brainvisa" (this is necessary to
-               automatically connect to the VM to perform post-install)
+            4)  Disable automatic software update in "Update" tab of Software &
+                Updates properties. Otherwise installation may fail because
+                installation database is locked.
 
-            6) Reboot the VM
+            5)  Disable screen saver.
 
-            7) Download and install VirtualBox guest additions
+            6)  Set root password to "brainvisa" (this is necessary to
+                automatically connect to the VM to perform post-install)
 
-            8) Shut down the VM
+            7)  Reboot the VM
 
-            9) Check and adjust the VM in VirualBox (especially 3D
-               acceleration, processors and memory)
+            8)  Download and install VirtualBox guest additions
 
-            10) restart the command to export the VM to OVA format
+            9)  Shut down the VM
 
-            11) You can manually remove the VM and its associated files from
+            10) Check and adjust the VM in VirualBox (especially 3D
+                acceleration, processors and memory)
+
+            11) restart the command to export the VM to OVA format
+
+            12) You can manually remove the VM and its associated files from
                 VirtualBox.
             '''
         return (str(uuid.uuid4()), msg)
