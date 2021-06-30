@@ -8,15 +8,18 @@ import subprocess
 import sys
 import tempfile
 
+
 class LocalInstaller:
     '''
     class to run locally commands provided by an image builder
     '''
 
-    def __init__(self, log_file, user='brainvisa'):
+    def __init__(self, log_file, user='brainvisa', image_version='0.0'):
         self.name = 'local machine'
         self.user = user
         self.log_file = log_file
+        self.image_id = subprocess.check_output(['hostid']).strip()
+        self.image_version = image_version
         if not osp.exists(self.log_file):
             self.log = {}
         else:
@@ -83,7 +86,7 @@ def get_image_builder(build_file):
     '''
     v = {}
     exec(compile(open(build_file, "rb").read(),
-            build_file, 'exec'), v, v)
+                 build_file, 'exec'), v, v)
     if 'builder' not in v:
         raise RuntimeError(
             'No builder object defined in {0}'.format(build_file))

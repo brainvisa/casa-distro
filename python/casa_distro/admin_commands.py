@@ -1253,9 +1253,8 @@ def bbi_daily(distro=None, branch=None, system=None,
 
 
 @command
-def local_install(type, steps=None, system='*',
+def local_install(type, action=None, system='*',
                   log_file='/etc/casa_local_install.log',
-                  action=None,
                   user='brainvisa'):
     '''
     Run the installation procedure to create a run or dev image on the
@@ -1269,24 +1268,6 @@ def local_install(type, steps=None, system='*',
     type
         Type of image to install. Either "run" or "dev".
 
-    steps
-        default={steps_default}
-
-        Installation steps to perform. If not given, the steps not yet
-        done are displayed. Can be a comma separated list of step names
-        or "all" to perform all steps not already done or "next" to perform
-        only the next undone step.
-
-    system
-        default={system_default}
-
-        System to used when searching for an image builder file. This is
-        used as a shell pattern, the default value match any system.
-
-    log_file
-        default={log_file_default}
-
-        File where information about steps that have been performed is stored.
 
     action
         default={action_default}
@@ -1298,6 +1279,17 @@ def local_install(type, steps=None, system='*',
           "all" : perform all action not already done
           coma separated list of acions : perform all selected actions
               even if they were already done
+
+    system
+        default={system_default}
+
+        System to used when searching for an image builder file. This is
+        used as a shell pattern, the default value match any system.
+
+    log_file
+        default={log_file_default}
+
+        File where information about steps that have been performed is stored.
 
     user
         default={user_default}
