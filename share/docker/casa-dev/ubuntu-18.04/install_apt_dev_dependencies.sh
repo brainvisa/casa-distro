@@ -128,9 +128,11 @@ development_tools=(
     nano
     python-autopep8
     python-dbg
+    python-objgraph
     spyder
     vim
     xterm
+    xdot
 )
 
 singularity_build_dependencies=(
@@ -185,6 +187,7 @@ python3_packages=(
     python3-tqdm
     python3-mpi4py
     python3-paramiko
+    python3-objgraph
 
     # These packages used to be installed with PIP, presumably because they
     # depend on NumPy, but it seems that they do not depend on a particular ABI
