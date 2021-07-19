@@ -44,7 +44,8 @@ install:
 script: tox
 
 deploy:
-  provider: pages:git
+  provider: pages
+  strategy: git
   edge: true # opt in to dpl v2 as recommended on https://docs.travis-ci.com/user/deployment/pages/
   cleanup: false
   token: $GITHUB_TOKEN
