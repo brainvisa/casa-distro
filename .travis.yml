@@ -8,7 +8,7 @@ arch:
   - arm64
 os: linux
 language: python
-dist: xenial
+dist: bionic
 
 jobs:
   include:
