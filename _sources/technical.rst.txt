@@ -16,16 +16,68 @@ Technical issues
 This document explains how to setup and use some container systems (Singularity, Docker), and tries to solve some technical issues which can occur when using them.
 
 
+Home directory and configuration files in casa-distro containers
+================================================================
+
+The virtual machine variant of ``casa-distro`` images (VirtualBox) are self-contained and are using an internal user (``brainvisa`` in |bv| distributions). The remaining of this section thus applies to the container-based variants of ``casa-distro`` (singularity and docker).
+
+To run the container, ``casa-distro`` (any of ``bv``, ``casa_distro`` and ``casa_distro_admin`` commands) is using an :ref:`environment` directory on the host filesystem. It is used to read configuration before starting the container, and to store files which may be shared between the container and the host filesystem.
+
+The environment directory may be a personal user installation (if a user installs BrainVisa, or a developer environment, for himself), which we name *user environment*, or a *shared enviroment* (if an administrator installs BrainVisa for all users on a network filesystem, typically). In the first case the user has full access to the environment files (he owns the directory and files), but in the second case the shared environment directory and files belong to the administrator, and are read-only for the user.
+
+
+Configuration files
+-------------------
+
+A first configuration file is read by ``casa-distro``, located on the host filesystem at the following location::
+
+    <environment_dir>/conf/casa_distro.json
+
+which, inside the container, is seen as::
+
+    /casa/host/conf/casa_distro.json
+
+This environment file is completed by a user file, which is located in the host system user directory, at the following location::
+
+    $HOME/.config/casa-distro/casa_distro_3.json
+
+The mount points configured in the ``bv`` graphical tool are saved in this latter file, which is shared across all environments run by the user.
+
+
+Home directory
+--------------
+
+Containers are running with the same user as the host system user, in order to have the same permissions and identity, especially in regards to files access and ownership. However they are running with a *separate user home directory*. The reasons is to avoid sharing copnfigs and paths which would be specific to the host system and those for the container, which may be incompatible.
+
+* In "user environments" (those owned by the user with read-write permissions on the environment directory), the container user home directory is located inside the environment directory. On host side, this is::
+
+      <environment_dir>/home/
+
+  Inside the container, the same directory is seen under::
+
+      /casa/host/home
+
+* In "shared environments", the user cannot write in the environment directory, thus the user home directory has to be outside of it. ``casa-distro`` is using the following location rule::
+
+      $HOME/.local/share/casa-distro/<environment_full_dir>
+
+  where ``<environment_full_dir>`` is obtained by replacing, in the full path of the environment directory, directory separators (``/`` on Unix systems or ``\`` on Windows systems) by underscores (``_``). Ex::
+
+    /opt/brainvisa/brainvisa-5.0.0  ->  $HOME/.local/share/casa-distro/opt_brainvisa_brainvisa-5.0.0
+
+
 Containers and distributed execution
 ====================================
 
 |bv| can perform distributed execution, using :soma-workflow:`Soma-Workflow <index.html>`.
 
-But soma-workflow distributed execution, in its current released version, will not spawn Docker or Singularity (or casa_distro run) in remote processing. We have made modifications in the `github/master branch <https://github.com/neurospin/soma-workflow>`_ (which is included in brainvisa/master branches) to add support for it. However it needs some additional configuration on server side to specify how to run the containers.
+in an installed :ref:`environment`, commands are also available via "run scripts", located in ``<environment>/host/bin/``. If this directory is in the computing resource nodes ``PATH`` environment variable, then the commands will run the container transparently.
 
-Alternately, in an installed :ref:`environment`, commands are also available via "run scripts", located in ``<environment>/host/host_bin/``. If this directory is in the computing resource ``PATH`` environment variable, then the commands will run the container transparently.
+Alternately, soma-workflow 3.1 brings support to spawn Docker or Singularity (or casa_distro) in remote processing. However it needs some additional configuration on server side to specify how to run the containers.
 
 For commands run directly through the ``python`` command, more work will be required because the system ``python`` is, of course, not overloaded in BrainVISA/Casa run scripts.
+
+Please read :soma-workflow:`Soma-Workflow documentation about it <install_config.html#running-servers-and-jobs-in-a-container>`.
 
 Remember that software running that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on ``casa_distro`` commandline, or in the file ``container_options`` item in ``<casa_distro_environment>/host/conf/casa_distro.json``.
 
@@ -551,6 +603,25 @@ VirtualBox images are crashing when booting
 +++++++++++++++++++++++++++++++++++++++++++
 
 I personally had trouble getting the VirtualBox image to actually run on MacOS 10.15. The virtual machine consistently crashed at boot time. After inspecting the logs I found out that the sound card support might be the cause, and I had to use a "fake sound device" in the virtualbox image settings. Then it appeared that all graphics display was notably slow (either 2D and 3D), whatever video / accelerated 3D support options. And icons and fonts in the virtual machine were microscopic, almost impossible to read, and difficult if even possible to configure in the linux desktop. The "zoom factor x2" option in virtualbox was very handy for that, but reduced the actual resolution by a factor of 2 if I understand. Apart from these limitations, the software was running.
+
+We have a working install procedure from one of our friends using a Mac here:
+
+On a Mac Book Pro, with MacOs 10.15.7 and 16Gb of memory:
+
+* Install VirtualBox v 6.1
+* Import the Brainvisa VM
+* Disable sound (fake sound device)
+* Guests additions: run the Linux additions after mounting the CD and opening its contents.
+* Shutdown the virtual machine, go to its configuration, and in the 'Display' section, chose 'Graphics Controller: VMSVGA', tick 'Activate 3D acceleration' and increase the 'Video memory' to 128Mb.
+* setup shared directory to mount the computer filesystem (my user directory). For this I went into the 'shared directory' section of the VM configuration, and asked to have ``/media/olivier`` to point on my home directory (on my Mac: ``/Users/olivier``) .
+* There is an issue to fix before accessing ``/media/olivier``, because of a permission issue. It is fixed by typing the following into the terminal::
+
+    sudo usermod -aG vboxsf $(whoami)
+
+* reboot the VM.
+* there is still a keyboard mapping issue, it can probably be fixed in the linux desktop config somewhere.
+
+Good to go !
 
 
 .. _win_sing_troubleshooting:

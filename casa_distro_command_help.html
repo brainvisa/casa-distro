@@ -1,33 +1,27 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Common parameters: &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
-    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
     <link rel="search" title="Search" href="search.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Common parameters:</a></li> 
       </ul>
     </div>  
 
@@ -36,779 +30,754 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <p>Casa_distro is the BrainVISA suite distribution swiss knife.
+  <p>HELP, format: rst
+Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See <a class="reference external" href="http://brainivsa.info/casa-distro">http://brainivsa.info/casa-distro</a> and
 <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a> for more information</p>
-<p>Version : 3.0.0</p>
+<p>Version : 3.1.0</p>
 <p>usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="o">&lt;</span><span class="n">general</span> <span class="n">options</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">command</span> <span class="n">parameters</span><span class="o">&gt;...</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="o">&lt;</span><span class="n">general</span> <span class="n">options</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">command</span> <span class="n">parameters</span><span class="o">&gt;...</span><span class="p">]</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt>general optional arguments:</dt>
-<dd><table class="first last docutils option-list" frame="void" rules="none">
-<col class="option" />
-<col class="description" />
-<tbody valign="top">
-<tr><td class="option-group">
-<kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></td>
-<td>Display as much information as possible.</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--version</span></kbd></td>
-<td>Display casa-distro version number and exit.</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
-<td>Display help message and exit.
+<dl>
+<dt>general optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></dt>
+<dd><p>Display as much information as possible.</p>
+</dd>
+<dt><kbd><span class="option">--version</span></kbd></dt>
+<dd><p>Display casa-distro version number and exit.</p>
+</dd>
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>Display help message and exit.
 If used after command name, display only the help of this
-command.</td></tr>
-</tbody>
-</table>
+command.</p>
 </dd>
 </dl>
-<div class="section" id="common-parameters">
+</dd>
+</dl>
+<section id="common-parameters">
 <h1>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this headline">¶</a></h1>
 <p>Most commands accept more or less the same parameters.</p>
 <p>Many subcommands need <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> selection specifications: <a class="reference internal" href="casa_distro_command.html#environment-options"><span class="std std-ref">see the documentation on how to specify an environment</span></a>.</p>
-<dl class="docutils">
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dl>
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="commands">
+</section>
+<section id="commands">
 <h1>Commands:<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="help">
-<h2>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
+<section id="help">
+<span id="help-help"></span><h2>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
 <p>Print global help or help about a command.</p>
-<div class="section" id="parameters">
+<section id="parameters">
 <h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt>format</dt>
-<dd>format help text in a given text format. Valid values are “text”
-(default) for raw text, or rst (RST/sphinx format).</dd>
-<dt>full</dt>
-<dd>if <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">yes</span></code> or <code class="docutils literal"><span class="pre">1</span></code>, display each subcommand parameters
-documentation in the general help.</dd>
+<dl class="simple">
+<dt>format</dt><dd><p>format help text in a given text format. Valid values are “text”
+(default) for raw text, or rst (RST/sphinx format).</p>
+</dd>
+<dt>full</dt><dd><p>if <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">yes</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>, display each subcommand parameters
+documentation in the general help.</p>
+</dd>
 </dl>
-</div>
-</div>
-<div class="section" id="setup-user">
-<h2>setup_user<a class="headerlink" href="#setup-user" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="setup-user">
+<span id="setup-user-help"></span><h2>setup_user<a class="headerlink" href="#setup-user" title="Permalink to this headline">¶</a></h2>
 <p>Create a new user environment
 Parameters
 ———-
 distro</p>
 <blockquote>
-<div>default=None
+<div><p>default=None
 Distro used to build this environment. This is typically “brainvisa”,
 “opensource” or “cati_platform”. Use “casa_distro distro” to list all
 currently available distro. Choosing a distro is mandatory to create a
 new environment. If the environment already exists, distro must be set
-only to reset configuration files to their default values.</div></blockquote>
-<dl class="docutils">
-<dt>version</dt>
-<dd>version of the distro to use. By default the release with highest
-version is selected.</dd>
-<dt>system</dt>
-<dd>System to use inside this environment.</dd>
-<dt>name</dt>
-<dd>default={distro}-{version}
+only to reset configuration files to their default values.</p>
+</div></blockquote>
+<dl>
+<dt>version</dt><dd><p>version of the distro to use. By default the release with highest
+version is selected.</p>
+</dd>
+<dt>system</dt><dd><p>System to use inside this environment.</p>
+</dd>
+<dt>name</dt><dd><p>default={distro}-{version}
 Name of the environment. No other environment must have the same name
 (including developer environments).
-This name may be used later to select the environment to run.</dd>
-<dt>container_type</dt>
-<dd>default=None
+This name may be used later to select the environment to run.</p>
+</dd>
+<dt>container_type</dt><dd><p>default=None
 Type of virtual appliance to use. Either “singularity”, “vbox” or
 “docker”. If not given try to gues according to installed container
-software in the following order : Singularity, VirtualBox and Docker.</dd>
-<dt>writable</dt>
-<dd>size of a writable file system that can be used to make environement
+software in the following order : Singularity, VirtualBox and Docker.</p>
+</dd>
+<dt>writable</dt><dd><p>size of a writable file system that can be used to make environement
 specific modification to the container file system. The size can be
 written in bytes as an integer, or in kilobytes with suffix “K”, or in
 megabytes qith suffix “M”, or in gygabytes with suffix “G”. If size is
 not 0, this will create an overlay.img file in the base environment
 directory. This file will contain the any modification done to the
-container file system.</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+container file system.</p>
 </dd>
-<dt>image</dt>
-<dd>default={base_directory}/{distro}-{version}{extension}
-Location of the virtual image for this environement.</dd>
-<dt>url</dt>
-<dd>default=https://brainvisa.info/download/releases/{container_type}
-URL where to download image if it is not found.</dd>
-<dt>output</dt>
-<dd>default={base_directory}/{name}
-Directory where the environement will be stored.</dd>
-<dt>force</dt>
-<dd>default=False
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
+can be passed on the commandline, or set via the
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+</dd>
+<dt>image</dt><dd><p>default={base_directory}/{distro}-{version}{extension}
+Location of the virtual image for this environement.</p>
+</dd>
+<dt>url</dt><dd><p>default=https://brainvisa.info/download
+URL where to download image if it is not found.</p>
+</dd>
+<dt>output</dt><dd><p>default={base_directory}/{name}
+Directory where the environement will be stored.</p>
+</dd>
+<dt>force</dt><dd><p>default=False
 force overwriting any existing matching environement. By default
-casa_distro will refuse to overwrite an existing one.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=True</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+casa_distro will refuse to overwrite an existing one.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=True</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="setup-dev">
-<h2>setup_dev<a class="headerlink" href="#setup-dev" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="setup-dev">
+<span id="setup-dev-help"></span><h2>setup_dev<a class="headerlink" href="#setup-dev" title="Permalink to this headline">¶</a></h2>
 <p>Create a new developer environment
 Parameters
 ———-
 distro</p>
 <blockquote>
-<div>default=opensource
+<div><p>default=opensource
 Distro used to build this environment. This is typically “brainvisa”,
 “opensource” or “cati_platform”. Use “casa_distro distro” to list all
 currently available distro. Choosing a distro is mandatory to create a
 new environment. If the environment already exists, distro must be set
-only to reset configuration files to their default values.</div></blockquote>
-<dl class="docutils">
-<dt>branch</dt>
-<dd>default=master
+only to reset configuration files to their default values.</p>
+</div></blockquote>
+<dl>
+<dt>branch</dt><dd><p>default=master
 Name of the source branch to use for dev environments. Either
-“latest_release”, “master” or “integration”.</dd>
-<dt>system</dt>
-<dd>System to use with this environment. By default, it uses the first
-supported system of the selected distro.</dd>
-<dt>name</dt>
-<dd>default={distro}-{branch}-{system}
+“latest_release”, “master” or “integration”.</p>
+</dd>
+<dt>system</dt><dd><p>System to use with this environment. By default, it uses the first
+supported system of the selected distro.</p>
+</dd>
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=1.0</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt>name</dt><dd><p>default={distro}-{branch}-{image_version}
 Name of the environment. No other environment must have the same name
 (including non developer environments).
-This name may be used later to select the environment to run.</dd>
-<dt>container_type</dt>
-<dd>default=None
+This name may be used later to select the environment to run.</p>
+</dd>
+<dt>container_type</dt><dd><p>default=None
 Type of virtual appliance to use. Either “singularity”, “vbox” or
 “docker”. If not given try to gues according to installed container
-software in the following order : Singularity, VirtualBox and Docker.</dd>
-<dt>writable</dt>
-<dd>size of a writable file system that can be used to make environement
+software in the following order : Singularity, VirtualBox and Docker.</p>
+</dd>
+<dt>writable</dt><dd><p>size of a writable file system that can be used to make environement
 specific modification to the container file system. The size can be
 written in bytes as an integer, or in kilobytes with suffix “K”, or in
 megabytes qith suffix “M”, or in gygabytes with suffix “G”. If size is
 not 0, this will create an overlay.img file in the base environment
 directory. This file will contain the any modification done to the
-container file system.</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+container file system.</p>
 </dd>
-<dt>image</dt>
-<dd>default={base_directory}/casa-dev-{system}{extension}
-Location of the virtual image for this environement.</dd>
-<dt>url</dt>
-<dd>default=https://brainvisa.info/download/{container_type}
-URL where to download image if it is not found.</dd>
-<dt>output</dt>
-<dd>default={base_directory}/{name}
-Directory where the environement will be stored.</dd>
-<dt>force</dt>
-<dd>default=False
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
+can be passed on the commandline, or set via the
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+</dd>
+<dt>image</dt><dd><p>default={base_directory}/casa-dev-{image_version}{extension}
+Location of the virtual image for this environement.</p>
+</dd>
+<dt>url</dt><dd><p>default=https://brainvisa.info/download
+URL where to download image if it is not found.</p>
+</dd>
+<dt>output</dt><dd><p>default={base_directory}/{name}
+Directory where the environement will be stored.</p>
+</dd>
+<dt>force</dt><dd><p>default=False
 force overwriting any existing matching environement. By default
-casa_distro will refuse to overwrite an existing one.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=True</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+casa_distro will refuse to overwrite an existing one.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=True</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="distro">
-<h2>distro<a class="headerlink" href="#distro" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="distro">
+<span id="distro-help"></span><h2>distro<a class="headerlink" href="#distro" title="Permalink to this headline">¶</a></h2>
 <p>List all available distro and provide information for each one.</p>
-</div>
-<div class="section" id="list">
-<h2>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="list">
+<span id="list-help"></span><h2>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h2>
 <p>List run or dev environments created by “setup”/”setup_dev” command.</p>
-<div class="section" id="id1">
+<section id="id1">
 <h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
-<dt>json</dt>
-<dd>default = no
+<dt>json</dt><dd><p>default = no
 The output is written as a list of configuration dictionaries in
-JSON format.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+JSON format.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="run">
-<h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="run">
+<span id="run-help"></span><h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
 <p>Start any command in a selected run or dev environment</p>
 <p>example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">branch</span><span class="o">=</span><span class="n">master</span> <span class="n">ls</span> <span class="o">-</span><span class="n">als</span> <span class="o">/</span><span class="n">casa</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">branch</span><span class="o">=</span><span class="n">master</span> <span class="n">ls</span> <span class="o">-</span><span class="n">als</span> <span class="o">/</span><span class="n">casa</span>
 </pre></div>
 </div>
-<div class="section" id="id2">
+<section id="id2">
 <h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>version</dt>
-<dd>If given, select environment by its version (only applicable to user
-environments, not dev)</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
+environments, not dev)</p>
 </dd>
-<dt>gui</dt>
-<dd><p class="first">default=True</p>
-<p class="last">If <code class="docutils literal"><span class="pre">no</span></code>, <code class="docutils literal"><span class="pre">false</span></code> or <code class="docutils literal"><span class="pre">0</span></code>, command is not using a graphical user
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
+can be passed on the commandline, or set via the
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+</dd>
+<dt>gui</dt><dd><p>default=True</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">no</span></code>, <code class="docutils literal notranslate"><span class="pre">false</span></code> or <code class="docutils literal notranslate"><span class="pre">0</span></code>, command is not using a graphical user
 interface (GUI). Nothing is done to connect the container to a
 graphical interface. This option may be necessary in context where
 a graphical interface is not available.</p>
 </dd>
-<dt>opengl</dt>
-<dd><p class="first">default=auto</p>
+<dt>opengl</dt><dd><p>default=auto</p>
 <p>Setup different ways of trying to use OpenGL 3D rendering and GPU.
-<code class="docutils literal"><span class="pre">auto</span></code>, <code class="docutils literal"><span class="pre">container</span></code>, <code class="docutils literal"><span class="pre">nv</span></code>, or <code class="docutils literal"><span class="pre">software</span></code>.</p>
-<ul class="last simple">
-<li><code class="docutils literal"><span class="pre">auto</span></code>: use a heuristic to choose the best option that is safe
-based on the host configuration</li>
-<li><code class="docutils literal"><span class="pre">container</span></code>: passes no special options to Singularity: the mesa
-installed in the container is used</li>
-<li><code class="docutils literal"><span class="pre">nv</span></code> tries to mount the proprietary NVidia driver of the host (linux)
-system in the container</li>
-<li><code class="docutils literal"><span class="pre">software</span></code> sets LD_LIBRARY_PATH to use a software-only OpenGL
+<code class="docutils literal notranslate"><span class="pre">auto</span></code>, <code class="docutils literal notranslate"><span class="pre">container</span></code>, <code class="docutils literal notranslate"><span class="pre">nv</span></code>, or <code class="docutils literal notranslate"><span class="pre">software</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">auto</span></code>: use a heuristic to choose the best option that is safe
+based on the host configuration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">container</span></code>: passes no special options to Singularity: the mesa
+installed in the container is used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nv</span></code> tries to mount the proprietary NVidia driver of the host (linux)
+system in the container</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">software</span></code> sets LD_LIBRARY_PATH to use a software-only OpenGL
 rendering. This solution is the slowest but is a fallback when no
-other solution works.</li>
+other solution works.</p></li>
 </ul>
 </dd>
-<dt>root</dt>
-<dd><p class="first">default=False</p>
-<p class="last">If <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>, start execution as system administrator. For
+<dt>root</dt><dd><p>default=False</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>, start execution as system administrator. For
 Singularity container, this requires administrator privileges on host
 system.</p>
 </dd>
-<dt>cwd</dt>
-<dd>Set current working directory to the given value before launching
+<dt>cwd</dt><dd><p>Set current working directory to the given value before launching
 the command. By default, it is the same working directory as on the
-host</dd>
-<dt>env</dt>
-<dd>Comma separated list of environment variables to pass to the command.
-Each variable must have the form name=value.</dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>container_options</dt>
-<dd>Comma separated list of options to add to the command line used to
-call the container system.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+host</p>
+</dd>
+<dt>env</dt><dd><p>Comma separated list of environment variables to pass to the command.
+Each variable must have the form name=value.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>container_options</dt><dd><p>Comma separated list of options to add to the command line used to
+call the container system.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="pull-image">
-<h2>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="pull-image">
+<span id="pull-image-help"></span><h2>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this headline">¶</a></h2>
 <p>Update the container images. By default all images that are used by at
 least one environment are updated. There are two ways of selecting the
 image(s) to be downloaded:</p>
 <ol class="arabic">
-<li><p class="first">filtered by environment, using the <code class="docutils literal"><span class="pre">name</span></code> selector, or a combination
-of <code class="docutils literal"><span class="pre">distro</span></code>, <code class="docutils literal"><span class="pre">branch</span></code>, and <code class="docutils literal"><span class="pre">system</span></code>.</p>
+<li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
+of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">image_version</span></code>.</p>
+<blockquote>
+<div><p>casa_distro pull_image type=dev image_version=5.0</p>
+</div></blockquote>
 </li>
-<li><p class="first">directly specifying a full image name, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">pull_image</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span>
+<li><p>directly specifying an image name (<em>not</em> including bulild_number),
+e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">pull_image</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="n">sif</span>
 </pre></div>
 </div>
 </li>
 </ol>
-<div class="section" id="id3">
+<p>Note that even though the build number does not appear in the local image
+name, this command will always pull the image with the highest
+build_number, e.g. the image that is named casa-dev-5.0-1.sif on the server
+will be downloaded to a file named casa-dev-5.0.sif.</p>
+<section id="id3">
 <h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
+</dd>
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
+environments, not dev)</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>url</dt>
-<dd>default=https://brainvisa.info/download
-URL where to download image if it is not found.</dd>
-<dt>force</dt>
-<dd>default=False
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>url</dt><dd><p>default=https://brainvisa.info/download
+URL where to download image if it is not found.</p>
+</dd>
+<dt>force</dt><dd><p>default=False
 force re-download of images even if they are locally present and
-up-to-date.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+up-to-date.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="list-images">
-<h2>list_images<a class="headerlink" href="#list-images" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="list-images">
+<span id="list-images-help"></span><h2>list_images<a class="headerlink" href="#list-images" title="Permalink to this headline">¶</a></h2>
 <p>List the locally installed container images.
 There are two ways of selecting the image(s):</p>
 <ol class="arabic">
-<li><p class="first">filtered by environment, using the <code class="docutils literal"><span class="pre">name</span></code> selector, or a combination
-of <code class="docutils literal"><span class="pre">distro</span></code>, <code class="docutils literal"><span class="pre">branch</span></code>, and <code class="docutils literal"><span class="pre">system</span></code>.</p>
-</li>
-<li><p class="first">directly specifying a full image name, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">list_image</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span>
+<li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
+of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">system</span></code>.</p></li>
+<li><p>directly specifying a full image name, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">list_image</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span>
 </pre></div>
 </div>
 </li>
 </ol>
-<div class="section" id="id4">
+<section id="id4">
 <h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
+environments, not dev)</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="shell">
-<h2>shell<a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="shell">
+<span id="shell-help"></span><h2>shell<a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h2>
 <p>Start a bash shell in the configured container with the given pository
 configuration.</p>
-<div class="section" id="id5">
+<section id="id5">
 <h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>version</dt>
-<dd>If given, select environment by its version (only applicable to user
-environments, not dev)</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
+environments, not dev)</p>
 </dd>
-<dt>gui</dt>
-<dd><p class="first">default=True</p>
-<p class="last">If <code class="docutils literal"><span class="pre">no</span></code>, <code class="docutils literal"><span class="pre">false</span></code> or <code class="docutils literal"><span class="pre">0</span></code>, command is not using a graphical user
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
+can be passed on the commandline, or set via the
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+</dd>
+<dt>gui</dt><dd><p>default=True</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">no</span></code>, <code class="docutils literal notranslate"><span class="pre">false</span></code> or <code class="docutils literal notranslate"><span class="pre">0</span></code>, command is not using a graphical user
 interface (GUI). Nothing is done to connect the container to a
 graphical interface. This option may be necessary in context where
 a graphical interface is not available.</p>
 </dd>
-<dt>opengl</dt>
-<dd><p class="first">default=auto</p>
+<dt>opengl</dt><dd><p>default=auto</p>
 <p>Setup different ways of trying to use OpenGL 3D rendering and GPU.
-<code class="docutils literal"><span class="pre">auto</span></code>, <code class="docutils literal"><span class="pre">container</span></code>, <code class="docutils literal"><span class="pre">nv</span></code>, or <code class="docutils literal"><span class="pre">software</span></code>.</p>
-<ul class="last simple">
-<li><code class="docutils literal"><span class="pre">auto</span></code>: use a heuristic to choose the best option that is safe
-based on the host configuration</li>
-<li><code class="docutils literal"><span class="pre">container</span></code>: passes no special options to Singularity: the mesa
-installed in the container is used</li>
-<li><code class="docutils literal"><span class="pre">nv</span></code> tries to mount the proprietary NVidia driver of the host (linux)
-system in the container</li>
-<li><code class="docutils literal"><span class="pre">software</span></code> sets LD_LIBRARY_PATH to use a software-only OpenGL
+<code class="docutils literal notranslate"><span class="pre">auto</span></code>, <code class="docutils literal notranslate"><span class="pre">container</span></code>, <code class="docutils literal notranslate"><span class="pre">nv</span></code>, or <code class="docutils literal notranslate"><span class="pre">software</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">auto</span></code>: use a heuristic to choose the best option that is safe
+based on the host configuration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">container</span></code>: passes no special options to Singularity: the mesa
+installed in the container is used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nv</span></code> tries to mount the proprietary NVidia driver of the host (linux)
+system in the container</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">software</span></code> sets LD_LIBRARY_PATH to use a software-only OpenGL
 rendering. This solution is the slowest but is a fallback when no
-other solution works.</li>
+other solution works.</p></li>
 </ul>
 </dd>
-<dt>root</dt>
-<dd><p class="first">default=False</p>
-<p class="last">If <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>, start execution as system administrator. For
+<dt>root</dt><dd><p>default=False</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>, start execution as system administrator. For
 Singularity container, this requires administrator privileges on host
 system.</p>
 </dd>
-<dt>cwd</dt>
-<dd>Set current working directory to the given value before launching
+<dt>cwd</dt><dd><p>Set current working directory to the given value before launching
 the command. By default, it is the same working directory as on the
-host</dd>
-<dt>env</dt>
-<dd>Comma separated list of environment variables to pass to the command.
-Each variable must have the form name=value.</dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>container_options</dt>
-<dd>Comma separated list of options to add to the command line used to
-call the container system.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+host</p>
+</dd>
+<dt>env</dt><dd><p>Comma separated list of environment variables to pass to the command.
+Each variable must have the form name=value.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>container_options</dt><dd><p>Comma separated list of options to add to the command line used to
+call the container system.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="mrun">
-<h2>mrun<a class="headerlink" href="#mrun" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="mrun">
+<span id="mrun-help"></span><h2>mrun<a class="headerlink" href="#mrun" title="Permalink to this headline">¶</a></h2>
 <p>Start any command in one or several container with the given
 repository configuration. By default, command is executed in
 all existing build workflows.</p>
 <p>example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Launch bv_maker on all build workflows using any version of Ubuntu</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Launch bv_maker on all build workflows using any version of Ubuntu</span>
 <span class="n">casa_distro</span> <span class="n">mrun</span> <span class="n">bv_maker</span> <span class="n">system</span><span class="o">=</span><span class="n">ubuntu</span><span class="o">-*</span>
 </pre></div>
 </div>
-<div class="section" id="id6">
+<section id="id6">
 <h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>version</dt>
-<dd>If given, select environment by its version (only applicable to user
-environments, not dev)</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
+environments, not dev)</p>
 </dd>
-<dt>gui</dt>
-<dd><p class="first">default=True</p>
-<p class="last">If <code class="docutils literal"><span class="pre">no</span></code>, <code class="docutils literal"><span class="pre">false</span></code> or <code class="docutils literal"><span class="pre">0</span></code>, command is not using a graphical user
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
+can be passed on the commandline, or set via the
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+</dd>
+<dt>gui</dt><dd><p>default=True</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">no</span></code>, <code class="docutils literal notranslate"><span class="pre">false</span></code> or <code class="docutils literal notranslate"><span class="pre">0</span></code>, command is not using a graphical user
 interface (GUI). Nothing is done to connect the container to a
 graphical interface. This option may be necessary in context where
 a graphical interface is not available.</p>
 </dd>
-<dt>opengl</dt>
-<dd><p class="first">default=auto</p>
+<dt>opengl</dt><dd><p>default=auto</p>
 <p>Setup different ways of trying to use OpenGL 3D rendering and GPU.
-<code class="docutils literal"><span class="pre">auto</span></code>, <code class="docutils literal"><span class="pre">container</span></code>, <code class="docutils literal"><span class="pre">nv</span></code>, or <code class="docutils literal"><span class="pre">software</span></code>.</p>
-<ul class="last simple">
-<li><code class="docutils literal"><span class="pre">auto</span></code>: use a heuristic to choose the best option that is safe
-based on the host configuration</li>
-<li><code class="docutils literal"><span class="pre">container</span></code>: passes no special options to Singularity: the mesa
-installed in the container is used</li>
-<li><code class="docutils literal"><span class="pre">nv</span></code> tries to mount the proprietary NVidia driver of the host (linux)
-system in the container</li>
-<li><code class="docutils literal"><span class="pre">software</span></code> sets LD_LIBRARY_PATH to use a software-only OpenGL
+<code class="docutils literal notranslate"><span class="pre">auto</span></code>, <code class="docutils literal notranslate"><span class="pre">container</span></code>, <code class="docutils literal notranslate"><span class="pre">nv</span></code>, or <code class="docutils literal notranslate"><span class="pre">software</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">auto</span></code>: use a heuristic to choose the best option that is safe
+based on the host configuration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">container</span></code>: passes no special options to Singularity: the mesa
+installed in the container is used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nv</span></code> tries to mount the proprietary NVidia driver of the host (linux)
+system in the container</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">software</span></code> sets LD_LIBRARY_PATH to use a software-only OpenGL
 rendering. This solution is the slowest but is a fallback when no
-other solution works.</li>
+other solution works.</p></li>
 </ul>
 </dd>
-<dt>root</dt>
-<dd><p class="first">default=False</p>
-<p class="last">If <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>, start execution as system administrator. For
+<dt>root</dt><dd><p>default=False</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>, start execution as system administrator. For
 Singularity container, this requires administrator privileges on host
 system.</p>
 </dd>
-<dt>cwd</dt>
-<dd>Set current working directory to the given value before launching
+<dt>cwd</dt><dd><p>Set current working directory to the given value before launching
 the command. By default, it is the same working directory as on the
-host</dd>
-<dt>env</dt>
-<dd>Comma separated list of environment variables to pass to the command.
-Each variable must have the form name=value.</dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>container_options</dt>
-<dd>Comma separated list of options to add to the command line used to
-call the container system.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+host</p>
+</dd>
+<dt>env</dt><dd><p>Comma separated list of environment variables to pass to the command.
+Each variable must have the form name=value.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>container_options</dt><dd><p>Comma separated list of options to add to the command line used to
+call the container system.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="bv-maker">
-<h2>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="bv-maker">
+<span id="bv-maker-help"></span><h2>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this headline">¶</a></h2>
 <p>Start a bv_maker in the configured container with the given repository
 configuration.</p>
-<div class="section" id="id7">
+<section id="id7">
 <h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=dev</p>
-<p class="last">If given, select environment having the given type.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=dev</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
-<dt>env</dt>
-<dd>Comma separated list of environment variables to pass to the command.
-Each variable must have the form name=value.</dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>container_options</dt>
-<dd>Comma separated list of options to add to the command line used to
-call the container system.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+<dt>env</dt><dd><p>Comma separated list of environment variables to pass to the command.
+Each variable must have the form name=value.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>container_options</dt><dd><p>Comma separated list of options to add to the command line used to
+call the container system.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="clean-images">
-<h2>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="clean-images">
+<span id="clean-images-help"></span><h2>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this headline">¶</a></h2>
 <p>Delete singularity images which are no longer used in any build workflow,
 or those listed in the “image” parameter.
 There are two ways of selecting the image(s):</p>
 <ol class="arabic">
-<li><p class="first">filtered by environment, using the <code class="docutils literal"><span class="pre">name</span></code> selector, or a combination
-of <code class="docutils literal"><span class="pre">distro</span></code>, <code class="docutils literal"><span class="pre">branch</span></code>, and <code class="docutils literal"><span class="pre">system</span></code>.</p>
-</li>
-<li><p class="first">directly specifying a full image name, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">clean_images</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span>
+<li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
+of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">system</span></code>.</p></li>
+<li><p>directly specifying a full image name, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">clean_images</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span>
 </pre></div>
 </div>
 </li>
 </ol>
-<div class="section" id="id8">
+<section id="id8">
 <h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
+environments, not dev)</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
-<dt>interactive</dt>
-<dd>default=True
-ask confirmation before deleting an image</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=False</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+<dt>interactive</dt><dd><p>default=True
+ask confirmation before deleting an image</p>
+</dd>
+<dt>verbose</dt><dd><p>default=False</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="delete">
-<h2>delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="delete">
+<span id="delete-help"></span><h2>delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h2>
 <p>Delete an existing environment.</p>
 <p>The whole environment directory will be removed and forgotten.</p>
 <p>Use with care.</p>
 <p>Image files will be left untouched - use clean_images for this.</p>
-<div class="section" id="id9">
+<section id="id9">
 <h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<dl>
+<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given type.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
+environments, not dev)</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
-<dt>interactive</dt>
-<dd>default=True
+<dt>interactive</dt><dd><p>default=True
 if true (or 1, or yes), ask confirmation interactively for each
-selected environement.</dd>
+selected environement.</p>
+</dd>
 </dl>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Common parameters:</a></li>
 <li><a class="reference internal" href="#commands">Commands:</a><ul>
@@ -860,15 +829,15 @@ selected environement.</dd>
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -876,12 +845,13 @@ selected environement.</dd>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Common parameters:</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.1.
     </div>
   </body>
 </html>

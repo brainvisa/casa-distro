@@ -1,31 +1,24 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Developping in the Casa-Distro BrainVISA environment &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
-    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="The bv command" href="bv_command.html" />
     <link rel="prev" title="Technical issues" href="technical.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -35,7 +28,8 @@
         <li class="right" >
           <a href="technical.html" title="Technical issues"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Developping in the Casa-Distro BrainVISA environment</a></li> 
       </ul>
     </div>  
 
@@ -44,62 +38,61 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="developping-in-the-casa-distro-brainvisa-environment">
+  <section id="developping-in-the-casa-distro-brainvisa-environment">
 <h1>Developping in the Casa-Distro BrainVISA environment<a class="headerlink" href="#developping-in-the-casa-distro-brainvisa-environment" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="installation-and-setup">
+<section id="installation-and-setup">
 <h2>Installation and setup<a class="headerlink" href="#installation-and-setup" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p class="first">The <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install both a released, compiled, version of BrainVISA (This is what a “regular user” needs), or a developer environment which will build from sources.</p>
-</li>
-<li><p class="first">Alternatively it is possible to install Casa-Distro from its sources on GitHub. To get the lastest realease you can simply download it from <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a>, using  the <code class="docutils literal"><span class="pre">git</span></code> command:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
+<li><p>The <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install both a released, compiled, version of BrainVISA (This is what a “regular user” needs), or a developer environment which will build from sources.</p></li>
+<li><p>Alternatively it is possible to install Casa-Distro from its sources on GitHub. To get the lastest realease you can simply download it from <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a>, using  the <code class="docutils literal notranslate"><span class="pre">git</span></code> command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
 </pre></div>
 </div>
 <p>Once downloaded, no “install step” is required, you can use the casa_distro command directly:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>/tmp/casa-distro/bin/casa_distro <span class="nb">help</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/tmp/casa-distro/bin/casa_distro <span class="nb">help</span>
 </pre></div>
 </div>
 </li>
 </ul>
 <p>Casa-distro is pre-setup to handle CATI/BrainVisa open-source projects. In this situation, once casa-distro has been downloaded or installed, a user has to follow the next steps:</p>
-</div>
-<div class="section" id="building-casa-projects">
+</section>
+<section id="building-casa-projects">
 <h2>Building CASA projects<a class="headerlink" href="#building-casa-projects" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="first-time">
+<section id="first-time">
 <h3>First time<a class="headerlink" href="#first-time" title="Permalink to this headline">¶</a></h3>
 <ul>
-<li><p class="first">Developers will need access to source and development tools. Thus instead of installing a “user” release of BrainVISA using the <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">setup</span></code> command, they will rather install a developer image and setup. This is done (once casa-distro is installed) using the command <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">setup_dev</span></code>:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>casa_distro setup_dev <span class="nv">system</span><span class="o">=</span>ubuntu-18.04 <span class="nv">distro</span><span class="o">=</span>brainvisa <span class="nv">branch</span><span class="o">=</span>master
+<li><p>Developers will need access to source and development tools. Thus instead of installing a “user” release of BrainVISA using the <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">setup</span></code> command, they will rather install a developer image and setup. This is done (once casa-distro is installed) using the command <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">setup_dev</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro setup_dev <span class="nv">system</span><span class="o">=</span>ubuntu-18.04 <span class="nv">distro</span><span class="o">=</span>brainvisa <span class="nv">branch</span><span class="o">=</span>master
 </pre></div>
 </div>
 <p>This will setup an <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> dedicated to development.</p>
-<p>This command specifies to setup a developper <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> for the open-source projects set (<code class="docutils literal"><span class="pre">distro_source=opensource</span></code> is actually the default and can be omitted), for the <code class="docutils literal"><span class="pre">master</span></code> branch (default is <code class="docutils literal"><span class="pre">latest_release</span></code>), using a container system based on Ubuntu 18.04.</p>
-<p>Directories and files will be created accordingly in the <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> directory (location of casa-distro container images and <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a>), here the default is <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code>.</p>
-<p>The location of casa-distro <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> can be specified either using the <code class="docutils literal"><span class="pre">base_directory=</span></code> parameter to many sub-commands, or if the environment variable <code class="docutils literal"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code> is set to an appropriate directory.</p>
-<p>Such an <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> will use source code from BrainVisa code repositories (partly on <a class="reference external" href="https://github.com">https://github.com</a> and partly on <a class="reference external" href="https://bioproj.extra.cea.fr">https://bioproj.extra.cea.fr</a>). The code needs to be downloaded and built using a build system: <a class="reference external" href="../brainvisa-cmake-3.0/index.html">bv_maker</a></p>
+<p>This command specifies to setup a developper <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> for the open-source projects set (<code class="docutils literal notranslate"><span class="pre">distro_source=opensource</span></code> is actually the default and can be omitted), for the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch (default is <code class="docutils literal notranslate"><span class="pre">latest_release</span></code>), using a container system based on Ubuntu 18.04.</p>
+<p>Directories and files will be created accordingly in the <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> directory (location of casa-distro container images and <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a>), here the default is <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code>.</p>
+<p>The location of casa-distro <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> can be specified either using the <code class="docutils literal notranslate"><span class="pre">base_directory=</span></code> parameter to many sub-commands, or if the environment variable <code class="docutils literal notranslate"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code> is set to an appropriate directory.</p>
+<p>Such an <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> will use source code from BrainVisa code repositories (partly on <a class="reference external" href="https://github.com">https://github.com</a> and partly on <a class="reference external" href="https://bioproj.extra.cea.fr">https://bioproj.extra.cea.fr</a>). The code needs to be downloaded and built using a build system: <a class="reference external" href="../brainvisa-cmake-1.0/index.html">bv_maker</a></p>
 </li>
-<li><p class="first">Setup credentials for source code reposotories</p>
+<li><p>Setup credentials for source code reposotories</p>
 <p>This step is optional and is especially not neeed if just retreiving only the open-source projects.
-The file <code class="docutils literal"><span class="pre">svn.secret</span></code> may be created / edited to store login / password information for the svn <a class="reference external" href="http://bioproj.extra.cea.fr">BioProj</a> server. If not filled, the <code class="docutils literal"><span class="pre">svn</span></code> program will ask for them interactively, and propose to store them.</p>
+The file <code class="docutils literal notranslate"><span class="pre">svn.secret</span></code> may be created / edited to store login / password information for the svn <a class="reference external" href="http://bioproj.extra.cea.fr">BioProj</a> server. If not filled, the <code class="docutils literal notranslate"><span class="pre">svn</span></code> program will ask for them interactively, and propose to store them.</p>
 </li>
-<li><p class="first">build everything:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>casa_distro bv_maker <span class="nv">name</span><span class="o">=</span>opensource-dev-ubuntu-18.04
+<li><p>build everything:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro bv_maker <span class="nv">name</span><span class="o">=</span>opensource-dev-ubuntu-18.04
 </pre></div>
 </div>
 <p>If <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a>, <a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a>, <a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a>, or <a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a> are not provided, all matching <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a> will be processed.</p>
-<p>Additional options can be passed to the underlying <a class="reference external" href="../brainvisa-cmake-3.0/index.html">bv_maker</a> command, which will run inside the container. Typically, the documentation can be built, testing and packaging can be performed.</p>
+<p>Additional options can be passed to the underlying <a class="reference external" href="../brainvisa-cmake-1.0/index.html">bv_maker</a> command, which will run inside the container. Typically, the documentation can be built, testing and packaging can be performed.</p>
 </li>
 </ul>
-</div>
-<div class="section" id="update-the-casa-distro-command">
+</section>
+<section id="update-the-casa-distro-command">
 <h3>Update the casa_distro command<a class="headerlink" href="#update-the-casa-distro-command" title="Permalink to this headline">¶</a></h3>
-<p>Once an environment has been initialized, and at least source code has been updated (using <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code>), most <a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distributions</span></a> actually include the <em>casa-distro</em> project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system (if stored on the host filesystem), so it may be a good idea to use this updated <code class="docutils literal"><span class="pre">casa_distro</span></code> command instead of the oned previsouly installed (either via pip or from <a class="reference external" href="https://github.com">github</a> sources) to initialize the process.</p>
-</div>
-<div class="section" id="bash-completion">
+<p>Once an environment has been initialized, and at least source code has been updated (using <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code>), most <a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distributions</span></a> actually include the <em>casa-distro</em> project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system (if stored on the host filesystem), so it may be a good idea to use this updated <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> command instead of the oned previsouly installed (either via pip or from <a class="reference external" href="https://github.com">github</a> sources) to initialize the process.</p>
+</section>
+<section id="bash-completion">
 <h3>Bash completion<a class="headerlink" href="#bash-completion" title="Permalink to this headline">¶</a></h3>
-<p>Bash completion scripts have been developed for <code class="docutils literal"><span class="pre">casa_distro</span></code> and <code class="docutils literal"><span class="pre">bv_maker</span></code>. Inside a casa-distro container, these completions are already setup and should be active as soon as environments have been built, and the container is restarted (exit a casa-distro shell and re-run it).
-On the host, it is possible to <em>source</em> the bash completion scripts. You can set it in your <code class="docutils literal"><span class="pre">$HOME/.bashrc</span></code> file by adding to it:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nv">BUILD_WF</span><span class="o">=</span><span class="nv">$HOME</span>/casa_distro/opensource-dev-ubuntu-18.04
+<p>Bash completion scripts have been developed for <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> and <code class="docutils literal notranslate"><span class="pre">bv_maker</span></code>. Inside a casa-distro container, these completions are already setup and should be active as soon as environments have been built, and the container is restarted (exit a casa-distro shell and re-run it).
+On the host, it is possible to <em>source</em> the bash completion scripts. You can set it in your <code class="docutils literal notranslate"><span class="pre">$HOME/.bashrc</span></code> file by adding to it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">BUILD_WF</span><span class="o">=</span><span class="nv">$HOME</span>/casa_distro/opensource-dev-ubuntu-18.04
 <span class="k">if</span> <span class="o">[</span> -f <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
     . <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span>
 <span class="k">fi</span>
@@ -108,35 +101,36 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
 <span class="k">fi</span>
 </pre></div>
 </div>
-<p>This completion will help typing the commands and its options by providing possible options and values by typing <code class="docutils literal"><span class="pre">&lt;tab&gt;</span></code> or <code class="docutils literal"><span class="pre">&lt;tab&gt;</span> <span class="pre">&lt;tab&gt;</span></code> when typing the command code, which will significantly speed-up working intensively with casa_distro and bv_maker.</p>
-</div>
-<div class="section" id="updating-projects">
+<p>This completion will help typing the commands and its options by providing possible options and values by typing <code class="docutils literal notranslate"><span class="pre">&lt;tab&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">&lt;tab&gt;</span> <span class="pre">&lt;tab&gt;</span></code> when typing the command code, which will significantly speed-up working intensively with casa_distro and bv_maker.</p>
+</section>
+<section id="updating-projects">
 <h3>Updating projects<a class="headerlink" href="#updating-projects" title="Permalink to this headline">¶</a></h3>
-<p>To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code> (with corresponding options, if needed).</p>
-</div>
-<div class="section" id="customizing-projects">
+<p>To update to the most recent versions of the projects sources, and rebuild, it is simply a matter of re-running <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">bv_maker</span></code> (with corresponding options, if needed).</p>
+</section>
+<section id="customizing-projects">
 <h3>Customizing projects<a class="headerlink" href="#customizing-projects" title="Permalink to this headline">¶</a></h3>
-<p>It is possible to customize the projects list to be retreived and built. It is done by editing the <a class="reference external" href="../brainvisa-cmake-3.0/configuration.html">bv_maker.cfg file</a> in the environment, which can be found in the directory <code class="docutils literal"><span class="pre">&lt;repository&gt;/&lt;environment&gt;/host/conf/</span></code></p>
-<p>where <code class="docutils literal"><span class="pre">&lt;repository&gt;</span></code> is the base casa-distro <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> directory (passed as the <code class="docutils literal"><span class="pre">base_directory</span></code> option of casa_distro if needed), <code class="docutils literal"><span class="pre">&lt;environment&gt;</span></code> is the <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">environment name</span></a>.</p>
-</div>
-</div>
-<div class="section" id="casa-distro-concepts">
+<p>It is possible to customize the projects list to be retreived and built. It is done by editing the <a class="reference external" href="../brainvisa-cmake-1.0/configuration.html">bv_maker.cfg file</a> in the environment, which can be found in the directory <code class="docutils literal notranslate"><span class="pre">&lt;repository&gt;/&lt;environment&gt;/host/conf/</span></code></p>
+<p>where <code class="docutils literal notranslate"><span class="pre">&lt;repository&gt;</span></code> is the base casa-distro <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> directory (passed as the <code class="docutils literal notranslate"><span class="pre">base_directory</span></code> option of casa_distro if needed), <code class="docutils literal notranslate"><span class="pre">&lt;environment&gt;</span></code> is the <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">environment name</span></a>.</p>
+</section>
+</section>
+<section id="casa-distro-concepts">
 <h2>Casa-Distro  concepts<a class="headerlink" href="#casa-distro-concepts" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="concepts.html"><span class="doc">Casa-distro concepts</span></a> document shows the vocabulary used to describe the elements of Casa-Distro.</p>
-</div>
-<div class="section" id="administration">
+</section>
+<section id="administration">
 <h2>Administration<a class="headerlink" href="#administration" title="Permalink to this headline">¶</a></h2>
 <p>What we call “administration” in Casa-Distro is handling tools to build a new (BrainVISA) release, to build new images, not just developing code. This part is the job of <a class="reference internal" href="casa_distro_admin_command.html"><span class="doc">The casa_distro_admin command</span></a>.</p>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Developping in the Casa-Distro BrainVISA environment</a><ul>
 <li><a class="reference internal" href="#installation-and-setup">Installation and setup</a></li>
@@ -159,17 +153,17 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
                         title="previous chapter">Technical issues</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="bv_command.html"
-                        title="next chapter">The <code class="docutils literal"><span class="pre">bv</span></code> command</a></p>
+                        title="next chapter">The <code class="docutils literal notranslate"><span class="pre">bv</span></code> command</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -183,12 +177,13 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
         <li class="right" >
           <a href="technical.html" title="Technical issues"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Developping in the Casa-Distro BrainVISA environment</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.1.
     </div>
   </body>
 </html>

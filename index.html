@@ -1,37 +1,31 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Casa-Distro &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
-    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Casa-distro concepts" href="concepts.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="concepts.html" title="Casa-distro concepts"
              accesskey="N">next</a></li>
-        <li class="nav-item nav-item-0"><a href="#">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Casa-Distro</a></li> 
       </ul>
     </div>  
 
@@ -40,17 +34,17 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="casa-distro">
+  <section id="casa-distro">
 <h1>Casa-Distro<a class="headerlink" href="#casa-distro" title="Permalink to this headline">¶</a></h1>
 <p>If you want to install simply casa-distro as a user, you can directly see the <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a>.</p>
-<div class="section" id="overview">
+<section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="what-is-casa">
+<section id="what-is-casa">
 <h3>What is CASA ?<a class="headerlink" href="#what-is-casa" title="Permalink to this headline">¶</a></h3>
 <p>CASA = <a class="reference external" href="http://cati-neuroimaging.com">CATI</a> + <a class="reference external" href="http://brainvisa.info">BrainVISA</a></p>
 <p>When these two projects decided to use the same development and software delivery environment, the name CASA was chosen to name this environment.</p>
-</div>
-<div class="section" id="what-is-casa-distro">
+</section>
+<section id="what-is-casa-distro">
 <h3>What is Casa-Distro ?<a class="headerlink" href="#what-is-casa-distro" title="Permalink to this headline">¶</a></h3>
 <p><strong>Short answer:</strong> it’s the way to <strong>run or develop BrainVISA software</strong> in a containerized environment or a virtual machine.</p>
 <p><strong>Longer answer:</strong></p>
@@ -58,73 +52,73 @@
 It was not unusual to discover differences of behaviour in software that was only due to diferrences between developpement environments. The more developpers were involved in the projects, the more difficulties were encoutered. It was become too difficult to maintain good quality software without a unified development environment.</p>
 <p>Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual applicance to host the compilation system. casa_distro will support two container technologies, <a class="reference external" href="https://www.sylabs.io/">Singularity</a> and <a class="reference external" href="https://www.docker.com">Docker</a> (soon) and one virtual machine technology : <a class="reference external" href="https://www.virtualbox.org/">VirtualBox</a>.</p>
 <p><strong>Note</strong>: in version 3.0 the support for Docker has been temporarily dropped (but should come back as soon as possible).</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="9%" />
-<col width="39%" />
-<col width="14%" />
-<col width="38%" />
+<col style="width: 9%" />
+<col style="width: 39%" />
+<col style="width: 14%" />
+<col style="width: 38%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>&#160;</td>
-<td>Singularity (version 3.x)</td>
-<td>Docker</td>
-<td>VirtualBox</td>
+<tbody>
+<tr class="row-odd"><td></td>
+<td><p>Singularity (version 3.x)</p></td>
+<td><p>Docker</p></td>
+<td><p>VirtualBox</p></td>
 </tr>
-<tr class="row-even"><td>Linux</td>
-<td>✓</td>
-<td><span class="grey">X</span></td>
-<td>✓</td>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>✓</p></td>
+<td><p><span class="grey">X</span></p></td>
+<td><p>✓</p></td>
 </tr>
-<tr class="row-odd"><td>Windows</td>
-<td>(✓ <a class="reference internal" href="technical.html#win-sing-troubleshooting"><span class="std std-ref">(1)</span></a>)</td>
-<td><span class="grey">(X)</span></td>
-<td>✓</td>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>(✓ <a class="reference internal" href="technical.html#win-sing-troubleshooting"><span class="std std-ref">(1)</span></a>)</p></td>
+<td><p><span class="grey">(X)</span></p></td>
+<td><p>✓</p></td>
 </tr>
-<tr class="row-even"><td>Mac OS</td>
-<td>✓ <a class="reference internal" href="technical.html#mac-sing-troubleshooting"><span class="std std-ref">(2)</span></a></td>
-<td><span class="grey">(X)</span></td>
-<td>✓ <a class="reference internal" href="technical.html#mac-vbox-troubleshooting"><span class="std std-ref">(3)</span></a></td>
+<tr class="row-even"><td><p>Mac OS</p></td>
+<td><p>✓ <a class="reference internal" href="technical.html#mac-sing-troubleshooting"><span class="std std-ref">(2)</span></a></p></td>
+<td><p><span class="grey">(X)</span></p></td>
+<td><p>✓ <a class="reference internal" href="technical.html#mac-vbox-troubleshooting"><span class="std std-ref">(3)</span></a></p></td>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="casa-distro-for-users">
+</section>
+</section>
+<section id="casa-distro-for-users">
 <h2>Casa-Distro for users<a class="headerlink" href="#casa-distro-for-users" title="Permalink to this headline">¶</a></h2>
 <p>Users will use Casa-Distro to install and run <a class="reference external" href="http://brainvisa.info">BrainVISA</a> software.</p>
 <p>See the <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install it.</p>
 <p>The containerization allows to have a single binary distribution for all host operating systems and versions.</p>
-</div>
-<div class="section" id="casa-distro-for-developers">
+</section>
+<section id="casa-distro-for-developers">
 <h2>Casa-Distro for developers<a class="headerlink" href="#casa-distro-for-developers" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="what-casa-distro-is-not">
+<section id="what-casa-distro-is-not">
 <h3>What Casa-Distro is <strong>not</strong><a class="headerlink" href="#what-casa-distro-is-not" title="Permalink to this headline">¶</a></h3>
-<p>Casa-Distro is not a build sytem: this is the job of <a class="reference external" href="../brainvisa-cmake-3.0/index.html">BrainVisa-Cmake</a>. Casa-distro brings a wrapper for the build system: it provides Docker images of Linux systems which contain <a class="reference external" href="../brainvisa-cmake-3.0/index.html">BrainVisa-Cmake</a> and many other thirdparty development tools and libraries, which are already setup for development and distribution of tools.</p>
-<p>The user will be able to use the build system (<a class="reference external" href="../brainvisa-cmake-3.0/bv_maker.html">bv_maker</a>), inside Singularity, Docker, or VirtualBox, in a way that ensures to build, run, and ship software that is compatible with public distributions of BrainVisa.</p>
+<p>Casa-Distro is not a build sytem: this is the job of <a class="reference external" href="../brainvisa-cmake-1.0/index.html">BrainVisa-Cmake</a>. Casa-distro brings a wrapper for the build system: it provides Docker images of Linux systems which contain <a class="reference external" href="../brainvisa-cmake-1.0/index.html">BrainVisa-Cmake</a> and many other thirdparty development tools and libraries, which are already setup for development and distribution of tools.</p>
+<p>The user will be able to use the build system (<a class="reference external" href="../brainvisa-cmake-1.0/bv_maker.html">bv_maker</a>), inside Singularity, Docker, or VirtualBox, in a way that ensures to build, run, and ship software that is compatible with public distributions of BrainVisa.</p>
 <p>See the <a class="reference internal" href="developer.html"><span class="doc">Developping in the Casa-Distro BrainVISA environment</span></a> documentation.</p>
-</div>
-</div>
-<div class="section" id="installation-and-setup">
+</section>
+</section>
+<section id="installation-and-setup">
 <span id="install"></span><h2>Installation and setup<a class="headerlink" href="#installation-and-setup" title="Permalink to this headline">¶</a></h2>
 <p>Follow roughly the same procedure as for user setup, as axplained in: <a class="reference external" href="../web-5.0/download.html#developers-install">BrainVisa download / install section</a>.</p>
-</div>
-<div class="section" id="main-commands">
+</section>
+<section id="main-commands">
 <h2>3 main commands<a class="headerlink" href="#main-commands" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="bv-command">
+<section id="bv-command">
 <h3><a class="reference internal" href="bv_command.html"><span class="doc">The bv command</span></a><a class="headerlink" href="#bv-command" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="bv_command.html"><span class="doc">The bv command</span></a> is the lightest, user-oriented command in casa-distro. It supports a single <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> and allows the minimum required to configure and run commands (or open a shell) in an installed environment container.</p>
-</div>
-<div class="section" id="casa-distro-command">
+</section>
+<section id="casa-distro-command">
 <h3><a class="reference internal" href="casa_distro_command.html"><span class="doc">The casa_distro command</span></a><a class="headerlink" href="#casa-distro-command" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="casa_distro_command.html"><span class="doc">The casa_distro command</span></a> supports multiple <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a> using selection parameters (see <a class="reference internal" href="concepts.html"><span class="doc">Casa-distro concepts</span></a>) and allows also to run commands insde containers, but also to setup / install, manage, delete <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a> and <a class="reference internal" href="concepts.html#image"><span class="std std-ref">container images</span></a>.</p>
-</div>
-<div class="section" id="casa-distro-admin-command">
+</section>
+<section id="casa-distro-admin-command">
 <h3><a class="reference internal" href="casa_distro_admin_command.html"><span class="doc">The casa_distro_admin command</span></a><a class="headerlink" href="#casa-distro-admin-command" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="casa_distro_admin_command.html"><span class="doc">The casa_distro_admin command</span></a> is used to create new container images and publish them on a web server for other users.</p>
-</div>
-</div>
-<div class="section" id="contents">
+</section>
+</section>
+<section id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -141,6 +135,11 @@ It was not unusual to discover differences of behaviour in software that was onl
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="technical.html">Technical issues</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="technical.html#home-directory-and-configuration-files-in-casa-distro-containers">Home directory and configuration files in casa-distro containers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="technical.html#configuration-files">Configuration files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical.html#home-directory">Home directory</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="technical.html#containers-and-distributed-execution">Containers and distributed execution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="technical.html#developing-in-containers">Developing in containers</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="technical.html#using-git">Using Git</a></li>
@@ -181,7 +180,7 @@ It was not unusual to discover differences of behaviour in software that was onl
 <li class="toctree-l2"><a class="reference internal" href="developer.html#administration">Administration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="bv_command.html">The <code class="docutils literal"><span class="pre">bv</span></code> command</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bv_command.html">The <code class="docutils literal notranslate"><span class="pre">bv</span></code> command</a></li>
 <li class="toctree-l1"><a class="reference internal" href="casa_distro_command.html">The casa_distro command</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#common-parameters">Common parameters:</a></li>
 <li class="toctree-l2"><a class="reference internal" href="casa_distro_command.html#commands">Commands:</a><ul>
@@ -257,28 +256,24 @@ It was not unusual to discover differences of behaviour in software that was onl
 <li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id8">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#download-image">download_image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#create-base-image">create_base_image</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id9">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#create-base-image">create_base_image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#publish-base-image">publish_base_image</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id10">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#publish-base-image">publish_base_image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#create-user-image">create_user_image</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id11">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#create-user-image">create_user_image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#bbi-daily">bbi_daily</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id12">Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#bbi-daily">bbi_daily</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id13">Parameters</a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="casa_distro_admin_command.html#local-install">local_install</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id14">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="casa_distro_admin_command.html#id13">Parameters</a></li>
 </ul>
 </li>
 </ul>
@@ -293,22 +288,23 @@ It was not unusual to discover differences of behaviour in software that was onl
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="bbi_daily.html">Automated tests with bbi_daily</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="bbi_daily.html#walkthrough">Walkthrough</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nightly.html">Automated tests with bbi_daily</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nightly.html#walkthrough">Walkthrough</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table Of Contents</a></h3>
+  <h3><a href="#">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Casa-Distro</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
@@ -323,9 +319,9 @@ It was not unusual to discover differences of behaviour in software that was onl
 </li>
 <li><a class="reference internal" href="#installation-and-setup">Installation and setup</a></li>
 <li><a class="reference internal" href="#main-commands">3 main commands</a><ul>
-<li><a class="reference internal" href="#bv-command"><code class="docutils literal"><span class="pre">bv_command</span></code></a></li>
-<li><a class="reference internal" href="#casa-distro-command"><code class="docutils literal"><span class="pre">casa_distro_command</span></code></a></li>
-<li><a class="reference internal" href="#casa-distro-admin-command"><code class="docutils literal"><span class="pre">casa_distro_admin_command</span></code></a></li>
+<li><a class="reference internal" href="#bv-command"><span class="xref std std-doc">bv_command</span></a></li>
+<li><a class="reference internal" href="#casa-distro-command"><span class="xref std std-doc">casa_distro_command</span></a></li>
+<li><a class="reference internal" href="#casa-distro-admin-command"><span class="xref std std-doc">casa_distro_admin_command</span></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#contents">Contents</a></li>
@@ -337,15 +333,15 @@ It was not unusual to discover differences of behaviour in software that was onl
   <p class="topless"><a href="concepts.html"
                         title="next chapter">Casa-distro concepts</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -356,12 +352,13 @@ It was not unusual to discover differences of behaviour in software that was onl
         <li class="right" style="margin-right: 10px">
           <a href="concepts.html" title="Casa-distro concepts"
              >next</a></li>
-        <li class="nav-item nav-item-0"><a href="#">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Casa-Distro</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.1.
     </div>
   </body>
 </html>

@@ -1,41 +1,35 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>The casa_distro_admin command &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
-    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Automated tests with bbi_daily" href="bbi_daily.html" />
+    <link rel="next" title="Automated tests with bbi_daily" href="nightly.html" />
     <link rel="prev" title="The casa_distro command" href="casa_distro_command.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="bbi_daily.html" title="Automated tests with bbi_daily"
+          <a href="nightly.html" title="Automated tests with bbi_daily"
              accesskey="N">next</a></li>
         <li class="right" >
           <a href="casa_distro_command.html" title="The casa_distro command"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The casa_distro_admin command</a></li> 
       </ul>
     </div>  
 
@@ -44,154 +38,126 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="the-casa-distro-admin-command">
+  <section id="the-casa-distro-admin-command">
 <h1>The casa_distro_admin command<a class="headerlink" href="#the-casa-distro-admin-command" title="Permalink to this headline">¶</a></h1>
 <p>Creation and publication of casa-distro releases and container images.</p>
-<p>Casa_distro is the BrainVISA suite distribution swiss knife.
+<p>HELP, format: rst
+Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See <a class="reference external" href="http://brainivsa.info/casa-distro">http://brainivsa.info/casa-distro</a> and
 <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a> for more information</p>
-<p>Version : 3.0.0</p>
+<p>Version : 3.1.0</p>
 <p>usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">casa_distro_admin</span> <span class="o">&lt;</span><span class="n">general</span> <span class="n">options</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">command</span> <span class="n">parameters</span><span class="o">&gt;...</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro_admin</span> <span class="o">&lt;</span><span class="n">general</span> <span class="n">options</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">command</span> <span class="n">parameters</span><span class="o">&gt;...</span><span class="p">]</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt>general optional arguments:</dt>
-<dd><table class="first last docutils option-list" frame="void" rules="none">
-<col class="option" />
-<col class="description" />
-<tbody valign="top">
-<tr><td class="option-group">
-<kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></td>
-<td>Display as much information as possible.</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--version</span></kbd></td>
-<td>Display casa-distro version number and exit.</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
-<td>Display help message and exit.
+<dl>
+<dt>general optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></dt>
+<dd><p>Display as much information as possible.</p>
+</dd>
+<dt><kbd><span class="option">--version</span></kbd></dt>
+<dd><p>Display casa-distro version number and exit.</p>
+</dd>
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>Display help message and exit.
 If used after command name, display only the help of this
-command.</td></tr>
-</tbody>
-</table>
+command.</p>
 </dd>
 </dl>
-<div class="section" id="common-parameters">
+</dd>
+</dl>
+<section id="common-parameters">
 <h2>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this headline">¶</a></h2>
 <p>Most commands accept more or less the same parameters.</p>
 <p>Many subcommands need <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> selection specifications: <a class="reference internal" href="casa_distro_command.html#environment-options"><span class="std std-ref">see the documentation on how to specify an environment</span></a>.</p>
-<dl class="docutils">
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
+<dl>
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
 can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="commands">
+</section>
+<section id="commands">
 <h2>Commands:<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="help">
-<h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
+<section id="help">
+<span id="help-help"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
 <p>Print global help or help about a command.</p>
-<div class="section" id="parameters">
+<section id="parameters">
 <h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>format</dt>
-<dd>format help text in a given text format. Valid values are “text”
-(default) for raw text, or rst (RST/sphinx format).</dd>
-<dt>full</dt>
-<dd>if <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">yes</span></code> or <code class="docutils literal"><span class="pre">1</span></code>, display each subcommand parameters
-documentation in the general help.</dd>
+<dl class="simple">
+<dt>format</dt><dd><p>format help text in a given text format. Valid values are “text”
+(default) for raw text, or rst (RST/sphinx format).</p>
+</dd>
+<dt>full</dt><dd><p>if <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">yes</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>, display each subcommand parameters
+documentation in the general help.</p>
+</dd>
 </dl>
-</div>
-</div>
-<div class="section" id="singularity-deb">
-<h3>singularity_deb<a class="headerlink" href="#singularity-deb" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="singularity-deb">
+<span id="singularity-deb-help"></span><h3>singularity_deb<a class="headerlink" href="#singularity-deb" title="Permalink to this headline">¶</a></h3>
 <p>Create a Debian package to install Singularity.
 Perform the whole installation process from a rw system and Singularity
 source. Then put the result in a <a href="#id1"><span class="problematic" id="id2">*</span></a>.deb file.</p>
-<div class="section" id="id3">
+<section id="id3">
 <h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>system</dt>
-<dd>Name of the system for the output file.
-If dockerhub is not given, a value is built based on this parameter</dd>
-<dt>output</dt>
-<dd>default=singularity-container-{version}-{system}.deb
-Location of the resulting Debian package file.</dd>
-<dt>dockerhub</dt>
-<dd>default=name of the system replacing “-” by “:”
-Name of the base image system to pull from DockerHub.</dd>
-<dt>version</dt>
-<dd>default=3.7.0
-Version of Singularity to use. This must be a valid release version.</dd>
-<dt>go_version</dt>
-<dd>default=1.15.6
+<dl class="simple">
+<dt>system</dt><dd><p>Name of the system for the output file.
+If dockerhub is not given, a value is built based on this parameter</p>
+</dd>
+<dt>output</dt><dd><p>default=singularity-container-{version}-{system}.deb
+Location of the resulting Debian package file.</p>
+</dd>
+<dt>dockerhub</dt><dd><p>default=name of the system replacing “-” by “:”
+Name of the base image system to pull from DockerHub.</p>
+</dd>
+<dt>version</dt><dd><p>default=3.7.0
+Version of Singularity to use. This must be a valid release version.</p>
+</dd>
+<dt>go_version</dt><dd><p>default=1.15.6
 Version of Go language to install during Singularity building process.
-Go language is not included in the final package.</dd>
+Go language is not included in the final package.</p>
+</dd>
 </dl>
-</div>
-</div>
-<div class="section" id="singularity-debs">
-<h3>singularity_debs<a class="headerlink" href="#singularity-debs" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="singularity-debs">
+<span id="singularity-debs-help"></span><h3>singularity_debs<a class="headerlink" href="#singularity-debs" title="Permalink to this headline">¶</a></h3>
 <p>Create all required Singularity debian packages in a directory.
 Packages that must be build have a corresponding
 singularity-container-<a href="#id4"><span class="problematic" id="id5">*</span></a>.deb.json file with the following structure:</p>
-<dl class="docutils">
-<dt>{</dt>
-<dd><p class="first">“singularity_version”: “3.7.0”, required Singularity version
+<dl>
+<dt>{</dt><dd><p>“singularity_version”: “3.7.0”, required Singularity version
 “go_version”: “1.15.6”,          Go version to use to build Singularity
 “system”: {</p>
 <blockquote>
-<div>“name”: “ubuntu”,             Name of the target system
+<div><p>“name”: “ubuntu”,             Name of the target system
 “version”: “20.04”,            Version of the targer system
-“dockerhub”: “ubuntu:20.04”   System image to pull on DockerHub</div></blockquote>
-<p class="last">}</p>
+“dockerhub”: “ubuntu:20.04”   System image to pull on DockerHub</p>
+</div></blockquote>
+<p>}</p>
 </dd>
 </dl>
 <p>}</p>
 <p>The command makes sure that all .deb files corresponding to a <a href="#id6"><span class="problematic" id="id7">*</span></a>.deb.json
 file exists. If not, they are created with singularity_deb command.</p>
-<div class="section" id="id8">
+<section id="id8">
 <h4>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>directory</dt>
-<dd>Name of directory containing JSON files and where deb files might be
-created</dd>
+<dl class="simple">
+<dt>directory</dt><dd><p>Name of directory containing JSON files and where deb files might be
+created</p>
+</dd>
 </dl>
-</div>
-</div>
-<div class="section" id="download-image">
-<h3>download_image<a class="headerlink" href="#download-image" title="Permalink to this headline">¶</a></h3>
-<p>Download an image from brainvisa.info web site</p>
-<div class="section" id="id9">
-<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>type</dt>
-<dd>type of image to publish. Either “system” for a base system image, or
-“run” for an image used in a user environment, or “dev” for a developer
-image.</dd>
-</dl>
-<p>filename
-url
-output
-container_type
-force
-verbose</p>
-<blockquote>
-<div><p>default=True</p>
-<p>Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
-</div></blockquote>
-</div>
-</div>
-<div class="section" id="create-base-image">
-<h3>create_base_image<a class="headerlink" href="#create-base-image" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="create-base-image">
+<span id="create-base-image-help"></span><h3>create_base_image<a class="headerlink" href="#create-base-image" title="Permalink to this headline">¶</a></h3>
 <p>Create a new virtual image</p>
 <p>Creating the casa-system image:</p>
 <ul>
-<li><p class="first">For Singularity you need to run these commands in order to create the
+<li><p>For Singularity you need to run these commands in order to create the
 casa-system image:</p>
 <blockquote>
 <div><p>cd “$CASA_BASE_DIRECTORY”
@@ -199,103 +165,101 @@ singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
 casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif</p>
 </div></blockquote>
 </li>
-<li><p class="first">For VirtualBox: TODO</p>
-</li>
+<li><p>For VirtualBox: TODO</p></li>
 </ul>
-<div class="section" id="id10">
-<h4>Parameters<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>type</dt>
-<dd>type of image to publish. Either “system” for a base system image, or
+<section id="id9">
+<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>type</dt><dd><p>type of image to publish. Either “system” for a base system image, or
 “run” for an image used in a user environment, or “dev” for a developer
-image.</dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=casa-{type}-{system}</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+image.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=casa-{type}-{image_version}</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>base</dt>
-<dd>Source file use to buld the image. The default value depends on image
-type and container type.</dd>
-<dt>output</dt>
-<dd><p class="first">default=/casa/home/casa_distro/{name}.{extension}</p>
-<p class="last">File location where the image is created.</p>
+<dt>base</dt><dd><p>Source file use to buld the image. The default value depends on image
+type and container type.</p>
 </dd>
-<dt>container_type</dt>
-<dd><p class="first">default=singularity</p>
-<p class="last">Type of virtual appliance to use. Either “singularity”, “vbox” or
+<dt>output</dt><dd><p>default=/home/travis/casa_distro/{name}.{extension}</p>
+<p>File location where the image is created.</p>
+</dd>
+<dt>container_type</dt><dd><p>default=singularity</p>
+<p>Type of virtual appliance to use. Either “singularity”, “vbox” or
 “docker”.</p>
 </dd>
-<dt>memory</dt>
-<dd><p class="first">default=8192</p>
-<p class="last">For vbox container type only. Size in MiB of memory allocated for
-virtual machine.</p>
+<dt>image_version</dt><dd><p>default=1.0</p>
+<p>Version (or branch) of the image</p>
 </dd>
-<dt>disk_size</dt>
-<dd>default=131072
-For vbox container type only. Size in MiB of maximum disk size of
-virtual machine.</dd>
-<dt>gui</dt>
-<dd><p class="first">default=no</p>
-<p class="last">For vbox container type only. If value is “yes”, “true” or “1”, display
-VirtualBox window.</p>
+<dt>verbose</dt><dd><p>default=True</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
-<dt>cleanup</dt>
-<dd><p class="first">default=yes</p>
+<dt>cleanup (allowed only if container_type=singularity)</dt><dd><p>default=yes</p>
 <p>If “no”, “false” or “0”, do not cleanup after a failure during image
 building. This may allow to debug a problem after the failure. For
 instance, with Singularity one can use a command like :</p>
-<blockquote class="last">
-<div>sudo singularity run –writable
-/tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash</div></blockquote>
+<blockquote>
+<div><p>sudo singularity run –writable
+/tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash</p>
+</div></blockquote>
 </dd>
-<dt>force</dt>
-<dd><p class="first">default=no</p>
-<p class="last">If <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or 1, erase existing image without asking any
+<dt>force (allowed only if container_type=singularity)</dt><dd><p>default=no</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or 1, erase existing image without asking any
 question.</p>
 </dd>
-<dt>verbose</dt>
-<dd><p class="first">default=True</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+<dt>memory (allowed only if container_type=vbox)</dt><dd><p>default=8192</p>
+<p>Size in MiB of memory allocated for virtual machine.</p>
+</dd>
+<dt>video_memory (allowed only if container_type=vbox)</dt><dd><p>default=50</p>
+<p>Size in MiB of video memory allocated for virtual machine.</p>
+</dd>
+<dt>disk_size (allowed only if container_type=vbox)</dt><dd><p>default=131072</p>
+<p>For vbox container type only. Size in MiB of maximum disk size of
+virtual machine.</p>
+</dd>
+<dt>gui (allowed only if container_type=vbox)</dt><dd><p>default=no</p>
+<p>For vbox container type only. If value is “yes”, “true” or “1”, display
+VirtualBox window.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="publish-base-image">
-<h3>publish_base_image<a class="headerlink" href="#publish-base-image" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="publish-base-image">
+<span id="publish-base-image-help"></span><h3>publish_base_image<a class="headerlink" href="#publish-base-image" title="Permalink to this headline">¶</a></h3>
 <p>Upload an image to BrainVISA web site.
 Upload is done with rsync in the following remote directory:</p>
 <blockquote>
-<div><a class="reference external" href="mailto:brainvisa&#37;&#52;&#48;brainvisa&#46;info">brainvisa<span>&#64;</span>brainvisa<span>&#46;</span>info</a>:/var/www/html/brainvisa.info_download/</div></blockquote>
+<div><p><a class="reference external" href="mailto:brainvisa&#37;&#52;&#48;brainvisa&#46;info">brainvisa<span>&#64;</span>brainvisa<span>&#46;</span>info</a>:/var/www/html/brainvisa.info_download/</p>
+</div></blockquote>
 <p>This directory location can be customized with
 the following environment variables:</p>
 <blockquote>
-<div>BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+<div><p>BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
 BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
-BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)</div></blockquote>
-<div class="section" id="id11">
-<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>type</dt>
-<dd>type of image to publish. Either “system” for a base system image, or
+BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)</p>
+</div></blockquote>
+<section id="id10">
+<h4>Parameters<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>type</dt><dd><p>type of image to publish. Either “system” for a base system image, or
 “run” for an image used in a user environment, or “dev” for a developer
-image.</dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt>
-<dd>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</dd>
-<dt>container_type</dt>
-<dd>default=singularity
+image.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
+in the environment configuration.</p>
+</dd>
+<dt>container_type</dt><dd><p>default=singularity
 Type of virtual appliance to use. Either “singularity”, “vbox” or
-“docker”.</dd>
-<dt>verbose</dt>
-<dd><p class="first">default=True</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+“docker”.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=True</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="create-user-image">
-<h3>create_user_image<a class="headerlink" href="#create-user-image" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="create-user-image">
+<span id="create-user-image-help"></span><h3>create_user_image<a class="headerlink" href="#create-user-image" title="Permalink to this headline">¶</a></h3>
 <p>Create a “user” image given a development environment.
 The development environment is selected among existing ones its
 distro and system or simply by its name. Only developement environments
@@ -303,305 +267,334 @@ using the master branch are considered.
 This command can perform three steps. Each step can be ignored by setting
 the corresponding option to “no” :</p>
 <ul class="simple">
-<li>install: perform an installation of the development environment into its
+<li><p>install: perform an installation of the development environment into its
 installation directory. This modify the development environment by
-updating its installation directory.</li>
-<li>generate: generate a new image for the developement environment. The ne
+updating its installation directory.</p></li>
+<li><p>generate: generate a new image for the developement environment. The ne
 image is based on base_image and the installation directory of the
-development environment is copied into the image in /casa/install.</li>
-<li>upload: upload the user image on BrainVISA web site.</li>
+development environment is copied into the image in /casa/install.</p></li>
+<li><p>upload: upload the user image on BrainVISA web site.</p></li>
 </ul>
-<div class="section" id="id12">
-<h4>Parameters<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>version [REQUIRED]</dt>
-<dd>Version of the release to create.</dd>
-<dt>name</dt>
-<dd>default={distro}-{version}
-Name given to the created image.</dd>
-<dt>base_image</dt>
-<dd>default={base_directory}/casa-run-{system}{extension}
-Name of the “run” image used to generate the new user image</dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<section id="id11">
+<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>version [REQUIRED]</dt><dd><p>Version of the release to create.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt>name</dt><dd><p>default={distro}-{version}
+Name given to the created image.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt>base_image</dt><dd><p>default={base_directory}/casa-run-{image_version}{extension}
+Name of the “run” image used to generate the new user image</p>
 </dd>
-<dt>environment_name</dt>
-<dd>If given, select dev environment by its name.</dd>
-<dt>container_type</dt>
-<dd>default=None
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
+</dd>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
+</dd>
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
+</dd>
+<dt>environment_name</dt><dd><p>If given, select dev environment by its name.</p>
+</dd>
+<dt>container_type</dt><dd><p>default=None
 Type of virtual appliance to use. Either “singularity”, “vbox” or
-“docker”.</dd>
-<dt>force</dt>
-<dd>default=no
-If “yes”, “true” or 1, erase existing image without asking any
-question.</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+“docker”.</p>
 </dd>
-<dt>install</dt>
-<dd>default=yes
+<dt>output</dt><dd><p>default={base_directory}/{name}{extension}
+Path of the output image.</p>
+</dd>
+<dt>force</dt><dd><p>default=no
+If “yes”, “true” or 1, erase existing image without asking any
+question.</p>
+</dd>
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
+can be passed on the commandline, or set via the
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+</dd>
+<dt>install</dt><dd><p>default=yes
 If “true”, “yes” or “1”, perform the installation steps:
 ‘make install-runtime’, as well as ‘make install-doc’ and
 ‘make install-test’, depending on the install_doc and install_test
 parameters.
-If “false”, “no” or “0”, skip all installation steps</dd>
-<dt>install_doc</dt>
-<dd>default=yes
+If “false”, “no” or “0”, skip all installation steps</p>
+</dd>
+<dt>install_doc</dt><dd><p>default=yes
 If “true”, “yes” or “1”, run ‘make install-doc’ as part of the install
 step.
-If “false”, “no” or “0”, skip this step</dd>
-<dt>install_test</dt>
-<dd>default=yes
+If “false”, “no” or “0”, skip this step</p>
+</dd>
+<dt>install_test</dt><dd><p>default=yes
 If “true”, “yes” or “1”, run ‘make install-test’ as part of the install
 step.
-If “false”, “no” or “0”, skip this step</dd>
-<dt>generate</dt>
-<dd>default=yes
+If “false”, “no” or “0”, skip this step</p>
+</dd>
+<dt>generate</dt><dd><p>default=yes
 If “true”, “yes” or “1”, perform the image creation step.
-If “false”, “no” or “0”, skip this step</dd>
-<dt>upload</dt>
-<dd><p class="first">default=no
+If “false”, “no” or “0”, skip this step</p>
+</dd>
+<dt>zip</dt><dd><p>default=no
+If “true”, “yes” or “1”, zip the installed files for an “online”
+installation.</p>
+</dd>
+<dt>upload</dt><dd><p>default=no
 If “true”, “yes” or “1”, upload the image on BrainVISA web site.
 If “false”, “no” or “0”, skip this step
 Upload is done with rsync in the following remote directory:</p>
 <blockquote>
-<div><a class="reference external" href="mailto:brainvisa&#37;&#52;&#48;brainvisa&#46;info">brainvisa<span>&#64;</span>brainvisa<span>&#46;</span>info</a>:/var/www/html/brainvisa.info_download/</div></blockquote>
+<div><p><a class="reference external" href="mailto:brainvisa&#37;&#52;&#48;brainvisa&#46;info">brainvisa<span>&#64;</span>brainvisa<span>&#46;</span>info</a>:/var/www/html/brainvisa.info_download/</p>
+</div></blockquote>
 <p>This directory location can be customized with
 the following environment variables:</p>
-<blockquote class="last">
-<div>BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+<blockquote>
+<div><p>BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
 BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
-BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)</div></blockquote>
+BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)</p>
+</div></blockquote>
 </dd>
-<dt>verbose</dt>
-<dd><p class="first">default=True</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+<dt>verbose</dt><dd><p>default=True</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="bbi-daily">
-<h3>bbi_daily<a class="headerlink" href="#bbi-daily" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="bbi-daily">
+<span id="bbi-daily-help"></span><h3>bbi_daily<a class="headerlink" href="#bbi-daily" title="Permalink to this headline">¶</a></h3>
 <p>BrainVISA Build infrastructure: daily/nightly automated tests</p>
-<p>See <a class="reference internal" href="bbi_daily.html"><span class="doc">Automated tests with bbi_daily</span></a> for a complete introduction to automated tests.</p>
-<p>In BrainVISA Build Infrastructure (BBI), there are be some machines
-that are be targeted to do some builds and tests. This command is
-used to perform these tasks and is be typically used in a crontab
-on each machine. It does the following things (and log progress and
-results in Jenkins server) :</p>
+<p>In BrainVISA Build Infrastructure (BBI), the <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span>
+<span class="pre">bbi_daily</span></code> command orchestrates automated builds and tests in a given
+<em>base directory</em>. The <code class="docutils literal notranslate"><span class="pre">bbi_daily</span></code> command will run the following steps,
+while (optionally) logging detailed output to a Jenkins server. See
+<a class="reference internal" href="nightly.html"><span class="doc">Automated tests with bbi_daily</span></a> for a complete introduction to automated tests.</p>
+<ol class="arabic simple">
+<li><p>Self-update casa_distro using ‘git pull’ and restart itself for the next
+steps</p></li>
+<li><p>Select <em>dev</em> environments based on the provided filters (distro, branch,
+system, image_version, name)</p></li>
+<li><p>Update casa-dev and casa-run images used by the selected environments to
+the latest version available from the BrainVISA website</p></li>
+<li><p>For every selected <em>dev</em> environment, perform the following tasks:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">bv_maker</span> <span class="pre">sources</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bv_maker</span> <span class="pre">configure</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bv_maker</span> <span class="pre">build</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bv_maker</span> <span class="pre">doc</span></code></p></li>
+<li><p>perform all tests in the <em>dev</em> environment (running the same commands
+as <code class="docutils literal notranslate"><span class="pre">bv_maker</span> <span class="pre">test</span></code>)</p></li>
+<li><p>create or update a user image with <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span>
+<span class="pre">create_user_image</span></code> (i.e. install the compiled software in a new
+<em>user image</em> based on the <code class="docutils literal notranslate"><span class="pre">casa-run</span></code> image, where the software is
+installed under <code class="docutils literal notranslate"><span class="pre">/casa/install</span></code>)</p></li>
+<li><p>install that user image into  a fresh <em>user</em> environment (reference
+test data are automatically linked from the <em>dev</em> environment)</p></li>
+<li><p>perform all tests in that <em>user</em> environment</p></li>
+</ol>
+</li>
+</ol>
+<p>The process can be controlled with the command-line options described
+below, as well as some configuration keys that can be added to the
+<code class="docutils literal notranslate"><span class="pre">casa_distro.json</span></code> of each dev environment:</p>
 <ul class="simple">
-<li>Update casa_distro to latest master version and restart for the next
-steps</li>
-<li>Parse all configured environments selected with a filter as with mrun
-command</li>
-<li>Update dev and run images used by selected environments from BrainVISA
-site</li>
-<li><dl class="first docutils">
-<dt>For all selected dev environments, perform the following tasks :</dt>
-<dd><ul class="first last">
-<li>bv_maker sources</li>
-<li>bv_maker configure</li>
-<li>bv_maker build</li>
-<li>bv_maker doc</li>
-<li>perform all tests (as bv_maker test)</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctest_options</span></code>: list of command-line options to pass to <code class="docutils literal notranslate"><span class="pre">ctest</span></code> on
+the command-line. <code class="docutils literal notranslate"><span class="pre">ctest</span></code> is used for listing the tests, so you may
+pass filtering options to restrict the set of tests being run (e.g.
+<code class="docutils literal notranslate"><span class="pre">[&quot;-R&quot;,</span> <span class="pre">&quot;disco&quot;]</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bbi_user_config</span></code>: an optional dictionary for customizing the creation
+of a the user image and the user environment, where tests of the user
+image will be run. This dictionary can contain these keys:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: the name of the environment where the user image will be set
+up. Default: <code class="docutils literal notranslate"><span class="pre">dev_config['name']</span> <span class="pre">+</span> <span class="pre">'-userimage'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">directory</span></code>: the full path where the user environment will be set up.
+<strong>Warning: this directory is erased every time ``bbi_daily`` is run.</strong>
+Default: <code class="docutils literal notranslate"><span class="pre">{base_directory}</span> <span class="pre">+</span> <span class="pre">name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image</span></code>: the full path where the user image will be created.
+Default: <code class="docutils literal notranslate"><span class="pre">{base_directory}</span> <span class="pre">+</span> <span class="pre">name</span> <span class="pre">+</span> <span class="pre">extension</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code>: the version string that will be set in the user image,
+e.g. available as the <code class="docutils literal notranslate"><span class="pre">CASA_VERSION</span></code> environment variable and as the
+<code class="docutils literal notranslate"><span class="pre">version</span></code> metadata key. This value <code class="docutils literal notranslate"><span class="pre">version</span></code> is passed to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">time.strftime()</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'%Y-%m-%d'</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setup_commands</span></code>: list of shell commands that will be run in the
+newly created user environment. May be used to run post-setup tasks,
+such as configuring additional files in the home directory of the user
+(e.g. configuring MATLAB licences…).</p></li>
 </ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>For all selected user environments</dt>
-<dd><ul class="first last">
-<li>find the corresponding dev environment</li>
-<li>recreate the user environment image with casa_distro_admin
-create_user_image</li>
-<li>perform all tests defined in the correponding dev environment
-but execute them in the user environment</li>
-</ul>
-</dd>
-</dl>
 </li>
 </ul>
-<div class="section" id="id13">
-<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given type.</p>
+<section id="id12">
+<h4>Parameters<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given distro name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given distro name.</p>
+<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment having the given branch.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment having the given branch.</p>
+<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
+<p>If given, select environments having the given system name.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environments having the given system name.</p>
+<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<p>If given, select environments having the given image version.</p>
 </dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt>
-<dd><p class="first">default=None</p>
-<p class="last">If given, select environment by its name. It replaces type, distro,
+<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
+<p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>version</dt>
-<dd>If given, select environment by its version (only applicable to user
-environments, not dev)</dd>
-<dt>jenkins_server</dt>
-<dd>default = None
+<dt>jenkins_server</dt><dd><p>default = None
 Base URL of the Jenkins server used to send logs (e.g.
 <a class="reference external" href="https://brainvisa.info/builds">https://brainvisa.info/builds</a>). If none is given, logs are
-written to standard output.</dd>
-<dt>jenkins_auth</dt>
-<dd>default = {base_directory}/jenkins_auth
+written to standard output.</p>
+</dd>
+<dt>jenkins_auth</dt><dd><p>default = {base_directory}/jenkins_auth
 Name of a file containing user name and password (can be a token)
 to use to contact Jenkins server REST API. The file must have only
-two lines with login on first line and password on second.</dd>
-<dt>update_casa_distro</dt>
-<dd>default = yes
-If true, yes or 1, update casa_distro</dd>
-<dt>update_base_images</dt>
-<dd>default = yes
-Boolean indicating if the update images step must be done</dd>
-<dt>bv_maker_steps</dt>
-<dd>default = sources,configure,build,doc
-Coma separated list of bv_maker commands to perform on dev
-environments. May be empty to do nothing.</dd>
-<dt>dev_tests</dt>
-<dd>default = yes
-Boolean indicating if the tests must be performed on dev environments</dd>
-<dt>update_user_images</dt>
-<dd>default = yes
-Boolean indicating if images of user environment must be recreated</dd>
-<dt>user_tests</dt>
-<dd>default = yes
-Boolean indicating if the tests must be performed on user environments</dd>
-<dt>base_directory</dt>
-<dd><p class="first">default= <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></p>
-<p class="last">Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+two lines with login on first line and password on second.</p>
 </dd>
-<dt>verbose</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Print more detailed information if value is <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">1</span></code>.</p>
+<dt>update_casa_distro</dt><dd><p>default = yes
+If true, yes or 1, update casa_distro</p>
+</dd>
+<dt>update_base_images</dt><dd><p>default = yes
+Boolean indicating if the update images step must be done</p>
+</dd>
+<dt>bv_maker_steps</dt><dd><p>default = sources,configure,build,doc
+Coma separated list of bv_maker commands to perform on dev
+environments. May be empty to do nothing.</p>
+</dd>
+<dt>dev_tests</dt><dd><p>default = yes
+Boolean indicating if the tests must be performed on dev environments</p>
+</dd>
+<dt>update_user_images</dt><dd><p>default = yes
+Boolean indicating if images of user environment must be recreated</p>
+</dd>
+<dt>install_doc</dt><dd><p>default = yes
+Boolean indicating if the documentation must be installed in user
+images</p>
+</dd>
+<dt>recreate_user_envs</dt><dd><p>default = yes
+Boolean indicating if user environments must be wiped and recreated
+using singularity –bind &lt;dir&gt;:/casa/setup …</p>
+</dd>
+<dt>user_tests</dt><dd><p>default = yes
+Boolean indicating if the tests must be performed on user environments</p>
+</dd>
+<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
+<p>Directory where images and environments are stored. This parameter
+can be passed on the commandline, or set via the
+<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=None</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="local-install">
-<h3>local_install<a class="headerlink" href="#local-install" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="local-install">
+<span id="local-install-help"></span><h3>local_install<a class="headerlink" href="#local-install" title="Permalink to this headline">¶</a></h3>
 <p>Run the installation procedure to create a run or dev image on the
 local machine. Installation can be don step by step. This command
 is typically used in a VirtualBox machine to debug image creation
 scenario.</p>
-<div class="section" id="id14">
-<h4>Parameters<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
-<dl class="docutils">
-<dt>type</dt>
-<dd>Type of image to install. Either “run” or “dev”.</dd>
-<dt>steps</dt>
-<dd><p class="first">default=None</p>
-<p class="last">Installation steps to perform. If not given, the steps not yet
-done are displayed. Can be a comma separated list of step names
-or “all” to perform all steps not already done or “next” to perform
-only the next undone step.</p>
+<section id="id13">
+<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>type</dt><dd><p>Type of image to install. Either “run” or “dev”.</p>
 </dd>
-<dt>system</dt>
-<dd><p class="first">default=*</p>
-<p class="last">System to used when searching for an image builder file. This is
+<dt>action</dt><dd><p>default=None</p>
+<p>If not given, list the possible actions for the selected type and
+indicate if they were done or not. Can have one of the following
+values:</p>
+<blockquote>
+<div><p>“next” : perform the nex action not already done
+“all” : perform all action not already done
+coma separated list of acions : perform all selected actions</p>
+<blockquote>
+<div><p>even if they were already done</p>
+</div></blockquote>
+</div></blockquote>
+</dd>
+<dt>system</dt><dd><p>default=*</p>
+<p>System to used when searching for an image builder file. This is
 used as a shell pattern, the default value match any system.</p>
 </dd>
-<dt>log_file</dt>
-<dd><p class="first">default=/etc/casa_local_install.log</p>
-<p class="last">File where information about steps that have been performed is stored.</p>
+<dt>log_file</dt><dd><p>default=/etc/casa_local_install.log</p>
+<p>File where information about steps that have been performed is stored.</p>
 </dd>
-<dt>action</dt>
-<dd><p class="first">default=None</p>
-<p class="last">“next”, “all”</p>
+<dt>user</dt><dd><p>default=brainvisa</p>
+<p>Name of the user account to use for non root commands.</p>
 </dd>
 </dl>
-</div>
-</div>
-</div>
-<div class="section" id="images-and-releases-creation">
+</section>
+</section>
+</section>
+<section id="images-and-releases-creation">
 <h2>Images and releases creation<a class="headerlink" href="#images-and-releases-creation" title="Permalink to this headline">¶</a></h2>
-<p>A casa-distro release is done by a member of the BrainVISA team using the <code class="docutils literal"><span class="pre">casa_distro_admin</span></code> command. This document contains all the steps that are necessary to build and publish all versions of casa-distro images.</p>
-</div>
-<div class="section" id="creation-a-base-virtualbox-image">
+<p>A casa-distro release is done by a member of the BrainVISA team using the <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span></code> command. This document contains all the steps that are necessary to build and publish all versions of casa-distro images.</p>
+</section>
+<section id="creation-a-base-virtualbox-image">
 <h2>Creation a base VirtualBox image<a class="headerlink" href="#creation-a-base-virtualbox-image" title="Permalink to this headline">¶</a></h2>
-<p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id15"><span class="problematic" id="id16">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id17"><span class="problematic" id="id18">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
+<p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id14"><span class="problematic" id="id15">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id16"><span class="problematic" id="id17">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
 <ol class="arabic simple">
-<li>Install VirtualBox version 6 or greater</li>
-<li>Download an Ubuntu iso file from internet (any Debain based distro may work but only recent Ubuntu LTS are tested).</li>
-<li>Run <cite>casa_distro_admin create_system</cite> to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)</li>
-<li>Perform Ubuntu minimal installation with an autologin account named “brainvisa” and with password “brainvisa”</li>
-<li>Perform system updates and install kernel module creation packages :</li>
+<li><p>Install VirtualBox version 6 or greater</p></li>
+<li><p>Download an Ubuntu iso file from internet (any Debain based distro may work but only recent Ubuntu LTS are tested).</p></li>
+<li><p>Run <cite>casa_distro_admin create_system</cite> to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)</p></li>
+<li><p>Perform Ubuntu minimal installation with an autologin account named “brainvisa” and with password “brainvisa”</p></li>
+<li><p>Perform system updates and install kernel module creation packages :</p></li>
 </ol>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">upgrade</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gcc</span> <span class="n">make</span> <span class="n">perl</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="6">
-<li>Set root password to “brainvisa” (this is necessary to automatically connect to the VM to perform post-install)</li>
-<li>Reboot the VM</li>
-<li>Download and install VirtualBox guest additions</li>
-<li>Shut down the VM</li>
-<li>Configure the VM in VirualBox (especially 3D acceleration, processors and memory)</li>
+<li><p>Set root password to “brainvisa” (this is necessary to automatically connect to the VM to perform post-install)</p></li>
+<li><p>Reboot the VM</p></li>
+<li><p>Download and install VirtualBox guest additions</p></li>
+<li><p>Shut down the VM</p></li>
+<li><p>Configure the VM in VirualBox (especially 3D acceleration, processors and memory)</p></li>
 </ol>
-</div>
-<div class="section" id="managing-container-images">
+</section>
+<section id="managing-container-images">
 <h2>Managing container images<a class="headerlink" href="#managing-container-images" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="singularity-and-docker">
+<section id="singularity-and-docker">
 <h3>Singularity and Docker<a class="headerlink" href="#singularity-and-docker" title="Permalink to this headline">¶</a></h3>
 <p>In a general way, we designed casa-distro first using <a class="reference external" href="https://www.docker.com">Docker</a>, and then extended it to <a class="reference external" href="https://www.sylabs.io/">Singularity</a>. We use Singularity by actually converting Docker images, so images should be built first using Docker. So Docker is needed to build Singularity images for Casa-distro (this is not needed for regular users, which just download system images, and can use singularity alone, or docker alone).</p>
-<p>Thus, to build a singularity image, one needs to use first <code class="docutils literal"><span class="pre">casa_distro_admin</span> <span class="pre">create_docker</span></code>, then <code class="docutils literal"><span class="pre">casa_distro_admin</span> <span class="pre">create_singularity</span></code>.</p>
-</div>
-<div class="section" id="sharing-images">
+<p>Thus, to build a singularity image, one needs to use first <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span> <span class="pre">create_docker</span></code>, then <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span> <span class="pre">create_singularity</span></code>.</p>
+</section>
+<section id="sharing-images">
 <h3>Sharing images<a class="headerlink" href="#sharing-images" title="Permalink to this headline">¶</a></h3>
 <p>Images can be uploaded to a centralized place to allow other users to use them.</p>
-<p>By default <code class="docutils literal"><span class="pre">publish_docker</span></code> will use <a class="reference external" href="https://hub.docker.com/">Docker Hub</a>, which requires an account and access rights to push images.</p>
-<p>Singularity did not have a public hub by the time we started casa-distro, so <code class="docutils literal"><span class="pre">publish_singularity</span></code> will push by default somewhere on the <a class="reference external" href="http://brainvisa.info">BrainVISA web site</a>, which also requires to have access to the website account to push. We could use <a class="reference external" href="https://singularity-hub.org/">Singularity Hub</a> in the future.</p>
+<p>By default <code class="docutils literal notranslate"><span class="pre">publish_docker</span></code> will use <a class="reference external" href="https://hub.docker.com/">Docker Hub</a>, which requires an account and access rights to push images.</p>
+<p>Singularity did not have a public hub by the time we started casa-distro, so <code class="docutils literal notranslate"><span class="pre">publish_singularity</span></code> will push by default somewhere on the <a class="reference external" href="http://brainvisa.info">BrainVISA web site</a>, which also requires to have access to the website account to push. We could use <a class="reference external" href="https://singularity-hub.org/">Singularity Hub</a> in the future.</p>
 <p>Downloading and updating images do not need any access rights, they are public.</p>
-</div>
-<div class="section" id="designing-new-images">
+</section>
+<section id="designing-new-images">
 <h3>Designing new images<a class="headerlink" href="#designing-new-images" title="Permalink to this headline">¶</a></h3>
 <p><em>create_docker</em> may be used to update and rebuild the images which are proposed inside the <em>casa-distro</em> distribution, but this specific use has a limited benefit since they are normally pre-built and are downloaded from the hubs when needed.</p>
 <p><em>create_docker</em> may prove useful however for an application designer who needs to ship specific or additional system packages in the images. In this situation a new image type needs to be designed.</p>
 <p>New image types correspond to subdirectories which will looked for in the following directory trees (when they exist):</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">&lt;workflow_repository&gt;/share/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></li>
-<li><code class="docutils literal"><span class="pre">$HOME/.config/casa-distro/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></li>
-<li><code class="docutils literal"><span class="pre">$HOME/.casa-distro/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></li>
-<li><code class="docutils literal"><span class="pre">&lt;casa_builtin&gt;/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;workflow_repository&gt;/share/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$HOME/.config/casa-distro/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$HOME/.casa-distro/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;casa_builtin&gt;/docker/&lt;image_name&gt;/&lt;system&gt;</span></code></p></li>
 </ul>
 <p>where:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">&lt;workflow_repository&gt;</span></code> is the main workflow repository either passed via the <code class="docutils literal"><span class="pre">--repository</span></code> option, or via the <code class="docutils literal"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code> environment variable, or in the default location <code class="docutils literal"><span class="pre">$HOME/casa_distro</span></code></li>
-<li><code class="docutils literal"><span class="pre">&lt;casa_builtin&gt;</span></code> if the builtin share directory of casa-distro (or its sources)</li>
-<li><code class="docutils literal"><span class="pre">&lt;image_name&gt;</span></code> is a name (or type name) for the image, like the builtin ones <code class="docutils literal"><span class="pre">casa-test</span></code>, <code class="docutils literal"><span class="pre">casa-dev</span></code> etc.</li>
-<li><code class="docutils literal"><span class="pre">&lt;system&gt;</span></code> is the name of the system running inside the docker image (the builtin ones are <code class="docutils literal"><span class="pre">ubuntu-18.04</span></code>, <code class="docutils literal"><span class="pre">ubuntu-16.04</span></code>, <code class="docutils literal"><span class="pre">ubuntu-14.04</span></code>, <code class="docutils literal"><span class="pre">ubuntu-12.04</span></code>, <code class="docutils literal"><span class="pre">centos-7.4</span></code>, <code class="docutils literal"><span class="pre">windows-7-32</span></code>, <code class="docutils literal"><span class="pre">windows-7-64</span></code>.</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;workflow_repository&gt;</span></code> is the main workflow repository either passed via the <code class="docutils literal notranslate"><span class="pre">--repository</span></code> option, or via the <code class="docutils literal notranslate"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code> environment variable, or in the default location <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;casa_builtin&gt;</span></code> if the builtin share directory of casa-distro (or its sources)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;image_name&gt;</span></code> is a name (or type name) for the image, like the builtin ones <code class="docutils literal notranslate"><span class="pre">casa-test</span></code>, <code class="docutils literal notranslate"><span class="pre">casa-dev</span></code> etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;system&gt;</span></code> is the name of the system running inside the docker image (the builtin ones are <code class="docutils literal notranslate"><span class="pre">ubuntu-18.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-16.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-14.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-12.04</span></code>, <code class="docutils literal notranslate"><span class="pre">centos-7.4</span></code>, <code class="docutils literal notranslate"><span class="pre">windows-7-32</span></code>, <code class="docutils literal notranslate"><span class="pre">windows-7-64</span></code>.</p></li>
 </ul>
 <p>So custom, user-defined images can be added in a personal directory.
 Such an image definition directory should contain at least two files:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">casa_distro_docker.yaml</span></code> is a Yaml file definig dependencies, name and tags for the image. Ex:</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">casa_distro_docker.yaml</span></code> is a Yaml file definig dependencies, name and tags for the image. Ex:</p></li>
 </ul>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">../../casa-dev</span>
 <span class="nt">image_sources</span><span class="p">:</span>
   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pytorch</span>
@@ -611,21 +604,22 @@ Such an image definition directory should contain at least two files:</p>
 </pre></div>
 </div>
 <ul class="simple">
-<li>a <a class="reference external" href="https://docs.docker.com/engine/reference/builder/">Dockerfile</a>
-The Dockerfile may (should) be based on another image, in the usual way of building docker images. Thus an existing casa-distro image can be the base for a new one.</li>
+<li><p>a <a class="reference external" href="https://docs.docker.com/engine/reference/builder/">Dockerfile</a>
+The Dockerfile may (should) be based on another image, in the usual way of building docker images. Thus an existing casa-distro image can be the base for a new one.</p></li>
 </ul>
-<p>Once an image is created with docker, it can be converted to singularity using <code class="docutils literal"><span class="pre">casa_distro</span> <span class="pre">create_singularity</span></code>.</p>
-</div>
-</div>
-</div>
+<p>Once an image is created with docker, it can be converted to singularity using <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">create_singularity</span></code>.</p>
+</section>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">The casa_distro_admin command</a><ul>
 <li><a class="reference internal" href="#common-parameters">Common parameters:</a></li>
@@ -642,28 +636,24 @@ The Dockerfile may (should) be based on another image, in the usual way of build
 <li><a class="reference internal" href="#id8">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#download-image">download_image</a><ul>
+<li><a class="reference internal" href="#create-base-image">create_base_image</a><ul>
 <li><a class="reference internal" href="#id9">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#create-base-image">create_base_image</a><ul>
+<li><a class="reference internal" href="#publish-base-image">publish_base_image</a><ul>
 <li><a class="reference internal" href="#id10">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#publish-base-image">publish_base_image</a><ul>
+<li><a class="reference internal" href="#create-user-image">create_user_image</a><ul>
 <li><a class="reference internal" href="#id11">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#create-user-image">create_user_image</a><ul>
+<li><a class="reference internal" href="#bbi-daily">bbi_daily</a><ul>
 <li><a class="reference internal" href="#id12">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#bbi-daily">bbi_daily</a><ul>
-<li><a class="reference internal" href="#id13">Parameters</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#local-install">local_install</a><ul>
-<li><a class="reference internal" href="#id14">Parameters</a></li>
+<li><a class="reference internal" href="#id13">Parameters</a></li>
 </ul>
 </li>
 </ul>
@@ -684,18 +674,18 @@ The Dockerfile may (should) be based on another image, in the usual way of build
   <p class="topless"><a href="casa_distro_command.html"
                         title="previous chapter">The casa_distro command</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="bbi_daily.html"
+  <p class="topless"><a href="nightly.html"
                         title="next chapter">Automated tests with bbi_daily</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -704,17 +694,18 @@ The Dockerfile may (should) be based on another image, in the usual way of build
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="bbi_daily.html" title="Automated tests with bbi_daily"
+          <a href="nightly.html" title="Automated tests with bbi_daily"
              >next</a></li>
         <li class="right" >
           <a href="casa_distro_command.html" title="The casa_distro command"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The casa_distro_admin command</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.1.
     </div>
   </body>
 </html>

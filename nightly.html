@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Automated tests with bbi_daily &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="The casa_distro_admin command" href="casa_distro_admin_command.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_admin_command.html" title="The casa_distro_admin command"
+             accesskey="P">previous</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Automated tests with bbi_daily</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="automated-tests-with-bbi-daily">
+<h1>Automated tests with bbi_daily<a class="headerlink" href="#automated-tests-with-bbi-daily" title="Permalink to this headline">¶</a></h1>
+<p>BBI stands for <em>BrainVISA Build Infrastructure</em>. The <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span>
+<span class="pre">bbi_daily</span></code> command orchestrates automated builds and tests in a given <em>base
+directory</em>. This page is written as a guide to setting up automated tests, see
+<a class="reference internal" href="casa_distro_admin_command_help.html#bbi-daily-help"><span class="std std-ref">bbi_daily</span></a> for the reference documentation.</p>
+<section id="walkthrough">
+<h2>Walkthrough<a class="headerlink" href="#walkthrough" title="Permalink to this headline">¶</a></h2>
+<p>Here is a detailed log of how nightly builds are set up in NeuroSpin. You can
+take inspiration from it to create your own personalized set-up.</p>
+<ol class="arabic">
+<li><p>Install <code class="docutils literal notranslate"><span class="pre">singularity</span></code>. Configure the <em>fakeroot</em> functionality of
+Singularity, as explained <a class="reference external" href="https://sylabs.io/guides/3.7/admin-guide/user_namespace.html#fakeroot-feature">in the Singularity Admin Guide</a>.
+In short, you need admin rights on your machine, and you have to run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sudo singularity config fakeroot --add $USER
+</pre></div>
+</div>
+<p>(with <code class="docutils literal notranslate"><span class="pre">$USER</span></code> being <code class="docutils literal notranslate"><span class="pre">a-sac-ns-brainvisa</span></code> in this case).</p>
+</li>
+<li><p>Create a directory dedicated to the nightly builds and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">CASA_BASE_DIRECTORY</span><span class="o">=/</span><span class="n">volatile</span><span class="o">/</span><span class="n">a</span><span class="o">-</span><span class="n">sac</span><span class="o">-</span><span class="n">ns</span><span class="o">-</span><span class="n">brainvisa</span><span class="o">/</span><span class="n">bbi_nightly</span>
+<span class="n">mkdir</span> <span class="s2">&quot;$CASA_BASE_DIRECTORY&quot;</span>
+<span class="n">cd</span> <span class="s2">&quot;$CASA_BASE_DIRECTORY&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create the <code class="docutils literal notranslate"><span class="pre">jenkins_auth</span></code> file in the <em>base directory</em>. This text file
+must consist of two lines: the first line contains the username on the
+Jenkins server, the second line contains the <em>token</em> that can be generated
+in the Jenkins web interface (click on the user on top right corner, select
+<em>Configure</em> and create a new API token). This token will be used instead of
+the account password to upload build results. One advantage of using a token
+is the possibility to revoke it at any time. It is recommended to use one
+token per BrainVISA Build Environment and name the token accordingly.</p>
+<dl class="field-list">
+<dt class="field-odd">warning</dt>
+<dd class="field-odd"><p>You should make this file non-readable by others, e.g. create it
+with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chmod</span> <span class="mi">0600</span> <span class="n">jenkins_auth</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p>Download the <code class="docutils literal notranslate"><span class="pre">casa-dev</span></code> image using the link found on the Downloads page
+of &lt;<a class="reference external" href="https://brainvisa.info/">https://brainvisa.info/</a>&gt;. Also download the associated JSON file (to be
+extra safe, check that the md5sum of the image matches that stored in the
+JSON file).:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">brainvisa</span><span class="o">.</span><span class="n">info</span><span class="o">/</span><span class="n">download</span><span class="o">/</span><span class="n">casa</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="n">sif</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">brainvisa</span><span class="o">.</span><span class="n">info</span><span class="o">/</span><span class="n">download</span><span class="o">/</span><span class="n">casa</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="n">sif</span><span class="o">.</span><span class="n">json</span>
+<span class="n">md5sum</span> <span class="n">casa</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="n">sif</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create a directory for your development environment and set it up:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="s2">&quot;$CASA_BASE_DIRECTORY&quot;</span>
+<span class="n">mkdir</span> <span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span>
+<span class="n">singularity</span> <span class="n">run</span> <span class="o">--</span><span class="n">bind</span> <span class="o">./</span><span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span><span class="p">:</span><span class="o">/</span><span class="n">casa</span><span class="o">/</span><span class="n">setup</span> \
+    <span class="n">casa</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="n">sif</span> <span class="n">distro</span><span class="o">=</span><span class="n">brainvisa</span> <span class="n">branch</span><span class="o">=</span><span class="n">master</span>
+</pre></div>
+</div>
+</li>
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">conf/svn.secret</span></code> file with your BioProj login and password.</p></li>
+<li><p>Check out and compile an initial build while you do the rest of the
+configuration (until you run <code class="docutils literal notranslate"><span class="pre">bbi_daily</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;$CASA_BASE_DIRECTORY&quot;</span><span class="o">/</span><span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bv_maker</span>
+</pre></div>
+</div>
+</li>
+<li><p>Put the reference test data in
+<code class="docutils literal notranslate"><span class="pre">&quot;$CASA_BASE_DIRECTORY&quot;/brainvisa-master-5.0/tests/ref/</span></code>. Best is to copy
+it from a known-good source.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bbi_daily</span></code> will install the compiled software in a user image, create a
+fresh user environment from that user image, and run tests in there. You can
+control this process with a few optional parameters, that you should insert
+in the <code class="docutils literal notranslate"><span class="pre">conf/casa_distro.json</span></code> of the dev environment, as a new dictionary
+under the <code class="docutils literal notranslate"><span class="pre">bbi_user_config</span></code> key. Below is the list of keys in this
+dictionary with their default values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;bbi_user_config&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;dev_name&gt;-userimage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;directory&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;dev_directory&gt;/../&lt;user_name&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{base_directory}</span><span class="s2">/&lt;user_name&gt;</span><span class="si">{extension}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that the value of <code class="docutils literal notranslate"><span class="pre">version</span></code> will be interpreted by
+<code class="xref py py-func docutils literal notranslate"><span class="pre">time.strftime()</span></code>.</p>
+</li>
+<li><p>Check that the whole <code class="docutils literal notranslate"><span class="pre">bbi_daily</span></code> process is able to run successfully:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;$CASA_BASE_DIRECTORY&quot;</span><span class="o">/</span><span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">casa_distro_admin</span> \
+    <span class="n">bbi_daily</span>
+</pre></div>
+</div>
+<p>This will take a long time. Beware that the output of each step is
+displayed only when that step is finished, so the command may seem to hang
+for a long time.</p>
+</li>
+<li><p>Set the <code class="docutils literal notranslate"><span class="pre">bbi_daily</span></code> command to run on a regular basis using <code class="docutils literal notranslate"><span class="pre">crontab</span> <span class="pre">-e</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MAILTO</span><span class="o">=</span><span class="n">your</span><span class="o">.</span><span class="n">email</span><span class="nd">@host</span><span class="o">.</span><span class="n">example</span>
+<span class="mi">37</span> <span class="mi">5</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="n">PATH</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="nb">bin</span><span class="p">:</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="p">:</span><span class="o">/</span><span class="nb">bin</span> <span class="n">CASA_BASE_DIRECTORY</span><span class="o">=/</span><span class="n">volatile</span><span class="o">/</span><span class="n">a</span><span class="o">-</span><span class="n">sac</span><span class="o">-</span><span class="n">ns</span><span class="o">-</span><span class="n">brainvisa</span><span class="o">/</span><span class="n">bbi_nightly</span> <span class="n">SINGULARITY_TMPDIR</span><span class="o">=/</span><span class="n">volatile</span><span class="o">/</span><span class="n">tmp</span> <span class="o">/</span><span class="n">volatile</span><span class="o">/</span><span class="n">a</span><span class="o">-</span><span class="n">sac</span><span class="o">-</span><span class="n">ns</span><span class="o">-</span><span class="n">brainvisa</span><span class="o">/</span><span class="n">bbi_nightly</span><span class="o">/</span><span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">casa_distro_admin</span> <span class="n">bbi_daily</span> <span class="n">jenkins_server</span><span class="o">=</span><span class="s1">&#39;https://brainvisa.info/builds&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">note</dt>
+<dd class="field-odd"><p>Remember to set all the needed environment variables. <code class="docutils literal notranslate"><span class="pre">PATH</span></code> may
+need to be set additionally, in case your Singularity installation
+is under <code class="docutils literal notranslate"><span class="pre">/usr/local</span></code> (by default cron limits <code class="docutils literal notranslate"><span class="pre">PATH</span></code> to
+<code class="docutils literal notranslate"><span class="pre">/usr/bin:/bin</span></code>).</p>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Automated tests with bbi_daily</a><ul>
+<li><a class="reference internal" href="#walkthrough">Walkthrough</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="casa_distro_admin_command.html"
+                        title="previous chapter">The casa_distro_admin command</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="casa_distro_admin_command.html" title="The casa_distro_admin command"
+             >previous</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">CASA-Distro</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Automated tests with bbi_daily</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.1.
+    </div>
+  </body>
+</html>

@@ -1,9 +1,10 @@
+HELP, format: rst
 Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro and
 https://github.com/brainvisa/casa-distro for more information
 
-Version : 3.0.0
+Version : 3.1.0
 
 usage::
 
@@ -32,6 +33,9 @@ base_directory
 Commands:
 =========
 
+
+.. _help-help:
+
 ----
 help
 ----
@@ -45,6 +49,9 @@ format
 full
     if ``true`` or ``yes`` or ``1``, display each subcommand parameters
     documentation in the general help.
+
+
+.. _setup-user-help:
 
 ----------
 setup_user
@@ -92,7 +99,7 @@ image
     default={base_directory}/{distro}-{version}{extension}
     Location of the virtual image for this environement.
 url
-    default=https://brainvisa.info/download/releases/{container_type}
+    default=https://brainvisa.info/download
     URL where to download image if it is not found.
 output
     default={base_directory}/{name}
@@ -105,6 +112,9 @@ verbose
     default=True
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _setup-dev-help:
 
 ---------
 setup_dev
@@ -126,8 +136,12 @@ branch
 system
     System to use with this environment. By default, it uses the first
     supported system of the selected distro.
+:ref:`image_version`
+    default=1.0
+
+    If given, select environments having the given image version.
 name
-    default={distro}-{branch}-{system}
+    default={distro}-{branch}-{image_version}
     Name of the environment. No other environment must have the same name
     (including non developer environments).
     This name may be used later to select the environment to run.
@@ -151,10 +165,10 @@ base_directory
     can be passed on the commandline, or set via the
     ``CASA_BASE_DIRECTORY`` environment variable.
 image
-    default={base_directory}/casa-dev-{system}{extension}
+    default={base_directory}/casa-dev-{image_version}{extension}
     Location of the virtual image for this environement.
 url
-    default=https://brainvisa.info/download/{container_type}
+    default=https://brainvisa.info/download
     URL where to download image if it is not found.
 output
     default={base_directory}/{name}
@@ -168,10 +182,16 @@ verbose
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
+
+.. _distro-help:
+
 ------
 distro
 ------
 List all available distro and provide information for each one.
+
+
+.. _list-help:
 
 ----
 list
@@ -196,6 +216,10 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
 :ref:`name <env_name>`
     default=None
 
@@ -215,6 +239,9 @@ verbose
     default=None
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _run-help:
 
 ---
 run
@@ -243,6 +270,10 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
 :ref:`name <env_name>`
     default=None
 
@@ -303,6 +334,9 @@ verbose
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
+
+.. _pull-image-help:
+
 ----------
 pull_image
 ----------
@@ -311,11 +345,19 @@ least one environment are updated. There are two ways of selecting the
 image(s) to be downloaded:
 
 1. filtered by environment, using the ``name`` selector, or a combination
-   of ``distro``, ``branch``, and ``system``.
+   of ``distro``, ``branch``, and ``image_version``.
 
-2. directly specifying a full image name, e.g.::
+       casa_distro pull_image type=dev image_version=5.0
 
-       casa_distro pull_image image=casa-run-ubuntu-18.04.sif
+2. directly specifying an image name (*not* including bulild_number),
+   e.g.::
+
+       casa_distro pull_image image=casa-run-5.0.sif
+
+Note that even though the build number does not appear in the local image
+name, this command will always pull the image with the highest
+build_number, e.g. the image that is named casa-dev-5.0-1.sif on the server
+will be downloaded to a file named casa-dev-5.0.sif.
 
 Parameters
 ----------
@@ -331,6 +373,17 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`type <env_type>`
+    default=None
+
+    If given, select environment having the given type.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
+version
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
 :ref:`name <env_name>`
     default=None
 
@@ -356,6 +409,9 @@ verbose
     default=None
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _list-images-help:
 
 -----------
 list_images
@@ -384,6 +440,13 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
+version
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
 :ref:`name <env_name>`
     default=None
 
@@ -406,6 +469,9 @@ verbose
     default=None
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _shell-help:
 
 -----
 shell
@@ -431,6 +497,10 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
 :ref:`name <env_name>`
     default=None
 
@@ -490,6 +560,9 @@ verbose
     default=None
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _mrun-help:
 
 ----
 mrun
@@ -521,6 +594,10 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
 :ref:`name <env_name>`
     default=None
 
@@ -581,6 +658,9 @@ verbose
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
+
+.. _bv-maker-help:
+
 --------
 bv_maker
 --------
@@ -605,6 +685,10 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
 :ref:`name <env_name>`
     default=None
 
@@ -629,6 +713,9 @@ verbose
     default=None
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _clean-images-help:
 
 ------------
 clean_images
@@ -658,6 +745,13 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
+version
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
 :ref:`name <env_name>`
     default=None
 
@@ -683,6 +777,9 @@ verbose
     default=False
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _delete-help:
 
 ------
 delete
@@ -713,6 +810,13 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
+version
+    If given, select environment by its version (only applicable to user
+    environments, not dev)
 :ref:`name <env_name>`
     default=None
 

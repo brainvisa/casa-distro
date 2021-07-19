@@ -1,9 +1,10 @@
+HELP, format: rst
 Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro and
 https://github.com/brainvisa/casa-distro for more information
 
-Version : 3.0.0
+Version : 3.1.0
 
 usage::
 
@@ -32,6 +33,9 @@ base_directory
 Commands:
 =========
 
+
+.. _help-help:
+
 ----
 help
 ----
@@ -45,6 +49,9 @@ format
 full
     if ``true`` or ``yes`` or ``1``, display each subcommand parameters
     documentation in the general help.
+
+
+.. _singularity-deb-help:
 
 ---------------
 singularity_deb
@@ -76,6 +83,9 @@ go_version
     Version of Go language to install during Singularity building process.
     Go language is not included in the final package.
 
+
+.. _singularity-debs-help:
+
 ----------------
 singularity_debs
 ----------------
@@ -102,26 +112,8 @@ directory
     Name of directory containing JSON files and where deb files might be
     created
 
---------------
-download_image
---------------
-Download an image from brainvisa.info web site
 
-Parameters
-----------
-type
-    type of image to publish. Either "system" for a base system image, or
-    "run" for an image used in a user environment, or "dev" for a developer
-    image.
-filename
-url
-output
-container_type
-force
-verbose
-    default=True
-
-    Print more detailed information if value is ``yes``, ``true`` or ``1``.
+.. _create-base-image-help:
 
 -----------------
 create_base_image
@@ -147,7 +139,7 @@ type
     image.
 
 :ref:`name <env_name>`
-    default=casa-{type}-{system}
+    default=casa-{type}-{image_version}
 
     If given, select environment by its name. It replaces type, distro,
     branch and system and is shorter to select one.
@@ -157,7 +149,7 @@ base
     type and container type.
 
 output
-    default=/casa/home/casa_distro/{name}.{extension}
+    default=/home/travis/casa_distro/{name}.{extension}
 
     File location where the image is created.
 
@@ -167,24 +159,17 @@ container_type
     Type of virtual appliance to use. Either "singularity", "vbox" or
     "docker".
 
-memory
-    default=8192
+image_version
+    default=1.0
 
-    For vbox container type only. Size in MiB of memory allocated for
-    virtual machine.
+    Version (or branch) of the image
 
-disk_size
-    default=131072
-    For vbox container type only. Size in MiB of maximum disk size of
-    virtual machine.
+verbose
+    default=True
 
-gui
-    default=no
+    Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
-    For vbox container type only. If value is "yes", "true" or "1", display
-    VirtualBox window.
-
-cleanup
+cleanup (allowed only if container_type=singularity)
     default=yes
 
     If "no", "false" or "0", do not cleanup after a failure during image
@@ -193,16 +178,36 @@ cleanup
       sudo singularity run --writable
       /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
 
-force
+force (allowed only if container_type=singularity)
     default=no
 
     If ``yes``, ``true`` or 1, erase existing image without asking any
     question.
 
-verbose
-    default=True
+memory (allowed only if container_type=vbox)
+    default=8192
 
-    Print more detailed information if value is ``yes``, ``true`` or ``1``.
+    Size in MiB of memory allocated for virtual machine.
+
+video_memory (allowed only if container_type=vbox)
+    default=50
+
+    Size in MiB of video memory allocated for virtual machine.
+
+disk_size (allowed only if container_type=vbox)
+    default=131072
+
+    For vbox container type only. Size in MiB of maximum disk size of
+    virtual machine.
+
+gui (allowed only if container_type=vbox)
+    default=no
+
+    For vbox container type only. If value is "yes", "true" or "1", display
+    VirtualBox window.
+
+
+.. _publish-base-image-help:
 
 ------------------
 publish_base_image
@@ -240,6 +245,9 @@ verbose
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
+
+.. _create-user-image-help:
+
 -----------------
 create_user_image
 -----------------
@@ -269,7 +277,7 @@ name
     default={distro}-{version}
     Name given to the created image.
 base_image
-    default={base_directory}/casa-run-{system}{extension}
+    default={base_directory}/casa-run-{image_version}{extension}
     Name of the "run" image used to generate the new user image
 :ref:`distro`
     default=None
@@ -283,12 +291,19 @@ base_image
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
 environment_name
     If given, select dev environment by its name.
 container_type
     default=None
     Type of virtual appliance to use. Either "singularity", "vbox" or
     "docker".
+output
+    default={base_directory}/{name}{extension}
+    Path of the output image.
 force
     default=no
     If "yes", "true" or 1, erase existing image without asking any
@@ -320,6 +335,10 @@ generate
     default=yes
     If "true", "yes" or "1", perform the image creation step.
     If "false", "no" or "0", skip this step
+zip
+    default=no
+    If "true", "yes" or "1", zip the installed files for an "online"
+    installation.
 upload
     default=no
     If "true", "yes" or "1", upload the image on BrainVISA web site.
@@ -338,45 +357,74 @@ verbose
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
+
+.. _bbi-daily-help:
+
 ---------
 bbi_daily
 ---------
 BrainVISA Build infrastructure: daily/nightly automated tests
 
-See :doc:`bbi_daily` for a complete introduction to automated tests.
+In BrainVISA Build Infrastructure (BBI), the ``casa_distro_admin
+bbi_daily`` command orchestrates automated builds and tests in a given
+*base directory*. The ``bbi_daily`` command will run the following steps,
+while (optionally) logging detailed output to a Jenkins server. See
+:doc:`nightly` for a complete introduction to automated tests.
 
-In BrainVISA Build Infrastructure (BBI), there are be some machines
-that are be targeted to do some builds and tests. This command is
-used to perform these tasks and is be typically used in a crontab
-on each machine. It does the following things (and log progress and
-results in Jenkins server) :
+1. Self-update casa_distro using 'git pull' and restart itself for the next
+   steps
+2. Select *dev* environments based on the provided filters (distro, branch,
+   system, image_version, name)
+3. Update casa-dev and casa-run images used by the selected environments to
+   the latest version available from the BrainVISA website
+4. For every selected *dev* environment, perform the following tasks:
 
-- Update casa_distro to latest master version and restart for the next
-  steps
-- Parse all configured environments selected with a filter as with mrun
-  command
-- Update dev and run images used by selected environments from BrainVISA
-  site
-- For all selected dev environments, perform the following tasks :
-    - bv_maker sources
-    - bv_maker configure
-    - bv_maker build
-    - bv_maker doc
-    - perform all tests (as bv_maker test)
-- For all selected user environments
-    - find the corresponding dev environment
-    - recreate the user environment image with casa_distro_admin
-      create_user_image
-    - perform all tests defined in the correponding dev environment
-      but execute them in the user environment
+   1. ``bv_maker sources``
+   2. ``bv_maker configure``
+   3. ``bv_maker build``
+   4. ``bv_maker doc``
+   5. perform all tests in the *dev* environment (running the same commands
+      as ``bv_maker test``)
+   6. create or update a user image with ``casa_distro_admin
+      create_user_image`` (i.e. install the compiled software in a new
+      *user image* based on the ``casa-run`` image, where the software is
+      installed under ``/casa/install``)
+   7. install that user image into  a fresh *user* environment (reference
+      test data are automatically linked from the *dev* environment)
+   8. perform all tests in that *user* environment
+
+The process can be controlled with the command-line options described
+below, as well as some configuration keys that can be added to the
+``casa_distro.json`` of each dev environment:
+
+- ``ctest_options``: list of command-line options to pass to ``ctest`` on
+  the command-line. ``ctest`` is used for listing the tests, so you may
+  pass filtering options to restrict the set of tests being run (e.g.
+  ``["-R", "disco"]``).
+
+- ``bbi_user_config``: an optional dictionary for customizing the creation
+  of a the user image and the user environment, where tests of the user
+  image will be run. This dictionary can contain these keys:
+
+  - ``name``: the name of the environment where the user image will be set
+    up. Default: ``dev_config['name'] + '-userimage'``
+  - ``directory``: the full path where the user environment will be set up.
+    **Warning: this directory is erased every time ``bbi_daily`` is run.**
+    Default: ``{base_directory} + name``
+  - ``image``: the full path where the user image will be created.
+    Default: ``{base_directory} + name + extension``
+  - ``version``: the version string that will be set in the user image,
+    e.g. available as the ``CASA_VERSION`` environment variable and as the
+    ``version`` metadata key. This value ``version`` is passed to
+    :func:`time.strftime`. Default: ``'%Y-%m-%d'``.
+  - ``setup_commands``: list of shell commands that will be run in the
+    newly created user environment. May be used to run post-setup tasks,
+    such as configuring additional files in the home directory of the user
+    (e.g. configuring MATLAB licences...).
 
 
 Parameters
 ----------
-:ref:`type <env_type>`
-    default=None
-
-    If given, select environment having the given type.
 :ref:`distro`
     default=None
 
@@ -389,14 +437,15 @@ Parameters
     default=None
 
     If given, select environments having the given system name.
+:ref:`image_version`
+    default=None
+
+    If given, select environments having the given image version.
 :ref:`name <env_name>`
     default=None
 
     If given, select environment by its name. It replaces type, distro,
     branch and system and is shorter to select one.
-version
-    If given, select environment by its version (only applicable to user
-    environments, not dev)
 jenkins_server
     default = None
     Base URL of the Jenkins server used to send logs (e.g.
@@ -423,6 +472,14 @@ dev_tests
 update_user_images
     default = yes
     Boolean indicating if images of user environment must be recreated
+install_doc
+    default = yes
+    Boolean indicating if the documentation must be installed in user
+    images
+recreate_user_envs
+    default = yes
+    Boolean indicating if user environments must be wiped and recreated
+    using singularity --bind <dir>:/casa/setup ...
 user_tests
     default = yes
     Boolean indicating if the tests must be performed on user environments
@@ -436,6 +493,9 @@ verbose
     default=None
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _local-install-help:
 
 -------------
 local_install
@@ -451,13 +511,17 @@ Parameters
 type
     Type of image to install. Either "run" or "dev".
 
-steps
+
+action
     default=None
 
-    Installation steps to perform. If not given, the steps not yet
-    done are displayed. Can be a comma separated list of step names
-    or "all" to perform all steps not already done or "next" to perform
-    only the next undone step.
+    If not given, list the possible actions for the selected type and
+    indicate if they were done or not. Can have one of the following
+    values:
+      "next" : perform the nex action not already done
+      "all" : perform all action not already done
+      coma separated list of acions : perform all selected actions
+          even if they were already done
 
 system
     default=*
@@ -470,7 +534,7 @@ log_file
 
     File where information about steps that have been performed is stored.
 
-action
-    default=None
+user
+    default=brainvisa
 
-    "next", "all"
+    Name of the user account to use for non root commands.
