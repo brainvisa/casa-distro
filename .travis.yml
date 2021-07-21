@@ -54,3 +54,7 @@ deploy:
   on:
     branch: master
     condition: $PUSH_DOC_TO_GH_PAGES == yes && $TRAVIS_OS_NAME == linux && $TRAVIS_PYTHON_VERSION == 3.8
+
+cache:
+  directories:
+    - $HOME/.cache/pre-commit
