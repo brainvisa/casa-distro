@@ -116,6 +116,7 @@ development_tools=(
     gdb
     gdbserver
     gedit
+    git-man
     gitg
     gitk
     kate
