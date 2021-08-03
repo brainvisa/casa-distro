@@ -98,6 +98,7 @@ $PIP3 install 'sphinx-gallery~=0.3.1'
 $PIP3 install -U 'pygments<3'
 $PIP3 install 'jsonschema~=3.2.0' 'attrs~=20.3.0'
 $PIP3 install plotly
+$PIP3 install sphinx_rtd_theme
 
 # post-install: register jupyter extensions
 $SUDO jupyter nbextension enable --py widgetsnbextension
@@ -122,6 +123,7 @@ $PIP2 uninstall --yes dipy
 $PIP2 install -U --force-reinstall 'ipython~=5.9.0'
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
+$PIP2 install sphinx_rtd_theme
 
 # fix pip uglinesses, it did actually wipe away
 # /usr/lib/python2.7/dist-packages/backports !
