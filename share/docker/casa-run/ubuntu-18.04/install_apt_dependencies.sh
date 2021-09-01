@@ -116,6 +116,7 @@ generally_useful_packages=(
     jarwrapper
     java-common
     java-wrappers
+    strace
 )
 
 # Dependencies of headless Anatomist
@@ -317,6 +318,8 @@ brainvisa_other_dependencies=(
     # difficult to be mounted and used from a host directory when there is a
     # version mismatch for that library.
     mriconvert
+    # dcmtk commandlines (including dcmdjpeg)
+    dcmtk
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run

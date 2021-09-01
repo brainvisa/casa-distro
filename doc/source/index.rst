@@ -102,4 +102,4 @@ Contents
     bv_command
     casa_distro_command
     casa_distro_admin_command
-    bbi_daily
+    nightly

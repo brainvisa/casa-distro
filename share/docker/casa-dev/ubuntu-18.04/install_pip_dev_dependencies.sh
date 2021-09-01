@@ -19,6 +19,7 @@ set -x  # display commands before running them
 # introduce incompatible changes. These version blocks should be revised
 # regularly!
 
+SUDO="sudo"
 PIP3="sudo python3 -m pip --no-cache-dir"
 $PIP3 install -U pip
 
@@ -89,12 +90,20 @@ $PIP3 install 'scikit-learn<0.21'
 # Ubuntu 18.04 DO NOT work).
 $PIP3 install -U 'ipython~=5.9.0' 'ipykernel~=4.10.1' 'tornado~=4.5.3' \
                  'jupyter~=1.0.0' 'jupyter_client~=5.3.4' \
-                 'pyzmq~=18.0.2' 'qtconsole~=4.4.4' 'nbconvert==5.6.1'
+                 'pyzmq~=18.0.2' 'qtconsole~=4.4.4' 'nbconvert==5.6.1' \
+                 'ipywidgets' 'ipycanvas' 'ipyevents'
 
 $PIP3 install 'nbsphinx~=0.4.3'
 $PIP3 install 'sphinx-gallery~=0.3.1'
 $PIP3 install -U 'pygments<3'
 $PIP3 install 'jsonschema~=3.2.0' 'attrs~=20.3.0'
+$PIP3 install plotly
+$PIP3 install sphinx_rtd_theme
+
+# post-install: register jupyter extensions
+$SUDO jupyter nbextension enable --py widgetsnbextension
+$SUDO jupyter nbextension enable --py ipyevents
+$SUDO jupyter nbextension enable --py ipycanvas
 
 
 # Re-install Python 2 packages whose binaries have been overwritten by
@@ -114,6 +123,7 @@ $PIP2 uninstall --yes dipy
 $PIP2 install -U --force-reinstall 'ipython~=5.9.0'
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
+$PIP2 install sphinx_rtd_theme
 
 # fix pip uglinesses, it did actually wipe away
 # /usr/lib/python2.7/dist-packages/backports !

@@ -125,7 +125,7 @@ alien --to-deb --scripts \
 mv singularity-container*.deb /tmp/singularity-container-$SYSTEM-x86_64.deb
 ''')
         tmp_output = '/tmp/singularity-container-{}-x86_64.deb'.format(system)
-        subprocess.check_call(['sudo', 'singularity', 'build',
+        subprocess.check_call(['sudo', '-H', 'singularity', 'build',
                                '--sandbox', system,
                                'docker://{}'.format(dockerhub)],
                               cwd=tmp)
@@ -524,7 +524,7 @@ finally:
             f.write(script)
 
         cmd = ['ssh', url, 'tempfile']
-        remote_script_filename = subprocess.check_output(cmd).strip()
+        remote_script_filename = subprocess.check_output(cmd).strip().decode()
 
         subprocess.check_call(['rsync',
                                script_filename[1],
@@ -535,7 +535,8 @@ finally:
 
         num_output = [x.strip()
                       for x in
-                      subprocess.check_output(cmd).strip().split('\n')]
+                      subprocess.check_output(cmd).strip().decode().split(
+                          '\n')]
 
         final_filename = num_output[0]
         num = num_output[1]
@@ -631,6 +632,7 @@ def publish_base_image(type,
               indent=4, separators=(',', ': '))
 
     final_imagefile = osp.splitext(final_metafile)[0]
+    print('final_imagefile:', repr(final_imagefile))
     image_path, image_base = osp.split(image)
     subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r',
                            image, '%s:%s' % (url, final_imagefile)])
@@ -976,32 +978,62 @@ def bbi_daily(distro=None, branch=None, system=None,
               verbose=None):
     '''BrainVISA Build infrastructure: daily/nightly automated tests
 
-    See :doc:`bbi_daily` for a complete introduction to automated tests.
+    In BrainVISA Build Infrastructure (BBI), the ``casa_distro_admin
+    bbi_daily`` command orchestrates automated builds and tests in a given
+    *base directory*. The ``bbi_daily`` command will run the following steps,
+    while (optionally) logging detailed output to a Jenkins server. See
+    :doc:`nightly` for a complete introduction to automated tests.
 
-    In BrainVISA Build Infrastructure (BBI), there are be some machines
-    that are be targeted to do some builds and tests. This command is
-    used to perform these tasks and is be typically used in a crontab
-    on each machine. It does the following things (and log progress and
-    results in Jenkins server) :
+    1. Self-update casa_distro using 'git pull' and restart itself for the next
+       steps
+    2. Select *dev* environments based on the provided filters (distro, branch,
+       system, image_version, name)
+    3. Update casa-dev and casa-run images used by the selected environments to
+       the latest version available from the BrainVISA website
+    4. For every selected *dev* environment, perform the following tasks:
 
-    - Update casa_distro to latest master version and restart for the next
-      steps
-    - Parse all configured environments selected with a filter as with mrun
-      command
-    - Update dev and run images used by selected environments from BrainVISA
-      site
-    - For all selected dev environments, perform the following tasks :
-        - bv_maker sources
-        - bv_maker configure
-        - bv_maker build
-        - bv_maker doc
-        - perform all tests (as bv_maker test)
-    - For all selected user environments
-        - find the corresponding dev environment
-        - recreate the user environment image with casa_distro_admin
-          create_user_image
-        - perform all tests defined in the correponding dev environment
-          but execute them in the user environment
+       1. ``bv_maker sources``
+       2. ``bv_maker configure``
+       3. ``bv_maker build``
+       4. ``bv_maker doc``
+       5. perform all tests in the *dev* environment (running the same commands
+          as ``bv_maker test``)
+       6. create or update a user image with ``casa_distro_admin
+          create_user_image`` (i.e. install the compiled software in a new
+          *user image* based on the ``casa-run`` image, where the software is
+          installed under ``/casa/install``)
+       7. install that user image into  a fresh *user* environment (reference
+          test data are automatically linked from the *dev* environment)
+       8. perform all tests in that *user* environment
+
+    The process can be controlled with the command-line options described
+    below, as well as some configuration keys that can be added to the
+    ``casa_distro.json`` of each dev environment:
+
+    - ``ctest_options``: list of command-line options to pass to ``ctest`` on
+      the command-line. ``ctest`` is used for listing the tests, so you may
+      pass filtering options to restrict the set of tests being run (e.g.
+      ``["-R", "disco"]``).
+
+    - ``bbi_user_config``: an optional dictionary for customizing the creation
+      of a the user image and the user environment, where tests of the user
+      image will be run. This dictionary can contain these keys:
+
+      - ``name``: the name of the environment where the user image will be set
+        up. Default: ``dev_config['name'] + '-userimage'``
+      - ``directory``: the full path where the user environment will be set up.
+        **Warning: this directory is erased every time ``bbi_daily`` is run.**
+        Default: ``{{base_directory}} + name``
+      - ``image``: the full path where the user image will be created.
+        Default: ``{{base_directory}} + name + extension``
+      - ``version``: the version string that will be set in the user image,
+        e.g. available as the ``CASA_VERSION`` environment variable and as the
+        ``version`` metadata key. This value ``version`` is passed to
+        :func:`time.strftime`. Default: ``'%Y-%m-%d'``.
+      - ``setup_commands``: list of shell commands that will be run in the
+        newly created user environment. May be used to run post-setup tasks,
+        such as configuring additional files in the home directory of the user
+        (e.g. configuring MATLAB licences...).
 
 
     Parameters
@@ -1221,9 +1253,8 @@ def bbi_daily(distro=None, branch=None, system=None,
 
 
 @command
-def local_install(type, steps=None, system='*',
+def local_install(type, action=None, system='*',
                   log_file='/etc/casa_local_install.log',
-                  action=None,
                   user='brainvisa'):
     '''
     Run the installation procedure to create a run or dev image on the
@@ -1237,24 +1268,6 @@ def local_install(type, steps=None, system='*',
     type
         Type of image to install. Either "run" or "dev".
 
-    steps
-        default={steps_default}
-
-        Installation steps to perform. If not given, the steps not yet
-        done are displayed. Can be a comma separated list of step names
-        or "all" to perform all steps not already done or "next" to perform
-        only the next undone step.
-
-    system
-        default={system_default}
-
-        System to used when searching for an image builder file. This is
-        used as a shell pattern, the default value match any system.
-
-    log_file
-        default={log_file_default}
-
-        File where information about steps that have been performed is stored.
 
     action
         default={action_default}
@@ -1266,6 +1279,17 @@ def local_install(type, steps=None, system='*',
           "all" : perform all action not already done
           coma separated list of acions : perform all selected actions
               even if they were already done
+
+    system
+        default={system_default}
+
+        System to used when searching for an image builder file. This is
+        used as a shell pattern, the default value match any system.
+
+    log_file
+        default={log_file_default}
+
+        File where information about steps that have been performed is stored.
 
     user
         default={user_default}

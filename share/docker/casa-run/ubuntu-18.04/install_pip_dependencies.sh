@@ -39,14 +39,8 @@ $PIP2 install 'torch-vision'
 # Runtime dependency of datamind and Constellation
 $PIP2 install http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
 
-# These packages used to be installed with PIP instead of APT for an unknown
-# reason (maybe this was a careless copy/paste from the Ubuntu 16.04 script).
-#
-# $PIP2 install -U 'pkgconfig<1.6'
-# $PIP2 install --ignore-installed -U 'cython<0.30'
-# $PIP2 install -U 'xlrd<1.3'
-# $PIP2 install -U 'xlwt<1.4'
-# $PIP2 install -U 'pandas<0.25'
+# Necessary to fix installation error of h5py
+$PIP2 install -U 'pkgconfig<1.6'
 
 # Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
 # apparently too old for our friends of the MeCA group in Marseille.
@@ -94,3 +88,11 @@ $PIP2 install -U 'sphinx~=1.6.7'
 $PIP2 install 'nbsphinx~=0.4.3'
 $PIP2 install 'sphinx-gallery~=0.3.1'
 $PIP2 install 'jsonschema~=3.2.0' 'attrs~=20.3.0'
+
+
+# Fix up the matplotlib configuration (the default backend, TkAgg, does not
+# work because the python-tk package is not installed in our images).
+# Unfortunately matplotlib does not look for a global matplotlibrc in /etc, so
+# we have to edit the file in /usr/local in place.
+sed -i -e 's/^\s*backend\s*:\s*TkAgg\s*$/backend      : Qt5Agg/' \
+    /usr/local/lib/python2.7/dist-packages/matplotlib/mpl-data/matplotlibrc

@@ -587,7 +587,7 @@ def standard_dirs_to_mount():
       software.
     """
     standard_dirs = (['/home', '/mnt', '/media', '/srv',
-                      '/neurospin', '/i2bm', '/shfj', '/nfs']
+                      '/neurospin', '/i2bm', '/nfs']
                      + glob('/volatile*'))
     for dirname in standard_dirs:
         if os.path.isdir(dirname) and not os.path.islink(dirname):
@@ -805,13 +805,13 @@ class BBIDaily:
             print()
             print(log)
 
-    def call_output(self, *args, **kwargs):
-        p = subprocess.Popen(*args, stdout=subprocess.PIPE,
+    def call_output(self, args, **kwargs):
+        p = subprocess.Popen(args, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, bufsize=-1,
                              **kwargs)
         output, nothing = p.communicate()
         log = ['-'*40,
-               ' '.join("'{}'".format(i) for i in args),
+               '$ ' + ' '.join(shlex_quote(arg) for arg in args),
                '-'*40,
                output]
 
@@ -895,18 +895,18 @@ class BBIDaily:
                     '--',
                     'sh', '-c', command
                 ])
+                log.append('=' * 80)
+                log.append(output)
+                log.append('=' * 80)
                 if result:
                     success = False
                     if result in (124, 128+9):
-                        log.append('TIMED OUT\n')
+                        log.append('TIMED OUT (exit code {0})'.format(result))
                     else:
-                        log.append('FAILED with exit code {0}: {1}\n'
-                                   .format(result, command))
+                        log.append('FAILED with exit code {0}'
+                                   .format(result))
                 else:
-                    log.append('SUCCESS: {0}\n'.format(command))
-                log.append('-' * 80)
-                log.append(output)
-                log.append('=' * 80)
+                    log.append('SUCCESS (exit code {0})'.format(result))
             duration = int(1000 * (time.time() - start))
             self.log(environment, test, (0 if success else 1),
                      '\n'.join(log), duration=duration)
@@ -977,7 +977,7 @@ class BBIDaily:
             if commands:  # skip empty command lists
                 for i, command in enumerate(commands):
                     if float(timeouts[i]) < 9.999e+06:
-                        command = 'timeout -k 10 %d %s' % (timeouts[i],
+                        command = 'timeout -k 10 %s %s' % (timeouts[i],
                                                            command)
                         commands[i] = command
                 tests[label] = commands
@@ -1012,6 +1012,11 @@ class BBIDaily:
                     os.makedirs(os.path.dirname(user_test_ref_dir))
                 os.symlink(os.path.join('/host', dev_test_ref_dir),
                            user_test_ref_dir)
+
+            for command in (dev_config.get('bbi_user_config', {})
+                            .get('setup_commands', [])):
+                subprocess.check_call(command, shell=True,
+                                      cwd=user_config['directory'])
         duration = int(1000 * (time.time() - start))
         self.log(user_config['name'], 'recreate user env', result, log,
                  duration=duration)
