@@ -125,7 +125,7 @@ alien --to-deb --scripts \
 mv singularity-container*.deb /tmp/singularity-container-$SYSTEM-x86_64.deb
 ''')
         tmp_output = '/tmp/singularity-container-{}-x86_64.deb'.format(system)
-        subprocess.check_call(['sudo', 'singularity', 'build',
+        subprocess.check_call(['sudo', '-H', 'singularity', 'build',
                                '--sandbox', system,
                                'docker://{}'.format(dockerhub)],
                               cwd=tmp)
