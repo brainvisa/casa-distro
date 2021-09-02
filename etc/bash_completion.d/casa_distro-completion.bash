@@ -237,7 +237,7 @@ function _complete_casa_distro_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help distro list list_images setup_user setup_dev shell update pull_image run mrun bv_maker delete clean_images"
+    local cmd_list="help distro list list_images shell update pull_image run mrun bv_maker delete clean_images"
     local opt_list="-h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -304,12 +304,6 @@ function _complete_casa_distro_()
             COMP_CWORD=$(( COMP_CWORD - 1 ))
             _complete_bv_maker_
             COMPREPLY=( "${COMPREPLY1[@]}" "${COMPREPLY[@]}" )
-            ;;
-        setup_user)
-            COMPREPLY=($(compgen -W "distro= version= name= container_type= image= writable= system= base_directory= url= output= force= verbose=" -- "${word}"))
-            ;;
-        setup_dev)
-            COMPREPLY=($(compgen -W "distro= name= container_type= image= writable= branch= system= image_version= base_directory= url= output= force= verbose=" -- "${word}"))
             ;;
         list)
             COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= version= name= base_directory= verbose= json=" -- "${word}"))
