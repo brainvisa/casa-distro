@@ -320,7 +320,7 @@ def create_base_image(type,
         raise ValueError('Unsupported container type: %s' % container_type)
 
     if type == 'system':
-        build_file = None
+        image_builder = None
     else:
         image_recipes_dir = osp.join(
             osp.dirname(osp.dirname(osp.dirname(__file__))),
@@ -394,8 +394,8 @@ def create_base_image(type,
     if verbose:
         print('Creating', output, file=verbose)
         print('based on', base, file=verbose)
-        if build_file:
-            print('using', build_file, file=verbose)
+        if image_builder:
+            print('using', image_builder.build_file, file=verbose)
         print('metadata = ', end='', file=verbose)
         pprint(metadata, stream=verbose, indent=4)
     json.dump(metadata, open(metadata_output, 'w'),
