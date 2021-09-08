@@ -347,6 +347,8 @@ def create_base_image(type,
                 'Several base images found : {0}'.format(', '.join(bases)))
         base = bases[0]
 
+    base = os.path.join(default_base_directory, base)  # make path absolute
+
     if osp.exists(base + '.json'):
         base_metadata = json.load(open(base + '.json'))
     else:
