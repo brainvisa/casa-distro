@@ -499,9 +499,10 @@ class VBoxMachine:
                 gui=False):
         """Install dependencies of casa-{image_type} image
 
-        This method look for a share/docker/casa-{image_type}/{system}/vbox.py
-        file and execute the install(base_dir, vbox, verbose) command that must
-        be defined in this file.
+        This method looks for a
+        image-recipes/casa-{image_type}/{system}/vbox.py file and executes the
+        install(base_dir, vbox, verbose) command that must be defined in this
+        file.
 
         base_dir is the directory containing the vbox.py file
         vbox is the instance of VBoxMachine (i.e. self)

@@ -246,7 +246,7 @@ def create_base_image(type,
     {name}
 
     base
-        Source file use to buld the image. The default value depends on image
+        Source file used to build the image. The default value depends on image
         type and container type.
 
     output
@@ -366,9 +366,10 @@ def create_base_image(type,
     if type == 'system':
         build_file = None
     else:
-        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
-                             'share')
-        casa_docker = osp.join(share_dir, 'docker', 'casa-%s' % type, system)
+        image_recipes_dir = osp.join(
+            osp.dirname(osp.dirname(osp.dirname(__file__))),
+            'image-recipes')
+        casa_docker = osp.join(image_recipes_dir, 'casa-%s' % type, system)
 
         build_file = osp.join(casa_docker, 'build_image.py')
         open(build_file)  # raise appropriate exception if file does not exist
