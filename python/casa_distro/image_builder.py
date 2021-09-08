@@ -90,13 +90,16 @@ def get_image_builder(build_file):
     if 'builder' not in v:
         raise RuntimeError(
             'No builder object defined in {0}'.format(build_file))
+    v['builder'].build_dir = os.path.dirname(os.path.abspath(build_file))
     return v['builder']
 
 
 class ImageBuilder:
-    def __init__(self, name):
+    def __init__(self, name, base):
         self.name = name
+        self.base = base
         self.steps = []
+        self.build_dir = None  # set later by get image_builder
 
     def step(self, step_function):
         self.steps.append(step_function)

@@ -15,7 +15,6 @@ import getpass
 import uuid
 
 from . import six
-from .image_builder import get_image_builder
 from .log import boolean_value
 
 
@@ -113,7 +112,7 @@ def _singularity_build_command(cleanup=True, force=False, fakeroot=True):
 
 def create_image(base, base_metadata,
                  output, metadata,
-                 build_file,
+                 image_builder,
                  cleanup='yes',
                  force='no',
                  verbose=None):
@@ -181,14 +180,13 @@ Bootstrap: localimage
 '''.format(base=base,  # noqa: E501
            system=metadata['system'],
            type=type))
-        image_builder = get_image_builder(build_file)
 
         installer = RecipeBuilder(output)
         installer.image_version = metadata['image_version']
         for step in image_builder.steps:
             if verbose:
                 print('Performing:', step.__doc__, file=verbose)
-            step(base_dir=osp.dirname(build_file),
+            step(base_dir=image_builder.build_dir,
                  builder=installer)
         installer.write(recipe)
         if verbose:

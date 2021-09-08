@@ -319,19 +319,26 @@ def create_base_image(type,
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
+    if type == 'system':
+        build_file = None
+    else:
+        image_recipes_dir = osp.join(
+            osp.dirname(osp.dirname(osp.dirname(__file__))),
+            'image-recipes')
+        build_file = osp.join(image_recipes_dir,
+                              'casa-%s' % type,
+                              image_version,
+                              'build_image.py')
+        image_builder = get_image_builder(build_file)
+
     if base is None:
         if type == 'system':
             base = osp.join(
                 default_base_directory,
                 '*ubuntu-*.{extension}'.format(extension=origin_extension))
-        elif type == 'run':
-            base = osp.join(
-                default_base_directory,
-                'casa-system-*.{extension}'.format(extension=extension))
         else:
-            base = osp.join(
-                default_base_directory,
-                'casa-run-*.{extension}'.format(extension=extension))
+            base = osp.join(default_base_directory,
+                            image_builder.base.format(extension=extension))
 
     if not osp.exists(base):
         base_pattern = osp.expandvars(osp.expanduser(base))
@@ -365,17 +372,6 @@ def create_base_image(type,
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            system=system,
                                                            extension=extension)
-
-    if type == 'system':
-        build_file = None
-    else:
-        image_recipes_dir = osp.join(
-            osp.dirname(osp.dirname(osp.dirname(__file__))),
-            'image-recipes')
-        casa_docker = osp.join(image_recipes_dir, 'casa-%s' % type, system)
-
-        build_file = osp.join(casa_docker, 'build_image.py')
-        open(build_file)  # raise appropriate exception if file does not exist
 
     metadata_output = output + '.json'
     metadata = {
@@ -412,7 +408,7 @@ def create_base_image(type,
 
     image_id, msg = module.create_image(base, base_metadata,
                                         output, metadata,
-                                        build_file=build_file,
+                                        image_builder=image_builder,
                                         verbose=verbose,
                                         **kwargs)
     if msg:

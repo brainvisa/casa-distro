@@ -4,7 +4,7 @@ import os.path as osp
 from casa_distro.image_builder import ImageBuilder
 
 
-builder = ImageBuilder('casa-run')
+builder = ImageBuilder('casa-run', base='casa-run-5.0.{extension}')
 
 
 @builder.step
