@@ -215,12 +215,12 @@ def singularity_debs(directory):
 
 @command
 def create_base_image(type,
+                      image_version,
                       name='casa-{type}-{image_version}',
                       base=None,
                       output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
                       container_type='singularity',
-                      image_version='1.0',
                       verbose=True,
                       **kwargs):
     """Create a new virtual image
@@ -232,7 +232,8 @@ def create_base_image(type,
 
           cd "$CASA_BASE_DIRECTORY"
           singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
-          casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif
+          casa_distro_admin create_base_image base=ubuntu-18.04.sif \
+              type=system image_version=ubuntu-18.04
 
     - For VirtualBox: TODO
 
