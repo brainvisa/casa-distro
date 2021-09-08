@@ -283,6 +283,13 @@ def create_base_image(type,
         If ``yes``, ``true`` or 1, erase existing image without asking any
         question.
 
+    fakeroot (allowed only if container_type=singularity)
+        default=yes
+
+        If ``yes``, ``true`` or 1, use singularity --fakeroot for building the
+        images (this is the recommended wby). Otherwise, "sudo singularity"
+        must be used so singularity has root access on the host.
+
     memory (allowed only if container_type=vbox)
         default=8192
 
@@ -663,7 +670,8 @@ def create_user_image(
         generate='yes',
         zip='no',
         upload='no',
-        verbose=True):
+        verbose=True,
+        **kwargs):
     """Create a "user" image given a development environment.
     The development environment is selected among existing ones its
     distro and system or simply by its name. Only developement environments
@@ -709,6 +717,11 @@ def create_user_image(
         default={force_default}
         If "yes", "true" or 1, erase existing image without asking any
         question.
+    fakeroot (allowed only if container_type=singularity)
+        default=yes
+        If ``yes``, ``true`` or 1, use singularity --fakeroot for building the
+        images (this is the recommended wby). Otherwise, "sudo singularity"
+        must be used so singularity has root access on the host.
     {base_directory}
     install
         default={install_default}
@@ -920,7 +933,8 @@ def create_user_image(
                                                  output=output,
                                                  force=force,
                                                  base_directory=base_directory,
-                                                 verbose=verbose)
+                                                 verbose=verbose,
+                                                 **kwargs)
         if msg:
             print(msg)
 
