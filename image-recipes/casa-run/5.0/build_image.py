@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is used for building the image for Singularity and VirtualBox. At
-# the moment a separate Dockerfile is used to support Docker, *please* keep
-# these files synchronized so that they perform exactly the same installation
-# steps.
+# This file is used for building the image for Singularity and VirtualBox.
 
 import os.path as osp
 

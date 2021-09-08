@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Install dependencies for image cati/casa-run:ubuntu-18.04. This image must
+# Install dependencies for image casa-run-5.0. This image must
 # contain all run-time dependencies that are needed to run BrainVISA when
 # installed using 'make install-runtime' (see the Release images).
 #
