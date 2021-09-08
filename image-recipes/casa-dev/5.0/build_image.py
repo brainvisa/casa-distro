@@ -37,11 +37,6 @@ def copying_files(base_dir, builder):
                       '/usr/local/bin')
     builder.run_root('chmod a+rx /usr/local/bin/askpass-bioproj.sh')
 
-    builder.copy_user(osp.realpath(osp.join(base_dir,
-                                            'list-shared-libs-paths.sh')),
-                      '/casa/')
-    builder.run_user('chmod a+rx /casa/list-shared-libs-paths.sh')
-
 
 @builder.step
 def apt_dev_dependencies(base_dir, builder):

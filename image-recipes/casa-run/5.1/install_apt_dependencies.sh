@@ -192,7 +192,7 @@ brainvisa_python_runtime_dependencies=(
 # script. In order to generate this list, run the following command in a
 # casa-dev container where the whole BrainVISA tree has been compiled:
 #
-# /casa/list-shared-lib-packages.sh /casa/build /usr/local
+# <casa-distro>/share/list-shared-lib-packages.sh /casa/build /usr/local
 #
 # Please DO NOT add other packages to this list, so that it can be wiped and
 # regenerated easily. If other libraries are needed, consider creating a new

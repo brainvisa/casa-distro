@@ -1,1 +1,0 @@
-../list-shared-libs-paths.sh
