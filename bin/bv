@@ -148,10 +148,7 @@ if real_bv.startswith(osp.join(environment_dir, 'src')):
 else:
     paths = (('src', 'development', 'casa-distro', 'master'),  # master 1st
              ('src', 'development', 'casa-distro', '*'),
-             ('host', 'src', 'development', 'casa-distro', '*'),
-             ('host', 'src', 'development', 'casa-distro'),
              ('src', 'development', 'casa-distro'),
-             ('host', 'src', 'casa-distro'),
              ('src', 'casa-distro'),
              ('casa-distro',))
 for i in paths:
