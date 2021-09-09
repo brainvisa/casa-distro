@@ -334,7 +334,7 @@ used anymore, you may as well delete it if you wish.
             shutil.rmtree(tmpdir)
             tmpdir = None
 
-    casa_distro_dir = osp.join(setup_dir, 'casa-distro')
+    casa_distro_dir = osp.join(setup_dir, 'bootstrap', 'casa-distro')
     install_casa_distro(casa_distro_dir)
 
     distro_dir = osp.join(casa_distro_dir, 'share', 'distro', distro)
