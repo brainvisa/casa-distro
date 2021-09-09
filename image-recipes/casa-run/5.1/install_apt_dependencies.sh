@@ -105,7 +105,6 @@ generally_useful_packages=(
     jarwrapper
     java-common
     java-wrappers
-    strace  # TODO move to casa-dev
 )
 
 # Dependencies of headless Anatomist
