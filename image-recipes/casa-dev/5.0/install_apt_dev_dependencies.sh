@@ -21,7 +21,8 @@ fi
 export DEBIAN_FRONTEND=noninteractive
 
 $SUDO apt-get -o Acquire::Retries=3 update
-$SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
+$SUDO apt-get -o Acquire::Retries=5 install \
+      --no-remove --no-install-recommends -y \
     apt-transport-https  # required for the PackageCloud git-lfs repository
 curl -L https://packagecloud.io/github/git-lfs/gpgkey | $SUDO apt-key add -
 cat <<EOF | $SUDO tee /etc/apt/sources.list.d/git-lfs.list
@@ -315,7 +316,8 @@ brainvisa_probable_dev_dependencies=(
     qtwebengine5-dev
 )
 
-$SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
+$SUDO apt-get -o Acquire::Retries=20 install \
+      --no-remove --no-install-recommends -y \
     ${version_control_packages[@]} \
     ${toolchain_packages[@]} \
     ${development_tools[@]} \
