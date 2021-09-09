@@ -1,5 +1,5 @@
 #! /bin/bash
-# Install system dependencies for image cati/casa-dev:ubuntu-18.04
+# Install system dependencies for image casa-dev-5.0
 #
 # NOTE: This script is used to create the casa-dev Docker/Singularity image,
 # and also during the creation of the VirtualBox casa-dev image. Make sure not
@@ -21,7 +21,8 @@ fi
 export DEBIAN_FRONTEND=noninteractive
 
 $SUDO apt-get -o Acquire::Retries=3 update
-$SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
+$SUDO apt-get -o Acquire::Retries=5 install \
+      --no-remove --no-install-recommends -y \
     apt-transport-https  # required for the PackageCloud git-lfs repository
 curl -L https://packagecloud.io/github/git-lfs/gpgkey | $SUDO apt-key add -
 cat <<EOF | $SUDO tee /etc/apt/sources.list.d/git-lfs.list
@@ -29,7 +30,7 @@ deb https://packagecloud.io/github/git-lfs/ubuntu/ bionic main
 EOF
 $SUDO apt-get -o Acquire::Retries=3 update
 
-# A selection of packages that were in cati/casa-dev:ubuntu-18.04 before Yann's
+# A selection of packages that were in casa-dev-5.0 before Yann's
 # rewrite of the install scripts (in the runtime_image branch). TODO: check if
 # these packages should be installed here, or maybe in the casa-run image.
 packages_to_review=(
@@ -316,7 +317,8 @@ brainvisa_probable_dev_dependencies=(
     qtwebengine5-dev
 )
 
-$SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
+$SUDO apt-get -o Acquire::Retries=20 install \
+      --no-remove --no-install-recommends -y \
     ${version_control_packages[@]} \
     ${toolchain_packages[@]} \
     ${development_tools[@]} \

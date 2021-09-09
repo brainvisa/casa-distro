@@ -15,8 +15,8 @@ import getpass
 import uuid
 
 from . import six
-from .image_builder import get_image_builder
 from .log import boolean_value
+from casa_distro.defaults import default_base_directory
 
 
 MINIMUM_SINGULARITY_VERSION = (3, 0, 0)
@@ -113,9 +113,10 @@ def _singularity_build_command(cleanup=True, force=False, fakeroot=True):
 
 def create_image(base, base_metadata,
                  output, metadata,
-                 build_file,
+                 image_builder,
                  cleanup='yes',
                  force='no',
+                 fakeroot='yes',
                  verbose=None):
     '''
     Returns
@@ -124,6 +125,7 @@ def create_image(base, base_metadata,
     '''
     cleanup = boolean_value(cleanup)
     force = boolean_value(force)
+    fakeroot = boolean_value(fakeroot)
     type = metadata['type']
     if type == 'system':
         shutil.copy(base, output)
@@ -181,14 +183,13 @@ Bootstrap: localimage
 '''.format(base=base,  # noqa: E501
            system=metadata['system'],
            type=type))
-        image_builder = get_image_builder(build_file)
 
         installer = RecipeBuilder(output)
         installer.image_version = metadata['image_version']
         for step in image_builder.steps:
             if verbose:
                 print('Performing:', step.__doc__, file=verbose)
-            step(base_dir=osp.dirname(build_file),
+            step(base_dir=image_builder.build_dir,
                  builder=installer)
         installer.write(recipe)
         if verbose:
@@ -196,7 +197,6 @@ Bootstrap: localimage
             print(open(recipe.name).read(), file=verbose)
             print('----------------------------------------', file=verbose)
             verbose.flush()
-        fakeroot = True
         build_command = _singularity_build_command(cleanup=cleanup,
                                                    force=force,
                                                    fakeroot=fakeroot)
@@ -226,14 +226,17 @@ def create_user_image(base_image,
                       dev_config,
                       version,
                       output,
-                      force,
-                      base_directory,
-                      verbose):
+                      force='no',
+                      fakeroot='yes',
+                      base_directory=default_base_directory,
+                      verbose=None):
     '''
     Returns
     -------
     uuid, msg: tuple
     '''
+    force = boolean_value(force)
+    fakeroot = boolean_value(fakeroot)
     recipe = tempfile.NamedTemporaryFile(mode='wt')
     recipe.write('''\
 Bootstrap: localimage
@@ -301,11 +304,22 @@ Bootstrap: localimage
         print(open(recipe.name).read(), file=verbose)
         print('----------------------------------------', file=verbose)
         verbose.flush()
-    build_command = _singularity_build_command(force=force, fakeroot=True)
+    build_command = _singularity_build_command(force=force, fakeroot=fakeroot)
     # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
     # permission issue with --fakeroot and NFS root_squash.
-    subprocess.check_call(build_command + [output, recipe.name],
-                          cwd='/')
+    try:
+        subprocess.check_call(build_command + [output, recipe.name],
+                              cwd='/')
+    except Exception:
+        if fakeroot:
+            print('** Image creation has failed **', file=sys.stderr)
+            print('If you see an error message about fakeroot not working '
+                  'on your system, then try the following command (you '
+                  'need sudo permissions):', file=sys.stderr)
+            print('sudo singularity config fakeroot --add %s'
+                  % getpass.getuser(), file=sys.stderr)
+            print(file=sys.stderr)
+        raise
 
     return (rb.image_id, None)
 

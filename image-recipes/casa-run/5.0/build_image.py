@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
 #
-# This file is used for building the image for Singularity and VirtualBox. At
-# the moment a separate Dockerfile is used to support Docker, *please* keep
-# these files synchronized so that they perform exactly the same installation
-# steps.
+# This file is used for building the image for Singularity and VirtualBox.
 
 import os.path as osp
 
 from casa_distro.image_builder import ImageBuilder
 
 
-builder = ImageBuilder('casa-run')
+builder = ImageBuilder('casa-run', base='casa-system-ubuntu-18.04.{extension}')
 
 
 @builder.step
 def casa_dir(base_dir, builder):
     'Creating /casa and other directories'
 
+    # Mount points must exist in the image for Singularity to be able to use
+    # them when the --writable option is used (e.g. with a sandbox image).
     builder.run_root('if [ ! -e /casa ]; then mkdir /casa; fi')
     builder.run_root('if [ ! -e /casa/host ]; then mkdir /casa/host; fi')
     builder.run_root('if [ ! -e /casa/home ]; then mkdir /casa/home; fi')

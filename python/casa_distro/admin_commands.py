@@ -215,12 +215,12 @@ def singularity_debs(directory):
 
 @command
 def create_base_image(type,
+                      image_version,
                       name='casa-{type}-{image_version}',
                       base=None,
                       output=osp.join(default_base_directory,
                                       '{name}.{extension}'),
                       container_type='singularity',
-                      image_version='1.0',
                       verbose=True,
                       **kwargs):
     """Create a new virtual image
@@ -232,7 +232,8 @@ def create_base_image(type,
 
           cd "$CASA_BASE_DIRECTORY"
           singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
-          casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif
+          casa_distro_admin create_base_image base=ubuntu-18.04.sif \
+              type=system image_version=ubuntu-18.04
 
     - For VirtualBox: TODO
 
@@ -246,7 +247,7 @@ def create_base_image(type,
     {name}
 
     base
-        Source file use to buld the image. The default value depends on image
+        Source file used to build the image. The default value depends on image
         type and container type.
 
     output
@@ -281,6 +282,13 @@ def create_base_image(type,
 
         If ``yes``, ``true`` or 1, erase existing image without asking any
         question.
+
+    fakeroot (allowed only if container_type=singularity)
+        default=yes
+
+        If ``yes``, ``true`` or 1, use singularity --fakeroot for building the
+        images (this is the recommended wby). Otherwise, "sudo singularity"
+        must be used so singularity has root access on the host.
 
     memory (allowed only if container_type=vbox)
         default=8192
@@ -318,19 +326,26 @@ def create_base_image(type,
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
+    if type == 'system':
+        image_builder = None
+    else:
+        image_recipes_dir = osp.join(
+            osp.dirname(osp.dirname(osp.dirname(__file__))),
+            'image-recipes')
+        build_file = osp.join(image_recipes_dir,
+                              'casa-%s' % type,
+                              image_version,
+                              'build_image.py')
+        image_builder = get_image_builder(build_file)
+
     if base is None:
         if type == 'system':
             base = osp.join(
                 default_base_directory,
                 '*ubuntu-*.{extension}'.format(extension=origin_extension))
-        elif type == 'run':
-            base = osp.join(
-                default_base_directory,
-                'casa-system-*.{extension}'.format(extension=extension))
         else:
-            base = osp.join(
-                default_base_directory,
-                'casa-run-*.{extension}'.format(extension=extension))
+            base = osp.join(default_base_directory,
+                            image_builder.base.format(extension=extension))
 
     if not osp.exists(base):
         base_pattern = osp.expandvars(osp.expanduser(base))
@@ -345,6 +360,8 @@ def create_base_image(type,
             raise ValueError(
                 'Several base images found : {0}'.format(', '.join(bases)))
         base = bases[0]
+
+    base = os.path.join(default_base_directory, base)  # make path absolute
 
     if osp.exists(base + '.json'):
         base_metadata = json.load(open(base + '.json'))
@@ -362,16 +379,6 @@ def create_base_image(type,
     output = osp.expandvars(osp.expanduser(output)).format(name=name,
                                                            system=system,
                                                            extension=extension)
-
-    if type == 'system':
-        build_file = None
-    else:
-        share_dir = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
-                             'share')
-        casa_docker = osp.join(share_dir, 'docker', 'casa-%s' % type, system)
-
-        build_file = osp.join(casa_docker, 'build_image.py')
-        open(build_file)  # raise appropriate exception if file does not exist
 
     metadata_output = output + '.json'
     metadata = {
@@ -394,8 +401,8 @@ def create_base_image(type,
     if verbose:
         print('Creating', output, file=verbose)
         print('based on', base, file=verbose)
-        if build_file:
-            print('using', build_file, file=verbose)
+        if image_builder:
+            print('using', image_builder.build_file, file=verbose)
         print('metadata = ', end='', file=verbose)
         pprint(metadata, stream=verbose, indent=4)
     json.dump(metadata, open(metadata_output, 'w'),
@@ -408,7 +415,7 @@ def create_base_image(type,
 
     image_id, msg = module.create_image(base, base_metadata,
                                         output, metadata,
-                                        build_file=build_file,
+                                        image_builder=image_builder,
                                         verbose=verbose,
                                         **kwargs)
     if msg:
@@ -663,7 +670,8 @@ def create_user_image(
         generate='yes',
         zip='no',
         upload='no',
-        verbose=True):
+        verbose=True,
+        **kwargs):
     """Create a "user" image given a development environment.
     The development environment is selected among existing ones its
     distro and system or simply by its name. Only developement environments
@@ -709,6 +717,11 @@ def create_user_image(
         default={force_default}
         If "yes", "true" or 1, erase existing image without asking any
         question.
+    fakeroot (allowed only if container_type=singularity)
+        default=yes
+        If ``yes``, ``true`` or 1, use singularity --fakeroot for building the
+        images (this is the recommended wby). Otherwise, "sudo singularity"
+        must be used so singularity has root access on the host.
     {base_directory}
     install
         default={install_default}
@@ -920,7 +933,8 @@ def create_user_image(
                                                  output=output,
                                                  force=force,
                                                  base_directory=base_directory,
-                                                 verbose=verbose)
+                                                 verbose=verbose,
+                                                 **kwargs)
         if msg:
             print(msg)
 

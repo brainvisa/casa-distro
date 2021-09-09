@@ -146,14 +146,14 @@ if real_bv.startswith(osp.join(environment_dir, 'src')):
     renv = osp.relpath(osp.dirname(osp.dirname(real_bv)), environment_dir)
     paths = (osp.split(renv), )
 else:
-    paths = (('src', 'development', 'casa-distro', 'master'),  # master 1st
-             ('src', 'development', 'casa-distro', '*'),
-             ('host', 'src', 'development', 'casa-distro', '*'),
-             ('host', 'src', 'development', 'casa-distro'),
-             ('src', 'development', 'casa-distro'),
-             ('host', 'src', 'casa-distro'),
-             ('src', 'casa-distro'),
-             ('casa-distro',))
+    paths = (
+        ('src', 'development', 'casa-distro', 'master'),  # master 1st
+        ('src', 'development', 'casa-distro', '*'),
+        ('src', 'development', 'casa-distro'),
+        ('src', 'casa-distro'),
+        ('bootstrap', 'casa-distro'),  # for developer installs
+        ('casa-distro',),  # for user installs and old developer installs
+    )
 for i in paths:
     for casa_distro_src in glob.glob(osp.join(environment_dir, *i)):
         if osp.exists(osp.join(casa_distro_src, 'python', 'casa_distro',

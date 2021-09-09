@@ -1,1 +1,0 @@
-../../casa-run/ubuntu-18.04/build_sip_pyqt.sh
