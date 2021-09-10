@@ -151,7 +151,7 @@ casa-system image:</p>
 <blockquote>
 <div><p>cd “$CASA_BASE_DIRECTORY”
 singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
-casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif</p>
+casa_distro_admin create_base_image base=ubuntu-18.04.sif               type=system image_version=ubuntu-18.04</p>
 </div></blockquote>
 </li>
 <li><p>For VirtualBox: TODO</p></li>
@@ -167,7 +167,7 @@ image.</p>
 <p>If given, select environment by its name. It replaces type, distro,
 branch and system and is shorter to select one.</p>
 </dd>
-<dt>base</dt><dd><p>Source file use to buld the image. The default value depends on image
+<dt>base</dt><dd><p>Source file used to build the image. The default value depends on image
 type and container type.</p>
 </dd>
 <dt>output</dt><dd><p>default=/home/travis/casa_distro/{name}.{extension}</p>
@@ -177,7 +177,7 @@ type and container type.</p>
 <p>Type of virtual appliance to use. Either “singularity”, “vbox” or
 “docker”.</p>
 </dd>
-<dt>image_version</dt><dd><p>default=1.0</p>
+<dt>image_version</dt><dd><p>default=</p>
 <p>Version (or branch) of the image</p>
 </dd>
 <dt>verbose</dt><dd><p>default=True</p>
@@ -195,6 +195,11 @@ instance, with Singularity one can use a command like :</p>
 <dt>force (allowed only if container_type=singularity)</dt><dd><p>default=no</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or 1, erase existing image without asking any
 question.</p>
+</dd>
+<dt>fakeroot (allowed only if container_type=singularity)</dt><dd><p>default=yes</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or 1, use singularity –fakeroot for building the
+images (this is the recommended wby). Otherwise, “sudo singularity”
+must be used so singularity has root access on the host.</p>
 </dd>
 <dt>memory (allowed only if container_type=vbox)</dt><dd><p>default=8192</p>
 <p>Size in MiB of memory allocated for virtual machine.</p>
@@ -299,6 +304,11 @@ Path of the output image.</p>
 <dt>force</dt><dd><p>default=no
 If “yes”, “true” or 1, erase existing image without asking any
 question.</p>
+</dd>
+<dt>fakeroot (allowed only if container_type=singularity)</dt><dd><p>default=yes
+If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or 1, use singularity –fakeroot for building the
+images (this is the recommended wby). Otherwise, “sudo singularity”
+must be used so singularity has root access on the host.</p>
 </dd>
 <dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
 <p>Directory where images and environments are stored. This parameter

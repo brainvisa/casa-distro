@@ -127,7 +127,7 @@ Creating the casa-system image:
 
       cd "$CASA_BASE_DIRECTORY"
       singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
-      casa_distro_admin create_base_image type=system base=ubuntu-18.04.sif
+      casa_distro_admin create_base_image base=ubuntu-18.04.sif               type=system image_version=ubuntu-18.04
 
 - For VirtualBox: TODO
 
@@ -145,7 +145,7 @@ type
     branch and system and is shorter to select one.
 
 base
-    Source file use to buld the image. The default value depends on image
+    Source file used to build the image. The default value depends on image
     type and container type.
 
 output
@@ -160,7 +160,7 @@ container_type
     "docker".
 
 image_version
-    default=1.0
+    default=
 
     Version (or branch) of the image
 
@@ -183,6 +183,13 @@ force (allowed only if container_type=singularity)
 
     If ``yes``, ``true`` or 1, erase existing image without asking any
     question.
+
+fakeroot (allowed only if container_type=singularity)
+    default=yes
+
+    If ``yes``, ``true`` or 1, use singularity --fakeroot for building the
+    images (this is the recommended wby). Otherwise, "sudo singularity"
+    must be used so singularity has root access on the host.
 
 memory (allowed only if container_type=vbox)
     default=8192
@@ -308,6 +315,11 @@ force
     default=no
     If "yes", "true" or 1, erase existing image without asking any
     question.
+fakeroot (allowed only if container_type=singularity)
+    default=yes
+    If ``yes``, ``true`` or 1, use singularity --fakeroot for building the
+    images (this is the recommended wby). Otherwise, "sudo singularity"
+    must be used so singularity has root access on the host.
 base_directory
     default= ``$HOME/casa_distro``
 
