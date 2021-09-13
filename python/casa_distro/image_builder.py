@@ -85,18 +85,23 @@ def get_image_builder(build_file):
     Return the image builder defined in a build_image.py file
     '''
     v = {}
+    build_file = os.path.abspath(build_file)
     exec(compile(open(build_file, "rb").read(),
                  build_file, 'exec'), v, v)
     if 'builder' not in v:
         raise RuntimeError(
             'No builder object defined in {0}'.format(build_file))
+    v['builder'].build_file = build_file
+    v['builder'].build_dir = os.path.dirname(build_file)
     return v['builder']
 
 
 class ImageBuilder:
-    def __init__(self, name):
+    def __init__(self, name, base):
         self.name = name
+        self.base = base
         self.steps = []
+        self.build_dir = None  # set later by get image_builder
 
     def step(self, step_function):
         self.steps.append(step_function)

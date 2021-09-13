@@ -49,7 +49,7 @@ def install_casa_distro(dest):
 exclude_from_bin = {
     'python', 'python2', 'python3', 'bv', 'bv_env', 'bv_env.sh', 'bv_env.bat',
     'bv_env.py', 'bv_env_host', 'bv_env_test', 'bv_unenv', 'bv_unenv.sh',
-    'bv_unit_test', 'bv_wine_regedit', 'docker-deps',
+    'bv_wine_regedit', 'docker-deps',
 }
 
 
@@ -334,7 +334,7 @@ used anymore, you may as well delete it if you wish.
             shutil.rmtree(tmpdir)
             tmpdir = None
 
-    casa_distro_dir = osp.join(setup_dir, 'casa-distro')
+    casa_distro_dir = osp.join(setup_dir, 'bootstrap', 'casa-distro')
     install_casa_distro(casa_distro_dir)
 
     distro_dir = osp.join(casa_distro_dir, 'share', 'distro', distro)

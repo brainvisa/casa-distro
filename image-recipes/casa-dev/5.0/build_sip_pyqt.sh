@@ -1,0 +1,1 @@
+../../casa-run/5.0/build_sip_pyqt.sh

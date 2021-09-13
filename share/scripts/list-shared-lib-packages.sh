@@ -9,7 +9,7 @@ if [ $# -lt 1 ]; then
     echo 'Usage: list-shared-lib-packages.sh [DIRECTORY]...' >&2
     echo '' >&2
     echo 'Typically list-shared-lib-packages.sh /casa/build /usr/local' >&2
-    echo '(see install_apt_dependencies.sh in casa-distro/share/docker/casa-run' >&2
+    echo '(see install_apt_dependencies.sh in casa-distro/image-recipes/casa-run' >&2
     echo 'for more detailed instructions).' >&2
     exit 2
 fi

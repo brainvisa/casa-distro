@@ -1,5 +1,5 @@
 #! /bin/sh
-# Install system dependencies for image cati/casa-dev:ubuntu-16.04
+# Install system dependencies for image casa-dev-5.0
 #
 # NOTE: This script is used to create the casa-dev Docker/Singularity image,
 # and also during the creation of the VirtualBox casa-dev image. Make sure not

@@ -12,7 +12,6 @@ import time
 import uuid
 
 import casa_distro.six as six
-from .image_builder import get_image_builder
 from .log import boolean_value
 
 try:
@@ -75,7 +74,7 @@ def vbox_list_vms(running=False):
 
 def create_image(base, base_metadata,
                  output, metadata,
-                 build_file,
+                 image_builder,
                  memory='8192',
                  video_memory='50',
                  disk_size='131072',
@@ -189,7 +188,7 @@ def create_image(base, base_metadata,
                               verbose=verbose)
         vbox = VBoxMachine(name)
         vbox.image_version = metadata['image_version']
-        vbox.install(build_file=build_file,
+        vbox.install(image_builder=image_builder,
                      verbose=verbose,
                      gui=gui)
         vbox.stop(verbose=verbose)
@@ -494,22 +493,21 @@ class VBoxMachine:
         pass
 
     def install(self,
-                build_file,
+                image_builder,
                 verbose=None,
                 gui=False):
         """Install dependencies of casa-{image_type} image
 
-        This method look for a share/docker/casa-{image_type}/{system}/vbox.py
-        file and execute the install(base_dir, vbox, verbose) command that must
-        be defined in this file.
+        This method looks for a
+        image-recipes/casa-{image_type}/{system}/vbox.py file and executes the
+        install(base_dir, vbox, verbose) command that must be defined in this
+        file.
 
         base_dir is the directory containing the vbox.py file
         vbox is the instance of VBoxMachine (i.e. self)
         verbose is either None or a file where to write information about the
             installation process.
         """
-
-        image_builder = get_image_builder(build_file)
 
         self.start_and_wait(verbose=verbose, gui=gui)
         self.run_root(
@@ -518,7 +516,7 @@ class VBoxMachine:
         for step in image_builder.steps:
             if verbose:
                 print('Performing:', step.__doc__, file=verbose)
-            step(base_dir=osp.dirname(build_file),
+            step(base_dir=image_builder.build_dir,
                  builder=self)
 
     def export(self, output, verbose=None):

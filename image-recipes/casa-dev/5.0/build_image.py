@@ -4,7 +4,7 @@ import os.path as osp
 from casa_distro.image_builder import ImageBuilder
 
 
-builder = ImageBuilder('casa-run')
+builder = ImageBuilder('casa-run', base='casa-run-5.0.{extension}')
 
 
 @builder.step
@@ -36,11 +36,6 @@ def copying_files(base_dir, builder):
     builder.copy_root(osp.realpath(osp.join(base_dir, 'askpass-bioproj.sh')),
                       '/usr/local/bin')
     builder.run_root('chmod a+rx /usr/local/bin/askpass-bioproj.sh')
-
-    builder.copy_user(osp.realpath(osp.join(base_dir,
-                                            'list-shared-libs-paths.sh')),
-                      '/casa/')
-    builder.run_user('chmod a+rx /casa/list-shared-libs-paths.sh')
 
 
 @builder.step
