@@ -50,167 +50,142 @@ def str_to_bool(string):
 
 
 @command
-def singularity_deb(system,
-                    output='singularity-container-{version}-{system}.deb',
-                    dockerhub=None,
-                    version='3.7.0',
-                    go_version='1.15.6'):
+def singularity_deb(dockerhub='ubuntu:20.04',
+                    output_dir=osp.abspath(os.curdir),
+                    version='3.8.3',
+                    go_version='1.17'):
     """Create a Debian package to install Singularity.
     Perform the whole installation process from a rw system and Singularity
     source. Then put the result in a *.deb file.
-
     Parameters
     ----------
-    system
-        Name of the system for the output file.
-        If dockerhub is not given, a value is built based on this parameter
-
-    output
-        default={output_default}
-        Location of the resulting Debian package file.
-
     dockerhub
-        default=name of the system replacing "-" by ":"
+        default={dockerhub_default}
         Name of the base image system to pull from DockerHub.
-
+    output_dir
+        default={output_dir_default}
+        Location of the resulting Debian package file.
     version
         default={version_default}
         Version of Singularity to use. This must be a valid release version.
-
-    go_version
-        default={go_version_default}
-        Version of Go language to install during Singularity building process.
+@@ -83,146 +74,206 @@ def singularity_deb(system,
         Go language is not included in the final package.
     """
 
-    output = output.format(system=system,
-                           version=version)
-    if not dockerhub:
-        dockerhub = system.replace('-', ':')
-        if system.startswith('mint'):
-            # mint is found under another name
-            dockerhub = 'linuxmintd/%s-amd64' % system.replace('-', '')
     tmp = tempfile.mkdtemp(prefix='singularity-container-deb-')
+    singularity_image = 'singularity_image'
     try:
         build_sh = osp.join(tmp, 'build.sh')
         open(build_sh, 'w').write('''#!/bin/sh
 set -xe
-apt update -y
-DEBIAN_FRONTEND=noninteractive apt install -y build-essential uuid-dev \
-  squashfs-tools libseccomp-dev wget pkg-config git libcryptsetup-dev \
-  elfutils rpm alien
-cd $TMP
-export OS=linux ARCH=amd64
-wget https://dl.google.com/go/go$GO_VERSION.$OS-$ARCH.tar.gz
-tar -C /usr/local -xzvf go$GO_VERSION.$OS-$ARCH.tar.gz
-rm go$GO_VERSION.$OS-$ARCH.tar.gz
-export PATH=/usr/local/go/bin:$PATH
-export GOPATH="$TMP/cache"
-git clone https://github.com/hpcng/singularity.git
-cd singularity
-git checkout v${SINGULARITY_VERSION}
-./mconfig
-sed -i 's/Name: singularity/Name: singularity-container/g' \
-  singularity.spec
-sed -i 's|BuildRoot: /var/tmp/singularity-|BuildRoot: \
-/var/tmp/singularity-container-|g' singularity.spec
-make -C builddir dist
-cd $TMP
-mv singularity/singularity-${SINGULARITY_VERSION}.tar.gz \
-  singularity/singularity-container-${SINGULARITY_VERSION}.tar.gz
-rpmbuild -tb --nodeps \
-  singularity/singularity-container-${SINGULARITY_VERSION}.tar.gz
-alien --to-deb --scripts \
-  $TMP/rpmbuild/RPMS/x86_64/singularity-container-${SINGULARITY_VERSION}-1.x86_64.rpm
-mv singularity-container*.deb /tmp/singularity-container-$SYSTEM-x86_64.deb
+umask 0022  # avoid Lintian warning non-standard-file-perm
+OS=linux
+ARCH=amd64
+DEB_HOST_MULTIARCH=x86_64-linux-gnu
+ID=
+VERSION_ID=
+. /etc/os-release  # sets the ID and VERSION_ID variables
+DISTRIB=${ID}-${VERSION_ID}
+package_version=${SINGULARITY_VERSION}~${DISTRIB}
+#Installation des packages requis
+apt-get update -y
+DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential uuid-dev \
+    libgpgme-dev squashfs-tools libseccomp-dev wget pkg-config git \
+    cryptsetup-bin libssl-dev
+# Download and install GO
+rm -rf /usr/local/go
+wget -O $TMP/go${GO_VERSION}.${OS}-${ARCH}.tar.gz \
+    https://dl.google.com/go/go${GO_VERSION}.${OS}-${ARCH}.tar.gz
+tar -C /usr/local -xzf $TMP/go${GO_VERSION}.${OS}-${ARCH}.tar.gz
+rm -f $TMP/go${GO_VERSION}.${OS}-${ARCH}.tar.gz
+export GOPATH=${HOME}/go
+export GOROOT=/usr/local/go
+export PATH=$GOROOT/bin:$PATH:${GOPATH}/bin
+# Download the requested Singularity release
+wget -O $TMP/singularity-ce-${SINGULARITY_VERSION}.tar.gz \
+    https://github.com/sylabs/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-ce-${SINGULARITY_VERSION}.tar.gz
+mkdir -p ${GOPATH}/src/github.com/sylabs
+tar -C ${GOPATH}/src/github.com/sylabs -zxf \
+    $TMP/singularity-ce-${SINGULARITY_VERSION}.tar.gz
+# Build and install Singularity into DESTDIR
+export DESTDIR=$TMP/singularity-ce_${package_version}_amd64
+rm -rf ${DESTDIR}
+cd ${GOPATH}/src/github.com/sylabs/singularity-ce-${SINGULARITY_VERSION}
+./mconfig \
+    -P release-stripped \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --libexecdir=/usr/lib/${DEB_HOST_MULTIARCH} \
+    --localstatedir=/var/lib
+make -C ./builddir
+make -C ./builddir install DESTDIR=${DESTDIR}
+mkdir -p ${DESTDIR}/DEBIAN
+cat <<EOF > ${DESTDIR}/DEBIAN/control
+Package: singularity-ce
+Version: ${package_version}
+Maintainer: BrainVISA release team <admin@brainvisa.info>
+Architecture: ${ARCH}
+Section: admin
+Priority: optional
+Depends: squashfs-tools, ca-certificates, cryptsetup-bin, libc6, libseccomp2
+Conflicts: singularity-container
+Replaces: singularity-container (<< ${SINGULARITY_VERSION})
+Recommends: e2fsprogs
+Homepage: https://www.sylabs.io/
+Description: container platform focused on supporting "Mobility of Compute"
+ Mobility of Compute encapsulates the development to compute model
+ where developers can work in an environment of their choosing and
+ creation and when the developer needs additional compute resources,
+ this environment can easily be copied and executed on other platforms.
+ Additionally as the primary use case for Singularity is targeted
+ towards computational portability, many of the barriers to entry of
+ other container solutions do not apply to Singularity making it an
+ ideal solution for users (both computational and non-computational)
+ and HPC centers.
+EOF
+# Fix Lintian warning setuid-binary
+mkdir -p ${DESTDIR}/usr/share/lintian/overrides
+cat <<EOF > ${DESTDIR}/usr/share/lintian/overrides/singularity-ce
+# Singularity requires root suid for operation:
+setuid-binary usr/lib/*/singularity/bin/*-suid 4755 root/root
+EOF
+# Fix Lintian warning package-installs-into-obsolete-dir
+mkdir -p ${DESTDIR}/usr/share/bash-completion/completions
+mv ${DESTDIR}/etc/bash_completion.d/* \
+    ${DESTDIR}/usr/share/bash-completion/completions/
+rmdir ${DESTDIR}/etc/bash_completion.d/
+# Fix Lintian warning file-in-etc-not-marked-as-conffile
+find ${DESTDIR}/etc ! -type d -print \
+    | sed -e "s!^${DESTDIR%/}!!" \
+    > ${DESTDIR}/DEBIAN/conffiles
+dpkg-deb --build ${DESTDIR} "$TMP"
 ''')
-        tmp_output = '/tmp/singularity-container-{}-x86_64.deb'.format(system)
-        subprocess.check_call(['sudo', '-H', 'singularity', 'build',
-                               '--sandbox', system,
+
+        subprocess.check_call(['singularity', 'build',
+                               '--fakeroot',
+                               '--disable-cache',
+                               '--sandbox', singularity_image,
                                'docker://{}'.format(dockerhub)],
                               cwd=tmp)
-        subprocess.check_call(['sudo', 'singularity', 'run', '--writable',
+        subprocess.check_call(['singularity', 'run',
+                               '--writable',
+                               '--fakeroot',
                                '--home', tmp,
                                '--env', 'TMP={}'.format(tmp),
-                               '--env', 'SYSTEM={}'.format(system),
                                '--env', 'GO_VERSION={}'.format(go_version),
                                '--env',
                                'SINGULARITY_VERSION={}'.format(version),
-                               system,
+                               singularity_image,
                                'sh', build_sh],
                               cwd=tmp)
-        # Use singularity to chown because it may be in sudoers
-        subprocess.check_call(['sudo', 'singularity', 'run', system,
-                               'chown', '--reference', tmp,
-                               tmp_output],
-                              cwd=tmp)
-        shutil.move(tmp_output, output)
+        deb = osp.basename(glob.glob(osp.join(tmp, '*.deb'))[0])
+        shutil.move(osp.join(tmp, deb), osp.join(output_dir, deb))
     finally:
-        # Use singularity to remove temporary directory because it may be
-        # in sudoers
-        subprocess.check_call(['sudo', 'singularity', 'run', system,
-                               'rm', '-R', tmp],
-                              cwd=tmp)
-
-
-@command
-def singularity_debs(directory):
-    """Create all required Singularity debian packages in a directory.
-    Packages that must be build have a corresponding
-    singularity-container-*.deb.json file with the following structure:
-
-    {{
-      "singularity_version": "3.7.0", required Singularity version
-      "go_version": "1.15.6",          Go version to use to build Singularity
-      "system": {{
-        "name": "ubuntu",             Name of the target system
-        "version": "20.04",            Version of the targer system
-        "dockerhub": "ubuntu:20.04"   System image to pull on DockerHub
-      }}
-    }}
-
-    The command makes sure that all .deb files corresponding to a *.deb.json
-    file exists. If not, they are created with singularity_deb command.
-
-    Parameters
-    ----------
-    directory
-        Name of directory containing JSON files and where deb files might be
-        created
-    """
-    for json_file in glob.glob(osp.join(directory,
-                                        'singularity-container-*.deb.json')):
-        deb_file = json_file[:-5]
-        if not osp.exists(deb_file):
-            json_content = json.load(open(json_file))
-            singularity_version = json_content.get('singularity_version')
-            if not singularity_version:
-                raise ValueError('"singularity_version" '
-                                 'is missing from {}'.format(json_file))
-            go_version = json_content.get('go_version')
-            if not go_version:
-                raise ValueError('"go_version" is missing from {}'.format(
-                    json_file))
-
-            system = json_content.get('system', {})
-            system_name = system.get('name')
-            if not system_name:
-                raise ValueError('"system"/"name" '
-                                 'is missing from {}'.format(json_file))
-            system_version = system.get('version')
-            if not system_version:
-                raise ValueError('"system"/"version" '
-                                 'is missing from {}'.format(json_file))
-            dockerhub = system.get('dockerhub')
-            if not dockerhub:
-                raise ValueError('"system"/"dockerhub" '
-                                 'is missing from {}'.format(json_file))
-
-            singularity_deb(system='{}-{}'.format(system_name, system_version),
-                            output=deb_file,
-                            dockerhub=dockerhub,
-                            version=singularity_version,
-                            go_version=go_version)
+        # cleanup with singularity to take into account files
+        # created with --fakeroot not belonging to current user
+        subprocess.check_call(['singularity', 'exec', '--disable-cache',
+                               '--fakeroot', 'library://alpine', 'rm',
+                               '-Rf', tmp])
 
 
 @command
