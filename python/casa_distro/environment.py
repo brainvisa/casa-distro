@@ -462,7 +462,7 @@ def update_container_image(container_type, image_name, url,
     images = url_listdir(osp.dirname(json_url))
     image_url_base, image_ext = osp.splitext(remote_image)
     image_url_pattern = re.compile(
-        osp.basename(image_url_base)
+        re.escape(osp.basename(image_url_base))
         + r'(-([0-9]+))?\%s\.json' % image_ext)
     images_dict = {}
     for image_url in images:
