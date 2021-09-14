@@ -313,7 +313,10 @@ def main(meant_for_container=False):
     command = commands[command_name]
 
     # Get command argument specification
-    cargs = inspect.getargspec(command)
+    if six.PY2:
+        cargs = inspect.getargspec(command)
+    else:
+        cargs = inspect.getfullargspec(command)
 
     if options.verbose and 'verbose' in cargs.args:
         kwargs['verbose'] = 'yes'
