@@ -34,7 +34,7 @@ find "$@" \
      - {} \; \
     | sort -u \
     | while read path; do
-        dpkg -S "$path" 2>/dev/null
+        dpkg -S "$(realpath -- "$path")" 2>/dev/null
       done \
     | sed -e 's/\([^:]*\):.*$/\1/' \
     | sort -u
