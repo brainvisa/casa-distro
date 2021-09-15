@@ -33,6 +33,19 @@ export DEBIAN_FRONTEND=noninteractive
 
 $SUDO apt-get -o Acquire::Retries=3 update
 
+# The Docker images of ubuntu are "minimized", i.e. files that are meant for
+# interactive use (man pages, documentation, and translations) are not
+# included. While we may not really need them in the casa-run images, the man
+# pages are really useful to have in the casa-dev image, but we cannot really
+# defer calling "unminimize" until then, because it runs a full "apt-get
+# upgrade", which risks causing discrepancy in package versions between
+# casa-run und casa-dev. Therefore, the best place to run it is right now.
+if type unminimize >/dev/null 2>&1; then
+    # unminimize is meant for interactive use, hopefully piping from "yes" does
+    # the trick...
+    yes | $SUDO unminimize
+fi
+
 # Packages that are needed later by this script
 early_dependencies=(
     ca-certificates  # needed by wget to download over https
