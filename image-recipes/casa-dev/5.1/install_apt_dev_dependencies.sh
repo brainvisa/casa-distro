@@ -82,6 +82,7 @@ development_tools=(
     locate
     meld
     nano
+    python2-minimal  # only for flake8 tests of casa-distro
     python3-autopep8
     python3-dbg
     python3-objgraph
