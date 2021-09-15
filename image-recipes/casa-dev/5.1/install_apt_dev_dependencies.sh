@@ -119,6 +119,7 @@ documentation_building_packages=(
 # or documentation building packages).
 brainvisa_standard_dev_dependencies=(
     libasound2-dev
+    libblitz0-dev
     libboost-dev
     libboost-filesystem-dev
     libboost-system-dev
