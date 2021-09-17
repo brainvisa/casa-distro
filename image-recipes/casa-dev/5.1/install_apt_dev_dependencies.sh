@@ -110,6 +110,7 @@ documentation_building_packages=(
     python3-sphinx
     python3-sphinx-gallery
     texlive-latex-base
+    texlive-latex-extra  # needed by doxygen to render LaTeX formulas
     texlive-fonts-recommended
     wkhtmltopdf
 )
