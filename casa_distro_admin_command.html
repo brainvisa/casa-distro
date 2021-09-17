@@ -98,59 +98,28 @@ documentation in the general help.</p>
 </section>
 <section id="singularity-deb">
 <span id="singularity-deb-help"></span><h3>singularity_deb<a class="headerlink" href="#singularity-deb" title="Permalink to this headline">¶</a></h3>
-<p>Create a Debian package to install Singularity.
-Perform the whole installation process from a rw system and Singularity
-source. Then put the result in a <a href="#id1"><span class="problematic" id="id2">*</span></a>.deb file.</p>
-<section id="id3">
-<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>Create a Debian package to install Singularity.</dt><dd><p>Perform the whole installation process from a rw system and Singularity
+source. Then put the result in a <a href="#id1"><span class="problematic" id="id2">*</span></a>.deb file.
+Parameters
+———-
+dockerhub</p>
+<blockquote>
+<div><p>default=ubuntu:20.04
+Name of the base image system to pull from DockerHub.</p>
+</div></blockquote>
 <dl class="simple">
-<dt>system</dt><dd><p>Name of the system for the output file.
-If dockerhub is not given, a value is built based on this parameter</p>
-</dd>
-<dt>output</dt><dd><p>default=singularity-container-{version}-{system}.deb
+<dt>output_dir</dt><dd><p>default=/home/travis/build/brainvisa/casa-distro/doc/source
 Location of the resulting Debian package file.</p>
 </dd>
-<dt>dockerhub</dt><dd><p>default=name of the system replacing “-” by “:”
-Name of the base image system to pull from DockerHub.</p>
-</dd>
-<dt>version</dt><dd><p>default=3.7.0
+<dt>version</dt><dd><p>default=3.8.3
 Version of Singularity to use. This must be a valid release version.</p>
 </dd>
-<dt>go_version</dt><dd><p>default=1.15.6
-Version of Go language to install during Singularity building process.
-Go language is not included in the final package.</p>
+</dl>
+</dd>
+<dt>&#64;&#64; -83,146 +74,206 &#64;&#64; def singularity_deb(system,</dt><dd><p>Go language is not included in the final package.</p>
 </dd>
 </dl>
-</section>
-</section>
-<section id="singularity-debs">
-<span id="singularity-debs-help"></span><h3>singularity_debs<a class="headerlink" href="#singularity-debs" title="Permalink to this headline">¶</a></h3>
-<p>Create all required Singularity debian packages in a directory.
-Packages that must be build have a corresponding
-singularity-container-<a href="#id4"><span class="problematic" id="id5">*</span></a>.deb.json file with the following structure:</p>
-<dl>
-<dt>{</dt><dd><p>“singularity_version”: “3.7.0”, required Singularity version
-“go_version”: “1.15.6”,          Go version to use to build Singularity
-“system”: {</p>
-<blockquote>
-<div><p>“name”: “ubuntu”,             Name of the target system
-“version”: “20.04”,            Version of the targer system
-“dockerhub”: “ubuntu:20.04”   System image to pull on DockerHub</p>
-</div></blockquote>
-<p>}</p>
-</dd>
-</dl>
-<p>}</p>
-<p>The command makes sure that all .deb files corresponding to a <a href="#id6"><span class="problematic" id="id7">*</span></a>.deb.json
-file exists. If not, they are created with singularity_deb command.</p>
-<section id="id8">
-<h4>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
-<dl class="simple">
-<dt>directory</dt><dd><p>Name of directory containing JSON files and where deb files might be
-created</p>
-</dd>
-</dl>
-</section>
 </section>
 <section id="create-base-image">
 <span id="create-base-image-help"></span><h3>create_base_image<a class="headerlink" href="#create-base-image" title="Permalink to this headline">¶</a></h3>
@@ -167,8 +136,8 @@ casa_distro_admin create_base_image base=ubuntu-18.04.sif               type=sys
 </li>
 <li><p>For VirtualBox: TODO</p></li>
 </ul>
-<section id="id9">
-<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<section id="id3">
+<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <dl>
 <dt>type</dt><dd><p>type of image to publish. Either “system” for a base system image, or
 “run” for an image used in a user environment, or “dev” for a developer
@@ -243,8 +212,8 @@ the following environment variables:</p>
 BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
 BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)</p>
 </div></blockquote>
-<section id="id10">
-<h4>Parameters<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<section id="id4">
+<h4>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <dl>
 <dt>type</dt><dd><p>type of image to publish. Either “system” for a base system image, or
 “run” for an image used in a user environment, or “dev” for a developer
@@ -280,8 +249,8 @@ image is based on base_image and the installation directory of the
 development environment is copied into the image in /casa/install.</p></li>
 <li><p>upload: upload the user image on BrainVISA web site.</p></li>
 </ul>
-<section id="id11">
-<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<section id="id5">
+<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
 <dl>
 <dt>version [REQUIRED]</dt><dd><p>Version of the release to create.</p>
 </dd>
@@ -435,8 +404,8 @@ such as configuring additional files in the home directory of the user
 </ul>
 </li>
 </ul>
-<section id="id12">
-<h4>Parameters<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<section id="id6">
+<h4>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given distro name.</p>
@@ -508,8 +477,8 @@ can be passed on the commandline, or set via the
 local machine. Installation can be don step by step. This command
 is typically used in a VirtualBox machine to debug image creation
 scenario.</p>
-<section id="id13">
-<h4>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<section id="id7">
+<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
 <dl>
 <dt>type</dt><dd><p>Type of image to install. Either “run” or “dev”.</p>
 </dd>
@@ -546,7 +515,7 @@ used as a shell pattern, the default value match any system.</p>
 </section>
 <section id="creation-a-base-virtualbox-image">
 <h2>Creation a base VirtualBox image<a class="headerlink" href="#creation-a-base-virtualbox-image" title="Permalink to this headline">¶</a></h2>
-<p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id14"><span class="problematic" id="id15">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id16"><span class="problematic" id="id17">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
+<p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id8"><span class="problematic" id="id9">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id10"><span class="problematic" id="id11">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
 <ol class="arabic simple">
 <li><p>Install VirtualBox version 6 or greater</p></li>
 <li><p>Download an Ubuntu iso file from internet (any Debain based distro may work but only recent Ubuntu LTS are tested).</p></li>
@@ -638,32 +607,25 @@ The Dockerfile may (should) be based on another image, in the usual way of build
 <li><a class="reference internal" href="#parameters">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#singularity-deb">singularity_deb</a><ul>
+<li><a class="reference internal" href="#singularity-deb">singularity_deb</a></li>
+<li><a class="reference internal" href="#create-base-image">create_base_image</a><ul>
 <li><a class="reference internal" href="#id3">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#singularity-debs">singularity_debs</a><ul>
-<li><a class="reference internal" href="#id8">Parameters</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#create-base-image">create_base_image</a><ul>
-<li><a class="reference internal" href="#id9">Parameters</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#publish-base-image">publish_base_image</a><ul>
-<li><a class="reference internal" href="#id10">Parameters</a></li>
+<li><a class="reference internal" href="#id4">Parameters</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#create-user-image">create_user_image</a><ul>
-<li><a class="reference internal" href="#id11">Parameters</a></li>
+<li><a class="reference internal" href="#id5">Parameters</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#bbi-daily">bbi_daily</a><ul>
-<li><a class="reference internal" href="#id12">Parameters</a></li>
+<li><a class="reference internal" href="#id6">Parameters</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#local-install">local_install</a><ul>
-<li><a class="reference internal" href="#id13">Parameters</a></li>
+<li><a class="reference internal" href="#id7">Parameters</a></li>
 </ul>
 </li>
 </ul>
@@ -715,7 +677,7 @@ The Dockerfile may (should) be based on another image, in the usual way of build
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2021, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

@@ -57,60 +57,22 @@ full
 singularity_deb
 ---------------
 Create a Debian package to install Singularity.
-Perform the whole installation process from a rw system and Singularity
-source. Then put the result in a *.deb file.
-
-Parameters
-----------
-system
-    Name of the system for the output file.
-    If dockerhub is not given, a value is built based on this parameter
-
-output
-    default=singularity-container-{version}-{system}.deb
-    Location of the resulting Debian package file.
-
-dockerhub
-    default=name of the system replacing "-" by ":"
-    Name of the base image system to pull from DockerHub.
-
-version
-    default=3.7.0
-    Version of Singularity to use. This must be a valid release version.
-
-go_version
-    default=1.15.6
-    Version of Go language to install during Singularity building process.
-    Go language is not included in the final package.
-
-
-.. _singularity-debs-help:
-
-----------------
-singularity_debs
-----------------
-Create all required Singularity debian packages in a directory.
-Packages that must be build have a corresponding
-singularity-container-*.deb.json file with the following structure:
-
-{
-  "singularity_version": "3.7.0", required Singularity version
-  "go_version": "1.15.6",          Go version to use to build Singularity
-  "system": {
-    "name": "ubuntu",             Name of the target system
-    "version": "20.04",            Version of the targer system
-    "dockerhub": "ubuntu:20.04"   System image to pull on DockerHub
-  }
-}
-
-The command makes sure that all .deb files corresponding to a *.deb.json
-file exists. If not, they are created with singularity_deb command.
-
-Parameters
-----------
-directory
-    Name of directory containing JSON files and where deb files might be
-    created
+    Perform the whole installation process from a rw system and Singularity
+    source. Then put the result in a *.deb file.
+    Parameters
+    ----------
+    dockerhub
+        default=ubuntu:20.04
+        Name of the base image system to pull from DockerHub.
+    output_dir
+        default=/home/travis/build/brainvisa/casa-distro/doc/source
+        Location of the resulting Debian package file.
+    version
+        default=3.8.3
+        Version of Singularity to use. This must be a valid release version.
+@@ -83,146 +74,206 @@ def singularity_deb(system,
+        Go language is not included in the final package.
+    
 
 
 .. _create-base-image-help:
