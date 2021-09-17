@@ -105,6 +105,7 @@ documentation_building_packages=(
     doxygen
     ghostscript
     graphviz
+    jupyter-nbconvert
     pandoc
     python3-sphinx
     python3-sphinx-gallery
