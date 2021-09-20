@@ -900,7 +900,7 @@ def create_user_image(
 
     if generate:
         output_dir = osp.dirname(output)
-        if not osp.exists(output_dir):
+        if not osp.exists(output_dir) and output_dir != '':
             os.makedirs(output_dir)
         # filter kwargs to avoid passing unexpected or duplicate parameters
         kwargs = {k: v for k, v in kwargs.items()
