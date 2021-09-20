@@ -902,6 +902,9 @@ def create_user_image(
         output_dir = osp.dirname(output)
         if not osp.exists(output_dir):
             os.makedirs(output_dir)
+        # filter kwargs to avoid passing unexpected or duplicate parameters
+        kwargs = {k: v for k, v in kwargs.items()
+                  if k in ('fakeroot', )}
         image_id, msg = module.create_user_image(base_image=base_image,
                                                  dev_config=config,
                                                  version=version,
