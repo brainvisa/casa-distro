@@ -76,7 +76,7 @@ def install_casa_distro(base_dir, builder):
 
 @builder.step
 def casa_dev_components(base_dir, builder):
-    """Install casa components for developement."""
+    """Install casa components for development."""
     builder.run_root('/build/install_casa_dev_components.sh')
 
     builder.copy_root(os.path.join(base_dir, 'gitignore'), '/etc')

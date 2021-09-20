@@ -23,7 +23,7 @@ The virtual machine variant of ``casa-distro`` images (VirtualBox) are self-cont
 
 To run the container, ``casa-distro`` (any of ``bv``, ``casa_distro`` and ``casa_distro_admin`` commands) is using an :ref:`environment` directory on the host filesystem. It is used to read configuration before starting the container, and to store files which may be shared between the container and the host filesystem.
 
-The environment directory may be a personal user installation (if a user installs BrainVisa, or a developer environment, for himself), which we name *user environment*, or a *shared enviroment* (if an administrator installs BrainVisa for all users on a network filesystem, typically). In the first case the user has full access to the environment files (he owns the directory and files), but in the second case the shared environment directory and files belong to the administrator, and are read-only for the user.
+The environment directory may be a personal user installation (if a user installs BrainVisa, or a developer environment, for himself), which we name *user environment*, or a *shared environment* (if an administrator installs BrainVisa for all users on a network filesystem, typically). In the first case the user has full access to the environment files (he owns the directory and files), but in the second case the shared environment directory and files belong to the administrator, and are read-only for the user.
 
 
 Configuration files
@@ -428,7 +428,7 @@ See also the BrainVisa developers site: https://brainvisa.github.io/
 Using Git
 ---------
 
-Both git ans svn are used in Brainvisa projects sources. svn will probably be completely replaced with git.
+Both git and svn are used in Brainvisa projects sources. svn will probably be completely replaced with git.
 
 git URLs use https by default. It's OK for anonymous download and update, but they require manual authentication for each push, thus it's painful. If you have a github account, you can use ssh with a ssh key instead. See https://brainvisa.github.io/contributing.html
 
@@ -509,7 +509,7 @@ Several options are needed to enable display and OpenGL. Normally casa_distro tr
 
 On machines with nvidia graphics cards and nvidia proprietary drivers, casa_distro will add options to mount the host system drivers and OpenGL libraries into the container in order to have hardware 3D rendering.
 
-Options are setup in the ``casa_distro.json`` file so you can check and edit them. Therefore, the detection of nvidia drivers is done on the host machine at the time of build workflow creation: if the build workflow is shared accross several machines on a network, this config may not suit all machines running the container.
+Options are setup in the ``casa_distro.json`` file so you can check and edit them. Therefore, the detection of nvidia drivers is done on the host machine at the time of build workflow creation: if the build workflow is shared across several machines on a network, this config may not suit all machines running the container.
 
 However it does not seem to work when ssh connections and remote display are involved.
 

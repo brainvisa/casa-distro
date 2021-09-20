@@ -19,7 +19,7 @@ Installation and setup
 
 * The :bv:`BrainVisa download / install section <download.html>` explains how to install both a released, compiled, version of BrainVISA (This is what a "regular user" needs), or a developer environment which will build from sources.
 
-* Alternatively it is possible to install Casa-Distro from its sources on GitHub. To get the lastest realease you can simply download it from https://github.com/brainvisa/casa-distro, using  the ``git`` command::
+* Alternatively it is possible to install Casa-Distro from its sources on GitHub. To get the latest release you can simply download it from https://github.com/brainvisa/casa-distro, using  the ``git`` command::
 
     git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
 
@@ -42,7 +42,7 @@ First time
 
   This will setup an :ref:`environment` dedicated to development.
 
-  This command specifies to setup a developper :ref:`environment` for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``master`` branch (default is ``latest_release``), using a container system based on Ubuntu 18.04.
+  This command specifies to setup a developer :ref:`environment` for the open-source projects set (``distro_source=opensource`` is actually the default and can be omitted), for the ``master`` branch (default is ``latest_release``), using a container system based on Ubuntu 18.04.
 
   Directories and files will be created accordingly in the :REF:`repository` directory (location of casa-distro container images and :ref:`environments <environment>`), here the default is ``$HOME/casa_distro``.
 
@@ -52,7 +52,7 @@ First time
 
 * Setup credentials for source code reposotories
 
-  This step is optional and is especially not neeed if just retreiving only the open-source projects.
+  This step is optional and is especially not need if just retrieving only the open-source projects.
   The file ``svn.secret`` may be created / edited to store login / password information for the svn `BioProj <http://bioproj.extra.cea.fr>`_ server. If not filled, the ``svn`` program will ask for them interactively, and propose to store them.
 
 * build everything::
@@ -66,7 +66,7 @@ First time
 Update the casa_distro command
 ------------------------------
 
-Once an environment has been initialized, and at least source code has been updated (using ``casa_distro bv_maker``), most :ref:`distributions <distro>` actually include the *casa-distro* project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system (if stored on the host filesystem), so it may be a good idea to use this updated ``casa_distro`` command instead of the oned previsouly installed (either via pip or from `github <https://github.com>`_ sources) to initialize the process.
+Once an environment has been initialized, and at least source code has been updated (using ``casa_distro bv_maker``), most :ref:`distributions <distro>` actually include the *casa-distro* project, which will be updated with the rest of the source code. As it is python-only, it can be run from the host system (if stored on the host filesystem), so it may be a good idea to use this updated ``casa_distro`` command instead of the oned previously installed (either via pip or from `github <https://github.com>`_ sources) to initialize the process.
 
 .. This can be done by "updating" a build-workflow (actually any one which contains casa-distro):
 ..
@@ -75,7 +75,7 @@ Once an environment has been initialized, and at least source code has been upda
 ..     python /tmp/casa-distro/bin/casa_distro update distro=opensource branch=master system=ubuntu-18.04
 ..
 .. Then the run script will use the casa-distro from this source tree.
-.. You can setup your host environment (``$HOME/.bashrc`` typically) to use it by defaul by setting it first in the ``PATH`` environment variable:
+.. You can setup your host environment (``$HOME/.bashrc`` typically) to use it by default by setting it first in the ``PATH`` environment variable:
 ..
 .. .. code-block:: bash
 ..
@@ -107,7 +107,7 @@ To update to the most recent versions of the projects sources, and rebuild, it i
 Customizing projects
 --------------------
 
-It is possible to customize the projects list to be retreived and built. It is done by editing the :bv-cmake:`bv_maker.cfg file <configuration.html>` in the environment, which can be found in the directory ``<repository>/<environment>/host/conf/``
+It is possible to customize the projects list to be retrieved and built. It is done by editing the :bv-cmake:`bv_maker.cfg file <configuration.html>` in the environment, which can be found in the directory ``<repository>/<environment>/host/conf/``
 
 where ``<repository>`` is the base casa-distro :ref:`repository` directory (passed as the ``base_directory`` option of casa_distro if needed), ``<environment>`` is the :ref:`environment` :ref:`env_name`.
 

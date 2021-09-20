@@ -224,7 +224,7 @@ def wget_command(download_container=True):
     ----------
     download_container: bool
         if True and wget cannot be found already installed on the system, then
-        a wget container (singuarity or docker) will be downloaded and used.
+        a wget container (singularity or docker) will be downloaded and used.
     '''
     global _wget_command, _temporary_files
 
@@ -374,7 +374,7 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3,
                     wget = wget_command()
                 cmd = list(wget)
                 if allow_continue:
-                    cmd.appen('--continue')
+                    cmd.append('--continue')
                 cmd += [url, '-O', tmp_dest]
                 subprocess.check_call(cmd)
             elif method == 'internal':

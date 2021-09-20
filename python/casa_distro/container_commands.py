@@ -13,7 +13,7 @@ def setup_user(dir='/casa/setup', rw_install=False, distro=None,
                version=os.environ.get('CASA_VERSION'),
                url='https://brainvisa.info/download'):
     """
-    Create all necessary directories and files to setup a user environement.
+    Create all necessary directories and files to setup a user environment.
 
     This command is not supposed to be called directly but using a user image::
 

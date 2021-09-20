@@ -649,7 +649,7 @@ def create_user_image(
         **kwargs):
     """Create a "user" image given a development environment.
     The development environment is selected among existing ones its
-    distro and system or simply by its name. Only developement environments
+    distro and system or simply by its name. Only development environments
     using the master branch are considered.
     This command can perform three steps. Each step can be ignored by setting
     the corresponding option to "no" :
@@ -658,7 +658,7 @@ def create_user_image(
       installation directory. This modify the development environment by
       updating its installation directory.
 
-    - generate: generate a new image for the developement environment. The ne
+    - generate: generate a new image for the development environment. The ne
       image is based on base_image and the installation directory of the
       development environment is copied into the image in /casa/install.
 
@@ -1149,10 +1149,10 @@ def bbi_daily(distro=None, branch=None, system=None,
         for dev_config in dev_configs:
             failed = None
             if bv_maker_steps:
-                succesful, failed = bbi_daily.bv_maker(dev_config,
-                                                       bv_maker_steps)
+                successful, failed = bbi_daily.bv_maker(dev_config,
+                                                        bv_maker_steps)
                 succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
-                                       for i in succesful)
+                                       for i in successful)
                 if failed:
                     failed_tasks.append('{0}: {1}'.format(dev_config['name'],
                                                           failed))
@@ -1160,9 +1160,9 @@ def bbi_daily(distro=None, branch=None, system=None,
                     failed_dev_configs.add(dev_config['name'])
                     continue
             if dev_tests:
-                succesful, failed = bbi_daily.tests(dev_config, dev_config)
+                successful, failed = bbi_daily.tests(dev_config, dev_config)
                 succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
-                                       for i in succesful)
+                                       for i in successful)
                 failed_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
                                     for i in failed)
                 if failed:
@@ -1218,10 +1218,10 @@ def bbi_daily(distro=None, branch=None, system=None,
             user_config = select_environment(user_config['directory'])
 
             if user_tests:
-                succesful, failed = bbi_daily.tests(user_config, dev_config)
+                successful, failed = bbi_daily.tests(user_config, dev_config)
                 succesful_tasks.extend(
                     '{0}: {1}'.format(user_config['name'], i)
-                    for i in succesful)
+                    for i in successful)
                 failed_tasks.extend('{0}: {1}'.format(user_config['name'], i)
                                     for i in failed)
                 if failed:

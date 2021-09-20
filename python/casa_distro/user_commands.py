@@ -684,7 +684,7 @@ def delete(type=None, distro=None, branch=None, system=None,
     interactive
         default={interactive_default}
         if true (or 1, or yes), ask confirmation interactively for each
-        selected environement.
+        selected environment.
     """
     interactive = check_boolean('interactive', interactive)
     if not interactive and type is None and distro is None and system is None \

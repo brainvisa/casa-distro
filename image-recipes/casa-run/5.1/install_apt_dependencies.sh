@@ -61,7 +61,7 @@ $SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
 
 # These files allow to configure the NeuroDebian repository in a similar way as
 # the method described on http://neuro.debian.net/, without requiring insecure
-# HTTP connection or network access to the sometimes unreliable keyservers.
+# HTTP connection or network access to the sometimes unreliable key servers.
 #
 # If NeuroDebian update their repository or key, we may need to update these
 # files. (use 'apt-key export' to write neurodebian-key.gpg).

@@ -231,7 +231,7 @@ def create_user_image(base_image,
             continue
         vm.copy_user(osp.join(copy_to_home, i), '/home/brainvisa')
 
-    # Copy desktop shortcut files after finding the appropriate share directoy
+    # Copy desktop shortcut files after finding the appropriate share directory
     # containing icon files. Replace '{install_dir}' in icon Path by
     # appropriate value.
     tmp = tempfile.mkdtemp()
@@ -275,7 +275,7 @@ class VBoxMachine:
 
     '''
     Class to interact with an existing VirtualBox machine.
-    This machine is suposed to be based on a casa_distro system image.
+    This machine is supposed to be based on a casa_distro system image.
     '''
 
     def __init__(self, name):
@@ -394,7 +394,7 @@ class VBoxMachine:
 
     def _run_user_command(self, command):
         '''
-        Return a command useable with subprocess module to run a shell
+        Return a command usable with subprocess module to run a shell
         command in VM as self.user
         '''
         return vbox_manage_command([

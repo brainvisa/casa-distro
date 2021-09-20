@@ -7,7 +7,7 @@ import os.path as osp
 import sys
 
 # Find casa_distro module path relatively to this file according to source
-# files organization. Adds it to the begining of sys.path if found.
+# files organization. Adds it to the beginning of sys.path if found.
 ppath = osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'python')
 if osp.exists(osp.join(ppath, 'casa_distro', '__init__.py')):
     sys.path.insert(0, ppath)
