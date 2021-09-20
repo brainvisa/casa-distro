@@ -26,7 +26,7 @@ class RecipeBuilder:
 
     '''
     Class to interact with an existing VirtualBox machine.
-    This machine is suposed to be based on a casa_distro system image.
+    This machine is supposed to be based on a casa_distro system image.
     '''
 
     def __init__(self, name):

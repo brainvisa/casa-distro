@@ -219,7 +219,7 @@ _casa_distro_directory = None
 
 def casa_distro_directory():
     """
-    Return the defaut casa_distro directory.
+    Return the default casa_distro directory.
     Either $CASA_BASE_DIRECTORY or ~/casa_distro.
     """
     global _casa_distro_directory
@@ -458,7 +458,7 @@ def update_container_image(container_type, image_name, url,
 
     json_url = '%s.json' % remote_image
 
-    # retreive list of compatible images
+    # retrieve list of compatible images
     images = url_listdir(osp.dirname(json_url))
     image_url_base, image_ext = osp.splitext(remote_image)
     image_url_pattern = re.compile(

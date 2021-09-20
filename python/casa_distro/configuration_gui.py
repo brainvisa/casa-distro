@@ -345,7 +345,7 @@ div.code {
 <h2>Different kinds of BrainVISA installations</h2>
 <p>The default installation method is using a read-only container image. It is the most convenient, faster to install, and "safe". This is what you get when you download a BrainVisa image and perform the default setup.
 </p>
-<p>However this install method is not modular: you cannot install additional toolboxes, because the installed files reside inside the container image, which is read-only. Thus it is possible to install BrainVISA on the host filesystem, which will be modifiable, and will allow installing additional tools. <em>This is not needed in a VirtualBox image, where you have a read-write accesss to the contents.</em> There are two ways to perform the read-write install:
+<p>However this install method is not modular: you cannot install additional toolboxes, because the installed files reside inside the container image, which is read-only. Thus it is possible to install BrainVISA on the host filesystem, which will be modifiable, and will allow installing additional tools. <em>This is not needed in a VirtualBox image, where you have a read-write access to the contents.</em> There are two ways to perform the read-write install:
 </p>
 <p>
     <ul>
@@ -353,12 +353,12 @@ div.code {
         </li>
         <li>from downloads: The BrainVISA programs files will be downloaded from the web site. This method has 2 advantages:
             <ul>
-                <li>It can be used from an image wich does not contain the files (a "run" system image, without the BrainVISA distribution in it), which is lighter than the full one, and may be shared between several installs.
+                <li>It can be used from an image which does not contain the files (a "run" system image, without the BrainVISA distribution in it), which is lighter than the full one, and may be shared between several installs.
                 </li>
                 <li>Downloading offers the option to download a different "distro" (set of packages and toolboxes), and may be used several times over the same install. This is thus a means of installing additional tolboxes when they are available on the web site.
                 </li>
             </ul>
-            However a network connection has to be active during install, with sufficient bandwidth. Installing the standard "brainvisa" distro from a full "user" image has the same result as the "local" install: it just consumes network bandwith without any benefit.
+            However a network connection has to be active during install, with sufficient bandwidth. Installing the standard "brainvisa" distro from a full "user" image has the same result as the "local" install: it just consumes network bandwidth without any benefit.
         </li>
     </ul>
 </p>
@@ -366,12 +366,12 @@ div.code {
 <h2>Installing distros</h2>
 <p>It is possible to both install the "local" distro (normally the "brainvisa" distro) in read-write mode, then add additional downloaded ones. To do so, check the local install option, and select additional distros.
 </p>
-<p>Inside the container, the read-only install directorty is:
+<p>Inside the container, the read-only install directory is:
 <div class="code">/casa/install</div>
 The read-write install location will be:
 <div class="code">/casa/host/install</div>
 </p>
-<div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or many python language modules, do not support installation split accross several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
+<div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or many python language modules, do not support installation split across several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
 </div>
 <p>In the downloads list, the available packages for your container system and version are displayed at the given URL. It could be possible to change the URL to another server which distributes its own distros (toolboxes).
 </p>
@@ -470,7 +470,7 @@ class CasaLauncher(Qt.QDialog):
                 with open(self.conf_path, 'w') as conf_file:
                     json.dump(conf_wo_mounts, conf_file, indent=4)
             except (IOError, OSError):
-                # read-only shared environent ?
+                # read-only shared environment ?
                 pass
             user_config_file = user_config_filename()
             if osp.exists(user_config_file):
@@ -718,7 +718,7 @@ When a new mount point is added, the user has to choose two directories: one on 
 The user is thus first asked for the host-side directory (the one to be mounted), using a file/directory browser. <b>However</b> as the <tt>bv</tt> program is actually running on the container side, it cannot display the host-side filesystem in its native form. This is why we display the <tt>/host</tt> directory, which is where the host root filesystem is mounted. The <tt>/host</tt> prefix will be removed automatically.
 </p>
 <p>
-Once the host-side directory has been chosen, it is displayed as the first column in a new line of the mount table. the second column ("Container") must be edited (via a double click), and the container-side mount point must be typed here. It is not a file/directory browser since the container-side directoy does not necessarily exist and may not be found on the container filesystem.
+Once the host-side directory has been chosen, it is displayed as the first column in a new line of the mount table. the second column ("Container") must be edited (via a double click), and the container-side mount point must be typed here. It is not a file/directory browser since the container-side directory does not necessarily exist and may not be found on the container filesystem.
 </p>
 <p>
 After mount points have been edited, they must be validated (using the "OK" button in the configuration GUI), and <tt>bv</tt> must be restarted using the new mounts.
@@ -898,7 +898,7 @@ class Launchers(Qt.QWidget):
     def disable_for_reload(self):
         self._launchers_container.setEnabled(False)
         self._reload_msg.setText(
-            "Reloading is needed to launch softwares/terminal!")
+            "Reloading is needed to launch software/terminal!")
 
 
 class ConfigEditor(Qt.QWidget):

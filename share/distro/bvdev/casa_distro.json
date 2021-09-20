@@ -1,6 +1,6 @@
 {
     "casa_distro_compatibility": "3.0",
     "name": "bvdev",
-    "description": "BrainVISA suite software distribtion, without restricted access projects.",
+    "description": "BrainVISA suite software distribution, without restricted access projects.",
     "systems": ["ubuntu-18.04"]
 }

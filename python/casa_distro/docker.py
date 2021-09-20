@@ -29,7 +29,7 @@ def find_docker_image_files():
     '''
     Return a sorted list of dictionary corresponding to the content of
     all the "casa_distro_docker.yaml" files located in given directory.
-    The result is sorted according to the depencies declared in the files.
+    The result is sorted according to the dependencies declared in the files.
     '''
     import yaml
 
@@ -240,7 +240,7 @@ def create_docker_images(image_name_filters=['*'],
     find_docker_image_files().
     Return the number of images processed.
 
-    This function is still work in progress. Its paramaters and behaviour may
+    This function is still work in progress. Its parameters and behaviour may
     change.
 
 
@@ -352,7 +352,7 @@ def publish_docker_images(image_name_filters=['*']):
     find_docker_image_files().
     Return the number of images processed.
 
-    This function is still work in progress. Its paramaters and behaviour may
+    This function is still work in progress. Its parameters and behaviour may
     change.
     '''
     import casa_distro

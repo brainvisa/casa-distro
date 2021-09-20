@@ -47,13 +47,13 @@ $SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
 
 # These files allow to configure the NeuroDebian repository in a similar way as
 # the method described on http://neuro.debian.net/, without requiring insecure
-# HTTP connection or network access to the sometimes unreliable keyservers.
+# HTTP connection or network access to the sometimes unreliable key servers.
 #
 # If NeuroDebian update their repository or key, we may need to update these
 # files. (use 'apt-key export' to write neurodebian-key.gpg).
 #
 # /opt is used instead of /tmp here because /tmp can be bind mount during build
-# on Singularity. Therfore previously copied files are hidden.
+# on Singularity. Therefore previously copied files are hidden.
 $SUDO cp /opt/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
 $SUDO apt-key add /opt/neurodebian-key.gpg

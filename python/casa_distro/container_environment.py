@@ -204,7 +204,7 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
             image = osp.join(os.getenv('SINGCWD'), sing_name)
             environment['image'] = image
         print(
-            '** WARING **\n'
+            '** WARNING **\n'
             'We could not determine automatically from the container '
             'where the container image is. Please edit the file '
             '/casa/host/conf/casa_distro.json (in the container) and '
@@ -318,7 +318,7 @@ used anymore, you may as well delete it if you wish.
             cwd=tmpdir)
         subprocess.check_call(['make', 'install'], cwd=tmpdir)
     except subprocess.CalledProcessError:
-        print('WARNING: error while boostrapping brainvisa-cmake, '
+        print('WARNING: error while bootstrapping brainvisa-cmake, '
               'your first compilation will use the older version '
               'that is included in the image (this is usually fine).',
               file=sys.stderr)
@@ -375,7 +375,7 @@ used anymore, you may as well delete it if you wish.
                 # do better
                 image = osp.join(os.getenv('SINGCWD'), sing_name)
             print(
-                '** WARING **\n'
+                '** WARNING **\n'
                 'We could not determine automatically from the container '
                 'where the container image is. Please edit the file '
                 '/casa/host/conf/casa_distro.json (in the container) and '

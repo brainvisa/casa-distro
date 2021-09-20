@@ -83,7 +83,7 @@ Rather than systematically passing options, some environment variables may be us
 Environment configuration file
 ==============================
 
-The ``casa_distro.json`` file found in each :ref:`environment` subdirectory (in the ``conf`` subdirectory, actually) is a dictionary which contains varaibles used to define the environment, the type of container used (docker or singularity), mounted directories in the container image, etc.
+The ``casa_distro.json`` file found in each :ref:`environment` subdirectory (in the ``conf`` subdirectory, actually) is a dictionary which contains variables used to define the environment, the type of container used (docker or singularity), mounted directories in the container image, etc.
 
 Some variables substitution can occur in the string values, in a "pythonic" shape: ``%(variable)s`` will be replaced by the contents of a variable ``variable``. The following variables are available:
 
