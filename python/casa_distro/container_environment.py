@@ -332,7 +332,6 @@ used anymore, you may as well delete it if you wish.
     finally:
         if tmpdir:
             shutil.rmtree(tmpdir)
-            tmpdir = None
 
     casa_distro_dir = osp.join(setup_dir, 'bootstrap', 'casa-distro')
     install_casa_distro(casa_distro_dir)
