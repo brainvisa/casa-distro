@@ -86,6 +86,7 @@ development_tools=(
     python3-autopep8
     python3-dbg
     python3-objgraph
+    python3-venv
     spyder
     strace
     tox

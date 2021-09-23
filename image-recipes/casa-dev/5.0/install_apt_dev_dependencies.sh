@@ -131,6 +131,7 @@ development_tools=(
     python-autopep8
     python-dbg
     python-objgraph
+    python3-venv
     pycodestyle
     spyder
     vim
