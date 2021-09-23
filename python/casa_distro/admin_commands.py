@@ -534,7 +534,7 @@ finally:
 
 
 @command
-def publish_base_image(type,
+def publish_base_image(type=None,
                        image=osp.join(
                            default_base_directory,
                            'casa-{type}-*.{extension}'),
