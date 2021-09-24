@@ -646,7 +646,7 @@ can be passed on the commandline, or set via the
 </dd>
 <dt>interactive</dt><dd><p>default=True
 if true (or 1, or yes), ask confirmation interactively for each
-selected environement.</p>
+selected environment.</p>
 </dd>
 </dl>
 </section>
@@ -703,7 +703,7 @@ For instance:</p>
 </section>
 <section id="environment-configuration-file">
 <h2>Environment configuration file<a class="headerlink" href="#environment-configuration-file" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">casa_distro.json</span></code> file found in each <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> subdirectory (in the <code class="docutils literal notranslate"><span class="pre">conf</span></code> subdirectory, actually) is a dictionary which contains varaibles used to define the environment, the type of container used (docker or singularity), mounted directories in the container image, etc.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">casa_distro.json</span></code> file found in each <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> subdirectory (in the <code class="docutils literal notranslate"><span class="pre">conf</span></code> subdirectory, actually) is a dictionary which contains variables used to define the environment, the type of container used (docker or singularity), mounted directories in the container image, etc.</p>
 <p>Some variables substitution can occur in the string values, in a “pythonic” shape: <code class="docutils literal notranslate"><span class="pre">%(variable)s</span></code> will be replaced by the contents of a variable <code class="docutils literal notranslate"><span class="pre">variable</span></code>. The following variables are available:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>name
 casa_distro_compatibility

@@ -699,4 +699,4 @@ base_directory
 interactive
     default=True
     if true (or 1, or yes), ask confirmation interactively for each
-    selected environement.
+    selected environment.

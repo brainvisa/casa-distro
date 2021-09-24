@@ -222,7 +222,7 @@ create_user_image
 -----------------
 Create a "user" image given a development environment.
 The development environment is selected among existing ones its
-distro and system or simply by its name. Only developement environments
+distro and system or simply by its name. Only development environments
 using the master branch are considered.
 This command can perform three steps. Each step can be ignored by setting
 the corresponding option to "no" :
@@ -231,7 +231,7 @@ the corresponding option to "no" :
   installation directory. This modify the development environment by
   updating its installation directory.
 
-- generate: generate a new image for the developement environment. The ne
+- generate: generate a new image for the development environment. The ne
   image is based on base_image and the installation directory of the
   development environment is copied into the image in /casa/install.
 

@@ -236,7 +236,7 @@ Type of virtual appliance to use. Either “singularity”, “vbox” or
 <span id="create-user-image-help"></span><h3>create_user_image<a class="headerlink" href="#create-user-image" title="Permalink to this headline">¶</a></h3>
 <p>Create a “user” image given a development environment.
 The development environment is selected among existing ones its
-distro and system or simply by its name. Only developement environments
+distro and system or simply by its name. Only development environments
 using the master branch are considered.
 This command can perform three steps. Each step can be ignored by setting
 the corresponding option to “no” :</p>
@@ -244,7 +244,7 @@ the corresponding option to “no” :</p>
 <li><p>install: perform an installation of the development environment into its
 installation directory. This modify the development environment by
 updating its installation directory.</p></li>
-<li><p>generate: generate a new image for the developement environment. The ne
+<li><p>generate: generate a new image for the development environment. The ne
 image is based on base_image and the installation directory of the
 development environment is copied into the image in /casa/install.</p></li>
 <li><p>upload: upload the user image on BrainVISA web site.</p></li>
@@ -518,7 +518,7 @@ used as a shell pattern, the default value match any system.</p>
 <p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id8"><span class="problematic" id="id9">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id10"><span class="problematic" id="id11">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
 <ol class="arabic simple">
 <li><p>Install VirtualBox version 6 or greater</p></li>
-<li><p>Download an Ubuntu iso file from internet (any Debain based distro may work but only recent Ubuntu LTS are tested).</p></li>
+<li><p>Download an Ubuntu iso file from internet (any Debian based distro may work but only recent Ubuntu LTS are tested).</p></li>
 <li><p>Run <cite>casa_distro_admin create_system</cite> to create an empty VirtualBox image with appropriate base settings (e.g. enough maximum disk size)</p></li>
 <li><p>Perform Ubuntu minimal installation with an autologin account named “brainvisa” and with password “brainvisa”</p></li>
 <li><p>Perform system updates and install kernel module creation packages :</p></li>
