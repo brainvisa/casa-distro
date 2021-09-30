@@ -84,7 +84,6 @@ development_tools=(
     nano
     python2-minimal  # only for flake8 tests of casa-distro
     python3-autopep8
-    python3-dbg
     python3-objgraph
     python3-venv
     spyder
@@ -95,10 +94,23 @@ development_tools=(
     xdot
 )
 
-# TODO: review and add -dbg packages that contain the debug symbols
-# corresponding to installed -dev packages.
+# Relevant -dbg and -dbgsym packages that contain the debug symbols
+# corresponding to installed -dev packages. Note that a separate APT repository
+# must be activated for -dbgsym packages, which I chose not to do at the moment
+# to keep things simple (ylep 2021-09-30). See
+# https://wiki.ubuntu.com/Debug%20Symbol%20Packages
+#
+# This command lists candidate packages:
+#
+#     dpkg --get-selections | \
+#         sed -nEe '/^\S+-dev/ { s/^(\S+)-dev\b.*/\1-dbgsym/ p }' | \
+#         xargs apt-cache show | grep '^Package:' | sort -u
 debug_symbol_packages=(
     libc6-dbg  # recommended by gdb
+    libjpeg-turbo8-dbg
+    libjpeg8-dbg
+    python3-dbg
+    python3-sip-dbg
 )
 
 # Documentation building
