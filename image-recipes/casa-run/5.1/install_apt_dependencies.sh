@@ -239,7 +239,6 @@ brainvisa_shared_library_dependencies=(
 
 # Programs and data that BrainVISA depends on at runtime
 brainvisa_misc_runtime_dependencies=(
-    python2.7
     lftp
     sqlite3
     xbitmaps
