@@ -16,9 +16,8 @@ import time
 
 from casa_distro.six.moves import shlex_quote
 
-from casa_distro import (share_directories,
-                         singularity,
-                         vbox)
+from casa_distro import share_directories
+from casa_distro import singularity
 from casa_distro.web import url_listdir, urlopen
 from casa_distro import downloader
 
