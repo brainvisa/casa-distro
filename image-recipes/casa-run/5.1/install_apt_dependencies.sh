@@ -98,6 +98,8 @@ generally_useful_packages=(
     ca-certificates
     curl
     file
+    ipython3  # for interactive Python use
+    jupyter-notebook  # for interactive Python use
     less
     lsb-release
     python3-pip
