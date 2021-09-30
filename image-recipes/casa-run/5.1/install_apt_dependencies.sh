@@ -134,6 +134,16 @@ wget https://sourceforge.net/projects/virtualgl/files/2.6.5/virtualgl_2.6.5_amd6
 $SUDO dpkg -i virtualgl_2.6.5_amd64.deb
 rm -f /tmp/virtualgl_2.6.5_amd64.deb
 
+# Runtime dependencies of PIP-installed packages (to be reviewed regularly)
+pip_packages_runtime_dependencies=(
+    python3-click  # dependency of nipype
+    python3-isodate  # dependency of nipype
+    # python3-nibabel  # too old for dipy 1.4.1, thus installed with pip
+    python3-prov  # dependency of nipype
+    # python3-rdflib  # too old for nipype 1.6.1, thus installed with pip
+    python3-simplejson  # dependency of nipype
+    python3-tqdm  # dependency of dipy
+)
 
 # Python packages needed at runtime by BrainVISA
 brainvisa_python_runtime_dependencies=(
@@ -285,6 +295,7 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${brainvisa_misc_runtime_dependencies[@]} \
     ${brainvisa_other_dependencies[@]} \
     ${brainvisa_test_dependencies[@]} \
+    ${pip_packages_runtime_dependencies[@]} \
     ${brainvisa_python_runtime_dependencies[@]} \
     ${brainvisa_shared_library_dependencies[@]} \
     ${build_dependencies[@]}

@@ -18,19 +18,24 @@ set -x  # display commands before running them
 # Install Python dependencies with pip
 ###############################################################################
 
-# TODO: introduce a constraints.txt file as a mechanism to pin specific
-# versions, while keeping this file clean.
+# The pip_constraints.txt file is used to pin a specific version of every
+# package in order to avoid unexpected breakage, while keeping this file clean.
+# Please add a constraint to pip_constraints.txt if you add a package here.
+#
+# If there is a specific reason to constrain the version of a package, please
+# introduce the version constraint in this file and document the reason.
 
 PIP3="sudo python3 -m pip --no-cache-dir"
-$PIP3 install -U pip
+PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
+${PIP_INSTALL} -U pip
 
 # Packages not available in APT
-$PIP3 install nipype
-$PIP3 install dipy
+${PIP_INSTALL} nipype
+${PIP_INSTALL} dipy
 
 # Runtime dependencies of Morphologist
-$PIP3 install torch
-$PIP3 install torch-vision
+${PIP_INSTALL} torch
+${PIP_INSTALL} torch-vision
 
 # Runtime dependency of Constellation
-$PIP3 install http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
+${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz

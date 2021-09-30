@@ -15,6 +15,7 @@ BUILD_FILES = [
     'build_dependencies.sh',
     'neurodebian.sources.list',
     'neurodebian-key.gpg',
+    'pip_constraints.txt',
     'install_pip_dependencies.sh',
     'install_compiled_dependencies.sh',
     'cleanup_build_dependencies.sh',
