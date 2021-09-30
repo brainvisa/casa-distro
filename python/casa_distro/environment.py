@@ -16,9 +16,8 @@ import time
 
 from casa_distro.six.moves import shlex_quote
 
-from casa_distro import (share_directories,
-                         singularity,
-                         vbox)
+from casa_distro import share_directories
+from casa_distro import singularity
 from casa_distro.web import url_listdir, urlopen
 from casa_distro import downloader
 
@@ -618,9 +617,9 @@ def prepare_user_config():
                       indent=4, sort_keys=True, separators=(',', ': '))
             f.write('\n')
     except Exception:
+        # give up with a warning, this config file is not essential
         print('Warning: could not create the user configuration file ({0})'
               .format(user_config_file))
-        pass  # give up with a warning, this config file is not essential
 
 
 def prepare_environment_homedir(casa_home_host_path):
@@ -724,7 +723,6 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     elif container_type == 'vbox':
         raise NotImplementedError(
             'run command is not implemented for VirtualBox')
-        module = vbox
     elif container_type == 'docker':
         raise NotImplementedError('run command is not implemented for Docker')
     else:

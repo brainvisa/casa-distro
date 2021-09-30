@@ -246,7 +246,6 @@ def create_docker_images(image_name_filters=['*'],
 
     '''
     image_file_count = 0
-    error = False
     to_clean = []
     try:
         for images_dict in find_docker_image_files():
@@ -337,8 +336,6 @@ def create_docker_images(image_name_filters=['*'],
                         # image with docker-py, therefore I use subprocess
                         check_call(['docker', 'tag', src, dst])
                     print('-' * 40)
-                if error:
-                    break
             finally:
                 shutil.rmtree(base_directory)
     finally:

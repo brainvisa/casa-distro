@@ -84,7 +84,6 @@ def download_file_internal(url, dest, timeout=10., callback=None,
             return
         elif dsize > size:
             print('size inconsistency - downloading the whole file again')
-            allow_continue = False
         else:
             open_mode = 'ab'
             headers = {'Range': 'bytes=%d-%d' % (dsize, size)}
@@ -242,8 +241,6 @@ def wget_command(download_container=True):
 
     if not download_container:
         raise RuntimeError('wget command cannot be found.')
-
-    import subprocess
 
     wget_image = 'mwendler/wget'
 
