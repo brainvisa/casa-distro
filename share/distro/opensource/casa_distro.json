@@ -1,6 +1,5 @@
 {
     "casa_distro_compatibility": "3.0",
     "name": "opensource",
-    "description": "This distro contains all open source software of BrainVISA suite.",
-    "systems": ["ubuntu-18.04"]
+    "description": "This distro contains all open source software of BrainVISA suite."
 }

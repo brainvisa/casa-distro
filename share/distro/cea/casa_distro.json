@@ -1,6 +1,5 @@
 {
     "casa_distro_compatibility": "3.0",
     "name": "cea",
-    "description": "BrainVISA suite software with internal private projects.",
-    "systems": ["ubuntu-18.04"]
+    "description": "BrainVISA suite software with internal private projects."
 }
