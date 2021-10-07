@@ -968,9 +968,6 @@ class ConfigEditor(Qt.QWidget):
             ('container_type', traits.Str(
                 'singularity', desc='virtual container system. <b>Do '
                 'not modify this value.</b>')),
-            ('systems', traits.ListUnicode(
-                ['ubuntu-18.04'], desc='Supported systems. <b>Do not modify '
-                'this value.</b>')),
             ('env', traits.Dict(
                 traits.Str(), traits.Str(), {}, desc='environment variables '
                 'passed to the container')),

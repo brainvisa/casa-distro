@@ -149,8 +149,6 @@ def distro():
         print(distro['name'])
         if 'description' in distro:
             print('  Description:', distro['description'])
-        if 'systems' in distro:
-            print('  Supported systems:', ', '.join(distro['systems']))
         print('  Directory:', directory)
 
 
