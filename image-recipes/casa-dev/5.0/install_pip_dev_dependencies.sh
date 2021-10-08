@@ -26,6 +26,9 @@ $PIP3 install -U pip
 # APT only ships six 1.11.0 under Ubuntu 18.04
 $PIP3 install 'six~=1.13'
 
+# Tool to handle multiple git/svn repositories
+$PIP3 install 'vcstool'
+
 # Python 3 packages that do not exist as APT packages
 $PIP3 install 'dipy<0.15'
 $PIP3 install 'nipype<1.2'

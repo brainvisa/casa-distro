@@ -20,6 +20,15 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
+# SSL certificates had expired on october 2021 and must be updated by
+# upgrading ca-certificate package
+# First update packages sources but ignore errors because some will
+# fail (e.g. Neurodebian)
+$SUDO apt-get -o Acquire::Retries=3 update || echo
+# Then upgrade package containing certificate
+$SUDO apt-get -o Acquire::Retries=3 install ca-certificates
+
+
 $SUDO apt-get -o Acquire::Retries=3 update
 $SUDO apt-get -o Acquire::Retries=5 install \
       --no-remove --no-install-recommends -y \
@@ -192,6 +201,7 @@ python3_packages=(
     python3-mpi4py
     python3-paramiko
     python3-objgraph
+    python3-venv
 
     # These packages used to be installed with PIP, presumably because they
     # depend on NumPy, but it seems that they do not depend on a particular ABI
