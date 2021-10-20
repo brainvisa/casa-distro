@@ -825,6 +825,11 @@ def create_user_image(
                     'The base run image is not compatible with the dev image')
 
     if install:
+        # Always empty the directory before installing to avoid files left over
+        # from a previous install.
+        shutil.rmtree(osp.join(config['directory'], 'install'))
+        os.mkdir(osp.join(config['directory'], 'install'))
+
         install_targets = ['install-runtime']
         install_targets += ['install-doc'] if install_doc else []
         install_targets += ['install-test'] if install_test else []
