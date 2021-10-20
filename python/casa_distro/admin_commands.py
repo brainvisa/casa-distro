@@ -1125,6 +1125,7 @@ def bbi_daily(distro=None, branch=None, system=None,
         if bv_maker_steps:
             bv_maker_steps = bv_maker_steps.split(',')
         for dev_config in dev_configs:
+            doc_build_success = False
             if bv_maker_steps:
                 successful, failed = bbi_daily.bv_maker(dev_config,
                                                         bv_maker_steps)
