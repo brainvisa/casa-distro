@@ -18,11 +18,7 @@ import zipfile
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
-                                  default_download_url,
-                                  publish_url,
-                                  publish_login,
-                                  publish_server,
-                                  publish_dir)
+                                  publish_url)
 from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
@@ -33,7 +29,6 @@ from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
 from casa_distro.hash import file_hash
-from casa_distro.web import urlopen
 from .image_builder import get_image_builder, LocalInstaller
 
 
@@ -559,6 +554,7 @@ def publish_base_image(type,
                        container_type='singularity',
                        verbose=True):
     """Upload an image to BrainVISA web site.
+
     Upload is done with rsync in the following remote directory:
 
       {publish_url}
@@ -585,7 +581,6 @@ def publish_base_image(type,
         "docker".
 
     {verbose}
-
     """
     verbose = verbose_file(verbose)
     if container_type == 'singularity':
@@ -662,7 +657,6 @@ def create_user_image(
         install_test='yes',
         generate='yes',
         zip='no',
-        upload='no',
         verbose=True):
     """Create a "user" image given a development environment.
     The development environment is selected among existing ones its
@@ -678,8 +672,6 @@ def create_user_image(
     - generate: generate a new image for the developement environment. The ne
       image is based on base_image and the installation directory of the
       development environment is copied into the image in /casa/install.
-
-    - upload: upload the user image on BrainVISA web site.
 
 
     Parameters
@@ -735,19 +727,6 @@ def create_user_image(
         default={zip_default}
         If "true", "yes" or "1", zip the installed files for an "online"
         installation.
-    upload
-        default={upload_default}
-        If "true", "yes" or "1", upload the image on BrainVISA web site.
-        If "false", "no" or "0", skip this step
-        Upload is done with rsync in the following remote directory:
-
-          {publish_url}
-
-        This directory location can be customized with
-        the following environment variables:
-          BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
-          BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
-          BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
     {verbose}
 
     """
@@ -756,7 +735,6 @@ def create_user_image(
     install_doc = check_boolean('install_doc', install_doc)
     install_test = check_boolean('install_test', install_test)
     generate = check_boolean('generate', generate)
-    upload = check_boolean('upload', upload)
     zip = check_boolean('zip', zip)
 
     verbose = verbose_file(verbose)
@@ -931,33 +909,30 @@ def create_user_image(
         json.dump(metadata, open(metadata_file, 'w'),
                   indent=4, separators=(',', ': '))
 
-    if upload:
-        files = []
-        if osp.exists(output):
-            files += [metadata_file, output]
-        print('uploading files to server:')
-        if files:
-            subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r']
-                                  + files + [publish_url])
-        if osp.exists(zip_json):
-            print('uploading zip distro...')
-            files = [zip_json, zip_archive]
-            rdir = osp.join(version, distro, config['system'])
-            # test if the remote dir exists
-            try:
-                u = urlopen(osp.join(default_download_url, rdir))
-                if u.code == 404:
-                    # not found (python2 doesn't produce an error)
-                    raise ValueError('URL not found')
-            except Exception:
-                # needs an additional ssh connection to create the dirs.
-                subprocess.check_call([
-                    'ssh',
-                    '%s@%s' % (publish_login, publish_server),
-                    'mkdir -p %s' % osp.join(publish_dir, rdir)])
 
-            subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r']
-                                  + files + [osp.join(publish_url, rdir)])
+@command
+def publish_user_image(image):
+    """Upload a "user" image to the BrainVISA web site.
+
+    Upload is done with rsync in the following remote directory:
+
+      {publish_url}
+
+    This directory location can be customized with
+    the following environment variables:
+        BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+        BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+        BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
+
+    Parameters
+    ----------
+
+    {image}
+    """
+    files = [image + '.json', image]
+    print('uploading files to server:')
+    subprocess.check_call(['rsync', '-P', '--progress', '--chmod=a+r']
+                          + files + [publish_url])
 
 
 @command
