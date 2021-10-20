@@ -1131,9 +1131,8 @@ def bbi_daily(distro=None, branch=None, system=None,
                 successful_tasks.extend(
                     '{0}: {1}'.format(dev_config['name'], i)
                     for i in successful)
-                if failed:
-                    failed_tasks.append('{0}: {1}'.format(dev_config['name'],
-                                                          failed))
+                failed_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
+                                    for i in failed)
                 if set(failed) - NONFATAL_BV_MAKER_STEPS:
                     # There is no point in running tests and creating a user
                     # image if compilation failed.
