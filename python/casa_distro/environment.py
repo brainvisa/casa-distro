@@ -850,7 +850,7 @@ class BBIDaily:
                 self.jenkins.create_job(environment,
                                         **config)
         done = []
-        failed = None
+        failed = []
         for step in steps:
             start = time.time()
             result, log = self.call_output(self.casa_distro_cmd + [
@@ -862,8 +862,8 @@ class BBIDaily:
             duration = int(1000 * (time.time() - start))
             self.log(environment, step, result, log, duration=duration)
             if result:
-                failed = step
-                break
+                failed.append(step)
+                break  # stop on the first failed step
             else:
                 done.append(step)
         return (done, failed)
