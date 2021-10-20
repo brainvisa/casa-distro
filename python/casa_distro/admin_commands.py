@@ -952,6 +952,10 @@ def create_user_image(
                                   + files + [osp.join(publish_url, rdir)])
 
 
+NONFATAL_BV_MAKER_STEPS = {'doc', 'test'}
+"""bv_maker steps whose failure still allows to proceed to further testing."""
+
+
 @command
 def bbi_daily(distro=None, branch=None, system=None,
               image_version=None, name=None,
@@ -1061,10 +1065,6 @@ def bbi_daily(distro=None, branch=None, system=None,
     update_user_images
         default = {update_user_images_default}
         Boolean indicating if images of user environment must be recreated
-    install_doc
-        default = {install_doc_default}
-        Boolean indicating if the documentation must be installed in user
-        images
     recreate_user_envs
         default = {recreate_user_envs_default}
         Boolean indicating if user environments must be wiped and recreated
@@ -1081,7 +1081,6 @@ def bbi_daily(distro=None, branch=None, system=None,
     update_base_images = boolean_value(update_base_images)
     dev_tests = boolean_value(dev_tests)
     update_user_images = boolean_value(update_user_images)
-    install_doc = boolean_value(install_doc)
     recreate_user_envs = boolean_value(recreate_user_envs)
     user_tests = boolean_value(user_tests)
     base_directory = os.path.abspath(base_directory)
@@ -1143,11 +1142,9 @@ def bbi_daily(distro=None, branch=None, system=None,
             else:
                 failed_tasks.append('update_base_images')
 
-        failed_dev_configs = set()
         if bv_maker_steps:
             bv_maker_steps = bv_maker_steps.split(',')
         for dev_config in dev_configs:
-            failed = None
             if bv_maker_steps:
                 successful, failed = bbi_daily.bv_maker(dev_config,
                                                         bv_maker_steps)
@@ -1156,18 +1153,17 @@ def bbi_daily(distro=None, branch=None, system=None,
                 if failed:
                     failed_tasks.append('{0}: {1}'.format(dev_config['name'],
                                                           failed))
-                if failed:
-                    failed_dev_configs.add(dev_config['name'])
+                if set(failed) - NONFATAL_BV_MAKER_STEPS:
+                    # There is no point in running tests on creating a user
+                    # image if compilation failed.
                     continue
+                doc_build_success = ('doc' in successful)
             if dev_tests:
                 successful, failed = bbi_daily.tests(dev_config, dev_config)
                 succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
                                        for i in successful)
                 failed_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
                                     for i in failed)
-                if failed:
-                    failed_dev_configs.add(dev_config['name'])
-                    continue
 
             # TODO: implement tests in VirtualBox user images
             extension = '.sif'
@@ -1193,7 +1189,7 @@ def bbi_daily(distro=None, branch=None, system=None,
             if update_user_images:
                 success = bbi_daily.update_user_image(
                     user_config, dev_config,
-                    install_doc=install_doc,
+                    install_doc=doc_build_success,
                 )
                 if success:
                     succesful_tasks.append('{0}: update user image'.format(
@@ -1224,8 +1220,6 @@ def bbi_daily(distro=None, branch=None, system=None,
                     for i in successful)
                 failed_tasks.extend('{0}: {1}'.format(user_config['name'], i)
                                     for i in failed)
-                if failed:
-                    continue
     except Exception:
         log = ['Succesful tasks']
         log.extend('  - {0}'.format(i) for i in succesful_tasks)
