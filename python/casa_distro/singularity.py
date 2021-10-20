@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from distutils.spawn import find_executable
 import json
 import locale
 import os
@@ -17,6 +16,11 @@ import uuid
 from . import six
 from .image_builder import get_image_builder
 from .log import boolean_value
+
+try:
+    from shutil import which as find_executable
+except ImportError:
+    from distutils.spawn import find_executable
 
 
 MINIMUM_SINGULARITY_VERSION = (3, 0, 0)
