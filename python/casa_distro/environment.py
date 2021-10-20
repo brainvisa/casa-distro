@@ -814,7 +814,8 @@ class BBIDaily:
                                 encoding=locale.getpreferredencoding(),
                                 errors='backslashreplace')
         log = ['-'*40,
-               '$ ' + ' '.join(shlex_quote(arg) for arg in args),
+               '$ ' + ' '.join(shlex_quote(six.ensure_str(arg))
+                               for arg in args),
                '-'*40,
                output]
 
