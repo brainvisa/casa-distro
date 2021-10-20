@@ -971,7 +971,6 @@ def bbi_daily(distro=None, branch=None, system=None,
               bv_maker_steps='sources,configure,build,doc',
               dev_tests='yes',
               update_user_images='yes',
-              install_doc='yes',
               recreate_user_envs='yes',
               user_tests='yes',
               base_directory=casa_distro_directory(),
@@ -1069,10 +1068,6 @@ def bbi_daily(distro=None, branch=None, system=None,
     update_user_images
         default = {update_user_images_default}
         Boolean indicating if images of user environment must be recreated
-    install_doc
-        default = {install_doc_default}
-        Boolean indicating if the documentation must be installed in user
-        images
     recreate_user_envs
         default = {recreate_user_envs_default}
         Boolean indicating if user environments must be wiped and recreated
@@ -1089,7 +1084,6 @@ def bbi_daily(distro=None, branch=None, system=None,
     update_base_images = boolean_value(update_base_images)
     dev_tests = boolean_value(dev_tests)
     update_user_images = boolean_value(update_user_images)
-    install_doc = boolean_value(install_doc)
     recreate_user_envs = boolean_value(recreate_user_envs)
     user_tests = boolean_value(user_tests)
     base_directory = os.path.abspath(base_directory)
@@ -1167,6 +1161,7 @@ def bbi_daily(distro=None, branch=None, system=None,
                 if failed:
                     failed_dev_configs.add(dev_config['name'])
                     continue
+                doc_build_success = ('doc' in succesful)
             if dev_tests:
                 succesful, failed = bbi_daily.tests(dev_config, dev_config)
                 succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
@@ -1201,7 +1196,7 @@ def bbi_daily(distro=None, branch=None, system=None,
             if update_user_images:
                 success = bbi_daily.update_user_image(
                     user_config, dev_config,
-                    install_doc=install_doc,
+                    install_doc=doc_build_success,
                 )
                 if success:
                     succesful_tasks.append('{0}: update user image'.format(
