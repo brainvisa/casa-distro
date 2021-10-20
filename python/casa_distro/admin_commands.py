@@ -1115,7 +1115,7 @@ def bbi_daily(distro=None, branch=None, system=None,
         )
         sys.exit(res)
 
-    succesful_tasks = []
+    successful_tasks = []
     failed_tasks = []
     try:
         # Parse selected environments
@@ -1138,7 +1138,7 @@ def bbi_daily(distro=None, branch=None, system=None,
             success = bbi_daily.update_base_images(run_images)
 
             if success:
-                succesful_tasks.append('update_base_images')
+                successful_tasks.append('update_base_images')
             else:
                 failed_tasks.append('update_base_images')
 
@@ -1148,20 +1148,22 @@ def bbi_daily(distro=None, branch=None, system=None,
             if bv_maker_steps:
                 successful, failed = bbi_daily.bv_maker(dev_config,
                                                         bv_maker_steps)
-                succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
-                                       for i in successful)
+                successful_tasks.extend(
+                    '{0}: {1}'.format(dev_config['name'], i)
+                    for i in successful)
                 if failed:
                     failed_tasks.append('{0}: {1}'.format(dev_config['name'],
                                                           failed))
                 if set(failed) - NONFATAL_BV_MAKER_STEPS:
-                    # There is no point in running tests on creating a user
+                    # There is no point in running tests and creating a user
                     # image if compilation failed.
                     continue
                 doc_build_success = ('doc' in successful)
             if dev_tests:
                 successful, failed = bbi_daily.tests(dev_config, dev_config)
-                succesful_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
-                                       for i in successful)
+                successful_tasks.extend(
+                    '{0}: {1}'.format(dev_config['name'], i)
+                    for i in successful)
                 failed_tasks.extend('{0}: {1}'.format(dev_config['name'], i)
                                     for i in failed)
 
@@ -1192,7 +1194,7 @@ def bbi_daily(distro=None, branch=None, system=None,
                     install_doc=doc_build_success,
                 )
                 if success:
-                    succesful_tasks.append('{0}: update user image'.format(
+                    successful_tasks.append('{0}: update user image'.format(
                         user_config['name']))
                 else:
                     failed_tasks.append('{0}: update user image'.format(
@@ -1203,7 +1205,7 @@ def bbi_daily(distro=None, branch=None, system=None,
                     or not os.path.exists(user_config['directory'])):
                 success = bbi_daily.recreate_user_env(user_config, dev_config)
                 if success:
-                    succesful_tasks.append('{0}: recreate user env'.format(
+                    successful_tasks.append('{0}: recreate user env'.format(
                         user_config['name']))
                 else:
                     failed_tasks.append('{0}: recreate user env'.format(
@@ -1215,22 +1217,22 @@ def bbi_daily(distro=None, branch=None, system=None,
 
             if user_tests:
                 successful, failed = bbi_daily.tests(user_config, dev_config)
-                succesful_tasks.extend(
+                successful_tasks.extend(
                     '{0}: {1}'.format(user_config['name'], i)
                     for i in successful)
                 failed_tasks.extend('{0}: {1}'.format(user_config['name'], i)
                                     for i in failed)
     except Exception:
-        log = ['Succesful tasks']
-        log.extend('  - {0}'.format(i) for i in succesful_tasks)
+        log = ['Successful tasks']
+        log.extend('  - {0}'.format(i) for i in successful_tasks)
         if failed_tasks:
             log .append('Failed tasks')
             log.extend('  - {0}'.format(i) for i in failed_tasks)
         log += ['', 'ERROR:', '', traceback.format_exc()]
         bbi_daily.log(bbi_daily.bbe_name, 'error', 1, '\n'.join(log))
     else:
-        log = ['Succesful tasks']
-        log.extend('  - {0}'.format(i) for i in succesful_tasks)
+        log = ['Successful tasks']
+        log.extend('  - {0}'.format(i) for i in successful_tasks)
         if failed_tasks:
             log .append('Failed tasks')
             log.extend('  - {0}'.format(i) for i in failed_tasks)
