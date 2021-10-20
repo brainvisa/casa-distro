@@ -5,6 +5,7 @@ import fnmatch
 import getpass
 from glob import glob
 import json
+import locale
 import os
 import os.path as osp
 import re
@@ -14,6 +15,7 @@ import subprocess
 import sys
 import time
 
+from casa_distro import six
 from casa_distro.six.moves import shlex_quote
 
 from casa_distro import share_directories
@@ -808,6 +810,9 @@ class BBIDaily:
                              stderr=subprocess.STDOUT, bufsize=-1,
                              **kwargs)
         output, nothing = p.communicate()
+        output = six.ensure_str(output,
+                                encoding=locale.getpreferredencoding(),
+                                errors='backslashreplace')
         log = ['-'*40,
                '$ ' + ' '.join(shlex_quote(arg) for arg in args),
                '-'*40,
