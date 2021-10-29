@@ -182,6 +182,7 @@ gui (allowed only if container_type=vbox)
 publish_base_image
 ------------------
 Upload an image to BrainVISA web site.
+
 Upload is done with rsync in the following remote directory:
 
   brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/
@@ -234,8 +235,6 @@ the corresponding option to "no" :
 - generate: generate a new image for the development environment. The ne
   image is based on base_image and the installation directory of the
   development environment is copied into the image in /casa/install.
-
-- upload: upload the user image on BrainVISA web site.
 
 
 Parameters
@@ -313,23 +312,35 @@ zip
     default=no
     If "true", "yes" or "1", zip the installed files for an "online"
     installation.
-upload
-    default=no
-    If "true", "yes" or "1", upload the image on BrainVISA web site.
-    If "false", "no" or "0", skip this step
-    Upload is done with rsync in the following remote directory:
-
-      brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/
-
-    This directory location can be customized with
-    the following environment variables:
-      BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
-      BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
-      BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
 verbose
     default=True
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
+
+
+.. _publish-user-image-help:
+
+------------------
+publish_user_image
+------------------
+Upload a "user" image to the BrainVISA web site.
+
+Upload is done with rsync in the following remote directory:
+
+  brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/
+
+This directory location can be customized with
+the following environment variables:
+    BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
+    BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
+    BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
+
+Parameters
+----------
+
+:ref:`image`
+    Force usage of a specific virtual image instead of the one defined
+    in the environment configuration.
 
 
 .. _bbi-daily-help:
@@ -446,10 +457,6 @@ dev_tests
 update_user_images
     default = yes
     Boolean indicating if images of user environment must be recreated
-install_doc
-    default = yes
-    Boolean indicating if the documentation must be installed in user
-    images
 recreate_user_envs
     default = yes
     Boolean indicating if user environments must be wiped and recreated
