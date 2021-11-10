@@ -39,3 +39,5 @@ ${PIP_INSTALL} torch-vision
 
 # Runtime dependency of Constellation
 ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
+
+${PIP_INSTALL} ipywidgets ipycanvas ipyevents jupyter jupyterlab_widgets jupyter_console # widgetsnbextensions
