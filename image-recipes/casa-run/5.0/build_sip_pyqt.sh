@@ -40,7 +40,7 @@ tar -zxf sip-${SIP_VERSION}.tar.gz
 cd sip-${SIP_VERSION}
 PYQT_OPTS=
 SIP_OPTS="--sip-module PyQt5.sip"
-"python${PY_S}" configure.py -b "$PREFIX/bin" -d "$PREFIX/lib/python${PY_S}/dist-packages" -e "$PREFIX/include/python${PY}" -v "$PREFIX/share/sip" ${SIP_OPTS}
+"python${PY_S}" configure.py -b "$PREFIX/bin" -d "$PREFIX/lib/python${PY_S}/dist-packages" -e "$PREFIX/include/python${PY}" -v "$PREFIX/share/sip" --stubsdir="$PREFIX/lib/python${PY_S}/dist-packages" ${SIP_OPTS}
 make -j$(nproc)
 sudo make install
 
@@ -55,7 +55,7 @@ hash sip
 cd "$BUILD"
 tar -zxf "${PYQT}.tar.gz"
 cd "$PYQT"
-"python${PY_S}" configure.py --confirm-license --sip-incdir="$PREFIX/include/python${PY}" -b "$PREFIX/bin" -d "$PREFIX/lib/python${PY_S}/dist-packages" --designer-plugindir="$PREFIX/lib/qt5/plugins/designer" --qml-plugindir="$PREFIX/lib/qt5/plugins/PyQt5" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" ${PYQT_OPTS}
+"python${PY_S}" configure.py --confirm-license --sip-incdir="$PREFIX/include/python${PY}" -b "$PREFIX/bin" -d "$PREFIX/lib/python${PY_S}/dist-packages" --designer-plugindir="$PREFIX/lib/qt5/plugins/designer" --qml-plugindir="$PREFIX/lib/qt5/plugins/PyQt5" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" --stubsdir="$PREFIX/lib/python${PY_S}/dist-packages/PyQt5" ${PYQT_OPTS}
 make -j$(nproc)
 sudo make install
 
@@ -65,7 +65,7 @@ sudo make install
 cd "$BUILD"
 tar -zxf "$PYQT_WEBENGINE.tar.gz"
 cd "$PYQT_WEBENGINE"
-"python${PY_S}" configure.py --sip-incdir="$PREFIX/include/python$PY" -d "$PREFIX/lib/python${PY_S}/dist-packages/PyQt5" --sip="$PREFIX/bin/sip" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" -a "$PREFIX/share/pyqt5/data/qsci" --pyqt-sipdir="$PREFIX/share/sip/PyQt5"
+"python${PY_S}" configure.py --sip-incdir="$PREFIX/include/python$PY" -d "$PREFIX/lib/python${PY_S}/dist-packages/PyQt5" --sip="$PREFIX/bin/sip" -v "$PREFIX/share/sip/PyQt5" --qmake="${QMAKE}" -a "$PREFIX/share/pyqt5/data/qsci" --pyqt-sipdir="$PREFIX/share/sip/PyQt5" --stubsdir="$PREFIX/lib/python${PY_S}/dist-packages/PyQt5"
 make -j$(nproc)
 sudo make install
 
