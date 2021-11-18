@@ -43,7 +43,7 @@ me = osp.basename(sys.argv[0])
 if me != 'bv':
     # we are invoked as another name from 'bv': we are obviously a symlink to
     # the bv script. In that situation we should:
-    # - use the name we have been invoked as as the command to run in the
+    # - use the name we have been invoked as the command to run in the
     #   container, as if called as "bv otherprogram"
     # - dereference the symlink to get the actual bv script in sys.argv[0]
     #   because we will use its path to find out the environment dir
