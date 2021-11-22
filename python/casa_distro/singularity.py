@@ -165,7 +165,7 @@ Bootstrap: localimage
         echo "mv \"$SINGULARITY_CONTAINER\" ~/casa_distro/"
         echo 'cd ~/casa_distro'
         echo "singularity run -B ./brainvisa-master:/casa/setup \\\\"
-        echo "    $SINGULARITY_NAME distro=opensource"
+        echo "    $SINGULARITY_NAME distro=core"
         echo
         echo 'If you have already setup such an environment, you should'
         echo 'run the image using appropriate options, mount points, and'

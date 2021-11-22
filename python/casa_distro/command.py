@@ -333,7 +333,7 @@ def main(meant_for_container=False):
             # don't allow command options after a non-kw argument, so that
             # the remaining is passed as positional arguments and may be used
             # as part of a sub-command. ex:
-            # casa_distro run bash -c 'name=brainvisa-opensource printenv name'
+            # casa_distro run bash -c 'name=brainvisa-core printenv name'
             # will run the command
             allows_kwargs = False
     try:

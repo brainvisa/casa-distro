@@ -1,0 +1,5 @@
+{
+    "casa_distro_compatibility": "3.0",
+    "name": "core",
+    "description": "This distro contains the open source core software of BrainVISA suite (non-applicative)."
+}

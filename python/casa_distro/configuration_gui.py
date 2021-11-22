@@ -935,8 +935,9 @@ class ConfigEditor(Qt.QWidget):
                 'base casa-distro directory, if the casa_distro command is '
                 'used to manage several environments.')),
             ('distro', traits.Str(
-                'opensource', desc='Projects set name. Normally "opensource", '
-                '"brainvisa", "cea", "web". Other sets may be defined. '
+                'core', desc='Projects set name. Normally "core", '
+                '"opensource", "brainvisa", "cea", "web". Other sets may be '
+                'defined. '
                 'Changing it after the initial setup has no effect.')),
             ('system', traits.Str(
                 '', desc='Name of the Linux system running inside the '
