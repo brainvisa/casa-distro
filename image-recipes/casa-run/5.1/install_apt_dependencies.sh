@@ -120,6 +120,7 @@ generally_useful_packages=(
     jarwrapper
     java-common
     java-wrappers
+    fonts-noto-color-emoji
 )
 
 # Dependencies of headless Anatomist

@@ -117,6 +117,7 @@ generally_useful_packages=(
     java-common
     java-wrappers
     strace
+    fonts-noto-color-emoji
 )
 
 # Dependencies of headless Anatomist
