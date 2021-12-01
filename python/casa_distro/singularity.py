@@ -77,9 +77,12 @@ class RecipeBuilder:
         Warning: if the target already exists and is a directory, files will be
         copied to the wrong location (inside this directory).
         '''
-        self.sections.setdefault('files', []).append(
-            '%s %s' % (source_file,
-                       dest_dir + '/' + osp.basename(source_file)))
+        # self.sections.setdefault('files', []).append(
+        #     '%s %s' % (source_file,
+        #                dest_dir + '/' + osp.basename(source_file)))
+        self.sections.setdefault('setup', []).append(
+            'rsync -a --copy-unsafe-links %s %s'
+            % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
 
     def write(self, file):
         for section, lines in self.sections.items():
