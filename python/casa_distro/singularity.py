@@ -31,6 +31,9 @@ class RecipeBuilder:
     '''
     Class to interact with an existing VirtualBox machine.
     This machine is supposed to be based on a casa_distro system image.
+
+    Needs rsync installed on the host system to perform copies which manage
+    symlinks.
     '''
 
     def __init__(self, name):
@@ -60,9 +63,12 @@ class RecipeBuilder:
         Warning: if the target already exists and is a directory, files will be
         copied to the wrong location (inside this directory).
         '''
-        self.sections.setdefault('files', []).append(
-            '%s %s' % (source_file,
-                       dest_dir + '/' + osp.basename(source_file)))
+        # self.sections.setdefault('files', []).append(
+        #     '%s %s' % (source_file,
+        #                dest_dir + '/' + osp.basename(source_file)))
+        self.sections.setdefault('setup', []).append(
+            'rsync -a --copy-unsafe-links %s %s'
+            % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
 
     def copy_user(self, source_file, dest_dir):
         '''
@@ -295,9 +301,16 @@ Bootstrap: localimage
 
     rb = RecipeBuilder(output)
     rb.copy_root(dev_config['directory'] + '/install', '/casa')
+    # replace the python symlink
+    py_exe = osp.join(dev_config['directory'], 'install/bin/python')
+    if osp.exists(py_exe) and osp.islink(py_exe):
+        py_link = os.readlink(py_exe)
+        rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
     rb.install_casa_distro('/casa/casa-distro')
-    rb.run_user('touch /casa/install/share/brainvisa-share-*/'
-                'database-*.sqlite')
+    rb.run_user('if [ -f /casa/install/share/brainvisa-share-*/'
+                'database-*.sqlite ]; '
+                'then touch /casa/install/share/brainvisa-share-*/'
+                'database-*.sqlite; fi')
     rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                 % rb.image_id)
     rb.write(recipe)
