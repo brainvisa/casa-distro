@@ -31,7 +31,7 @@ $PIP3 install 'vcstool'
 
 # Python 3 packages that do not exist as APT packages
 $PIP3 install 'dipy<0.15'
-$PIP3 install 'nipype<1.2'
+$PIP3 install 'nipype<1.8'
 
 # Runtime dependencies of populse-db
 $PIP3 install 'lark-parser>=0.7,<0.8'
