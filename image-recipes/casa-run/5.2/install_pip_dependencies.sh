@@ -40,5 +40,10 @@ ${PIP_INSTALL} torch-vision
 # Runtime dependency of Constellation
 ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
 
-${PIP_INSTALL} ipywidgets ipycanvas ipyevents jupyter jupyterlab_widgets jupyter_console # widgetsnbextensions
-${PIP_INSTALL} -U qtconsole
+# ipython, jupyter, qtconsole, nbconvert
+# warning: constraints specified on versions because recent versions of
+# ipykernel and tornado (especially) cause the qtconsole from a running app
+# to fail / hang
+${PIP_INSTALL} ipykernel tornado jupyter_client \
+               qtconsole nbconvert ipywidgets ipycanvas ipyevents jupyter \
+               jupyterlab_widgets jupyter_console
