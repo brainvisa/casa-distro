@@ -208,8 +208,7 @@ install_bv_casa_distro(host_dir, casa_build, casa_src)
 exclude_programs = set([
     'python', 'python2', 'python3', 'bv', 'docker-deps',
     'bv_env', 'bv_env.sh', 'bv_env.bat', 'bv_env.py', 'bv_env_host',
-    'bv_env_test', 'bv_unenv', 'bv_unenv.sh', 'bv_unit_test',
-    'bv_wine_regedit',
+    'bv_env_test', 'bv_unenv', 'bv_unenv.sh',
 ])
 
 out_dir = osp.join(host_dir, 'bin')
