@@ -128,6 +128,9 @@ $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
 $PIP2 install sphinx_rtd_theme
 
+# useful tool: pip search has stopped working, but pip_search works
+$PIP3 install pip-search
+
 # fix pip uglinesses, it did actually wipe away
 # /usr/lib/python2.7/dist-packages/backports !
 sudo apt-get update

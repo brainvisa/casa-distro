@@ -5,3 +5,5 @@ Pycluster==1.59
 rdflib==6.0.1
 torch==1.9.1
 torch-vision==0.1.6.dev0
+ipykernel<5.0.0
+tornado<5.0.0

@@ -97,3 +97,6 @@ $PIP_INSTALL sphinx_rtd_theme
 $SUDO jupyter nbextension enable --py widgetsnbextension
 $SUDO jupyter nbextension enable --py ipyevents
 $SUDO jupyter nbextension enable --py ipycanvas
+
+# useful tool: pip search has stopped working, but pip_search works
+$PIP_INSTALL pip-search
