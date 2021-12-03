@@ -92,7 +92,7 @@ rm -f "$tmpfile"
 
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
 # and virtual C++ inheritance
-PY=2.7 PY_S=2.7 sh /opt/build_sip_pyqt.sh
+PY=3.6m PY_S=3.6 sh /opt/build_sip_pyqt.sh
 
 
 ###############################################################################
