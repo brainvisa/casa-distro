@@ -56,33 +56,85 @@ class RecipeBuilder:
         '''
         self.sections.setdefault('post', []).append(command)
 
-    def copy_root(self, source_file, dest_dir):
+    def copy_root(self, source_file, dest_dir, preserve_symlinks=True,
+                  preserve_ext_symlinks=True):
         '''
         Copy a file in VM as root
 
         Warning: if the target already exists and is a directory, files will be
         copied to the wrong location (inside this directory).
-        '''
-        # self.sections.setdefault('files', []).append(
-        #     '%s %s' % (source_file,
-        #                dest_dir + '/' + osp.basename(source_file)))
-        self.sections.setdefault('setup', []).append(
-            'rsync -a --copy-unsafe-links %s %s'
-            % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
 
-    def copy_user(self, source_file, dest_dir):
+        Parameters
+        ----------
+        source_file: str
+            source file or directory. If it is a directory, a recursive copy is
+            performed.
+        dest_dir: str
+            destination file or directory
+        preserve_symlinks: bool
+            Copy symbolic links as they are (symbolic links).
+        preserve_ext_symlinks: bool
+            If False: Copy symbolic links as symlinks only if they point inside
+            the source tree. Otherwise replace them with the pointed file.
+            The ``rsync`` command is used to perform this.
         '''
-        Copy a file in VM as self.user
+        if not preserve_symlinks and not preserve_ext_symlinks:
+            # this variant is safer
+            # the files section copies do not preserve symlinks.
+            self.sections.setdefault('files', []).append(
+                '%s %s' % (source_file,
+                           dest_dir + '/' + osp.basename(source_file)))
+        elif not preserve_ext_symlinks:
+            # alternative using rsync
+            self.sections.setdefault('setup', []).append(
+                'rsync -a --copy-unsafe-links %s %s'
+                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+        else:
+            # alternative using cp -a: preserve symlinks even outside the
+            # source tree
+            self.sections.setdefault('setup', []).append(
+                'cp -a %s %s'
+                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+
+    def copy_user(self, source_file, dest_dir, preserve_symlinks=True,
+                  preserve_ext_symlinks=True):
+        '''
+        Copy a file in VM as root
 
         Warning: if the target already exists and is a directory, files will be
         copied to the wrong location (inside this directory).
+
+        Parameters
+        ----------
+        source_file: str
+            source file or directory. If it is a directory, a recursive copy is
+            performed.
+        dest_dir: str
+            destination file or directory
+        preserve_symlinks: bool
+            Copy symbolic links as they are (symbolic links).
+        preserve_ext_symlinks: bool
+            If False: Copy symbolic links as symlinks only if they point inside
+            the source tree. Otherwise replace them with the pointed file.
+            The ``rsync`` command is used to perform this.
         '''
-        # self.sections.setdefault('files', []).append(
-        #     '%s %s' % (source_file,
-        #                dest_dir + '/' + osp.basename(source_file)))
-        self.sections.setdefault('setup', []).append(
-            'rsync -a --copy-unsafe-links %s %s'
-            % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+        if not preserve_symlinks and not preserve_ext_symlinks:
+            # this variant is safer
+            # the files section copies do not preserve symlinks.
+            self.sections.setdefault('files', []).append(
+                '%s %s' % (source_file,
+                           dest_dir + '/' + osp.basename(source_file)))
+        elif not preserve_ext_symlinks:
+            # alternative using rsync
+            self.sections.setdefault('setup', []).append(
+                'rsync -a --copy-unsafe-links %s %s'
+                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+        else:
+            # alternative using cp -a: preserve symlinks even outside the
+            # source tree
+            self.sections.setdefault('setup', []).append(
+                'cp -a %s %s'
+                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
 
     def write(self, file):
         for section, lines in self.sections.items():
@@ -304,11 +356,12 @@ Bootstrap: localimage
 
     rb = RecipeBuilder(output)
     rb.copy_root(dev_config['directory'] + '/install', '/casa')
-    # replace the python symlink
-    py_exe = osp.join(dev_config['directory'], 'install/bin/python')
-    if osp.exists(py_exe) and osp.islink(py_exe):
-        py_link = os.readlink(py_exe)
-        rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
+    # # replace the python symlink (not needed any longer as copy_root here
+    # # preserves all symlinks)
+    # py_exe = osp.join(dev_config['directory'], 'install/bin/python')
+    # if osp.exists(py_exe) and osp.islink(py_exe):
+    #     py_link = os.readlink(py_exe)
+    #     rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
     rb.install_casa_distro('/casa/casa-distro')
     rb.run_user('if [ -f /casa/install/share/brainvisa-share-*/'
                 'database-*.sqlite ]; '
