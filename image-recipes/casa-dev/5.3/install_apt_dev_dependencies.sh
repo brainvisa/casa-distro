@@ -156,8 +156,8 @@ brainvisa_standard_dev_dependencies=(
     libspnav-dev
     libsvm-dev
     libtiff-dev
-    libvtk7-dev
-    libvtk7-qt-dev
+    libvtk9-dev
+    libvtk9-qt-dev
     libxml2-dev
     qttools5-dev
     qtmultimedia5-dev
