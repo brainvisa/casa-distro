@@ -31,6 +31,9 @@ sudo make install
 cd /tmp
 rm -rf openslide
 
+# reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19.25
+# and virtual C++ inheritance
+PY=3.9 PY_S=3.9 sh /build/build_sip_pyqt.sh
 
 ###############################################################################
 # Post-install configuration

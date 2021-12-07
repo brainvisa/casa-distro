@@ -3,24 +3,24 @@
 set -e
 set -x
 
-SIP_VERSION=4.19.25
+SIP_VERSION=4.19.15
 # changing the version here requires to change the download URLs below for PyQt and PyQtWebEngine since they are different for each release on PyPi
 PREFIX=/usr/local/sip-$SIP_VERSION
 BUILD=/tmp/sipbuild
 
 # Assign default values
-: ${PY:=3.8m} ${PY_S:=3.8}
+: ${PY:=3.6m} ${PY_S:=3.6}
 # : ${PY:=2.7} ${PY_S:=2.7}
 
-QMAKE=/usr/bin/qmake
+QMAKE=/usr/lib/qt5/bin/qmake
 
 if [ -e "$BUILD" ]; then
     rm -r "$BUILD"
 fi
 mkdir "$BUILD"
 
-PYQT=PyQt5-5.15.5
-PYQT_WEBENGINE=PyQtWebEngine-5.15.5
+PYQT=PyQt5_gpl-5.12.1
+PYQT_WEBENGINE=PyQtWebEngine_gpl-5.12.1
 DL_URL_SIP="http://brainvisa.info/download/casa-distro/third-parties/sip-${SIP_VERSION}.tar.gz"
 DL_URL_PYQT="http://brainvisa.info/download/casa-distro/third-parties/${PYQT}.tar.gz"
 DL_URL_PYQT_WEBENGINE="http://brainvisa.info/download/casa-distro/third-parties/${PYQT_WEBENGINE}.tar.gz"

@@ -19,6 +19,7 @@ BUILD_FILES = [
     'install_pip_dependencies.sh',
     'install_compiled_dependencies.sh',
     'cleanup_build_dependencies.sh',
+    'build_sip_pyqt.sh',
 ]
 """List of files that are copied into /build and removed when done."""
 
