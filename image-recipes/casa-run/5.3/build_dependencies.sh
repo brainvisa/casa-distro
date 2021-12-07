@@ -35,5 +35,13 @@ build_dependencies=(
 
     # Build dependencies of SIP/PyQt
     libqt5svg5-dev  # qtconsole needs PyQt5.QtSvg
+    libqt5opengl5-dev
+    qttools5-dev
+    qtmultimedia5-dev
+    libqt5webchannel5-dev
+    libqt5webkit5-dev
+    libqt5webview5-dev
+    libqt5x11extras5-dev
+    libqt5xmlpatterns5-dev
     qtwebengine5-dev  # for PyQt
 )
