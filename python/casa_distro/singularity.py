@@ -70,7 +70,7 @@ class RecipeBuilder:
             source file or directory. If it is a directory, a recursive copy is
             performed.
         dest_dir: str
-            destination file or directory
+            destination directory
         preserve_symlinks: bool
             Copy symbolic links as they are (symbolic links).
         preserve_ext_symlinks: bool
@@ -84,17 +84,21 @@ class RecipeBuilder:
             self.sections.setdefault('files', []).append(
                 '%s %s' % (source_file,
                            dest_dir + '/' + osp.basename(source_file)))
-        elif not preserve_ext_symlinks:
-            # alternative using rsync
-            self.sections.setdefault('setup', []).append(
-                'rsync -a --copy-unsafe-links %s %s'
-                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
         else:
-            # alternative using cp -a: preserve symlinks even outside the
-            # source tree
             self.sections.setdefault('setup', []).append(
-                'cp -a %s %s'
-                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+                'if [ ! -d ${SINGULARITY_ROOTFS}/' + dest_dir + ' ]; then '
+                'mkdir -p ${SINGULARITY_ROOTFS}/' + dest_dir + '; fi')
+            if not preserve_ext_symlinks:
+                # alternative using rsync
+                self.sections.setdefault('setup', []).append(
+                    'rsync -a --copy-unsafe-links %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+            else:
+                # alternative using cp -a: preserve symlinks even outside the
+                # source tree
+                self.sections.setdefault('setup', []).append(
+                    'cp -a %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
 
     def copy_user(self, source_file, dest_dir, preserve_symlinks=True,
                   preserve_ext_symlinks=True):
@@ -110,7 +114,7 @@ class RecipeBuilder:
             source file or directory. If it is a directory, a recursive copy is
             performed.
         dest_dir: str
-            destination file or directory
+            destination directory
         preserve_symlinks: bool
             Copy symbolic links as they are (symbolic links).
         preserve_ext_symlinks: bool
@@ -124,17 +128,21 @@ class RecipeBuilder:
             self.sections.setdefault('files', []).append(
                 '%s %s' % (source_file,
                            dest_dir + '/' + osp.basename(source_file)))
-        elif not preserve_ext_symlinks:
-            # alternative using rsync
-            self.sections.setdefault('setup', []).append(
-                'rsync -a --copy-unsafe-links %s %s'
-                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
         else:
-            # alternative using cp -a: preserve symlinks even outside the
-            # source tree
             self.sections.setdefault('setup', []).append(
-                'cp -a %s %s'
-                % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+                'if [ ! -d ${SINGULARITY_ROOTFS}/' + dest_dir + ' ]; then '
+                'mkdir -p ${SINGULARITY_ROOTFS}/' + dest_dir + '; fi')
+            if not preserve_ext_symlinks:
+                # alternative using rsync
+                self.sections.setdefault('setup', []).append(
+                    'rsync -a --copy-unsafe-links %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+            else:
+                # alternative using cp -a: preserve symlinks even outside the
+                # source tree
+                self.sections.setdefault('setup', []).append(
+                    'cp -a %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
 
     def write(self, file):
         for section, lines in self.sections.items():
