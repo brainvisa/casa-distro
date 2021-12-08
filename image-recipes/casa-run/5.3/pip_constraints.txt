@@ -7,3 +7,4 @@ torch==1.9.1
 torch-vision==0.1.6.dev0
 ipykernel<5.0.0
 tornado<5.0.0
+notebook<6.0.0
