@@ -47,6 +47,15 @@ ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar
 ${PIP_INSTALL} -U ipykernel tornado jupyter_client \
                qtconsole nbconvert ipywidgets ipycanvas ipyevents jupyter \
                jupyterlab_widgets jupyter_console
+# HOWEVER notebook >=6 needs more recent versions of tornado. This would
+# force us to use notebook 5.7 (old, ubuntu 22 ships 6.4). notebook 6.0.3
+# (found on ubuntu 20.04) requires tornado>=5 but doesn't check at runtime
+# and works that way, so we bidouille to install notebook 6.0.3, first,
+# then apply the constraints to reinstall (downgrade) tornado. Hew...
+# note: we end up with broken constraints. Maybe we'd ratehr stick with
+# notebook 5.7...?
+${PIP3} install -U 'notebook==6.0.3'
+${PIP_INSTALL} -U tornado
 
 # post-install: register jupyter extensions
 $SUDO jupyter nbextension enable --py widgetsnbextension
