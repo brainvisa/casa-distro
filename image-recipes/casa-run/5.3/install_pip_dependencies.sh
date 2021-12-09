@@ -47,6 +47,8 @@ ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar
 ${PIP_INSTALL} -U ipykernel tornado jupyter_client \
                qtconsole nbconvert ipywidgets ipycanvas ipyevents jupyter \
                jupyterlab_widgets jupyter_console notebook
+# override nbconvert (5.6 doesn't work but notebook 5.7 requires nbconvert<6)
+${PIP_INSTALL} -U 'nbconvert<6.4'
 
 # post-install: register jupyter extensions
 $SUDO jupyter nbextension enable --py widgetsnbextension
