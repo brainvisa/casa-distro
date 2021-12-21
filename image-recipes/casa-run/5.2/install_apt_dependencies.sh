@@ -260,6 +260,8 @@ brainvisa_misc_runtime_dependencies=(
 # Other dependencies of BrainVISA (please indicate the installation reason for
 # each dependency).
 brainvisa_other_dependencies=(
+    # libjxr is needed for openslide (MIRCen's fork with CZI support)
+    libjxr0
     # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
     # displayed at the start of each executable.
     libqt5sql5-sqlite
