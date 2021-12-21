@@ -443,6 +443,7 @@ try:
         ext = ''.join([ext2, ext])
 
     filename_pattern = '%%s-%%%%s%%s' %% (filename_base, ext)
+    nums = []
 
     if os.path.exists(filename):
         if check_image(metadata, filename):
@@ -450,29 +451,32 @@ try:
             print()
             print('-- up-to-date --')
             sys.exit(0)
+        nums.append(0)
 
-        e = glob.glob(filename_pattern %% '*')
-        if e:
-            nums = sorted(
-                [int(re.match(filename_pattern %% '([0-9]+)', x).group(1))
-                 for x in e])
+    e = glob.glob(filename_pattern %% '*')
+    if e:
+        nums += sorted(
+            [int(re.match(filename_pattern %% '([0-9]+)', x).group(1))
+                for x in e])
 
-            for en, i in zip(e, nums):
-                if check_image(metadata, en):
-                    print(en)
-                    print(i)
-                    print('-- up-to-date --')
-                    sys.exit(0)
+        for en, i in zip(e, nums):
+            if check_image(metadata, en):
+                print(en)
+                print(i)
+                print('-- up-to-date --')
+                sys.exit(0)
 
-            num = nums[-1] + 1
-        else:
-            num = 1
+    if nums:
+        num = nums[-1] + 1
+    else:
+        num = 1
 
     while not done:
         if num is not None:
             new_filename = filename_pattern %% str(num)
         else:
             new_filename = filename
+            num = 0
         try:
             fd = os.open(new_filename, os.O_CREAT | os.O_EXCL)
             os.close(fd)
