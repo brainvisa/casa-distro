@@ -19,15 +19,34 @@ set -x  # display commands before running them
 ###############################################################################
 
 # MIRCen's fork of openslide with support for CZI format
+#
+# Openslide needs the pkgconfig file for libjxr, which is not in the Ubuntu
+# packages until Ubuntu 22.04.
+mkdir -p /tmp/pkgconfig
+cat <<'EOF' > /tmp/pkgconfig/libjxr.pc
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libjxr
+Description: A library for reading JPEG XR images.
+
+Version: 1.1
+Libs: -L${libdir} -ljpegxr -ljxrglue
+Libs.private: -lm
+Cflags: -I${includedir}/libjxr/common -I${includedir}/libjxr/image/x86 -I${includedir}/libjxr/image -I${includedir}/libjxr/glue -I${includedir}/libjxr/test -D__ANSI__ -DDISABLE_PERF_MEASUREMENT
+EOF
 cd /tmp
 git clone --depth=1 https://github.com/MIRCen/openslide.git
 cd openslide
 autoreconf --install
-./configure
+PKG_CONFIG_PATH=/tmp/pkgconfig ./configure
 make -j$(nproc)
 sudo make install
 cd /tmp
 rm -rf openslide
+rm -rf /tmp/pkgconfig
 
 
 ###############################################################################
