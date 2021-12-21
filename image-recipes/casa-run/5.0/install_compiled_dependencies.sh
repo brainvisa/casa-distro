@@ -12,6 +12,27 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
+# Set up a temporary directory that is cleaned up properly upon exiting
+tmp=
+cleanup() {
+    status=$?
+    if [ -d "$tmp" ]; then
+        # Use "|| :" to allow failure despite "set -e"
+        chmod -R u+rwx "$tmp" || :  # allow removal of read-only directories
+        rm -rf "$tmp" || :
+    fi
+    return $status
+}
+trap cleanup EXIT
+trap 'cleanup; trap - HUP EXIT; kill -HUP $$' HUP
+trap 'cleanup; trap - INT EXIT; kill -INT $$' INT
+trap 'cleanup; trap - TERM EXIT; kill -TERM $$' TERM
+# SIGQUIT should not cause temporary files to be deleted, because they may be
+# useful for debugging. Other resources should still be released.
+trap 'trap - QUIT EXIT; kill -QUIT $$' QUIT
+
+tmp=$(mktemp -d)
+
 
 ###############################################################################
 # Compile and install dependencies that are must be built from source
@@ -19,7 +40,7 @@ set -x  # display commands before running them
 
 
 # Blitz++ is not provided anymore as an APT package in Debian/Ubuntu
-cd /tmp
+cd "$tmp"
 wget https://github.com/blitzpp/blitz/archive/1.0.2.tar.gz
 tar -zxf 1.0.2.tar.gz
 mkdir blitz-1.0.2/build
@@ -28,31 +49,27 @@ autoreconf -i
 ./configure
 make -j$(nproc)
 sudo make install
-cd ..
-rm -rf 1.0.2.tar.gz blitz-1.0.2
 
 
 # install libXp, used by some external software (SPM...)
 #
 # TODO: check if this is still needed, this library is not required by recent
 # versions of SPM12 at least
-cd /tmp
+cd "$tmp"
 wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz
 tar xf libxp_1.0.2.orig.tar.gz
 cd libXp-1.0.2
 ./configure
 make -j$(nproc)
 sudo make install
-cd /tmp
-rm -R libxp_1.0.2.orig.tar.gz libXp-1.0.2
 
 
 # MIRCen's fork of openslide with support for CZI format
 #
 # Openslide needs the pkgconfig file for libjxr, which is not in the Ubuntu
 # packages until Ubuntu 22.04.
-mkdir -p /tmp/pkgconfig
-cat <<'EOF' > /tmp/pkgconfig/libjxr.pc
+mkdir -p "$tmp/pkgconfig"
+cat <<'EOF' > "$tmp/pkgconfig/libjxr.pc"
 prefix=/usr
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
@@ -66,16 +83,13 @@ Libs: -L${libdir} -ljpegxr -ljxrglue
 Libs.private: -lm
 Cflags: -I${includedir}/jxrlib -D__ANSI__ -DDISABLE_PERF_MEASUREMENT
 EOF
-cd /tmp
+cd "$tmp"
 git clone --depth=1 https://github.com/MIRCen/openslide.git
 cd openslide
 autoreconf --install
-PKG_CONFIG_PATH=/tmp/pkgconfig ./configure
+PKG_CONFIG_PATH="$tmp/pkgconfig" ./configure
 make -j$(nproc)
 sudo make install
-cd /tmp
-rm -rf openslide
-rm -rf /tmp/pkgconfig
 
 # install a version of netcdf with fewer dependencies
 #
@@ -84,7 +98,7 @@ rm -rf /tmp/pkgconfig
 sudo bash /opt/build_netcdf.sh
 
 
-cd /tmp
+cd "$tmp"
 wget https://github.com/strawlab/python-pcl/archive/v0.2.0.zip
 unzip v0.2.0.zip
 cd python-pcl-0.2.0
@@ -103,10 +117,9 @@ rm -rf python-pcl-0.2.0 v0.2.0.zip
 # cmake does not work with clang whenever Qt5 is invoked.
 # workaround here:
 # https://stackoverflow.com/questions/38027292/configure-a-qt5-5-7-application-for-android-with-cmake/40256862#40256862
-tmpfile=$(mktemp)
+tmpfile=$tmp/Qt5CoreConfigExtras.cmake
 sed 's/^\(set_property.*INTERFACE_COMPILE_FEATURES.*\)$/#\ \1/' < /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake >| "$tmpfile"
 sudo cp -f "$tmpfile" /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
-rm -f "$tmpfile"
 
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19
 # and virtual C++ inheritance
