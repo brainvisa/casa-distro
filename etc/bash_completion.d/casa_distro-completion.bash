@@ -52,7 +52,7 @@ function _complete_casa_distro_option_()
         local sys
         if [ ! -d "$SHARE" ]; then
             # no share dir (zip distrib): use builtin list
-            sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 windows-7-32 windows-7-64"
+            sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04 windows-7-32 windows-7-64"
         else
             for system in "$SHARE/docker/casa-dev"/*/; do
                 sys="$sys $(basename $system)"
@@ -121,7 +121,7 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$nimages" -- "${word}"))
         ;;
-    gui|verbose|force|root|install|install_doc|install_test|generate|zip|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests|full|rw_install|cleanup)
+    gui|verbose|force|root|install|install_doc|install_test|generate|zip|upload|interactive|json|update_casa_distro|update_base_images|dev_tests|update_user_images|user_tests|full|rw_install|cleanup|fakeroot)
         COMPREPLY=($(compgen -W "True False true false 1 0 yes no Yes No" -- "${word}"))
         ;;
     opengl)
@@ -212,7 +212,7 @@ function _complete_casa_distro_image_names_tag_()
             local sys
             if [ ! -d "$SHARE" ]; then
                 # no share dir (zip distrib): use builtin list
-                sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 windows-7-32 windows-7-64"
+                sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04 windows-7-32 windows-7-64"
             else
                 for system in "$SHARE/docker/casa-dev"/*/; do
                     sys="$sys $(basename $system)"
@@ -454,7 +454,7 @@ function _complete_casa_distro_admin_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help create_base_image publish_base_image create_user_image singularity_deb singularity_debs bbi_daily local_install"
+    local cmd_list="help create_base_image publish_base_image publish_user_image create_user_image singularity_deb singularity_debs bbi_daily local_install"
     local opt_list="-h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -510,8 +510,11 @@ function _complete_casa_distro_admin_()
         publish_base_image)
             COMPREPLY=($(compgen -W "type= image= container_type= verbose=" -- "${word}"))
             ;;
+        publish_user_image)
+            COMPREPLY=($(compgen -W "image=" -- "${word}"))
+            ;;
         create_user_image)
-            COMPREPLY=($(compgen -W "version= name= base_image= distro= branch= system= image_version= environment_name= container_type= output= force= base_directory= install= install_doc= install_test= generate= zip= upload= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "version= name= base_image= distro= branch= system= image_version= environment_name= container_type= output= force= base_directory= install= install_doc= install_test= generate= zip= fakeroot= verbose=" -- "${word}"))
             ;;
         singularity_deb)
             COMPREPLY=($(compgen -W "system= output= dockerhub= version= go_version=" -- "${word}"))
