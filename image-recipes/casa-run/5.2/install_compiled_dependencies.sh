@@ -43,8 +43,8 @@ tmp=$(mktemp -d)
 #
 # Openslide needs the pkgconfig file for libjxr, which is not in the Ubuntu
 # packages until Ubuntu 22.04.
-mkdir -p /tmp/pkgconfig
-cat <<'EOF' > /tmp/pkgconfig/libjxr.pc
+mkdir -p "$tmp/pkgconfig"
+cat <<'EOF' > "$tmp/pkgconfig/libjxr.pc"
 prefix=/usr
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib

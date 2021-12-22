@@ -43,8 +43,8 @@ tmp=$(mktemp -d)
 #
 # The pkgconfig file is broken in Ubuntu 22.04 as of jxrlib version
 # 1.2~git20170615.f752187-3.
-mkdir -p "/tmp/pkgconfig"
-cat <<'EOF' > "/tmp/pkgconfig/libjxr.pc"
+mkdir -p "$tmp/pkgconfig"
+cat <<'EOF' > "$tmp/pkgconfig/libjxr.pc"
 prefix=/usr
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
@@ -58,15 +58,13 @@ Libs: -L${libdir} -ljpegxr -ljxrglue
 Libs.private: -lm
 Cflags: -I${includedir}/jxrlib -D__ANSI__ -DDISABLE_PERF_MEASUREMENT
 EOF
-cd /tmp
+cd "$tmp"
 git clone --depth=1 https://github.com/MIRCen/openslide.git
 cd openslide
 autoreconf --install
-PKG_CONFIG_PATH="/tmp/pkgconfig" ./configure
+PKG_CONFIG_PATH="$tmp/pkgconfig" ./configure
 make -j$(nproc)
 sudo make install
-cd /tmp
-rm -rf openslide
 
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19.25
 # and virtual C++ inheritance
