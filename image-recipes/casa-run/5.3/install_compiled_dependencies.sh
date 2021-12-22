@@ -42,7 +42,8 @@ tmp=$(mktemp -d)
 # MIRCen's fork of openslide with support for CZI format
 #
 # The pkgconfig file is broken in Ubuntu 22.04 as of jxrlib version
-# 1.2~git20170615.f752187-3.
+# 1.2~git20170615.f752187-3. Bug reported as
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1002449
 mkdir -p "$tmp/pkgconfig"
 cat <<'EOF' > "$tmp/pkgconfig/libjxr.pc"
 prefix=/usr
