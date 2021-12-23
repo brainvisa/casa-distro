@@ -369,3 +369,9 @@ if [ -z "$APT_NO_LIST_CLEANUP" ]; then
     # delete all the apt list files since they're big and get stale quickly
     $SUDO rm -rf /var/lib/apt/lists/*
 fi
+
+###############################################################################
+# set python3 as default "python" command since python2 is not installed
+###############################################################################
+
+$SUDO update-alternatives --install /usr/bin/python python /usr/bin/python3.6 10
