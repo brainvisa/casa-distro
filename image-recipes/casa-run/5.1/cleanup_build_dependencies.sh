@@ -30,3 +30,9 @@ export DEBIAN_FRONTEND=noninteractive
 sudo -E apt-mark auto ${build_dependencies[@]}
 sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \
                 autoremove --yes
+
+###############################################################################
+# set python3 as default "python" command since python2 is not installed
+###############################################################################
+
+$SUDO update-alternatives --install /usr/bin/python python /usr/bin/python3.6 10
