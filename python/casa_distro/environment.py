@@ -876,7 +876,10 @@ class BBIDaily:
             if not self.jenkins.job_exists(environment):
                 self.jenkins.create_job(environment,
                                         **test_config)
-        tests = self.get_test_commands(dev_config)
+        # get test commands dict, and log it in the test config log (which may
+        # be the dev log or the user image log)
+        tests = self.get_test_commands(dev_config,
+                                       log_config_name=test_config['name'])
         successful_tests = []
         failed_tests = []
         for test, commands in tests.items():
@@ -920,7 +923,7 @@ class BBIDaily:
                          ', '.join(failed_tests)))
         return (successful_tests, failed_tests)
 
-    def get_test_commands(self, config):
+    def get_test_commands(self, config, log_config_name=None):
         '''
         Given the config of a dev environment, return a dictionary
         whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
@@ -983,7 +986,10 @@ class BBIDaily:
                 tests[label] = commands
         log_lines += ['Final test dictionary:',
                       json.dumps(tests, indent=4, separators=(',', ': '))]
-        self.log(config['name'], 'get test commands', 0, '\n'.join(log_lines))
+
+        if log_config_name is None:
+            log_config_name = config['name']
+        self.log(log_config_name, 'get test commands', 0, '\n'.join(log_lines))
         return tests
 
     def recreate_user_env(self, user_config, dev_config):
