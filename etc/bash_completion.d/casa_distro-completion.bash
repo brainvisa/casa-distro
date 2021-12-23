@@ -523,7 +523,7 @@ function _complete_casa_distro_admin_()
             COMPREPLY=($(compgen -W "directory=" -- "${word}"))
             ;;
         bbi_daily)
-            COMPREPLY=($(compgen -W "type= distro= branch= system= image_version= name= version= jenkins_server= jenkins_auth= jenkins_password= update_casa_distro= update_base_images= bv_maker_steps= dev_tests= update_user_images= user_tests= base_directory= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "distro= branch= system= image_version= name= jenkins_server= jenkins_auth= update_casa_distro= update_base_images= bv_maker_steps= dev_tests= update_user_images= user_tests= base_directory= verbose=" -- "${word}"))
             ;;
         local_install)
             COMPREPLY=($(compgen -W "type= steps= system= log_file= action= user=" -- "${word}"))
