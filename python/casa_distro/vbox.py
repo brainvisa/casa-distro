@@ -416,7 +416,8 @@ class VBoxMachine:
                      '--password', self.root_password, self.name, 'run', '--',
                      '/bin/sh', '-c', 'umask 0022 && ' + command])
 
-    def copy_root(self, source_file, dest_dir):
+    def copy_root(self, source_file, dest_dir, preserve_symlinks=True,
+                  preserve_ext_symlinks=True):
         '''
         Copy a file in VM as root
         '''

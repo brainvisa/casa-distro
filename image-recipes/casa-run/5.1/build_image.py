@@ -63,7 +63,8 @@ def copy_files(base_dir, builder):
     builder.run_root('chmod a+rx /usr/local/bin/entrypoint')
 
     # copy a software-only mesa libGL in /usr/local/lib
-    builder.copy_root(osp.join(base_dir, 'mesa'), '/usr/local/lib/')
+    builder.copy_root(osp.join(base_dir, 'mesa'), '/usr/local/lib/',
+                      preserve_symlinks=False)
 
 
 @builder.step
