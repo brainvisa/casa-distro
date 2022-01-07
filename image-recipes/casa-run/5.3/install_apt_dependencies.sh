@@ -210,6 +210,8 @@ brainvisa_python_runtime_dependencies=(
     python3-pyqt5.qtsql
     python3-pyqt5.qtwebsockets
     python3-pyqt5.qtxmlpatterns
+
+    python3-plotly
 )
 
 

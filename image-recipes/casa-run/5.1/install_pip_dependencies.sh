@@ -93,6 +93,10 @@ $PIP_INSTALL 'jsonschema~=3.2.0' 'attrs~=20.3.0'
 $PIP_INSTALL plotly
 $PIP_INSTALL sphinx_rtd_theme
 
+# used by fold dico tools (deep_folding etc)
+$PIP3 install -U 'tqdm>=4.36'
+$PIP3 install 'pqdm' 'GitPython'
+
 # post-install: register jupyter extensions
 $SUDO jupyter nbextension enable --py widgetsnbextension
 $SUDO jupyter nbextension enable --py ipyevents

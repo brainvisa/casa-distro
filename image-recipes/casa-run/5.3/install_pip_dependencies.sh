@@ -57,3 +57,6 @@ $SUDO jupyter nbextension enable --py ipycanvas
 
 # useful tool: pip search has stopped working, but pip_search works
 ${PIP_INSTALL} pip-search
+
+# used by fold dico tools (deep_folding etc)
+$PIP3 install 'pqdm' 'GitPython'

@@ -108,6 +108,10 @@ $SUDO jupyter nbextension enable --py widgetsnbextension
 $SUDO jupyter nbextension enable --py ipyevents
 $SUDO jupyter nbextension enable --py ipycanvas
 
+# used by fold dico tools (deep_folding etc)
+$PIP3 install -U 'tqdm>=4.36'
+$PIP3 install 'pqdm' 'GitPython'
+
 
 # Re-install Python 2 packages whose binaries have been overwritten by
 # Python 3 versions (/usr/local/bin/jupyter* for instance). jupyter modules
