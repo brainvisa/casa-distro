@@ -78,7 +78,7 @@ class RecipeBuilder:
             the source tree. Otherwise replace them with the pointed file.
             The ``rsync`` command is used to perform this.
         '''
-        if not preserve_symlinks and not preserve_ext_symlinks:
+        if not preserve_symlinks:
             # this variant is safer
             # the files section copies do not preserve symlinks.
             self.sections.setdefault('files', []).append(
@@ -122,7 +122,7 @@ class RecipeBuilder:
             the source tree. Otherwise replace them with the pointed file.
             The ``rsync`` command is used to perform this.
         '''
-        if not preserve_symlinks and not preserve_ext_symlinks:
+        if not preserve_symlinks:
             # this variant is safer
             # the files section copies do not preserve symlinks.
             self.sections.setdefault('files', []).append(
