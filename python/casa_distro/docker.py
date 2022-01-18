@@ -16,6 +16,26 @@ from casa_distro.log import verbose_file
 import casa_distro.info
 from casa_distro import share_directories
 
+# converting singularity images to docker:
+# see https://stackoverflow.com/questions/60451712/how-to-build-docker-image-from-singularity-image
+# singularity pull docker://alpine:latest
+## Find out which SIF ID to use (look for Squashfs)
+#singularity sif list alpine_latest.sif
+## Get the environment variables defined in the Singularity image.
+## warning: it's not always 2/3, on our run images 2,3 are json variables,
+## and the squashfs image is 4.
+#singularity sif dump 2 alpine_latest.sif
+#singularity sif dump 3 alpine_latest.sif > data.squash
+#unsquashfs -dest data data.squash
+## See the Dockerfile definition below
+#docker build --tag alpine:latest .
+##Contents of Dockerfile:
+#FROM scratch
+#COPY data /
+#ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#CMD ["/bin/ash"]
+
+
 
 def get_docker_version():
     dverout = check_output(['docker', '-v'])
