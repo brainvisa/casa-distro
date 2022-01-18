@@ -448,35 +448,24 @@ def create_image(base, base_metadata,
                  cleanup='yes',
                  force='no',
                  fakeroot='yes',
-                 convert_from=None,
                  verbose=None):
-
-    if convert_from != 'singularity':
-        raise ValueError(
-            'Currently docker images are only supported by converting from '
-            'singularity. Thus you need to use the option '
-            '"convert_from=singularity"')
-
-    if convert_from == 'singularity':
-        return convert_singularity_image_to_docker(
-            base=base, base_metadata=base_metadata,
-            output=output, metadata=metadata,
-            image_builder=image_builder,
-            cleanup=cleanup,
-            force=force,
-            fakeroot=fakeroot,
-            verbose=verbose)
 
     raise NotImplementedError(
         'create_image for docker is not implemented yet.')
 
 
-def convert_singularity_image_to_docker(base, base_metadata,
-                                        output, metadata,
-                                        image_builder,
-                                        cleanup='yes',
-                                        force='no',
-                                        fakeroot='yes',
+def convert_image(source, metadata, output, convert_from, verbose=None):
+    if convert_from == 'singularity':
+        return convert_singularity_image_to_docker(source, metadata, output,
+                                                   verbose=verbose)
+    else:
+        raise NotImplementedError(
+            'Currently converting to docker images is only supported from '
+            'singularity.')
+
+
+def convert_singularity_image_to_docker(base, metadata,
+                                        output,
                                         verbose=None):
 
     # converting singularity images to docker:

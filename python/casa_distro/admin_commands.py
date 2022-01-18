@@ -193,7 +193,6 @@ def create_base_image(type,
                                       '{name}.{extension}'),
                       container_type='singularity',
                       verbose=True,
-                      convert_from=None,
                       **kwargs):
     """Create a new virtual image
 
@@ -236,21 +235,6 @@ def create_base_image(type,
 
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
-
-    convert_from
-        default=None
-
-        If a container type is specified here, then try to build the new image
-        by converting from an existing image in the given container type. Not
-        all conversions are allowed. We try to implement docker from
-        singularity primarily.
-
-        If convert_from is used, then the base_image parameter is the image to
-        be converted. ex::
-
-            casa_distro_admin create_base_image type=run \
-                container_type=docker convert_from=singularity \
-                base=casa-run-5.1.sif image_version=5.1
 
     image_version
         default={image_version_default}
@@ -314,9 +298,9 @@ def create_base_image(type,
     elif container_type == 'vbox':
         origin_extension = 'iso'
         extension = 'ova'
-    elif container_type == 'docker':
-        origin_extension = ''
-        extension = ''
+    # elif container_type == 'docker':
+    #     origin_extension = ''
+    #     extension = ''
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
@@ -415,7 +399,6 @@ def create_base_image(type,
                                         output, metadata,
                                         image_builder=image_builder,
                                         verbose=verbose,
-                                        convert_from=convert_from,
                                         **kwargs)
     if msg:
         print(msg)
@@ -1336,3 +1319,114 @@ def local_install(type, action=None, system='*',
     for step_name in step_names:
         print('Performing', builder.name, '/', step_name)
         installer.perform_step(build_file, step_name)
+
+
+@command
+def convert_image(source=None,
+                  container_type='docker',
+                  convert_from=None,
+                  verbose=True,
+                  **kwargs):
+    """Convert a virtual image to another container type
+
+    Parameters
+    ----------
+    source
+        Source image file.
+
+    container_type
+        default={container_type_default}
+
+        Type of virtual appliance to use. Either "singularity", "vbox" or
+        "docker".
+
+    convert_from
+        default={convert_from_default}
+
+        Convert from this container type. If not specified, take it from the
+        source container metadata.
+
+    {verbose}
+    """
+    verbose = verbose_file(verbose)
+
+    if container_type not in ('singularity', 'vbox', 'docker'):
+        raise ValueError('Unsupported container type: %s' % container_type)
+
+    if container_type == 'docker':
+        out_extension = '.docker'
+    elif container_type == 'singularity':
+        out_extension = '.sif'
+    elif container_type == 'vbox':
+        out_extension = '.ova'
+
+    if not osp.exists(source):
+        base_pattern = osp.expandvars(osp.expanduser(source))
+        if verbose:
+            print('Looking for source in', base_pattern,
+                  file=verbose)
+        bases = glob.glob(base_pattern + '.json')
+        if len(bases) == 0:
+            # Raise appropriate error for non existing file
+            open(source)
+        elif len(bases) > 1:
+            raise ValueError(
+                'Several base images found : {0}'.format(', '.join(bases)))
+        source = bases[0]
+
+    base = os.path.join(default_base_directory, source)  # make path absolute
+
+    if osp.exists(base + '.json'):
+        metadata = json.load(open(base + '.json'))
+        if not convert_from:
+            convert_from = metadata['container_type']
+    else:
+        metadata = {}
+
+    if convert_from == 'singularity':
+        in_extension = '.sif'
+    elif convert_from == 'docker':
+        in_extension = '.docker'
+    elif convert_from == 'vbox':
+        in_extension = '.ova'
+    else:
+        raise ValueError('Unsupported converted container type: %s'
+                         % convert_from)
+
+    output = base
+    if base.endswith(in_extension):
+        output = base[:-len(in_extension)]
+    output += out_extension
+
+    metadata_output = output + '.json'
+    metadata['container_type'] = container_type
+
+    if verbose:
+        print('Converting', output, file=verbose)
+        print('from      ', base, file=verbose)
+        pprint(metadata, stream=verbose, indent=4)
+
+    json.dump(metadata, open(metadata_output, 'w'),
+              indent=4, separators=(',', ': '))
+
+    if container_type == 'vbox':
+        module = casa_distro.vbox
+    elif container_type == 'singularity':
+        module = casa_distro.singularity
+    elif container_type == 'docker':
+        module = casa_distro.docker
+    else:
+        raise ValueError('Unsupported container type: %s' % container_type)
+
+    image_id, msg = module.convert_image(base, metadata, output,
+                                         convert_from=convert_from,
+                                         verbose=verbose,
+                                         **kwargs)
+    if msg:
+        print(msg)
+    elif osp.isfile(output):
+        metadata['size'] = os.stat(output).st_size
+        metadata['md5'] = file_hash(output)
+        metadata['image_id'] = image_id
+        json.dump(metadata, open(metadata_output, 'w'),
+                  indent=4, separators=(',', ': '))

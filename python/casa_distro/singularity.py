@@ -190,18 +190,12 @@ def create_image(base, base_metadata,
                  cleanup='yes',
                  force='no',
                  fakeroot='yes',
-                 convert_from=None,
                  verbose=None):
     '''
     Returns
     -------
     uuid, msg: tuple
     '''
-    if convert_from is not None:
-        raise ValueError(
-            'Creating a singularity image by converting from another image is '
-            'not supported (yet). You should not use the "convert_from" '
-            'optiion here.')
 
     cleanup = boolean_value(cleanup)
     force = boolean_value(force)
@@ -838,3 +832,8 @@ def setup(type, distro, branch, system, name, base_directory, image,
     Singularity specific part of setup command
     """
     raise NotImplementedError('setup is not implemented for Singularity')
+
+
+def convert_image(source, metadata, output, convert_from, verbose=None):
+    raise NotImplementedError(
+        'Currently converting to singularity images is not implemented.')

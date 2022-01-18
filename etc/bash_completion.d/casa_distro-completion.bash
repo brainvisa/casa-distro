@@ -71,7 +71,7 @@ function _complete_casa_distro_option_()
             COMPREPLY=($(compgen -W "" -- "${word}"))
         fi
         ;;
-    image|base_image|base)
+    image|base_image|base|source)
         # take existing singularity images
         local images=$CASA_BASE_DIRECTORY/*.sif
 #         for f in $images
@@ -454,7 +454,7 @@ function _complete_casa_distro_admin_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
-    local cmd_list="help create_base_image publish_base_image publish_user_image create_user_image singularity_deb singularity_debs bbi_daily local_install"
+    local cmd_list="help create_base_image convert_image publish_base_image publish_user_image create_user_image singularity_deb singularity_debs bbi_daily local_install"
     local opt_list="-h --help -v --verbose --version"
     local cmd_wd_num=1
 
@@ -505,7 +505,10 @@ function _complete_casa_distro_admin_()
             COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
             ;;
         create_base_image)
-            COMPREPLY=($(compgen -W "type= name= base= output= container_type= image_version= force= memory= video_memory= disk_size= gui= cleanup= verbose= convert_from=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= name= base= output= container_type= image_version= force= memory= video_memory= disk_size= gui= cleanup= verbose=" -- "${word}"))
+            ;;
+        convert_image)
+            COMPREPLY=($(compgen -W "source= container_type= verbose= convert_from=" -- "${word}"))
             ;;
         publish_base_image)
             COMPREPLY=($(compgen -W "type= image= container_type= verbose=" -- "${word}"))

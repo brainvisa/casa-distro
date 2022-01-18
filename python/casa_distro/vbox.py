@@ -79,14 +79,7 @@ def create_image(base, base_metadata,
                  video_memory='50',
                  disk_size='131072',
                  gui='no',
-                 convert_from=None,
                  verbose=None):
-
-    if convert_from is not None:
-        raise ValueError(
-            'Creating a virtualbox image by converting from another image is '
-            'not supported (yet). You should not use the "convert_from" '
-            'optiion here.')
 
     gui = boolean_value(gui)
     type = metadata['type']
@@ -589,3 +582,8 @@ def vbox_import_vdi(image, vbox_machine, output,
                  '--medium', output,
                  '--port', '1',
                  '--type', 'hdd'])
+
+
+def convert_image(source, metadata, output, convert_from, verbose=None):
+    raise NotImplementedError(
+        'Currently converting to vbox images is not implemented.')
