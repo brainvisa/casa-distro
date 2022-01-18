@@ -28,6 +28,7 @@ from casa_distro.environment import (BBIDaily,
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
 import casa_distro.vbox
+import casa_distro.docker
 from casa_distro.hash import file_hash
 from .image_builder import get_image_builder, LocalInstaller
 
@@ -192,6 +193,7 @@ def create_base_image(type,
                                       '{name}.{extension}'),
                       container_type='singularity',
                       verbose=True,
+                      convert_from=None,
                       **kwargs):
     """Create a new virtual image
 
@@ -202,6 +204,10 @@ def create_base_image(type,
 
           cd "$CASA_BASE_DIRECTORY"
           singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
+
+      Then you can directly use the ubuntu image as base for the run image. You
+      may build a "system" image as follows, but it's not needed:
+
           casa_distro_admin create_base_image base=ubuntu-18.04.sif \
               type=system image_version=ubuntu-18.04
 
@@ -230,6 +236,21 @@ def create_base_image(type,
 
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
+
+    convert_from
+        default=None
+
+        If a container type is specified here, then try to build the new image
+        by converting from an existing image in the given container type. Not
+        all conversions are allowed. We try to implement docker from
+        singularity primarily.
+
+        If convert_from is used, then the base_image parameter is the image to
+        be converted. ex::
+
+            casa_distro_admin create_base_image type=run \
+                container_type=docker convert_from=singularity \
+                base=casa-run-5.1.sif image_version=5.1
 
     image_version
         default={image_version_default}
@@ -293,6 +314,9 @@ def create_base_image(type,
     elif container_type == 'vbox':
         origin_extension = 'iso'
         extension = 'ova'
+    elif container_type == 'docker':
+        origin_extension = ''
+        extension = ''
     else:
         raise ValueError('Unsupported container type: %s' % container_type)
 
@@ -380,13 +404,18 @@ def create_base_image(type,
 
     if container_type == 'vbox':
         module = casa_distro.vbox
-    else:
+    elif container_type == 'singularity':
         module = casa_distro.singularity
+    elif container_type == 'docker':
+        module = casa_distro.docker
+    else:
+        raise ValueError('Unsupported container type: %s' % container_type)
 
     image_id, msg = module.create_image(base, base_metadata,
                                         output, metadata,
                                         image_builder=image_builder,
                                         verbose=verbose,
+                                        convert_from=convert_from,
                                         **kwargs)
     if msg:
         print(msg)

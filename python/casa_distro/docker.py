@@ -16,26 +16,6 @@ from casa_distro.log import verbose_file
 import casa_distro.info
 from casa_distro import share_directories
 
-# converting singularity images to docker:
-# see https://stackoverflow.com/questions/60451712/how-to-build-docker-image-from-singularity-image
-# singularity pull docker://alpine:latest
-## Find out which SIF ID to use (look for Squashfs)
-#singularity sif list alpine_latest.sif
-## Get the environment variables defined in the Singularity image.
-## warning: it's not always 2/3, on our run images 2,3 are json variables,
-## and the squashfs image is 4.
-#singularity sif dump 2 alpine_latest.sif
-#singularity sif dump 3 alpine_latest.sif > data.squash
-#unsquashfs -dest data data.squash
-## See the Dockerfile definition below
-#docker build --tag alpine:latest .
-##Contents of Dockerfile:
-#FROM scratch
-#COPY data /
-#ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-#CMD ["/bin/ash"]
-
-
 
 def get_docker_version():
     dverout = check_output(['docker', '-v'])
@@ -460,6 +440,118 @@ def run_docker(casa_distro, command, gui=False, interactive=False,
         print(*("'%s'" % i for i in docker), file=verbose)
         print('-' * 40, file=verbose)
     return subprocess.call(docker)
+
+
+def create_image(base, base_metadata,
+                 output, metadata,
+                 image_builder,
+                 cleanup='yes',
+                 force='no',
+                 fakeroot='yes',
+                 convert_from=None,
+                 verbose=None):
+
+    if convert_from != 'singularity':
+        raise ValueError(
+            'Currently docker images are only supported by converting from '
+            'singularity. Thus you need to use the option '
+            '"convert_from=singularity"')
+
+    if convert_from == 'singularity':
+        return convert_singularity_image_to_docker(
+            base=base, base_metadata=base_metadata,
+            output=output, metadata=metadata,
+            image_builder=image_builder,
+            cleanup=cleanup,
+            force=force,
+            fakeroot=fakeroot,
+            verbose=verbose)
+
+    raise NotImplementedError(
+        'create_image for docker is not implemented yet.')
+
+
+def convert_singularity_image_to_docker(base, base_metadata,
+                                        output, metadata,
+                                        image_builder,
+                                        cleanup='yes',
+                                        force='no',
+                                        fakeroot='yes',
+                                        verbose=None):
+
+    # converting singularity images to docker:
+    # see https://stackoverflow.com/questions/60451712/
+    #     how-to-build-docker-image-from-singularity-image
+
+    # Find out which SIF ID to use (look for Squashfs)
+    cmd = ['singularity', 'sif', 'list', base]
+    sif_out = subprocess.check_output(cmd).split('\n')
+
+    n = 0
+    for i, line in enumerate(sif_out):
+        if line.startswith('--------'):
+            n = i
+
+    sif_content = []
+    squashfs_id = None
+    for line in sif_out[n+1:]:
+        fields = [x.strip() for x in line.split('|')]
+        if len(fields) >= 5:
+            num = int(fields[0])
+            group = int(fields[1])
+            sif_content.append([num, group] + fields[2:])
+            stype = fields[4]
+            if 'Squashfs' in stype:
+                squashfs_id = num
+
+    if squashfs_id is None:
+        raise ValueError('squashfs not found in singularity image')
+
+    # Get the environment variables defined in the Singularity image.
+    # singularity sif dump 2 alpine_latest.sif
+
+    # use a temp dir to work
+    base = osp.abspath(base)
+    stmpd = os.environ.get('SINGULARITY_TMPDIR')
+    tmp_dir = tempfile.mkdtemp(prefix='singularity_docker_', dir=stmpd)
+    print('converting in temp directory:', tmp_dir)
+    cwd = os.getcwd()
+    os.chdir(tmp_dir)
+    try:
+        # Get the squashfs dump
+
+        cmd = ['sh', '-c',
+               'singularity sif dump %d %s > data.squash'
+               % (squashfs_id, base)]
+        subprocess.check_call(cmd)
+        cmd = ['unsquashfs', '-dest', 'data', 'data.squash']
+        subprocess.check_call(cmd)
+
+        # write the Dockerfile definition
+
+        with open('Dockerfile', 'w') as f:
+            f.write('''FROM scratch
+COPY data /
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+CMD ["/bin/bash"]
+''')
+
+        image_tag = metadata['name']
+        image_version = metadata['image_version']
+        if image_tag.endswith('-%s' % metadata['image_version']):
+            image_tag = image_tag[:-(len(image_version) + 1)]
+        image_tag += ':%s' % image_version
+        print('image_tag:', image_tag)
+
+        cmd = ['docker', 'build', '--tag', image_tag, '.']
+        subprocess.check_call(cmd)
+
+        return (get_image_id(image_tag), None)
+
+    finally:
+        os.chdir(cwd)
+        if osp.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
 
 
 if __name__ == '__main__':

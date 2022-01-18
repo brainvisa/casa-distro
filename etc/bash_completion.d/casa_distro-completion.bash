@@ -60,7 +60,7 @@ function _complete_casa_distro_option_()
         fi
         COMPREPLY=($(compgen -W "$sys" -- "${word}"))
         ;;
-    container_type)
+    container_type|convert_from)
         COMPREPLY=($(compgen -W "singularity docker vbox" -- "${word}"))
         ;;
     name|environment_name)
@@ -505,7 +505,7 @@ function _complete_casa_distro_admin_()
             COMPREPLY=($(compgen -W "format= full= $cmd_list" -- "${word}"))
             ;;
         create_base_image)
-            COMPREPLY=($(compgen -W "type= name= base= output= container_type= image_version= force= memory= video_memory= disk_size= gui= cleanup= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "type= name= base= output= container_type= image_version= force= memory= video_memory= disk_size= gui= cleanup= verbose= convert_from=" -- "${word}"))
             ;;
         publish_base_image)
             COMPREPLY=($(compgen -W "type= image= container_type= verbose=" -- "${word}"))
