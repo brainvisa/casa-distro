@@ -522,6 +522,7 @@ def convert_singularity_image_to_docker(base, metadata,
             f.write('''FROM scratch
 COPY data /
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD ["/bin/bash"]
 ''')
 
