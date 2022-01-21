@@ -89,6 +89,10 @@ Creating the casa-system image:
 
       cd "$CASA_BASE_DIRECTORY"
       singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
+
+  Then you can directly use the ubuntu image as base for the run image. You
+  may build a "system" image as follows, but it's not needed:
+
       casa_distro_admin create_base_image base=ubuntu-18.04.sif               type=system image_version=ubuntu-18.04
 
 - For VirtualBox: TODO
@@ -519,3 +523,33 @@ user
     default=brainvisa
 
     Name of the user account to use for non root commands.
+
+
+.. _convert-image-help:
+
+-------------
+convert_image
+-------------
+Convert a virtual image to another container type
+
+Parameters
+----------
+source
+    Source image file.
+
+container_type
+    default=docker
+
+    Type of virtual appliance to use. Either "singularity", "vbox" or
+    "docker".
+
+convert_from
+    default=None
+
+    Convert from this container type. If not specified, take it from the
+    source container metadata.
+
+verbose
+    default=True
+
+    Print more detailed information if value is ``yes``, ``true`` or ``1``.

@@ -130,8 +130,12 @@ Version of Singularity to use. This must be a valid release version.</p>
 casa-system image:</p>
 <blockquote>
 <div><p>cd “$CASA_BASE_DIRECTORY”
-singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
-casa_distro_admin create_base_image base=ubuntu-18.04.sif               type=system image_version=ubuntu-18.04</p>
+singularity pull ubuntu-18.04.sif docker://ubuntu:18.04</p>
+</div></blockquote>
+<p>Then you can directly use the ubuntu image as base for the run image. You
+may build a “system” image as follows, but it’s not needed:</p>
+<blockquote>
+<div><p>casa_distro_admin create_base_image base=ubuntu-18.04.sif               type=system image_version=ubuntu-18.04</p>
 </div></blockquote>
 </li>
 <li><p>For VirtualBox: TODO</p></li>
@@ -511,6 +515,28 @@ used as a shell pattern, the default value match any system.</p>
 </dl>
 </section>
 </section>
+<section id="convert-image">
+<span id="convert-image-help"></span><h3>convert_image<a class="headerlink" href="#convert-image" title="Permalink to this headline">¶</a></h3>
+<p>Convert a virtual image to another container type</p>
+<section id="id9">
+<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>source</dt><dd><p>Source image file.</p>
+</dd>
+<dt>container_type</dt><dd><p>default=docker</p>
+<p>Type of virtual appliance to use. Either “singularity”, “vbox” or
+“docker”.</p>
+</dd>
+<dt>convert_from</dt><dd><p>default=None</p>
+<p>Convert from this container type. If not specified, take it from the
+source container metadata.</p>
+</dd>
+<dt>verbose</dt><dd><p>default=True</p>
+<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+</dd>
+</dl>
+</section>
+</section>
 </section>
 <section id="images-and-releases-creation">
 <h2>Images and releases creation<a class="headerlink" href="#images-and-releases-creation" title="Permalink to this headline">¶</a></h2>
@@ -518,7 +544,7 @@ used as a shell pattern, the default value match any system.</p>
 </section>
 <section id="creation-a-base-virtualbox-image">
 <h2>Creation a base VirtualBox image<a class="headerlink" href="#creation-a-base-virtualbox-image" title="Permalink to this headline">¶</a></h2>
-<p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id9"><span class="problematic" id="id10">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id11"><span class="problematic" id="id12">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
+<p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id10"><span class="problematic" id="id11">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id12"><span class="problematic" id="id13">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
 <ol class="arabic simple">
 <li><p>Install VirtualBox version 6 or greater</p></li>
 <li><p>Download an Ubuntu iso file from internet (any Debian based distro may work but only recent Ubuntu LTS are tested).</p></li>
@@ -601,8 +627,9 @@ The Dockerfile may (should) be based on another image, in the usual way of build
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">The casa_distro_admin command</a><ul>
 <li><a class="reference internal" href="#common-parameters">Common parameters:</a></li>
 <li><a class="reference internal" href="#commands">Commands:</a><ul>
@@ -635,6 +662,10 @@ The Dockerfile may (should) be based on another image, in the usual way of build
 <li><a class="reference internal" href="#id8">Parameters</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#convert-image">convert_image</a><ul>
+<li><a class="reference internal" href="#id9">Parameters</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#images-and-releases-creation">Images and releases creation</a></li>
@@ -649,12 +680,17 @@ The Dockerfile may (should) be based on another image, in the usual way of build
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="casa_distro_command.html"
-                        title="previous chapter">The casa_distro command</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="nightly.html"
-                        title="next chapter">Automated tests with bbi_daily</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="casa_distro_command.html"
+                          title="previous chapter">The casa_distro command</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nightly.html"
+                          title="next chapter">Automated tests with bbi_daily</a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -684,7 +720,7 @@ The Dockerfile may (should) be based on another image, in the usual way of build
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>
