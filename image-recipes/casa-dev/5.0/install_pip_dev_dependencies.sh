@@ -66,7 +66,7 @@ $PIP3 install 'numpy~=1.16,<1.17'
 $PIP3 install fastcluster
 # install h5py from sources to force using the system libhdf5,
 # otherwise it will install an incompatible binary
-sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py 'h5py<2.10'
+sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py 'h5py==3.1.0'
 $PIP3 install matplotlib
 $PIP3 install 'scipy~=1.2,<1.3'
 $PIP3 install scikit-image
