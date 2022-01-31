@@ -228,29 +228,7 @@ brainvisa_python_runtime_dependencies=(
 # regenerated easily. If other libraries are needed, consider creating a new
 # variable to store them.
 brainvisa_shared_library_dependencies=(
-    libdcmtk15
-    libgfortran5
-    libgl1
-    libglu1-mesa
-    libgomp1
-    libjpeg-turbo8
-    libminc2-5.2.0
-    libnetcdf18
-    libopenjp2-7
-    libpython3.8
-    libqt5core5a
-    libqt5gui5
-    libqt5multimedia5
-    libqt5network5
-    libqt5opengl5
-    libqt5sql5
-    libqt5widgets5
-    libqwt-qt5-6
-    libsigc++-2.0-0v5
-    libstdc++6
-    libsvm3
-    libtiff5
-    libxml2
+    ## TODO regenerate this list once we are ready to make user images...
 )
 
 # Programs and data that BrainVISA depends on at runtime
