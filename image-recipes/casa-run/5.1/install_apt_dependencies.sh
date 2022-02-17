@@ -323,6 +323,8 @@ brainvisa_other_dependencies=(
     mriconvert
     # dcmtk commandlines (including dcmdjpeg)
     dcmtk
+    # needed for AFNI
+    libxm4
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run
