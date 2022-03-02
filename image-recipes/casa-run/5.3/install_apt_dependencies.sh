@@ -256,6 +256,8 @@ brainvisa_other_dependencies=(
     tk
     # needed for AFNI
     libxm4
+    libglw1-mesa
+    gsl-bin
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run
