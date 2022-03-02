@@ -150,7 +150,7 @@ pip_packages_runtime_dependencies=(
 brainvisa_python_runtime_dependencies=(
     python-is-python3
 
-    python3-crypto
+    # python3-crypto  # seems obsolete, not longer available
     python3-cryptography  # needed by populse_mia
     python3-html2text
     python3-mysqldb
