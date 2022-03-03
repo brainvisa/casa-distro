@@ -212,3 +212,12 @@ if [ -z "$APT_NO_LIST_CLEANUP" ]; then
     # delete all the apt list files since they're big and get stale quickly
     $SUDO rm -rf /var/lib/apt/lists/*
 fi
+
+###############################################
+# Fix a /dev/pts problem on Ubuntu 22.04
+###############################################
+
+# without this any sudo will fail with an error
+# "unable to allocate pty: Operation not permitted"
+
+$SUDO mount devpts /dev/pts -t devpts

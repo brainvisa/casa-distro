@@ -13,6 +13,11 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
+if [ $(id -u) -eq 0 ]; then
+    SUDO=
+else
+    SUDO=sudo
+fi
 
 ###############################################################################
 # Install Python dependencies with pip
@@ -25,17 +30,17 @@ set -x  # display commands before running them
 # If there is a specific reason to constrain the version of a package, please
 # introduce the version constraint in this file and document the reason.
 
-PIP3="sudo python3 -m pip --no-cache-dir"
+PIP3="$SUDO python3 -m pip --no-cache-dir"
 PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
 ${PIP_INSTALL} -U pip
 
 # Packages not available in APT
 ${PIP_INSTALL} nipype
-${PIP_INSTALL} dipy
+# ${PIP_INSTALL} dipy  # dipy fails to install in python 3.10 by now (2022/03/03)
 
 # Runtime dependencies of Morphologist
-${PIP_INSTALL} torch
-${PIP_INSTALL} torch-vision
+# ${PIP_INSTALL} torch
+# ${PIP_INSTALL} torch-vision
 
 # Runtime dependency of Constellation
 ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
