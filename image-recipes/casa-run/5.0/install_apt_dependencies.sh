@@ -374,3 +374,11 @@ if [ -z "$APT_NO_LIST_CLEANUP" ]; then
     # delete all the apt list files since they're big and get stale quickly
     $SUDO rm -rf /var/lib/apt/lists/*
 fi
+
+###############################################################################
+# Bidouille for AFNI, which requires a specific version of libgsl
+###############################################################################
+
+# see: https://afni.nimh.nih.gov/pub/dist/doc/htmldoc/background_install/install_instructs/steps_linux_ubuntu20.html#slow-setup-install-prerequisite-packages
+
+$SUDO ln -s /usr/lib/x86_64-linux-gnu/libgsl.so.23 /usr/lib/x86_64-linux-gnu/libgsl.so.19

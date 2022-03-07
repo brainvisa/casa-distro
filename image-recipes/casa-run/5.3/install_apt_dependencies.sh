@@ -313,3 +313,11 @@ fi
 # "unable to allocate pty: Operation not permitted"
 
 $SUDO mount devpts /dev/pts -t devpts
+
+###############################################################################
+# Bidouille for AFNI, which requires a specific version of libgsl
+###############################################################################
+
+# see: https://afni.nimh.nih.gov/pub/dist/doc/htmldoc/background_install/install_instructs/steps_linux_ubuntu20.html#slow-setup-install-prerequisite-packages
+
+$SUDO ln -s /usr/lib/x86_64-linux-gnu/libgsl.so.27 /usr/lib/x86_64-linux-gnu/libgsl.so.19
