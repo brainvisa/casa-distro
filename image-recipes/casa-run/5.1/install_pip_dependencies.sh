@@ -33,6 +33,17 @@ ${PIP_INSTALL} -U pip
 # APT only ships six 1.11.0 under Ubuntu 18.04
 $PIP_INSTALL 'six~=1.13'
 
+# Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
+# apparently too old for our friends of the MeCA group in Marseille.
+# Unfortunately installing the newer NumPy installed with pip is
+# ABI-incompatible with the system NumPy (ABI version 9 vs ABI version 8), so
+# we need to also install every package that depends on NumPy with pip.
+$PIP_INSTALL 'numpy~=1.16,<1.17'
+
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py --force-reinstall 'h5py<2.10'
+
 # Python 3 packages that do not exist as APT packages
 $PIP_INSTALL 'dipy'
 $PIP_INSTALL 'nipype'
@@ -47,16 +58,7 @@ $PIP_INSTALL 'torch-vision'
 # Runtime dependency of datamind and Constellation
 $PIP_INSTALL http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
 
-# Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
-# apparently too old for our friends of the MeCA group in Marseille.
-# Unfortunately installing the newer NumPy installed with pip is
-# ABI-incompatible with the system NumPy (ABI version 9 vs ABI version 8), so
-# we need to also install every package that depends on NumPy with pip.
-$PIP_INSTALL 'numpy~=1.16,<1.17'
 $PIP_INSTALL fastcluster
-# install h5py from sources to force using the system libhdf5,
-# otherwise it will install an incompatible binary
-sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py 'h5py<2.10'
 $PIP_INSTALL matplotlib
 $PIP_INSTALL 'scipy~=1.2,<1.3'
 $PIP_INSTALL scikit-image

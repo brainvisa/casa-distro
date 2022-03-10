@@ -29,6 +29,17 @@ $PIP3 install 'six~=1.13'
 # Tool to handle multiple git/svn repositories
 $PIP3 install 'vcstool'
 
+# Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
+# apparently too old for our friends of the MeCA group in Marseille.
+# Unfortunately installing the newer NumPy installed with pip is
+# ABI-incompatible with the system NumPy (ABI version 9 vs ABI version 8), so
+# we need to also install every package that depends on NumPy with pip.
+$PIP3 install 'numpy~=1.16,<1.17'
+
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py --force-reinstall 'h5py==3.1.0'
+
 # Python 3 packages that do not exist as APT packages
 $PIP3 install 'dipy<0.15'
 $PIP3 install 'nipype<1.8'
@@ -57,16 +68,7 @@ $PIP3 install tox
 # $PIP3 install -U 'xlrd<1.3'
 # $PIP3 install -U 'xlwt<1.4'
 
-# Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
-# apparently too old for our friends of the MeCA group in Marseille.
-# Unfortunately installing the newer NumPy installed with pip is
-# ABI-incompatible with the system NumPy (ABI version 9 vs ABI version 8), so
-# we need to also install every package that depends on NumPy with pip.
-$PIP3 install 'numpy~=1.16,<1.17'
 $PIP3 install fastcluster
-# install h5py from sources to force using the system libhdf5,
-# otherwise it will install an incompatible binary
-sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py 'h5py==3.1.0'
 $PIP3 install matplotlib
 $PIP3 install 'scipy~=1.2,<1.3'
 $PIP3 install scikit-image
