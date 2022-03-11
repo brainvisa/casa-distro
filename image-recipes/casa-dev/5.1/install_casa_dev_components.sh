@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# NOTE: This script is run during the creation of the Singularity and
-# VirtualBox casa-run image. Make sure not to include anything specific to a
-# given virtualization/containerization engine  in this file.
+# NOTE: This script is used to create the casa-dev Docker/Singularity image,
+# and also during the creation of the VirtualBox casa-dev image. Make sure not
+# to include anything Docker-specific in this file.
 
 set -e  # stop the script on error
 set -x  # display commands before running them
@@ -15,7 +15,7 @@ fi
 # Install configuration elements that are specific to casa-dev
 ###############################################################################
 
-sudo chmod a+rx /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
+sudo chmod +x /usr/local/bin/svn /usr/local/bin/askpass-bioproj.sh
 sudo git config --system core.askPass /usr/local/bin/askpass-bioproj.sh
 sudo git lfs install --system --skip-repo
 

@@ -80,6 +80,7 @@ def create_image(base, base_metadata,
                  disk_size='131072',
                  gui='no',
                  verbose=None):
+
     gui = boolean_value(gui)
     type = metadata['type']
     name = metadata['name']
@@ -416,7 +417,8 @@ class VBoxMachine:
                      '--password', self.root_password, self.name, 'run', '--',
                      '/bin/sh', '-c', 'umask 0022 && ' + command])
 
-    def copy_root(self, source_file, dest_dir):
+    def copy_root(self, source_file, dest_dir, preserve_symlinks=True,
+                  preserve_ext_symlinks=True):
         '''
         Copy a file in VM as root
         '''
@@ -580,3 +582,8 @@ def vbox_import_vdi(image, vbox_machine, output,
                  '--medium', output,
                  '--port', '1',
                  '--type', 'hdd'])
+
+
+def convert_image(source, metadata, output, convert_from, verbose=None):
+    raise NotImplementedError(
+        'Currently converting to vbox images is not implemented.')

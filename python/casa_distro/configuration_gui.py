@@ -15,6 +15,7 @@ import collections
 import glob
 import os.path as osp
 import shutil
+import tempfile
 
 try:
     from soma.qt_gui.qt_backend import Qt
@@ -416,6 +417,7 @@ class CasaLauncher(Qt.QDialog):
                 env_path = os.path.dirname(env_path)
         self._main_layout.addWidget(Qt.QLabel(
             '<b>environment host path:</b> %s' % env_path))
+        self.env_path = env_path
         self._mount_manager = MountManager(self.conf)
 
         conf_line = Qt.QHBoxLayout()
@@ -423,6 +425,16 @@ class CasaLauncher(Qt.QDialog):
         conf_line.addStretch(1)
         self._conf_btn = Qt.QPushButton('...')
         conf_line.addWidget(self._conf_btn)
+
+        cont_line = None
+        if self.conf['container_type'] == 'singularity':
+            cont_line = Qt.QHBoxLayout()
+            self.container_label = Qt.QLabel()
+            self.update_container_status()
+            cont_line.addWidget(self.container_label)
+            cont_line.addStretch(1)
+            self._container_btn = Qt.QPushButton('...')
+            cont_line.addWidget(self._container_btn)
 
         inst_line = None
         if self.conf['type'] in ('run', 'user'):
@@ -444,6 +456,8 @@ class CasaLauncher(Qt.QDialog):
         self._main_layout.addWidget(Qt.QLabel('<b>Mount points:</b>'))
         self._main_layout.addWidget(self._mount_manager)
         self._main_layout.addLayout(conf_line)
+        if cont_line:
+            self._main_layout.addLayout(cont_line)
         if inst_line:
             self._main_layout.addLayout(inst_line)
         self._main_layout.addWidget(self._launchers)
@@ -456,6 +470,8 @@ class CasaLauncher(Qt.QDialog):
         self._mount_manager.valueChanged.connect(self.block_launchers)
         self._launchers.launched.connect(self.close_and_launch)
         self._conf_btn.clicked.connect(self.edit_configuration)
+        if hasattr(self, '_container_btn'):
+            self._container_btn.clicked.connect(self.edit_container)
         if hasattr(self, '_inst_btn'):
             self._inst_btn.clicked.connect(self.edit_install)
 
@@ -544,6 +560,46 @@ class CasaLauncher(Qt.QDialog):
         self.install_label.setText(
                 '<b>BrainVisa Installation:</b> %s - <b>%s</b> distro'
                 % (inst_type, dist_text))
+
+    def update_container_status(self):
+        self.container_status = {'write': False,
+                                 'allow_write': False,
+                                 'overlay': None}
+        cont_mode = '<font color="#800000">Read-only</font>'
+        if not self.conf['image'].endswith('.sif') \
+                and osp.isdir(self.conf['image']):
+            self.container_status['write'] = True
+            cont_mode = '<font color="#808000">Read-write directory</font>'
+            if '-w' not in self.conf.get('container_options', []):
+                self.container_status['allow_write'] = True
+                cont_mode += (' (open R/O)')
+        overlay = osp.join(self.env_path, 'overlay.img')
+        if osp.exists(overlay):
+            osize = os.stat(overlay).st_size
+            self.container_status['overlay'] = osize
+            size_str = self.size_string(osize)
+            print(osize)
+            cont_mode += ' <font color="#008000">with overlay (%s)</font>' \
+                % size_str
+
+        self.container_label.setText('<b>Image: </b> %s' % cont_mode)
+
+    @staticmethod
+    def size_string(osize):
+        units = ['PB', 'TB', 'GB', 'MB', 'KB', 'B']
+        for i in range(len(units)):
+            iu = 1024 ** (len(units) - i - 1)
+            if osize >= iu:
+                ssize = '%d %s' % (int(osize / iu), units[i])
+                return ssize
+        return '0'  # (strange...)
+
+    def edit_container(self):
+        dialog = ContainerImageEditor(self.conf, self.container_status,
+                                      self.conf_path, self)
+        dialog.setWindowModality(Qt.Qt.WindowModal)
+        dialog.exec_()
+        self.update_container_status()
 
 
 class MountManager(Qt.QWidget):
@@ -935,8 +991,9 @@ class ConfigEditor(Qt.QWidget):
                 'base casa-distro directory, if the casa_distro command is '
                 'used to manage several environments.')),
             ('distro', traits.Str(
-                'opensource', desc='Projects set name. Normally "opensource", '
-                '"brainvisa", "cea", "web". Other sets may be defined. '
+                'core', desc='Projects set name. Normally "core", '
+                '"opensource", "brainvisa", "cea", "web". Other sets may be '
+                'defined. '
                 'Changing it after the initial setup has no effect.')),
             ('system', traits.Str(
                 '', desc='Name of the Linux system running inside the '
@@ -1013,6 +1070,252 @@ class ConfigEditor(Qt.QWidget):
         if 'protected_parameters' in new_conf:
             del new_conf['protected_parameters']
         return new_conf
+
+
+class ContainerImageEditor(Qt.QDialog):
+    def __init__(self, conf, container_status, conf_path, parent=None):
+        super(ContainerImageEditor, self).__init__(parent)
+
+        self.conf = conf
+        self.container_status = container_status
+        self.conf_path = conf_path
+        print(container_status)
+
+        layout = Qt.QVBoxLayout()
+        self.setLayout(layout)
+        self.setWindowTitle('Container image options')
+
+        inst_rw = Qt.QCheckBox('install read-write image directory')
+        inst_rw.setChecked(container_status['write'])
+        layout.addWidget(inst_rw)
+        ov_hb = Qt.QHBoxLayout()
+        layout.addLayout(ov_hb)
+        inst_overlay = Qt.QCheckBox('add read-write overlay')
+        inst_overlay.setChecked(container_status['overlay'] is not None)
+        ov_hb.addWidget(inst_overlay)
+        self.inst_rw_cb = inst_rw
+        self.inst_overlay_cb = inst_overlay
+        self.overlay_count = Qt.QSpinBox()
+        self.overlay_count.setRange(1, 1023)
+        self.overlay_count.setValue(500)
+        ov_hb.addStretch(1)
+        ov_hb.addWidget(self.overlay_count)
+        self.overlay_unit = Qt.QComboBox()
+        self.overlay_unit.addItems(['KB', 'MB', 'GB', 'TB', 'PB'])
+        self.overlay_unit.setCurrentIndex(1)
+        ov_hb.addWidget(self.overlay_unit)
+
+        inst_rw.toggled.connect(self.install_rw)
+        inst_overlay.toggled.connect(self.install_overlay)
+
+        layout.addStretch(1)
+
+        validation_btns = Qt.QDialogButtonBox(
+            Qt.QDialogButtonBox.Ok)
+        layout.addWidget(validation_btns)
+        validation_btns.button(Qt.QDialogButtonBox.Ok).setDefault(True)
+        validation_btns.button(Qt.QDialogButtonBox.Ok).setAutoDefault(True)
+
+        validation_btns.accepted.connect(self.accept)
+        self.validation_btns = validation_btns
+
+    def install_rw(self, state):
+        print(state)
+        if not state:
+            self.remove_rw()
+        else:
+            self.add_rw()
+
+    def install_overlay(self, state):
+        if not state:
+            self.remove_overlay()
+        else:  # create overlay
+            self.create_overlay()
+
+    def remove_overlay(self):
+        overlay_file = osp.join(self.parent().env_path, 'overlay.img')
+        coverlay_file = osp.join('/host', overlay_file[1:])
+
+        if not osp.exists(coverlay_file):
+            return
+
+        confirm = Qt.QMessageBox.question(
+            self, 'Erase overlay file ?',
+            'Removing the overlay will erase the overlay file:<br/>'
+            '<b>%s</b>' % overlay_file)
+        if confirm == Qt.QMessageBox.Yes:
+            print('erasing')
+
+            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            try:
+
+                os.unlink(overlay_file)
+                self.container_status['overlay'] = None
+
+                Qt.QMessageBox.information(
+                    self, 'Done', 'Overlay has been erased.')
+
+            finally:
+                Qt.qApp.restoreOverrideCursor()
+
+        else:
+            self.inst_overlay_cb.blockSignals(True)
+            self.inst_overlay_cb.setChecked(True)
+            self.inst_overlay_cb.blockSignals(False)
+
+    def create_overlay(self):
+        overlay_file = osp.join(self.parent().env_path, 'overlay.img')
+        coverlay_file = osp.join('/host', overlay_file[1:])
+
+        if osp.exists(coverlay_file):
+            Qt.QMessageBox.critical(
+                self, 'Overlay exists',
+                'The overlay file <b>%s</b> already exists !'
+                % overlay_file)
+            return
+
+        confirm = Qt.QMessageBox.question(
+            self, 'Create overlay file ?',
+            'This will create the overlay file:<br/>'
+            '<b>%s</b>' % overlay_file)
+
+        if confirm == Qt.QMessageBox.Yes:
+
+            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            try:
+
+                n = self.overlay_count.value()
+                bs = self.overlay_unit.currentText()[:-1]
+                tmpd = tempfile.mkdtemp()
+                os.makedirs(osp.join(tmpd, 'overlay/upper'))
+                os.makedirs(osp.join(tmpd, 'overlay/work'))
+                os.chmod(osp.join(tmpd, 'overlay/upper'), 0o777)
+                os.chmod(osp.join(tmpd, 'overlay/work'), 0o777)
+                cmds = [
+                    ['dd', 'if=/dev/zero', 'of=%s' % coverlay_file,
+                        'bs=1%s' % bs, 'count=%d' % n],
+                    ['mkfs.ext3', '-d', 'overlay', coverlay_file]
+                ]
+                for cmd in cmds:
+                    subprocess.check_call(cmd, cwd=tmpd)
+                shutil.rmtree(tmpd)
+                self.container_status['overlay'] \
+                    = os.stat(coverlay_file).st_size
+                Qt.QMessageBox.information(
+                    self, 'Done', 'Overlay has been setup.')
+
+            finally:
+                Qt.qApp.restoreOverrideCursor()
+
+        else:
+            self.inst_overlay_cb.blockSignals(True)
+            self.inst_overlay_cb.setChecked(False)
+            self.inst_overlay_cb.blockSignals(False)
+
+    def remove_rw(self):
+        image = self.conf['image']
+        print('remove rw', image)
+        sif_image = image + '.sif'
+        if not osp.exists(sif_image):
+            Qt.QMessageBox.critical(
+                self, 'No singularty image',
+                'Before removing an image directory, you must ensure to have '
+                'a regular image file next to it. We expect to find the file '
+                '<b>%s</b>, which is not present.<br/>Aborting.' % sif_image)
+            return
+
+        confirm = Qt.QMessageBox.question(
+            self, 'Remove writable directory ?',
+            'This will completely remove the system image direcotry:<br/>'
+            '<b>%s</b>.<br>Are you sure ?' % image)
+
+        if confirm == Qt.QMessageBox.Yes:
+
+            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            try:
+
+                shutil.rmtree(image)
+                self.conf['image'] = sif_image
+                self.container_status['write'] = False
+
+                Qt.QMessageBox.information(
+                    self, 'Done', 'Image directory has been erased.')
+
+            finally:
+                Qt.qApp.restoreOverrideCursor()
+
+        else:
+            self.inst_rw_cb.blockSignals(True)
+            self.inst_rw_cb.setChecked(True)
+            self.inst_rw_cb.blockSignals(False)
+
+    def add_rw(self):
+        image = self.conf['image']
+        print('add rw', image)
+        if not image.endswith('.sif'):
+            Qt.QMessageBox.critical(
+                self, 'Not a singularity image',
+                'The configured image file <b>%s</b> does not end with the '
+                '<tt>.sif</tt> extension !' % image)
+            return
+
+        image_dir = image[:-4]
+        if osp.exists(image_dir):
+            Qt.QMessageBox.critical(
+                self, 'Image directory exists',
+                'The image directory <b>%s</b> already exists !' % image_dir)
+            return
+
+        confirm = Qt.QMessageBox.question(
+            self, 'Create writable directory ?',
+            'This will create the system image direcotry:<br/>'
+            '<b>%s</b>.<br>Are you sure ?' % image_dir)
+
+        if confirm == Qt.QMessageBox.Yes:
+
+            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            try:
+
+                cmd = ['singularity', 'build', '--sandbox', image_dir, image]
+                cmd_str = '"%s"' % '" "'.join(cmd)
+                print(cmd)
+                ssh_cmd = ['ssh', 'localhost', cmd_str]
+                print(ssh_cmd)
+                try:
+                    subprocess.check_call(ssh_cmd)
+                except Exception as e:
+                    print(e)
+                    Qt.QMessageBox.critical(
+                        self,
+                        'Image directory creation failed',
+                        'The image directory creation has failed. Possibly '
+                        'because we must run it outside of the container and '
+                        'the host system could not be reached from here (we '
+                        'are inside). Try running this command manually on '
+                        'the host:<br><br>%s' % cmd_str)
+                    return
+
+                self.conf['image'] = image_dir
+                self.container_status['write'] = True
+
+                Qt.QMessageBox.information(
+                    self, 'Done',
+                    'Image directory has been setup. Note that:<br> '
+                    '- image updates will not work any longer for this '
+                    'image.<br>'
+                    '- to actually use the image read/write, you must use '
+                    'manually the command:<br>'
+                    '  <tt>singularity run -w %s bash</tt><br/>'
+                    'This is not done by "bv" because it would imply '
+                    'incompatibe options for singularity.' % image_dir)
+
+            finally:
+                Qt.qApp.restoreOverrideCursor()
+
+        else:
+            self.inst_rw_cb.blockSignals(True)
+            self.inst_rw_cb.setChecked(False)
+            self.inst_rw_cb.blockSignals(False)
 
 
 def get_env_path():

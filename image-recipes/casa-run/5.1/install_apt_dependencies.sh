@@ -33,19 +33,6 @@ export DEBIAN_FRONTEND=noninteractive
 
 $SUDO apt-get -o Acquire::Retries=3 update
 
-# The Docker images of ubuntu are "minimized", i.e. files that are meant for
-# interactive use (man pages, documentation, and translations) are not
-# included. While we may not really need them in the casa-run images, the man
-# pages are really useful to have in the casa-dev image, but we cannot really
-# defer calling "unminimize" until then, because it runs a full "apt-get
-# upgrade", which risks causing discrepancy in package versions between
-# casa-run und casa-dev. Therefore, the best place to run it is right now.
-if type unminimize >/dev/null 2>&1; then
-    # unminimize is meant for interactive use, hopefully piping from "yes" does
-    # the trick...
-    yes | $SUDO unminimize
-fi
-
 # Packages that are needed later by this script
 early_dependencies=(
     ca-certificates  # needed by wget to download over https
@@ -65,10 +52,22 @@ $SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
 #
 # If NeuroDebian update their repository or key, we may need to update these
 # files. (use 'apt-key export' to write neurodebian-key.gpg).
-$SUDO cp /build/neurodebian.sources.list \
+#
+# /opt is used instead of /tmp here because /tmp can be bind mount during build
+# on Singularity. Therefore previously copied files are hidden.
+$SUDO cp /opt/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
-$SUDO apt-key add /build/neurodebian-key.gpg
+$SUDO apt-key add /opt/neurodebian-key.gpg
 
+# Prevent installation of python-dicom >= 1 from NeuroDebian (the API has
+# changed and some BrainVISA code relies on the old 0.* version).
+cat <<EOF > /etc/apt/preferences.d/prevent-pydicom-1.pref
+Explanation: Prevent installation of python-dicom >= 1 from NeuroDebian
+Explanation: (the API has changed, BrainVISA currently needs version 0.*).
+Package: python*-dicom
+Pin: version 1.*
+Pin-Priority: -1
+EOF
 
 ###############################################################################
 # Install runtime dependencies with apt-get
@@ -98,8 +97,6 @@ generally_useful_packages=(
     ca-certificates
     curl
     file
-    ipython3  # for interactive Python use
-    jupyter-notebook  # for interactive Python use
     less
     lsb-release
     python3-pip
@@ -111,19 +108,27 @@ generally_useful_packages=(
     wget
     xz-utils
     lxterminal
+    leafpad
     gpicview
     vim
-    mousepad
     nano
     openjdk-11-jre # java is used by some external tools (populse mri_conv...)
     openjdk-11-jre-headless
     jarwrapper
     java-common
     java-wrappers
+    strace
+    fonts-noto-color-emoji
 )
 
 # Dependencies of headless Anatomist
 headless_anatomist_dependencies=(
+    # libx11-xcb1
+    # libfontconfig1
+    # libdbus-1-3
+    # libxrender1
+    # libglib2.0-0
+    # libxi6
     mesa-utils
     x11-utils
     xvfb
@@ -133,6 +138,7 @@ cd /tmp
 wget https://sourceforge.net/projects/virtualgl/files/2.6.5/virtualgl_2.6.5_amd64.deb
 $SUDO dpkg -i virtualgl_2.6.5_amd64.deb
 rm -f /tmp/virtualgl_2.6.5_amd64.deb
+
 
 # Runtime dependencies of PIP-installed packages (to be reviewed regularly)
 pip_packages_runtime_dependencies=(
@@ -147,8 +153,6 @@ pip_packages_runtime_dependencies=(
 
 # Python packages needed at runtime by BrainVISA
 brainvisa_python_runtime_dependencies=(
-    python-is-python3
-
     python3-crypto
     python3-cryptography  # needed by populse_mia
     python3-html2text
@@ -157,7 +161,7 @@ brainvisa_python_runtime_dependencies=(
     python3-paramiko
     python3-pil  # used in anatomist, morphologist, nuclear_imaging, snapbase
     python3-requests
-    python3-six
+    # python3-six  # installed by pip (Ubuntu 18.04 ships 1.11.0, we need >= 1.13)
     python3-sqlalchemy
     python3-traits
     python3-xmltodict
@@ -175,7 +179,7 @@ brainvisa_python_runtime_dependencies=(
     python3-xlrd
     python3-xlwt
     python3-pandas
-    python3-lark
+    python3-opengl
 
     # The following dependencies are installed with pip for various reasons,
     # see install_pip_dependencies.sh.
@@ -183,32 +187,35 @@ brainvisa_python_runtime_dependencies=(
     # TODO: when upgrading the base system (i.e. switching to Ubuntu 20.04),
     # check that they work when installed with apt.
     #
-    python3-zmq
-    python3-ipython
-    python3-jupyter-client
-    python3-qtconsole
-    python3-nbsphinx
-    python3-sphinx-gallery
+    # python3-zmq
+    # python3-ipython
+    # python3-jupyter-client
+    # python3-qtconsole
+    # python3-nbsphinx
+    # python3-sphinx-gallery
+    #
+    # python3-pkgconfig  # TODO: check if necessary for h5py installation
+    # python3-numpy
+    # python3-fastcluster
+    # python3-h5py
+    # python3-matplotlib
+    # python3-scipy
+    # python3-skimage
+    # python3-sklearn
 
-    python3-pkgconfig  # TODO: check if necessary for h5py installation
-    python3-numpy
-    # python3-dipy  # not packaged in APT -> use pip
-    python3-fastcluster
-    python3-h5py
-    python3-matplotlib
-    python3-scipy
-    python3-skimage
-    python3-sklearn
-
-    python3-sip
-    python3-pyqt5
-    python3-pyqt5.qtmultimedia
-    python3-pyqt5.qtopengl
-    python3-pyqt5.qtsvg
-    python3-pyqt5.qtwebkit
-    python3-pyqt5.qtsql
-    python3-pyqt5.qtwebsockets
-    python3-pyqt5.qtxmlpatterns
+    # SIP and PyQT are compiled in install_compiled_dependencies.sh to work
+    # around a bug in the APT version of sip 4.19 concerning virtual C++
+    # inheritance.
+    #
+    # python3-sip
+    # python3-pyqt5
+    # python3-pyqt5.qtmultimedia
+    # python3-pyqt5.qtopengl
+    # python3-pyqt5.qtsvg
+    # python3-pyqt5.qtwebkit
+    # python3-pyqt5.qtsql
+    # python3-pyqt5.qtwebsockets
+    # python3-pyqt5.qtxmlpatterns
 )
 
 
@@ -224,34 +231,80 @@ brainvisa_python_runtime_dependencies=(
 # regenerated easily. If other libraries are needed, consider creating a new
 # variable to store them.
 brainvisa_shared_library_dependencies=(
-    libdcmtk14
-    libgfortran5
-    libgl1
+    libc6
+    libcairo2
+    libdcmtk12
+    libexpat1
+    libflann1.9
+    libfontconfig1
+    libfreetype6
+    libgcc1
+    libgdk-pixbuf2.0-0
+    libgfortran4
+    libglib2.0-0
     libglu1-mesa
     libgomp1
+    libhdf5-100
+    libice6
     libjpeg-turbo8
-    libminc2-5.2.0
-    libnetcdf15
+    libminc2-4.0.0
     libopenjp2-7
-    libpython3.8
+    libpcl-common1.8
+    libpcl-features1.8
+    libpcl-filters1.8
+    libpcl-io1.8
+    libpcl-kdtree1.8
+    libpcl-octree1.8
+    libpcl-search1.8
+    libpcl-segmentation1.8
+    libpcl-surface1.8
+    libpng16-16
+    libpython2.7
+    libpython3.6
     libqt5core5a
+    libqt5dbus5
+    libqt5designer5
     libqt5gui5
+    libqt5help5
     libqt5multimedia5
+    libqt5multimediawidgets5
     libqt5network5
     libqt5opengl5
+    libqt5positioning5
+    libqt5printsupport5
+    libqt5qml5
+    libqt5quick5
+    libqt5quickwidgets5
     libqt5sql5
+    libqt5svg5
+    libqt5test5
+    libqt5webchannel5
+    libqt5webengine5
+    libqt5webenginecore5
+    libqt5webenginewidgets5
+    libqt5webkit5
     libqt5widgets5
+    libqt5x11extras5
+    libqt5xml5
     libqwt-qt5-6
     libsigc++-2.0-0v5
+    libsm6
+    libspnav0
+    libsqlite3-0
     libstdc++6
     libsvm3
     libtiff5
+    libx11-6
+    libxau6
+    libxext6
     libxml2
+    libxrender1
+    zlib1g
 )
 
 # Programs and data that BrainVISA depends on at runtime
 brainvisa_misc_runtime_dependencies=(
-    lftp
+    lftp=4.8.1-1ubuntu0.1
     sqlite3
     xbitmaps
 )
@@ -259,6 +312,8 @@ brainvisa_misc_runtime_dependencies=(
 # Other dependencies of BrainVISA (please indicate the installation reason for
 # each dependency).
 brainvisa_other_dependencies=(
+    # libjxr is needed for openslide (MIRCen's fork with CZI support)
+    libjxr0
     # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
     # displayed at the start of each executable.
     libqt5sql5-sqlite
@@ -268,6 +323,10 @@ brainvisa_other_dependencies=(
     mriconvert
     # dcmtk commandlines (including dcmdjpeg)
     dcmtk
+    # needed for AFNI
+    libxm4
+    libglw1-mesa
+    gsl-bin
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run
@@ -300,6 +359,10 @@ $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${brainvisa_shared_library_dependencies[@]} \
     ${build_dependencies[@]}
 
+# freeze lftp package to version 4.8.1-1ubuntu0.1 because 4.8.1-1ubuntu0.2
+# has a bug (https://bugs.launchpad.net/ubuntu/+source/lftp/+bug/1904601)
+$SUDO apt-mark hold lftp
+
 ###############################################################################
 # Free disk space by removing APT caches
 ###############################################################################
@@ -310,3 +373,11 @@ if [ -z "$APT_NO_LIST_CLEANUP" ]; then
     # delete all the apt list files since they're big and get stale quickly
     $SUDO rm -rf /var/lib/apt/lists/*
 fi
+
+###############################################################################
+# Bidouille for AFNI, which requires a specific version of libgsl
+###############################################################################
+
+# see: https://afni.nimh.nih.gov/pub/dist/doc/htmldoc/background_install/install_instructs/steps_linux_ubuntu20.html#slow-setup-install-prerequisite-packages
+
+$SUDO ln -s /usr/lib/x86_64-linux-gnu/libgsl.so.23 /usr/lib/x86_64-linux-gnu/libgsl.so.19

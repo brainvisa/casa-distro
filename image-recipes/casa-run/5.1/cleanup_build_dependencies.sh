@@ -4,6 +4,8 @@
 # contain all run-time dependencies that are needed to run BrainVISA when
 # installed using 'make install-runtime' (see the Release images).
 #
+# This image contains Python 3 and Qt 5
+#
 # NOTE: This script is run during the creation of the Singularity and
 # VirtualBox casa-run image. Make sure not to include anything specific to a
 # given virtualization/containerization engine  in this file.
@@ -28,3 +30,9 @@ export DEBIAN_FRONTEND=noninteractive
 sudo -E apt-mark auto ${build_dependencies[@]}
 sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \
                 autoremove --yes
+
+###############################################################################
+# set python3 as default "python" command since python2 is not installed
+###############################################################################
+
+$SUDO update-alternatives --install /usr/bin/python python /usr/bin/python3.6 10

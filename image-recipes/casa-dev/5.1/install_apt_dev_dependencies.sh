@@ -1,9 +1,9 @@
 #! /bin/bash
-# Install system dependencies for image casa-dev-5.1
+# Install system dependencies for image casa-dev-5.0
 #
-# NOTE: This script is run during the creation of the Singularity and
-# VirtualBox casa-run image. Make sure not to include anything specific to a
-# given virtualization/containerization engine  in this file.
+# NOTE: This script is used to create the casa-dev Docker/Singularity image,
+# and also during the creation of the VirtualBox casa-dev image. Make sure not
+# to include anything Docker-specific in this file.
 
 set -e  # stop the script on error
 set -x  # display commands before running them
@@ -20,6 +20,15 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
+# SSL certificates had expired on october 2021 and must be updated by
+# upgrading ca-certificate package
+# First update packages sources but ignore errors because some will
+# fail (e.g. Neurodebian)
+$SUDO apt-get -o Acquire::Retries=3 update || echo
+# Then upgrade package containing certificate
+$SUDO apt-get -o Acquire::Retries=3 install ca-certificates
+
+
 $SUDO apt-get -o Acquire::Retries=3 update
 $SUDO apt-get -o Acquire::Retries=5 install \
       --no-remove --no-install-recommends -y \
@@ -31,17 +40,18 @@ EOF
 $SUDO apt-get -o Acquire::Retries=3 update
 
 # A selection of packages that were in casa-dev-5.0 before Yann's
-# rewrite of the install scripts (in the runtime_image branch).
+# rewrite of the install scripts (in the runtime_image branch). TODO: check if
+# these packages should be installed here, or maybe in the casa-run image.
 packages_to_review=(
     libmpich-dev
     mpich
 )
 
+
 # Source version control
 version_control_packages=(
     git
     git-lfs
-    git-man
     subversion
 )
 
@@ -57,17 +67,18 @@ toolchain_packages=(
     libc-dev
     make
     pkg-config
-    pyqt5-dev
-    pyqt5-dev-tools
-    python3-sip-dev
     qt5-default
+    # Compiled and installed in install_compiled_dev_dependencies.sh because of a
+    # bug in the SIP version supplied in APT.
+    #
+    # python-sip-dev
+    # python3-sip-dev
 )
 
 # Development tools and convenience utilities
 development_tools=(
     ack-grep
     bash-completion
-    emacs-nox
     flake8
     gdb
     gdbserver
@@ -76,41 +87,38 @@ development_tools=(
     gitg
     gitk
     kate
+    kdesdk-scripts  # contains the 'colorsvn' script (is it really worth it? the dependencies of kdesdk-scripts are huge...)
     kdiff3
     kompare
     kwrite
     locate
     meld
     nano
-    python2  # only for flake8 tests of casa-distro
-    python3-autopep8
-    python3-objgraph
+    python-autopep8
+    python-dbg
+    python-objgraph
     python3-venv
+    pycodestyle
     spyder
-    strace
-    tox
     vim
     xterm
     xdot
 )
 
-# Relevant -dbg and -dbgsym packages that contain the debug symbols
-# corresponding to installed -dev packages. Note that a separate APT repository
-# must be activated for -dbgsym packages, which I chose not to do at the moment
-# to keep things simple (ylep 2021-09-30). See
-# https://wiki.ubuntu.com/Debug%20Symbol%20Packages
-#
-# This command lists candidate packages:
-#
-#     dpkg --get-selections | \
-#         sed -nEe '/^\S+-dev/ { s/^(\S+)-dev\b.*/\1-dbgsym/ p }' | \
-#         xargs apt-cache show | grep '^Package:' | sort -u
+singularity_build_dependencies=(
+    uuid-dev
+    libgpgme-dev
+    squashfs-tools
+    libseccomp-dev
+    wget
+    pkg-config
+    git
+)
+
+# TODO: review and add -dbg packages that contain the debug symbols
+# corresponding to installed -dev packages.
 debug_symbol_packages=(
     libc6-dbg  # recommended by gdb
-    libjpeg-turbo8-dbg
-    libjpeg8-dbg
-    python3-dbg
-    python3-sip-dbg
 )
 
 # Documentation building
@@ -118,15 +126,23 @@ documentation_building_packages=(
     doxygen
     ghostscript
     graphviz
-    jupyter-nbconvert
     pandoc
-    python3-sphinx
-    python3-sphinx-gallery
+    python-epydoc
+    # python-sphinx  # installed with PIP
     texlive-latex-base
-    texlive-latex-extra  # needed by doxygen to render LaTeX formulas
     texlive-fonts-recommended
     wkhtmltopdf
 )
+
+# Python 3 packages
+python3_packages=(
+    python3-sphinx
+    python3-sphinx-paramlinks
+    python3-ipython-genutils
+    python3-objgraph
+    python3-venv
+)
+
 
 # Development packages of compiled libraries (C/C++/Fortran) that are used by
 # components of the 'standard' BrainVISA distribution (these are the libraries
@@ -135,7 +151,6 @@ documentation_building_packages=(
 # or documentation building packages).
 brainvisa_standard_dev_dependencies=(
     libasound2-dev
-    libblitz0-dev
     libboost-dev
     libboost-filesystem-dev
     libboost-system-dev
@@ -146,7 +161,7 @@ brainvisa_standard_dev_dependencies=(
     libglu1-mesa-dev
     libjpeg-dev
     libminc-dev
-    libnetcdf-dev
+    # libnetcdf-dev  # compiled in the casa-run image
     libomp-dev  # OpenMP with the clang compiler
     libopenjp2-7-dev
     libpng-dev
@@ -156,18 +171,24 @@ brainvisa_standard_dev_dependencies=(
     libspnav-dev
     libsvm-dev
     libtiff-dev
-    libvtk7-dev
-    libvtk7-qt-dev
+    libvtk6-dev
+    libvtk6-qt-dev
     libxml2-dev
     qttools5-dev
     qtmultimedia5-dev
     qttools5-dev-tools
     zlib1g-dev
+    # Other packages that are searched in CMake files using find_*, but were
+    # not included in the older casa-dev images:
+    #
+    # libxml++2.6-dev
+    # swig
 )
 
 
 brainvisa_toolboxes_dev_dependencies=(
-    # Required for building MRtrix3
+    # Required for building MRtrix3, also for PyQt5 (see
+    # casa-run/ubuntu-18.04/build_dependencies.sh)
     libqt5svg5-dev
 )
 
@@ -194,6 +215,7 @@ $SUDO apt-get -o Acquire::Retries=20 install \
     ${version_control_packages[@]} \
     ${toolchain_packages[@]} \
     ${development_tools[@]} \
+    ${singularity_build_dependencies[@]} \
     ${debug_symbol_packages[@]} \
     ${documentation_building_packages[@]} \
     ${python3_packages[@]} \

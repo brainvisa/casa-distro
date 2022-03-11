@@ -31,6 +31,9 @@ class RecipeBuilder:
     '''
     Class to interact with an existing VirtualBox machine.
     This machine is supposed to be based on a casa_distro system image.
+
+    Needs rsync installed on the host system to perform copies which manage
+    symlinks.
     '''
 
     def __init__(self, name):
@@ -53,27 +56,93 @@ class RecipeBuilder:
         '''
         self.sections.setdefault('post', []).append(command)
 
-    def copy_root(self, source_file, dest_dir):
+    def copy_root(self, source_file, dest_dir, preserve_symlinks=True,
+                  preserve_ext_symlinks=True):
         '''
         Copy a file in VM as root
 
         Warning: if the target already exists and is a directory, files will be
         copied to the wrong location (inside this directory).
-        '''
-        self.sections.setdefault('files', []).append(
-            '%s %s' % (source_file,
-                       dest_dir + '/' + osp.basename(source_file)))
 
-    def copy_user(self, source_file, dest_dir):
+        Parameters
+        ----------
+        source_file: str
+            source file or directory. If it is a directory, a recursive copy is
+            performed.
+        dest_dir: str
+            destination directory
+        preserve_symlinks: bool
+            Copy symbolic links as they are (symbolic links).
+        preserve_ext_symlinks: bool
+            If False: Copy symbolic links as symlinks only if they point inside
+            the source tree. Otherwise replace them with the pointed file.
+            The ``rsync`` command is used to perform this.
         '''
-        Copy a file in VM as self.user
+        if not preserve_symlinks:
+            # this variant is safer
+            # the files section copies do not preserve symlinks.
+            self.sections.setdefault('files', []).append(
+                '%s %s' % (source_file,
+                           dest_dir + '/' + osp.basename(source_file)))
+        else:
+            self.sections.setdefault('setup', []).append(
+                'if [ ! -d ${SINGULARITY_ROOTFS}/' + dest_dir + ' ]; then '
+                'mkdir -p ${SINGULARITY_ROOTFS}/' + dest_dir + '; fi')
+            if not preserve_ext_symlinks:
+                # alternative using rsync
+                self.sections.setdefault('setup', []).append(
+                    'rsync -a --copy-unsafe-links %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+            else:
+                # alternative using cp -a: preserve symlinks even outside the
+                # source tree
+                self.sections.setdefault('setup', []).append(
+                    'cp -a %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+
+    def copy_user(self, source_file, dest_dir, preserve_symlinks=True,
+                  preserve_ext_symlinks=True):
+        '''
+        Copy a file in VM as root
 
         Warning: if the target already exists and is a directory, files will be
         copied to the wrong location (inside this directory).
+
+        Parameters
+        ----------
+        source_file: str
+            source file or directory. If it is a directory, a recursive copy is
+            performed.
+        dest_dir: str
+            destination directory
+        preserve_symlinks: bool
+            Copy symbolic links as they are (symbolic links).
+        preserve_ext_symlinks: bool
+            If False: Copy symbolic links as symlinks only if they point inside
+            the source tree. Otherwise replace them with the pointed file.
+            The ``rsync`` command is used to perform this.
         '''
-        self.sections.setdefault('files', []).append(
-            '%s %s' % (source_file,
-                       dest_dir + '/' + osp.basename(source_file)))
+        if not preserve_symlinks:
+            # this variant is safer
+            # the files section copies do not preserve symlinks.
+            self.sections.setdefault('files', []).append(
+                '%s %s' % (source_file,
+                           dest_dir + '/' + osp.basename(source_file)))
+        else:
+            self.sections.setdefault('setup', []).append(
+                'if [ ! -d ${SINGULARITY_ROOTFS}/' + dest_dir + ' ]; then '
+                'mkdir -p ${SINGULARITY_ROOTFS}/' + dest_dir + '; fi')
+            if not preserve_ext_symlinks:
+                # alternative using rsync
+                self.sections.setdefault('setup', []).append(
+                    'rsync -a --copy-unsafe-links %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+            else:
+                # alternative using cp -a: preserve symlinks even outside the
+                # source tree
+                self.sections.setdefault('setup', []).append(
+                    'cp -a %s %s'
+                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
 
     def write(self, file):
         for section, lines in self.sections.items():
@@ -127,6 +196,7 @@ def create_image(base, base_metadata,
     -------
     uuid, msg: tuple
     '''
+
     cleanup = boolean_value(cleanup)
     force = boolean_value(force)
     fakeroot = boolean_value(fakeroot)
@@ -165,7 +235,7 @@ Bootstrap: localimage
         echo "mv \"$SINGULARITY_CONTAINER\" ~/casa_distro/"
         echo 'cd ~/casa_distro'
         echo "singularity run -B ./brainvisa-master:/casa/setup \\\\"
-        echo "    $SINGULARITY_NAME distro=opensource"
+        echo "    $SINGULARITY_NAME distro=core"
         echo
         echo 'If you have already setup such an environment, you should'
         echo 'run the image using appropriate options, mount points, and'
@@ -295,9 +365,17 @@ Bootstrap: localimage
 
     rb = RecipeBuilder(output)
     rb.copy_root(dev_config['directory'] + '/install', '/casa')
+    # # replace the python symlink (not needed any longer as copy_root here
+    # # preserves all symlinks)
+    # py_exe = osp.join(dev_config['directory'], 'install/bin/python')
+    # if osp.exists(py_exe) and osp.islink(py_exe):
+    #     py_link = os.readlink(py_exe)
+    #     rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
     rb.install_casa_distro('/casa/casa-distro')
-    rb.run_user('touch /casa/install/share/brainvisa-share-*/'
-                'database-*.sqlite')
+    rb.run_user('if [ -f /casa/install/share/brainvisa-share-*/'
+                'database-*.sqlite ]; '
+                'then touch /casa/install/share/brainvisa-share-*/'
+                'database-*.sqlite; fi')
     rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                 % rb.image_id)
     rb.write(recipe)
@@ -754,3 +832,8 @@ def setup(type, distro, branch, system, name, base_directory, image,
     Singularity specific part of setup command
     """
     raise NotImplementedError('setup is not implemented for Singularity')
+
+
+def convert_image(source, metadata, output, convert_from, verbose=None):
+    raise NotImplementedError(
+        'Currently converting to singularity images is not implemented.')

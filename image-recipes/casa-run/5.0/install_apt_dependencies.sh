@@ -117,6 +117,7 @@ generally_useful_packages=(
     java-common
     java-wrappers
     strace
+    fonts-noto-color-emoji
 )
 
 # Dependencies of headless Anatomist
@@ -311,6 +312,8 @@ brainvisa_misc_runtime_dependencies=(
 # Other dependencies of BrainVISA (please indicate the installation reason for
 # each dependency).
 brainvisa_other_dependencies=(
+    # libjxr is needed for openslide (MIRCen's fork with CZI support)
+    libjxr0
     # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
     # displayed at the start of each executable.
     libqt5sql5-sqlite
@@ -320,6 +323,10 @@ brainvisa_other_dependencies=(
     mriconvert
     # dcmtk commandlines (including dcmdjpeg)
     dcmtk
+    # needed for AFNI
+    libxm4
+    libglw1-mesa
+    gsl-bin
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run
@@ -367,3 +374,11 @@ if [ -z "$APT_NO_LIST_CLEANUP" ]; then
     # delete all the apt list files since they're big and get stale quickly
     $SUDO rm -rf /var/lib/apt/lists/*
 fi
+
+###############################################################################
+# Bidouille for AFNI, which requires a specific version of libgsl
+###############################################################################
+
+# see: https://afni.nimh.nih.gov/pub/dist/doc/htmldoc/background_install/install_instructs/steps_linux_ubuntu20.html#slow-setup-install-prerequisite-packages
+
+$SUDO ln -s /usr/lib/x86_64-linux-gnu/libgsl.so.23 /usr/lib/x86_64-linux-gnu/libgsl.so.19

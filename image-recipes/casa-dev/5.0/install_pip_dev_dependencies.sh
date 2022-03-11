@@ -29,9 +29,20 @@ $PIP3 install 'six~=1.13'
 # Tool to handle multiple git/svn repositories
 $PIP3 install 'vcstool'
 
+# Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
+# apparently too old for our friends of the MeCA group in Marseille.
+# Unfortunately installing the newer NumPy installed with pip is
+# ABI-incompatible with the system NumPy (ABI version 9 vs ABI version 8), so
+# we need to also install every package that depends on NumPy with pip.
+$PIP3 install 'numpy~=1.16,<1.17'
+
+# install h5py from sources to force using the system libhdf5,
+# otherwise it will install an incompatible binary
+sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py --force-reinstall 'h5py==3.1.0'
+
 # Python 3 packages that do not exist as APT packages
 $PIP3 install 'dipy<0.15'
-$PIP3 install 'nipype<1.2'
+$PIP3 install 'nipype<1.8'
 
 # Runtime dependencies of populse-db
 $PIP3 install 'lark-parser>=0.7,<0.8'
@@ -57,16 +68,7 @@ $PIP3 install tox
 # $PIP3 install -U 'xlrd<1.3'
 # $PIP3 install -U 'xlwt<1.4'
 
-# Under Ubuntu 18.04 APT supplies numpy 1.13.3 and scipy 0.19.1, which are
-# apparently too old for our friends of the MeCA group in Marseille.
-# Unfortunately installing the newer NumPy installed with pip is
-# ABI-incompatible with the system NumPy (ABI version 9 vs ABI version 8), so
-# we need to also install every package that depends on NumPy with pip.
-$PIP3 install 'numpy~=1.16,<1.17'
 $PIP3 install fastcluster
-# install h5py from sources to force using the system libhdf5,
-# otherwise it will install an incompatible binary
-sudo CPPFLAGS='-I/usr/include/mpi' python3 -m pip --no-cache-dir install --no-binary=h5py 'h5py<2.10'
 $PIP3 install matplotlib
 $PIP3 install 'scipy~=1.2,<1.3'
 $PIP3 install scikit-image
@@ -108,6 +110,10 @@ $SUDO jupyter nbextension enable --py widgetsnbextension
 $SUDO jupyter nbextension enable --py ipyevents
 $SUDO jupyter nbextension enable --py ipycanvas
 
+# used by fold dico tools (deep_folding etc)
+$PIP3 install -U 'tqdm>=4.36'
+$PIP3 install 'pqdm' 'GitPython'
+
 
 # Re-install Python 2 packages whose binaries have been overwritten by
 # Python 3 versions (/usr/local/bin/jupyter* for instance). jupyter modules
@@ -127,6 +133,9 @@ $PIP2 install -U --force-reinstall 'ipython~=5.9.0'
 $PIP2 install jupyter-console
 $PIP2 install 'dipy<0.15'
 $PIP2 install sphinx_rtd_theme
+
+# useful tool: pip search has stopped working, but pip_search works
+$PIP3 install pip-search
 
 # fix pip uglinesses, it did actually wipe away
 # /usr/lib/python2.7/dist-packages/backports !

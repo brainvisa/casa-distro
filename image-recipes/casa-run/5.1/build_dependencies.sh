@@ -32,4 +32,14 @@ build_dependencies=(
     libglib2.0-dev
     libxml2-dev
     libjxr-dev
+
+    # Build dependencies of libXp
+    x11proto-print-dev
+
+    # Build dependencies of python-pcl
+    libpcl-dev  # for python-pcl
+
+    # Build dependencies of SIP/PyQt
+    libqt5svg5-dev  # qtconsole needs PyQt5.QtSvg
+    qtwebengine5-dev  # for PyQt
 )

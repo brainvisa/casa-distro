@@ -49,7 +49,7 @@ def install_casa_distro(dest):
 exclude_from_bin = {
     'python', 'python2', 'python3', 'bv', 'bv_env', 'bv_env.sh', 'bv_env.bat',
     'bv_env.py', 'bv_env_host', 'bv_env_test', 'bv_unenv', 'bv_unenv.sh',
-    'bv_wine_regedit', 'docker-deps',
+    'docker-deps',
 }
 
 
@@ -241,7 +241,7 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
           'variables, mount points in the virtual image, etc.')
 
 
-def setup_dev(setup_dir='/casa/setup', distro='opensource', branch='master',
+def setup_dev(setup_dir='/casa/setup', distro='core', branch='master',
               system=None, image_version=None, image=None, name=None):
     if not system:
         system = os.getenv('CASA_SYSTEM')
@@ -424,13 +424,13 @@ login and a password.
 
 There are two situations, which we could simplify as this:
 
-* opensource distro: if you are only using open-source projects, you can
-  use the public credentials:
+* core distro: if you are only using projects without source restrictions,
+  you can use the public credentials:
 
     Username: brainvisa
     Password: Soma2009
 
-* brainvisa and other non-totally opensource distros: they need a
+* brainvisa and other distros containing pivate source code: they need a
   personal login and password.
 
 
