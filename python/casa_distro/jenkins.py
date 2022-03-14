@@ -118,7 +118,7 @@ class BrainVISAJenkins:
         # Python 2 need binascii module to convert str
         # to hex string. In Python 3, bytes have an hex() method.
         if not isinstance(log, six.binary_type):
-            log = log.decode('UTF8')
+            log = log.encode('UTF8')
         hex_log = binascii.hexlify(log)
         r = self.post('job/{0}/postBuildResult'.format(environment),
                       headers={'Content-Type': 'application/xml'},

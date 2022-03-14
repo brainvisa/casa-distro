@@ -810,6 +810,8 @@ class BBIDaily:
                              stderr=subprocess.STDOUT, bufsize=-1,
                              **kwargs)
         output, nothing = p.communicate()
+        if not isinstance(output, str) and sys.version_info[0] >= 3:
+            output = output.decode('UTF8')
         log = ['-'*40,
                '$ ' + ' '.join(shlex_quote(arg) for arg in args),
                '-'*40,
