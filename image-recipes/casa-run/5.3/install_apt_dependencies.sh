@@ -213,7 +213,6 @@ brainvisa_python_runtime_dependencies=(
     python3-pyqt5.qtxmlpatterns
 
     python3-plotly
-    python3-pydantic
 
     python3-torch
     python3-torchvision

@@ -34,6 +34,9 @@ PIP3="$SUDO python3 -m pip --no-cache-dir"
 PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
 ${PIP_INSTALL} -U pip
 
+# we need pydantic >= 1.9, ubuntu 22/apt ships 1.8
+${PIP_INSTALL} -U "pydantic>=1.9"
+
 # Packages not available in APT
 ${PIP_INSTALL} nipype
 # ${PIP_INSTALL} dipy  # dipy fails to install in python 3.10 by now (2022/03/03)
