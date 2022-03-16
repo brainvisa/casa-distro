@@ -17,6 +17,12 @@ from casa_distro import six
 from casa_distro.environment import casa_distro_directory
 
 
+if hasattr(inspect, 'getfullargspec'):
+    getargspec = inspect.getfullargspec  # Python 3
+else:
+    getargspec = inspect.getargspec  # Python 2
+
+
 def check_boolean(name, value):
     result = boolean_value(value)
     if result is None:
@@ -143,7 +149,7 @@ def formatted_help(text, format='text'):
 def get_doc(command, indent='', format='text'):
     doc = inspect.getdoc(command) or ''
 
-    cargs = inspect.getargspec(command)
+    cargs = getargspec(command)
     defaults = {i + '_default': j
                 for i, j in zip(cargs.args[-len(cargs.defaults or ()):],
                                 cargs.defaults or ())}
@@ -313,10 +319,7 @@ def main(meant_for_container=False):
     command = commands[command_name]
 
     # Get command argument specification
-    if six.PY2:
-        cargs = inspect.getargspec(command)
-    else:
-        cargs = inspect.getfullargspec(command)
+    cargs = getargspec(command)
 
     if options.verbose and 'verbose' in cargs.args:
         kwargs['verbose'] = 'yes'

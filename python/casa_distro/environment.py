@@ -260,7 +260,8 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
         casa_distro_jsons = glob(osp.join(base_directory, 'conf',
                                           'casa_distro.json'))
     for casa_distro_json in sorted(casa_distro_jsons):
-        environment_config = json.load(open(casa_distro_json))
+        with open(casa_distro_json) as f:
+            environment_config = json.load(f)
         directory = osp.dirname(osp.dirname(casa_distro_json))
         config = {}
         config['config_files'] = [casa_distro_json]
@@ -464,7 +465,7 @@ def update_container_image(container_type, image_name, url,
     image_url_base, image_ext = osp.splitext(remote_image)
     image_url_pattern = re.compile(
         re.escape(osp.basename(image_url_base))
-        + r'(-([0-9]+))?\%s\.json' % image_ext)
+        + r'(-([0-9]+))?\%s\.json' % re.escape(image_ext))
     images_dict = {}
     for image_url in images:
         m = image_url_pattern.match(image_url)

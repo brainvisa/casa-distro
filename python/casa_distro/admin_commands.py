@@ -1090,8 +1090,9 @@ def bbi_daily(distro=None, branch=None, system=None,
         from casa_distro.jenkins import BrainVISAJenkins
 
         jenkins_auth = jenkins_auth.format(base_directory=base_directory)
-        jenkins_login, jenkins_password = [i.strip() for i in
-                                           open(jenkins_auth).readlines()[:2]]
+        with open(jenkins_auth) as f:
+            jenkins_login, jenkins_password = [i.strip() for i in
+                                               f.readlines()[:2]]
         jenkins = BrainVISAJenkins(jenkins_server, jenkins_login,
                                    jenkins_password)
     else:
