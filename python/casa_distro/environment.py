@@ -465,7 +465,7 @@ def update_container_image(container_type, image_name, url,
     image_url_base, image_ext = osp.splitext(remote_image)
     image_url_pattern = re.compile(
         re.escape(osp.basename(image_url_base))
-        + r'(-([0-9]+))?\%s\.json' % re.escape(image_ext))
+        + r'(-([0-9]+))?\%s\.json' % image_ext)
     images_dict = {}
     for image_url in images:
         m = image_url_pattern.match(image_url)
