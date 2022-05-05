@@ -68,3 +68,6 @@ ${PIP_INSTALL} pip-search
 
 # used by fold dico tools (deep_folding etc)
 $PIP3 install 'pqdm' 'GitPython'
+
+# fix tornado for python 3.10
+$SUDO sed -i s/collections.MutableMapping/collections.abc.MutableMapping/ /usr/local/lib/python3.10/dist-packages/tornado/httputil.py
