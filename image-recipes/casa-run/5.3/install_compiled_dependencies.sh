@@ -39,6 +39,16 @@ tmp=$(mktemp -d)
 # Compile and install dependencies that are must be built from source
 ###############################################################################
 
+# install libXp, used by some external software (old SPM, AFNI, ...)
+cd "$tmp"
+wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz
+tar xf libxp_1.0.2.orig.tar.gz
+cd libXp-1.0.2
+./configure
+make -j$(nproc)
+sudo make install
+
+
 # MIRCen's fork of openslide with support for CZI format
 #
 cd "$tmp"

@@ -51,10 +51,7 @@ make -j$(nproc)
 sudo make install
 
 
-# install libXp, used by some external software (SPM...)
-#
-# TODO: check if this is still needed, this library is not required by recent
-# versions of SPM12 at least
+# install libXp, used by some external software (old SPM, AFNI, ...)
 cd "$tmp"
 wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz
 tar xf libxp_1.0.2.orig.tar.gz
