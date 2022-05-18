@@ -34,7 +34,8 @@ build_dependencies=(
     libjxr-dev
 
     # Build dependencies of libXp
-    x11proto-print-dev
+    # x11proto-print-dev  # does not exist in ubuntu 22.04
+    # xutils-dev # for libXp / printproto
 
     # Build dependencies of SIP/PyQt
     libqt5svg5-dev  # qtconsole needs PyQt5.QtSvg

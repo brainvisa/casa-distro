@@ -40,13 +40,17 @@ tmp=$(mktemp -d)
 ###############################################################################
 
 # install libXp, used by some external software (old SPM, AFNI, ...)
-cd "$tmp"
-wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz
-tar xf libxp_1.0.2.orig.tar.gz
-cd libXp-1.0.2
-./configure
-make -j$(nproc)
-sudo make install
+# well it seems pretty impossible to install on Ubuntu 22.04:
+# it needs printproto (Xprint) which is deprecated for decades,
+# and has no install procedure any longer (see
+# https://gitlab.freedesktop.org/xorg/proto/printproto)
+# cd "$tmp"
+# wget https://mirror.umd.edu/ubuntu/pool/main/libx/libxp/libxp_1.0.2.orig.tar.gz
+# tar xf libxp_1.0.2.orig.tar.gz
+# cd libXp-1.0.2
+# ./configure
+# make -j$(nproc)
+# sudo make install
 
 
 # MIRCen's fork of openslide with support for CZI format
