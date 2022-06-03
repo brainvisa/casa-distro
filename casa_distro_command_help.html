@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Common parameters: &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="search" title="Search" href="search.html" /> 
@@ -57,7 +58,7 @@ command.</p>
 </dd>
 </dl>
 <section id="common-parameters">
-<h1>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this headline">¶</a></h1>
+<h1>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this heading">¶</a></h1>
 <p>Most commands accept more or less the same parameters.</p>
 <p>Many subcommands need <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> selection specifications: <a class="reference internal" href="casa_distro_command.html#environment-options"><span class="std std-ref">see the documentation on how to specify an environment</span></a>.</p>
 <dl>
@@ -69,12 +70,12 @@ can be passed on the commandline, or set via the
 </dl>
 </section>
 <section id="commands">
-<h1>Commands:<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h1>
+<h1>Commands:<a class="headerlink" href="#commands" title="Permalink to this heading">¶</a></h1>
 <section id="help">
-<span id="help-help"></span><h2>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
+<span id="help-help"></span><h2>help<a class="headerlink" href="#help" title="Permalink to this heading">¶</a></h2>
 <p>Print global help or help about a command.</p>
 <section id="parameters">
-<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>format</dt><dd><p>format help text in a given text format. Valid values are “text”
 (default) for raw text, or rst (RST/sphinx format).</p>
@@ -86,14 +87,14 @@ documentation in the general help.</p>
 </section>
 </section>
 <section id="distro">
-<span id="distro-help"></span><h2>distro<a class="headerlink" href="#distro" title="Permalink to this headline">¶</a></h2>
+<span id="distro-help"></span><h2>distro<a class="headerlink" href="#distro" title="Permalink to this heading">¶</a></h2>
 <p>List all available distro and provide information for each one.</p>
 </section>
 <section id="list">
-<span id="list-help"></span><h2>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h2>
+<span id="list-help"></span><h2>list<a class="headerlink" href="#list" title="Permalink to this heading">¶</a></h2>
 <p>List run or dev environments created by “setup”/”setup_dev” command.</p>
 <section id="id1">
-<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -130,14 +131,14 @@ JSON format.</p>
 </section>
 </section>
 <section id="run">
-<span id="run-help"></span><h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
+<span id="run-help"></span><h2>run<a class="headerlink" href="#run" title="Permalink to this heading">¶</a></h2>
 <p>Start any command in a selected run or dev environment</p>
 <p>example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">branch</span><span class="o">=</span><span class="n">master</span> <span class="n">ls</span> <span class="o">-</span><span class="n">als</span> <span class="o">/</span><span class="n">casa</span>
 </pre></div>
 </div>
 <section id="id2">
-<h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -212,7 +213,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="pull-image">
-<span id="pull-image-help"></span><h2>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this headline">¶</a></h2>
+<span id="pull-image-help"></span><h2>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this heading">¶</a></h2>
 <p>Update the container images. By default all images that are used by at
 least one environment are updated. There are two ways of selecting the
 image(s) to be downloaded:</p>
@@ -235,7 +236,7 @@ name, this command will always pull the image with the highest
 build_number, e.g. the image that is named casa-dev-5.0-1.sif on the server
 will be downloaded to a file named casa-dev-5.0.sif.</p>
 <section id="id3">
-<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given distro name.</p>
@@ -281,7 +282,7 @@ up-to-date.</p>
 </section>
 </section>
 <section id="list-images">
-<span id="list-images-help"></span><h2>list_images<a class="headerlink" href="#list-images" title="Permalink to this headline">¶</a></h2>
+<span id="list-images-help"></span><h2>list_images<a class="headerlink" href="#list-images" title="Permalink to this heading">¶</a></h2>
 <p>List the locally installed container images.
 There are two ways of selecting the image(s):</p>
 <ol class="arabic">
@@ -294,7 +295,7 @@ of <code class="docutils literal notranslate"><span class="pre">distro</span></c
 </li>
 </ol>
 <section id="id4">
-<h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given distro name.</p>
@@ -333,11 +334,11 @@ can be passed on the commandline, or set via the
 </section>
 </section>
 <section id="shell">
-<span id="shell-help"></span><h2>shell<a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h2>
+<span id="shell-help"></span><h2>shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h2>
 <p>Start a bash shell in the configured container with the given pository
 configuration.</p>
 <section id="id5">
-<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -412,7 +413,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="mrun">
-<span id="mrun-help"></span><h2>mrun<a class="headerlink" href="#mrun" title="Permalink to this headline">¶</a></h2>
+<span id="mrun-help"></span><h2>mrun<a class="headerlink" href="#mrun" title="Permalink to this heading">¶</a></h2>
 <p>Start any command in one or several container with the given
 repository configuration. By default, command is executed in
 all existing build workflows.</p>
@@ -422,7 +423,7 @@ all existing build workflows.</p>
 </pre></div>
 </div>
 <section id="id6">
-<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -497,11 +498,11 @@ call the container system.</p>
 </section>
 </section>
 <section id="bv-maker">
-<span id="bv-maker-help"></span><h2>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this headline">¶</a></h2>
+<span id="bv-maker-help"></span><h2>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this heading">¶</a></h2>
 <p>Start a bv_maker in the configured container with the given repository
 configuration.</p>
 <section id="id7">
-<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=dev</p>
 <p>If given, select environment having the given type.</p>
@@ -543,7 +544,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="clean-images">
-<span id="clean-images-help"></span><h2>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this headline">¶</a></h2>
+<span id="clean-images-help"></span><h2>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this heading">¶</a></h2>
 <p>Delete singularity images which are no longer used in any build workflow,
 or those listed in the “image” parameter.
 There are two ways of selecting the image(s):</p>
@@ -557,7 +558,7 @@ of <code class="docutils literal notranslate"><span class="pre">distro</span></c
 </li>
 </ol>
 <section id="id8">
-<h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given distro name.</p>
@@ -599,13 +600,13 @@ ask confirmation before deleting an image</p>
 </section>
 </section>
 <section id="delete">
-<span id="delete-help"></span><h2>delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h2>
+<span id="delete-help"></span><h2>delete<a class="headerlink" href="#delete" title="Permalink to this heading">¶</a></h2>
 <p>Delete an existing environment.</p>
 <p>The whole environment directory will be removed and forgotten.</p>
 <p>Use with care.</p>
 <p>Image files will be left untouched - use clean_images for this.</p>
 <section id="id9">
-<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -710,7 +711,7 @@ selected environment.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -724,7 +725,7 @@ selected environment.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

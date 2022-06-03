@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Casa-distro concepts &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="search" title="Search" href="search.html" />
@@ -39,13 +40,13 @@
           <div class="body" role="main">
             
   <section id="casa-distro-concepts">
-<h1>Casa-distro concepts<a class="headerlink" href="#casa-distro-concepts" title="Permalink to this headline">¶</a></h1>
+<h1>Casa-distro concepts<a class="headerlink" href="#casa-distro-concepts" title="Permalink to this heading">¶</a></h1>
 <section id="repository">
-<span id="id1"></span><h2>repository<a class="headerlink" href="#repository" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>repository<a class="headerlink" href="#repository" title="Permalink to this heading">¶</a></h2>
 <p>The <em>repository</em> is the root directory for all casa-distro files. It contains <a class="reference internal" href="#image"><span class="std std-ref">container images</span></a> and <a class="reference internal" href="#environment"><span class="std std-ref">environments</span></a>.</p>
 </section>
 <section id="environment">
-<span id="id2"></span><h2>environment<a class="headerlink" href="#environment" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2>environment<a class="headerlink" href="#environment" title="Permalink to this heading">¶</a></h2>
 <p>An <em>environment</em> is a workspace, directory and associated container image(s), containing a user installation of the applications (<a class="reference external" href="http://brainvisa.info">BrainVISA</a> software) or a developer build (sources and build).</p>
 <p>It represents all what is necessary to work on a <a class="reference internal" href="#distro"><span class="std std-ref">distro</span></a> at
 a given version for a given operating system. In <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code>, an
@@ -94,19 +95,19 @@ generated, in this directory, by test commands.</div>
 </ul>
 </section>
 <section id="environment-type">
-<span id="env-type"></span><h2>environment type<a class="headerlink" href="#environment-type" title="Permalink to this headline">¶</a></h2>
+<span id="env-type"></span><h2>environment type<a class="headerlink" href="#environment-type" title="Permalink to this heading">¶</a></h2>
 <p>There are two environment types:
 * <code class="docutils literal notranslate"><span class="pre">user</span></code>: the environment is an installation of a ready-to-run, precompiled <a class="reference external" href="http://brainvisa.info">BrainVISA</a> distribution in a container image. It is designed for users who just need to run the software.
 * <code class="docutils literal notranslate"><span class="pre">dev</span></code>: the environment is a developer environment, it is using a container image containing all development tools, and will hold source code and compilation files.</p>
 </section>
 <section id="environment-name">
-<span id="env-name"></span><h2>environment name<a class="headerlink" href="#environment-name" title="Permalink to this headline">¶</a></h2>
+<span id="env-name"></span><h2>environment name<a class="headerlink" href="#environment-name" title="Permalink to this heading">¶</a></h2>
 <p>Identifier for the <a class="reference internal" href="#environment"><span class="std std-ref">environment</span></a>. The <em>name</em> has to be unique in a <a class="reference internal" href="#repository"><span class="std std-ref">repository</span></a> and can be used as a shortcut to select a specific environment, once setup and installed: it can replace <a class="reference internal" href="#distro"><span class="std std-ref">distro</span></a>, <a class="reference internal" href="#branch"><span class="std std-ref">branch</span></a>, <a class="reference internal" href="#version"><span class="std std-ref">version</span></a>, <a class="reference internal" href="#system"><span class="std std-ref">system</span></a> and <a class="reference internal" href="#env-type"><span class="std std-ref">type</span></a> to select an existing environment.</p>
 <blockquote>
 <div></div></blockquote>
 </section>
 <section id="distro">
-<span id="id3"></span><h2>distro<a class="headerlink" href="#distro" title="Permalink to this headline">¶</a></h2>
+<span id="id3"></span><h2>distro<a class="headerlink" href="#distro" title="Permalink to this heading">¶</a></h2>
 <p>The identifier of the <em>distro</em> (distribution). It represents a set of software handled (installed or built) in the <a class="reference internal" href="#environment"><span class="std std-ref">environment</span></a>. Software distributions managed by casa-distro are composed of many versioned software components
 (more than 50 at the time of this writing).</p>
 <p>There are a few predefined <em>distro</em> in casa-distro:</p>
@@ -118,19 +119,19 @@ generated, in this directory, by test commands.</div>
 </ul>
 </section>
 <section id="system">
-<span id="id4"></span><h2>system<a class="headerlink" href="#system" title="Permalink to this headline">¶</a></h2>
+<span id="id4"></span><h2>system<a class="headerlink" href="#system" title="Permalink to this heading">¶</a></h2>
 <p>the operating system the <a class="reference internal" href="#distro"><span class="std std-ref">distro</span></a> is built for (<em>e.g.</em> <code class="docutils literal notranslate"><span class="pre">ubuntu-18.04</span></code>, <code class="docutils literal notranslate"><span class="pre">ubuntu-20.04</span></code>, we used to have also <code class="docutils literal notranslate"><span class="pre">win32</span></code> or <code class="docutils literal notranslate"><span class="pre">win64</span></code>).</p>
 </section>
 <section id="branch">
-<span id="id5"></span><h2>branch<a class="headerlink" href="#branch" title="Permalink to this headline">¶</a></h2>
+<span id="id5"></span><h2>branch<a class="headerlink" href="#branch" title="Permalink to this heading">¶</a></h2>
 <p>The name of the virtual <a class="reference internal" href="#branch"><span class="std std-ref">branch</span></a> used to select software component sources (<code class="docutils literal notranslate"><span class="pre">latest_release</span></code>, <code class="docutils literal notranslate"><span class="pre">master</span></code> or <code class="docutils literal notranslate"><span class="pre">integration</span></code>) in an <a class="reference internal" href="#environment"><span class="std std-ref">environment</span></a>. This variable is only used in <em>developer environments</em>, when <em>user environments</em> use <a class="reference internal" href="#version"><span class="std std-ref">version</span></a> instead.</p>
 </section>
 <section id="version">
-<span id="id6"></span><h2>version<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h2>
+<span id="id6"></span><h2>version<a class="headerlink" href="#version" title="Permalink to this heading">¶</a></h2>
 <p>The version of the user distribution of <a class="reference external" href="http://brainvisa.info">BrainVISA</a>.</p>
 </section>
 <section id="image">
-<span id="id7"></span><h2>image<a class="headerlink" href="#image" title="Permalink to this headline">¶</a></h2>
+<span id="id7"></span><h2>image<a class="headerlink" href="#image" title="Permalink to this heading">¶</a></h2>
 <p>Container image file, located in the <a class="reference internal" href="#repository"><span class="std std-ref">repository</span></a>. Casa-distro can use Singularity images (<code class="docutils literal notranslate"><span class="pre">.sif</span></code> or <code class="docutils literal notranslate"><span class="pre">.simg</span></code> files), Docker images (located in the docker images repository, not in Casa-distro repository directory), or VirtualBox images (<code class="docutils literal notranslate"><span class="pre">.vdi</span></code> or <code class="docutils literal notranslate"><span class="pre">.ova</span></code> files).</p>
 <p>An images may be of three types:
 * <strong>user image:</strong> user-oriented, it contains a full system with <a class="reference external" href="http://brainvisa.info">BrainVISA</a> already installed in it.
@@ -183,7 +184,7 @@ generated, in this directory, by test commands.</div>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -203,7 +204,7 @@ generated, in this directory, by test commands.</div>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

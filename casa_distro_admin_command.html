@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>The casa_distro_admin command &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="search" title="Search" href="search.html" />
@@ -39,7 +40,7 @@
           <div class="body" role="main">
             
   <section id="the-casa-distro-admin-command">
-<h1>The casa_distro_admin command<a class="headerlink" href="#the-casa-distro-admin-command" title="Permalink to this headline">¶</a></h1>
+<h1>The casa_distro_admin command<a class="headerlink" href="#the-casa-distro-admin-command" title="Permalink to this heading">¶</a></h1>
 <p>Creation and publication of casa-distro releases and container images.</p>
 <p>HELP, format: rst
 Casa_distro is the BrainVISA suite distribution swiss knife.
@@ -68,7 +69,7 @@ command.</p>
 </dd>
 </dl>
 <section id="common-parameters">
-<h2>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this headline">¶</a></h2>
+<h2>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this heading">¶</a></h2>
 <p>Most commands accept more or less the same parameters.</p>
 <p>Many subcommands need <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> selection specifications: <a class="reference internal" href="casa_distro_command.html#environment-options"><span class="std std-ref">see the documentation on how to specify an environment</span></a>.</p>
 <dl>
@@ -80,12 +81,12 @@ can be passed on the commandline, or set via the
 </dl>
 </section>
 <section id="commands">
-<h2>Commands:<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h2>
+<h2>Commands:<a class="headerlink" href="#commands" title="Permalink to this heading">¶</a></h2>
 <section id="help">
-<span id="help-help"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
+<span id="help-help"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this heading">¶</a></h3>
 <p>Print global help or help about a command.</p>
 <section id="parameters">
-<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h4>
 <dl class="simple">
 <dt>format</dt><dd><p>format help text in a given text format. Valid values are “text”
 (default) for raw text, or rst (RST/sphinx format).</p>
@@ -97,7 +98,7 @@ documentation in the general help.</p>
 </section>
 </section>
 <section id="singularity-deb">
-<span id="singularity-deb-help"></span><h3>singularity_deb<a class="headerlink" href="#singularity-deb" title="Permalink to this headline">¶</a></h3>
+<span id="singularity-deb-help"></span><h3>singularity_deb<a class="headerlink" href="#singularity-deb" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt>Create a Debian package to install Singularity.</dt><dd><p>Perform the whole installation process from a rw system and Singularity
 source. Then put the result in a <a href="#id1"><span class="problematic" id="id2">*</span></a>.deb file.
@@ -122,7 +123,7 @@ Version of Singularity to use. This must be a valid release version.</p>
 </dl>
 </section>
 <section id="create-base-image">
-<span id="create-base-image-help"></span><h3>create_base_image<a class="headerlink" href="#create-base-image" title="Permalink to this headline">¶</a></h3>
+<span id="create-base-image-help"></span><h3>create_base_image<a class="headerlink" href="#create-base-image" title="Permalink to this heading">¶</a></h3>
 <p>Create a new virtual image</p>
 <p>Creating the casa-system image:</p>
 <ul>
@@ -141,7 +142,7 @@ may build a “system” image as follows, but it’s not needed:</p>
 <li><p>For VirtualBox: TODO</p></li>
 </ul>
 <section id="id3">
-<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h4>
 <dl>
 <dt>type</dt><dd><p>type of image to publish. Either “system” for a base system image, or
 “run” for an image used in a user environment, or “dev” for a developer
@@ -203,7 +204,7 @@ VirtualBox window.</p>
 </section>
 </section>
 <section id="publish-base-image">
-<span id="publish-base-image-help"></span><h3>publish_base_image<a class="headerlink" href="#publish-base-image" title="Permalink to this headline">¶</a></h3>
+<span id="publish-base-image-help"></span><h3>publish_base_image<a class="headerlink" href="#publish-base-image" title="Permalink to this heading">¶</a></h3>
 <p>Upload an image to BrainVISA web site.</p>
 <p>Upload is done with rsync in the following remote directory:</p>
 <blockquote>
@@ -217,7 +218,7 @@ BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
 BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)</p>
 </div></blockquote>
 <section id="id4">
-<h4>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h4>
 <dl>
 <dt>type</dt><dd><p>type of image to publish. Either “system” for a base system image, or
 “run” for an image used in a user environment, or “dev” for a developer
@@ -237,7 +238,7 @@ Type of virtual appliance to use. Either “singularity”, “vbox” or
 </section>
 </section>
 <section id="create-user-image">
-<span id="create-user-image-help"></span><h3>create_user_image<a class="headerlink" href="#create-user-image" title="Permalink to this headline">¶</a></h3>
+<span id="create-user-image-help"></span><h3>create_user_image<a class="headerlink" href="#create-user-image" title="Permalink to this heading">¶</a></h3>
 <p>Create a “user” image given a development environment.
 The development environment is selected among existing ones its
 distro and system or simply by its name. Only development environments
@@ -253,7 +254,7 @@ image is based on base_image and the installation directory of the
 development environment is copied into the image in /casa/install.</p></li>
 </ul>
 <section id="id5">
-<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h4>
 <dl>
 <dt>version [REQUIRED]</dt><dd><p>Version of the release to create.</p>
 </dd>
@@ -330,7 +331,7 @@ installation.</p>
 </section>
 </section>
 <section id="publish-user-image">
-<span id="publish-user-image-help"></span><h3>publish_user_image<a class="headerlink" href="#publish-user-image" title="Permalink to this headline">¶</a></h3>
+<span id="publish-user-image-help"></span><h3>publish_user_image<a class="headerlink" href="#publish-user-image" title="Permalink to this heading">¶</a></h3>
 <p>Upload a “user” image to the BrainVISA web site.</p>
 <p>Upload is done with rsync in the following remote directory:</p>
 <blockquote>
@@ -344,7 +345,7 @@ BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
 BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)</p>
 </div></blockquote>
 <section id="id6">
-<h4>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h4>
 <dl class="simple">
 <dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
 in the environment configuration.</p>
@@ -353,7 +354,7 @@ in the environment configuration.</p>
 </section>
 </section>
 <section id="bbi-daily">
-<span id="bbi-daily-help"></span><h3>bbi_daily<a class="headerlink" href="#bbi-daily" title="Permalink to this headline">¶</a></h3>
+<span id="bbi-daily-help"></span><h3>bbi_daily<a class="headerlink" href="#bbi-daily" title="Permalink to this heading">¶</a></h3>
 <p>BrainVISA Build infrastructure: daily/nightly automated tests</p>
 <p>In BrainVISA Build Infrastructure (BBI), the <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span>
 <span class="pre">bbi_daily</span></code> command orchestrates automated builds and tests in a given
@@ -416,7 +417,7 @@ such as configuring additional files in the home directory of the user
 </li>
 </ul>
 <section id="id7">
-<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given distro name.</p>
@@ -479,13 +480,13 @@ can be passed on the commandline, or set via the
 </section>
 </section>
 <section id="local-install">
-<span id="local-install-help"></span><h3>local_install<a class="headerlink" href="#local-install" title="Permalink to this headline">¶</a></h3>
+<span id="local-install-help"></span><h3>local_install<a class="headerlink" href="#local-install" title="Permalink to this heading">¶</a></h3>
 <p>Run the installation procedure to create a run or dev image on the
 local machine. Installation can be don step by step. This command
 is typically used in a VirtualBox machine to debug image creation
 scenario.</p>
 <section id="id8">
-<h4>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h4>
 <dl>
 <dt>type</dt><dd><p>Type of image to install. Either “run” or “dev”.</p>
 </dd>
@@ -516,10 +517,10 @@ used as a shell pattern, the default value match any system.</p>
 </section>
 </section>
 <section id="convert-image">
-<span id="convert-image-help"></span><h3>convert_image<a class="headerlink" href="#convert-image" title="Permalink to this headline">¶</a></h3>
+<span id="convert-image-help"></span><h3>convert_image<a class="headerlink" href="#convert-image" title="Permalink to this heading">¶</a></h3>
 <p>Convert a virtual image to another container type</p>
 <section id="id9">
-<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h4>
 <dl>
 <dt>source</dt><dd><p>Source image file.</p>
 </dd>
@@ -539,11 +540,11 @@ source container metadata.</p>
 </section>
 </section>
 <section id="images-and-releases-creation">
-<h2>Images and releases creation<a class="headerlink" href="#images-and-releases-creation" title="Permalink to this headline">¶</a></h2>
+<h2>Images and releases creation<a class="headerlink" href="#images-and-releases-creation" title="Permalink to this heading">¶</a></h2>
 <p>A casa-distro release is done by a member of the BrainVISA team using the <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span></code> command. This document contains all the steps that are necessary to build and publish all versions of casa-distro images.</p>
 </section>
 <section id="creation-a-base-virtualbox-image">
-<h2>Creation a base VirtualBox image<a class="headerlink" href="#creation-a-base-virtualbox-image" title="Permalink to this headline">¶</a></h2>
+<h2>Creation a base VirtualBox image<a class="headerlink" href="#creation-a-base-virtualbox-image" title="Permalink to this heading">¶</a></h2>
 <p>The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an <a href="#id10"><span class="problematic" id="id11">*</span></a>.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL <a href="#id12"><span class="problematic" id="id13">`&lt;http://brainvisa.info/casa-distro/casa-&lt;iso_name&gt;.ova&gt;`_</span></a> where <cite>&lt;iso name&gt;̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso</cite>, the uploaded image name would be <cite>casa-ubuntu-18.04.4-desktop-amd64.ova</cite>.</p>
 <ol class="arabic simple">
 <li><p>Install VirtualBox version 6 or greater</p></li>
@@ -566,21 +567,21 @@ source container metadata.</p>
 </ol>
 </section>
 <section id="managing-container-images">
-<h2>Managing container images<a class="headerlink" href="#managing-container-images" title="Permalink to this headline">¶</a></h2>
+<h2>Managing container images<a class="headerlink" href="#managing-container-images" title="Permalink to this heading">¶</a></h2>
 <section id="singularity-and-docker">
-<h3>Singularity and Docker<a class="headerlink" href="#singularity-and-docker" title="Permalink to this headline">¶</a></h3>
+<h3>Singularity and Docker<a class="headerlink" href="#singularity-and-docker" title="Permalink to this heading">¶</a></h3>
 <p>In a general way, we designed casa-distro first using <a class="reference external" href="https://www.docker.com">Docker</a>, and then extended it to <a class="reference external" href="https://www.sylabs.io/">Singularity</a>. We use Singularity by actually converting Docker images, so images should be built first using Docker. So Docker is needed to build Singularity images for Casa-distro (this is not needed for regular users, which just download system images, and can use singularity alone, or docker alone).</p>
 <p>Thus, to build a singularity image, one needs to use first <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span> <span class="pre">create_docker</span></code>, then <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span> <span class="pre">create_singularity</span></code>.</p>
 </section>
 <section id="sharing-images">
-<h3>Sharing images<a class="headerlink" href="#sharing-images" title="Permalink to this headline">¶</a></h3>
+<h3>Sharing images<a class="headerlink" href="#sharing-images" title="Permalink to this heading">¶</a></h3>
 <p>Images can be uploaded to a centralized place to allow other users to use them.</p>
 <p>By default <code class="docutils literal notranslate"><span class="pre">publish_docker</span></code> will use <a class="reference external" href="https://hub.docker.com/">Docker Hub</a>, which requires an account and access rights to push images.</p>
 <p>Singularity did not have a public hub by the time we started casa-distro, so <code class="docutils literal notranslate"><span class="pre">publish_singularity</span></code> will push by default somewhere on the <a class="reference external" href="http://brainvisa.info">BrainVISA web site</a>, which also requires to have access to the website account to push. We could use <a class="reference external" href="https://singularity-hub.org/">Singularity Hub</a> in the future.</p>
 <p>Downloading and updating images do not need any access rights, they are public.</p>
 </section>
 <section id="designing-new-images">
-<h3>Designing new images<a class="headerlink" href="#designing-new-images" title="Permalink to this headline">¶</a></h3>
+<h3>Designing new images<a class="headerlink" href="#designing-new-images" title="Permalink to this heading">¶</a></h3>
 <p><em>create_docker</em> may be used to update and rebuild the images which are proposed inside the <em>casa-distro</em> distribution, but this specific use has a limited benefit since they are normally pre-built and are downloaded from the hubs when needed.</p>
 <p><em>create_docker</em> may prove useful however for an application designer who needs to ship specific or additional system packages in the images. In this situation a new image type needs to be designed.</p>
 <p>New image types correspond to subdirectories which will looked for in the following directory trees (when they exist):</p>
@@ -700,7 +701,7 @@ The Dockerfile may (should) be based on another image, in the usual way of build
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -720,7 +721,7 @@ The Dockerfile may (should) be based on another image, in the usual way of build
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

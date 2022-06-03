@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Automated tests with bbi_daily &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="search" title="Search" href="search.html" />
@@ -35,13 +36,13 @@
           <div class="body" role="main">
             
   <section id="automated-tests-with-bbi-daily">
-<h1>Automated tests with bbi_daily<a class="headerlink" href="#automated-tests-with-bbi-daily" title="Permalink to this headline">¶</a></h1>
+<h1>Automated tests with bbi_daily<a class="headerlink" href="#automated-tests-with-bbi-daily" title="Permalink to this heading">¶</a></h1>
 <p>BBI stands for <em>BrainVISA Build Infrastructure</em>. The <code class="docutils literal notranslate"><span class="pre">casa_distro_admin</span>
 <span class="pre">bbi_daily</span></code> command orchestrates automated builds and tests in a given <em>base
 directory</em>. This page is written as a guide to setting up automated tests, see
 <a class="reference internal" href="casa_distro_admin_command_help.html#bbi-daily-help"><span class="std std-ref">bbi_daily</span></a> for the reference documentation.</p>
 <section id="walkthrough">
-<h2>Walkthrough<a class="headerlink" href="#walkthrough" title="Permalink to this headline">¶</a></h2>
+<h2>Walkthrough<a class="headerlink" href="#walkthrough" title="Permalink to this heading">¶</a></h2>
 <p>Here is a detailed log of how nightly builds are set up in NeuroSpin. You can
 take inspiration from it to create your own personalized set-up.</p>
 <ol class="arabic">
@@ -69,7 +70,7 @@ the account password to upload build results. One advantage of using a token
 is the possibility to revoke it at any time. It is recommended to use one
 token per BrainVISA Build Environment and name the token accordingly.</p>
 <dl class="field-list">
-<dt class="field-odd">warning</dt>
+<dt class="field-odd">warning<span class="colon">:</span></dt>
 <dd class="field-odd"><p>You should make this file non-readable by others, e.g. create it
 with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chmod</span> <span class="mi">0600</span> <span class="n">jenkins_auth</span>
@@ -138,7 +139,7 @@ for a long time.</p>
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">note</dt>
+<dt class="field-odd">note<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Remember to set all the needed environment variables. <code class="docutils literal notranslate"><span class="pre">PATH</span></code> may
 need to be set additionally, in case your Singularity installation
 is under <code class="docutils literal notranslate"><span class="pre">/usr/local</span></code> (by default cron limits <code class="docutils literal notranslate"><span class="pre">PATH</span></code> to
@@ -181,7 +182,7 @@ is under <code class="docutils literal notranslate"><span class="pre">/usr/local
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -198,7 +199,7 @@ is under <code class="docutils literal notranslate"><span class="pre">/usr/local
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

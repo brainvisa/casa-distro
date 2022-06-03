@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Casa-Distro &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="search" title="Search" href="search.html" />
@@ -35,17 +36,17 @@
           <div class="body" role="main">
             
   <section id="casa-distro">
-<h1>Casa-Distro<a class="headerlink" href="#casa-distro" title="Permalink to this headline">¶</a></h1>
+<h1>Casa-Distro<a class="headerlink" href="#casa-distro" title="Permalink to this heading">¶</a></h1>
 <p>If you want to install simply casa-distro as a user, you can directly see the <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a>.</p>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
 <section id="what-is-casa">
-<h3>What is CASA ?<a class="headerlink" href="#what-is-casa" title="Permalink to this headline">¶</a></h3>
+<h3>What is CASA ?<a class="headerlink" href="#what-is-casa" title="Permalink to this heading">¶</a></h3>
 <p>CASA = <a class="reference external" href="http://cati-neuroimaging.com">CATI</a> + <a class="reference external" href="http://brainvisa.info">BrainVISA</a></p>
 <p>When these two projects decided to use the same development and software delivery environment, the name CASA was chosen to name this environment.</p>
 </section>
 <section id="what-is-casa-distro">
-<h3>What is Casa-Distro ?<a class="headerlink" href="#what-is-casa-distro" title="Permalink to this headline">¶</a></h3>
+<h3>What is Casa-Distro ?<a class="headerlink" href="#what-is-casa-distro" title="Permalink to this heading">¶</a></h3>
 <p><strong>Short answer:</strong> it’s the way to <strong>run or develop BrainVISA software</strong> in a containerized environment or a virtual machine.</p>
 <p><strong>Longer answer:</strong></p>
 <p>It’s a cross-platform environment which is used by users to install/use BrainVisa and CATI environments, and by developers to provide a common working development environment for BrainVISA and CATI tools. It avoids the manual installation of required development software and libraries, which can cause the use of different versions on different systems.
@@ -53,12 +54,6 @@ It was not unusual to discover differences of behaviour in software that was onl
 <p>Therefore, it was decided to create casa-distro to provide a complete development environment using a virtual appliance to host the compilation system. casa_distro will support two container technologies, <a class="reference external" href="https://www.sylabs.io/">Singularity</a> and <a class="reference external" href="https://www.docker.com">Docker</a> (soon) and one virtual machine technology : <a class="reference external" href="https://www.virtualbox.org/">VirtualBox</a>.</p>
 <p><strong>Note</strong>: in version 3.0 the support for Docker has been temporarily dropped (but should come back as soon as possible).</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 39%" />
-<col style="width: 14%" />
-<col style="width: 38%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td></td>
 <td><p>Singularity (version 3.x)</p></td>
@@ -85,41 +80,41 @@ It was not unusual to discover differences of behaviour in software that was onl
 </section>
 </section>
 <section id="casa-distro-for-users">
-<h2>Casa-Distro for users<a class="headerlink" href="#casa-distro-for-users" title="Permalink to this headline">¶</a></h2>
+<h2>Casa-Distro for users<a class="headerlink" href="#casa-distro-for-users" title="Permalink to this heading">¶</a></h2>
 <p>Users will use Casa-Distro to install and run <a class="reference external" href="http://brainvisa.info">BrainVISA</a> software.</p>
 <p>See the <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install it.</p>
 <p>The containerization allows to have a single binary distribution for all host operating systems and versions.</p>
 </section>
 <section id="casa-distro-for-developers">
-<h2>Casa-Distro for developers<a class="headerlink" href="#casa-distro-for-developers" title="Permalink to this headline">¶</a></h2>
+<h2>Casa-Distro for developers<a class="headerlink" href="#casa-distro-for-developers" title="Permalink to this heading">¶</a></h2>
 <section id="what-casa-distro-is-not">
-<h3>What Casa-Distro is <strong>not</strong><a class="headerlink" href="#what-casa-distro-is-not" title="Permalink to this headline">¶</a></h3>
+<h3>What Casa-Distro is <strong>not</strong><a class="headerlink" href="#what-casa-distro-is-not" title="Permalink to this heading">¶</a></h3>
 <p>Casa-Distro is not a build system: this is the job of <a class="reference external" href="../brainvisa-cmake-1.0/index.html">BrainVisa-Cmake</a>. Casa-distro brings a wrapper for the build system: it provides Docker images of Linux systems which contain <a class="reference external" href="../brainvisa-cmake-1.0/index.html">BrainVisa-Cmake</a> and many other thirdparty development tools and libraries, which are already setup for development and distribution of tools.</p>
 <p>The user will be able to use the build system (<a class="reference external" href="../brainvisa-cmake-1.0/bv_maker.html">bv_maker</a>), inside Singularity, Docker, or VirtualBox, in a way that ensures to build, run, and ship software that is compatible with public distributions of BrainVisa.</p>
 <p>See the <a class="reference internal" href="developer.html"><span class="doc">Developping in the Casa-Distro BrainVISA environment</span></a> documentation.</p>
 </section>
 </section>
 <section id="installation-and-setup">
-<span id="install"></span><h2>Installation and setup<a class="headerlink" href="#installation-and-setup" title="Permalink to this headline">¶</a></h2>
+<span id="install"></span><h2>Installation and setup<a class="headerlink" href="#installation-and-setup" title="Permalink to this heading">¶</a></h2>
 <p>Follow roughly the same procedure as for user setup, as axplained in: <a class="reference external" href="../web-5.0/download.html#developers-install">BrainVisa download / install section</a>.</p>
 </section>
 <section id="main-commands">
-<h2>3 main commands<a class="headerlink" href="#main-commands" title="Permalink to this headline">¶</a></h2>
+<h2>3 main commands<a class="headerlink" href="#main-commands" title="Permalink to this heading">¶</a></h2>
 <section id="bv-command">
-<h3><a class="reference internal" href="bv_command.html"><span class="doc">The bv command</span></a><a class="headerlink" href="#bv-command" title="Permalink to this headline">¶</a></h3>
+<h3><a class="reference internal" href="bv_command.html"><span class="doc">The bv command</span></a><a class="headerlink" href="#bv-command" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference internal" href="bv_command.html"><span class="doc">The bv command</span></a> is the lightest, user-oriented command in casa-distro. It supports a single <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> and allows the minimum required to configure and run commands (or open a shell) in an installed environment container.</p>
 </section>
 <section id="casa-distro-command">
-<h3><a class="reference internal" href="casa_distro_command.html"><span class="doc">The casa_distro command</span></a><a class="headerlink" href="#casa-distro-command" title="Permalink to this headline">¶</a></h3>
+<h3><a class="reference internal" href="casa_distro_command.html"><span class="doc">The casa_distro command</span></a><a class="headerlink" href="#casa-distro-command" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference internal" href="casa_distro_command.html"><span class="doc">The casa_distro command</span></a> supports multiple <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a> using selection parameters (see <a class="reference internal" href="concepts.html"><span class="doc">Casa-distro concepts</span></a>) and allows also to run commands inside containers, but also to setup / install, manage, delete <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a> and <a class="reference internal" href="concepts.html#image"><span class="std std-ref">container images</span></a>.</p>
 </section>
 <section id="casa-distro-admin-command">
-<h3><a class="reference internal" href="casa_distro_admin_command.html"><span class="doc">The casa_distro_admin command</span></a><a class="headerlink" href="#casa-distro-admin-command" title="Permalink to this headline">¶</a></h3>
+<h3><a class="reference internal" href="casa_distro_admin_command.html"><span class="doc">The casa_distro_admin command</span></a><a class="headerlink" href="#casa-distro-admin-command" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference internal" href="casa_distro_admin_command.html"><span class="doc">The casa_distro_admin command</span></a> is used to create new container images and publish them on a web server for other users.</p>
 </section>
 </section>
 <section id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="concepts.html">Casa-distro concepts</a><ul>
@@ -344,7 +339,7 @@ It was not unusual to discover differences of behaviour in software that was onl
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -361,7 +356,7 @@ It was not unusual to discover differences of behaviour in software that was onl
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>
