@@ -175,7 +175,8 @@ def update_docker_images(image_name_filters=['*']):
 
 def get_image_id(image_full_name):
     try:
-        images = check_output(['docker', 'images', image_full_name])
+        images = check_output(['docker', 'images', image_full_name],
+                              encoding="utf8")
     except subprocess.CalledProcessError:
         return None
     images = [i for i in images.split('\n')[1:] if i != '']
@@ -474,7 +475,7 @@ def convert_singularity_image_to_docker(base, metadata,
 
     # Find out which SIF ID to use (look for Squashfs)
     cmd = ['singularity', 'sif', 'list', base]
-    sif_out = subprocess.check_output(cmd).split('\n')
+    sif_out = subprocess.check_output(cmd, encoding="utf8").split('\n')
 
     n = 0
     for i, line in enumerate(sif_out):
