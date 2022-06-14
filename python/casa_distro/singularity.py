@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import getpass
 import uuid
+import shlex
 
 from . import six
 from .log import boolean_value
@@ -378,9 +379,10 @@ Bootstrap: localimage
 
     scripts = []
     temps = []
+    env = {}
     try:
         if install_thirdparty not in (None, 'none', 'None', 'NONE'):
-            for source_dir, symlink_name, setup_scripts \
+            for source_dir, symlink_name, setup_scripts, env_dict \
                     in get_thirdparty_software(install_thirdparty):
                 print('installing %s from %s...' % (symlink_name, source_dir))
                 rb.copy_root(source_dir, '/usr/local')
@@ -396,6 +398,17 @@ Bootstrap: localimage
                     os.chmod(tmp_name, 0o755)
                     rb.copy_root(tmp_name, osp.dirname(script_file))
                     scripts.append(script_file)
+                env.update(env_dict)
+
+        if env:
+            d = tempfile.mkdtemp(prefix='casa_distro_env')
+            temps.append(d)
+            tmp_name = osp.join(d, '99-thirdparty.sh')
+            with open(tmp_name, 'w') as f:
+                for name, value in env.items():
+                    f.write('export %s="%s"' % (name, shlex.quote(value)))
+            os.chmod(tmp_name, 0o755)
+            rb.copy_root(tmp_name, '/.singularity.d/env')
 
         # # replace the python symlink (not needed any longer as copy_root here
         # # preserves all symlinks)

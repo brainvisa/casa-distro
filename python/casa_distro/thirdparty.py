@@ -42,7 +42,16 @@ def get_thirdparty_software(install_thirdparty):
             scripts = init_fn()
         else:
             scripts = {}
-        yield sw_path, soft_name, scripts
+
+        env_fn = getattr(sys.modules[__name__],
+                         'get_%s_env' % soft_name.replace('-', '_'),
+                         None)
+        if env_fn:
+            env = env_fn()
+        else:
+            env = {}
+
+        yield sw_path, soft_name, scripts, env
 
 
 def get_spm12_standalone_init():
@@ -73,3 +82,10 @@ neuroConfig.app.configuration.save(siteOptionFile)
     scripts = {'/casa/install/templates/brainvisa/spm.py': spm_script}
 
     return scripts
+
+
+def get_spm12_standalone_env():
+    # env variables for SPM
+    # (see https://github.com/brainvisa/casa-distro/issues/268)
+    env = {'SPM_HTML_BROWSER': '0'}
+    return env
