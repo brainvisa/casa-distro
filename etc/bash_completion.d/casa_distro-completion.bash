@@ -142,6 +142,9 @@ function _complete_casa_distro_option_()
     bv_maker_steps)
         COMPREPLY=($(compgen -W "info status sources configure build doc test pack install_pack test_pack testref testref_pack" -- "${word}"))
         ;;
+    install_thirdparty)
+        COMPREPLY=($(compgen -W "default all spm12-standalone freesurfer" -- "${word}"))
+        ;;
     esac
 }
 

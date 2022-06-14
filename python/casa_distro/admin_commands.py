@@ -653,7 +653,7 @@ def create_user_image(
         install='yes',
         install_doc='yes',
         install_test='yes',
-        install_thirdparty='all',
+        install_thirdparty='default',
         generate='yes',
         zip='no',
         verbose=True,
@@ -728,7 +728,8 @@ def create_user_image(
         default={install_thirdparty_default}
         If not "none", no third-party software is installed in the image. If
         "all", all available software will be installed during the ``generate``
-        step. Other values are understood as a list of software
+        step. If "default", a default list of software will be installed. Other
+        values are understood as a list of software
         ("spm12-standalone,freesurfer"). Each will be installed from their host
         system location into ``/usr/local`` on the container image. Software
         location will be searched in a small search list (/usr/local, /i2bm/
