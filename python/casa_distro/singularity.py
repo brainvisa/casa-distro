@@ -406,7 +406,7 @@ Bootstrap: localimage
             tmp_name = osp.join(d, '99-thirdparty.sh')
             with open(tmp_name, 'w') as f:
                 for name, value in env.items():
-                    f.write('export %s="%s"' % (name, shlex.quote(value)))
+                    f.write('export %s="%s"\n' % (name, shlex.quote(value)))
             os.chmod(tmp_name, 0o755)
             rb.copy_root(tmp_name, '/.singularity.d/env')
 
