@@ -93,6 +93,28 @@ def get_thirdparty_software(install_thirdparty='default'):
 
 def get_spm12_standalone_init():
     ''' SPM setup script for Axon
+
+    Note about SPM standalone:
+
+    Here we copy an already installed directory, which should contain both the
+    SPM standalone distribution, and the matlab MCR. We have used (for now)
+    SPM12-7771 and MCR v97 as in:
+    https://github.com/spm/spm-docker/blob/main/matlab/singularity.def
+
+    The MCR is "lightened" using only the core + numerics packages, not the
+    whole MCR (thus is 2.6 GB instead of 5.8 GB, which will increase in v911
+    and later).
+    See:
+    https://github.com/brainvisa/casa-distro/issues/268
+
+    We could have run the installation procedure the "official" way as in the
+    spm-docker project,but this would involve systematic download of the SPM
+    distribution and of the full MCR distribution at each container build,
+    which takes too much time. So for now SPM has to be pre-installed on the
+    host system. We could improve the procedure and download / install it only
+    if it is not already present, but this would need to handle installation
+    paths, permissions (sudo to install in /usr/local for instance) etc, which
+    we don't want to deal with at the moment.
     '''
     # init script for axon
     spm_script = '''#!/usr/bin/env python
