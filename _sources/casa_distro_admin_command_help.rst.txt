@@ -236,7 +236,7 @@ the corresponding option to "no" :
   installation directory. This modify the development environment by
   updating its installation directory.
 
-- generate: generate a new image for the development environment. The ne
+- generate: generate a new image for the development environment. The new
   image is based on base_image and the installation directory of the
   development environment is copied into the image in /casa/install.
 
@@ -308,6 +308,18 @@ install_test
     If "true", "yes" or "1", run 'make install-test' as part of the install
     step.
     If "false", "no" or "0", skip this step
+install_thirdparty
+    default=default
+    If not "none", no third-party software is installed in the image. If
+    "all", all available software will be installed during the ``generate``
+    step. If "default", a default list of software will be installed. Other
+    values are understood as a list of software
+    ("spm12-standalone,freesurfer"). Each will be installed from their host
+    system location into ``/usr/local`` on the container image. Software
+    location will be searched in a small search list (/usr/local, /i2bm/
+    local). If installed in another location, this location may be passed
+    after a ``=`` sign in the software name, ex:
+    ``spm12-standalone=/opt/spm,freesurfer``.
 generate
     default=yes
     If "true", "yes" or "1", perform the image creation step.
