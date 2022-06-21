@@ -25,3 +25,6 @@ PIP3="$SUDO python3 -m pip --no-cache-dir"
 
 # Python packages that do not exist as APT packages
 $PIP3 install pre-commit
+
+# used in colorado
+$PIP3 install sphinx_rtd_theme
