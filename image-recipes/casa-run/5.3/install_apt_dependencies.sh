@@ -213,6 +213,7 @@ brainvisa_python_runtime_dependencies=(
     python3-pyqt5.qtxmlpatterns
 
     python3-plotly
+    python3-pcl
 
 #    python3-torch  # will be installed via pip to get cuda support
 #    python3-torchvision
