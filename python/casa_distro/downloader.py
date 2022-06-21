@@ -384,6 +384,9 @@ def download_file(url, dest, timeout=10., callback=None, cbk_interval=0.3,
         except Exception:
             done = False
     if not done:
+        if not hasattr(sys, 'last_type'):
+            raise RuntimeError(
+                'No download method could be used to download %s' % url)
         six.reraise(sys.last_type, sys.last_value, sys.last_traceback)
 
     if md5_check:
