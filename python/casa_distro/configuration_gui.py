@@ -195,7 +195,7 @@ class InstallEditor(Qt.QDialog):
                 res = Qt.QMessageBox.question(
                     None, 'Erase install ?',
                     'An older installation exists. Erase it ?')
-                print('res:', res)
+                # print('res:', res)
                 if res != Qt.QMessageBox.Yes:
                     do_it = False
                 else:
@@ -392,14 +392,21 @@ class CasaLauncher(Qt.QDialog):
 
         with open(conf_path, 'r') as conf_file:
             self.conf = json.load(conf_file)
+        self.global_conf = {}
 
         user_config_file = user_config_filename()
+        globc = True  # 1st file is the global conf
         for additional_config_file in [user_config_file] \
             + [c for c in self.conf.get('config_files', [])
                if c != user_config_file]:
             if osp.exists(additional_config_file):
                 with open(additional_config_file) as f:
-                    update_config(self.conf, json.load(f))
+                    added_conf = json.load(f)
+                if globc:
+                    self.global_conf = added_conf
+                else:
+                    update_config(self.conf, added_conf)
+            globc = False
 
         self.setup_ui()
         self.setup_links()
@@ -418,7 +425,7 @@ class CasaLauncher(Qt.QDialog):
         self._main_layout.addWidget(Qt.QLabel(
             '<b>environment host path:</b> %s' % env_path))
         self.env_path = env_path
-        self._mount_manager = MountManager(self.conf)
+        self._mount_manager = MountManager(self.conf, self.global_conf)
 
         conf_line = Qt.QHBoxLayout()
         conf_line.addWidget(Qt.QLabel('<b>Configuration:</b>'))
@@ -477,27 +484,37 @@ class CasaLauncher(Qt.QDialog):
 
     def save_conf(self):
         if self._mount_manager.check_all_mounts():
-            print('SAVE')
+            # print('SAVE')
             conf_wo_mounts = dict(self.conf)
-            mounts = self.conf.get('mounts', {})
             if 'mounts' in self.conf:
                 del conf_wo_mounts['mounts']
-            try:
-                with open(self.conf_path, 'w') as conf_file:
-                    json.dump(conf_wo_mounts, conf_file, indent=4)
-            except (IOError, OSError):
-                # read-only shared environment ?
-                pass
+
             user_config_file = user_config_filename()
             if osp.exists(user_config_file):
                 with open(user_config_file) as f:
                     uconf = json.load(f)
             else:
                 uconf = {}
-            if mounts or 'mounts' in uconf:
+
+            old_umounts = uconf.get('mounts', {})
+            if 'mounts' in uconf:
+                del uconf['mounts']
+            mounts = self._mount_manager.mounts
+            for container, hg in mounts.items():
+                host, is_global = hg
+                if is_global:
+                    uconf.setdefault('mounts', {})[container] = host
+                else:
+                    conf_wo_mounts.setdefault('mounts', {})[container] = host
+            try:
+                with open(self.conf_path, 'w') as conf_file:
+                    json.dump(conf_wo_mounts, conf_file, indent=4)
+            except (IOError, OSError):
+                # read-only shared environment ?
+                pass
+            if uconf.get('mounts', {}) != old_umounts:
                 if not osp.isdir(osp.dirname(user_config_file)):
                     os.makedirs(osp.dirname(user_config_file))
-                uconf['mounts'] = mounts
                 with open(user_config_file, 'w') as f:
                     json.dump(uconf, f, indent=4)
 
@@ -578,7 +595,7 @@ class CasaLauncher(Qt.QDialog):
             osize = os.stat(overlay).st_size
             self.container_status['overlay'] = osize
             size_str = self.size_string(osize)
-            print(osize)
+            # print(osize)
             cont_mode += ' <font color="#008000">with overlay (%s)</font>' \
                 % size_str
 
@@ -604,10 +621,15 @@ class CasaLauncher(Qt.QDialog):
 
 class MountManager(Qt.QWidget):
 
-    def __init__(self, conf):
+    def __init__(self, conf, global_conf):
         super(MountManager, self).__init__()
         self.conf = conf
+        self.global_conf = global_conf
         self.modified = False
+        self.mounts = {k: [v, True]
+                       for k, v in self.global_conf.get('mounts', {}).items()}
+        self.mounts.update(
+            {k: [v, False] for k, v in self.conf.get('mounts', {}).items()})
 
         self._red = Qt.QColor(250, 130, 130)
         self._orange = Qt.QColor(250, 200, 100)
@@ -621,9 +643,10 @@ class MountManager(Qt.QWidget):
         self._main_layout = Qt.QVBoxLayout(self)
 
         self._mount_table = Qt.QTableWidget()
-        self._mount_table.setColumnCount(2)
-        self._mount_table.setRowCount(len(self.conf.get('mounts', {})))
-        self._mount_table.setHorizontalHeaderLabels(['Host', 'Container'])
+        self._mount_table.setColumnCount(3)
+        self._mount_table.setRowCount(len(self.mounts))
+        self._mount_table.setHorizontalHeaderLabels(['Host', 'Container',
+                                                     'Global'])
         self._mount_table.horizontalHeader().setSectionResizeMode(
             0, Qt.QHeaderView.Stretch)
         self._mount_table.horizontalHeader().setSectionResizeMode(
@@ -658,14 +681,20 @@ class MountManager(Qt.QWidget):
 
     def update_ui(self):
         self._mount_table.clearContents()
-        for idx, (container, host) in enumerate(
-                self.conf.get('mounts', {}).items()):
+        for idx, (container, hostg) in enumerate(self.mounts.items()):
+            host, is_global = hostg
             self._mount_table.setItem(idx, 0, Qt.QTableWidgetItem(host))
             self._mount_table.setItem(idx, 1, Qt.QTableWidgetItem(container))
             self._mount_table.item(idx, 0).setData(Qt.Qt.UserRole, container)
+            self._mount_table.setItem(idx, 2, Qt.QTableWidgetItem(''))
+            if is_global:
+                checked = Qt.Qt.Checked
+            else:
+                checked = Qt.Qt.Unchecked
+            self._mount_table.item(idx, 2).setCheckState(checked)
 
     def _add_mount_row(self):
-        if '' in self.conf.get('mounts', {}):
+        if '' in self.mounts:
             Qt.QMessageBox.critical(
                 None,
                 'Malformed mount point',
@@ -691,7 +720,13 @@ class MountManager(Qt.QWidget):
                 Qt.QTableWidgetItem(''))
             self._mount_table.item(self._mount_table.rowCount() - 1,
                                    0).setData(Qt.Qt.UserRole, '')
-            self.conf.setdefault('mounts', {})[''] = host_path
+            self._mount_table.setItem(
+                self._mount_table.rowCount() - 1, 2,
+                Qt.QTableWidgetItem(''))
+            self._mount_table.item(
+                self._mount_table.rowCount() - 1, 2).setCheckState(
+                    Qt.Qt.Checked)
+            self.mounts[''] = [host_path, True]
             self.check_all_mounts()
 
     def _delete_mount_row(self):
@@ -703,7 +738,7 @@ class MountManager(Qt.QWidget):
                 reverse=True)
             for row in rows:
                 host_path = self._mount_table.item(row, 1).text()
-                del self.conf.get('mounts', {})[host_path]
+                del self.mounts[host_path]
                 self._mount_table.removeRow(row)
 
     def _help_mounts(self):
@@ -756,7 +791,7 @@ h2 {
 <p>Mount points allow to see the host system directories from the container. They are needed to read and write files. Some mount points are automatically configured in <b>bv</b> / <b>Casa-Distro</b>, but additional mount points may be added by the user.
 </p>
 
-<h2>Automatically configure mount points</h2>
+<h2>Automatically configured mount points</h2>
 <p>
 <ul>
   <li>Environment directory, seen under <tt>/casa/host</tt></li>
@@ -776,6 +811,14 @@ The user is thus first asked for the host-side directory (the one to be mounted)
 <p>
 Once the host-side directory has been chosen, it is displayed as the first column in a new line of the mount table. the second column ("Container") must be edited (via a double click), and the container-side mount point must be typed here. It is not a file/directory browser since the container-side directory does not necessarily exist and may not be found on the container filesystem.
 </p>
+<h3>Global / local mounts</h3>
+<p>A <b>"global" mount point</b> is shared between all user casa-distro environments: it is saved in the host user configuration file.
+</p>
+<p>A <b>"local" mount point</b> is only used in the speficic environment which is currently being configured.
+</p>
+<p>The global or local state is displayed in the check button in the 3rd column of mount paths edition. They can be chenged by clicking on the check button. <b>Be careful</b> because this will actually change the global user settings.
+</p>
+<h3>Validation</h3>
 <p>
 After mount points have been edited, they must be validated (using the "OK" button in the configuration GUI), and <tt>bv</tt> must be restarted using the new mounts.
 </p>
@@ -794,15 +837,21 @@ See the <a href="https://brainvisa.info/configuration.html">BrainVisa configurat
 
     def _value_modified(self, row, col):
         if (not getattr(self._mount_table.item(row, 0), 'text', None)
-            or not getattr(self._mount_table.item(row, 1),
-                           'text', None)):
+                or not getattr(self._mount_table.item(row, 1),
+                               'text', None)
+                or self._mount_table.item(row, 2) is None):
             return
         host = self._mount_table.item(row, 0).text()
         cont = self._mount_table.item(row, 1).text()
+        checked = self._mount_table.item(row, 2).checkState()
+        if checked == Qt.Qt.Checked:
+            is_global = True
+        else:
+            is_global = False
         old_cont = self._mount_table.item(row, 0).data(Qt.Qt.UserRole)
         if old_cont is not None and old_cont != cont:
-            del self.conf['mounts'][old_cont]
-        self.conf.setdefault('mounts', {})[cont] = host
+            del self.mounts[old_cont]
+        self.mounts[cont] = [host, is_global]
         self._mount_table.item(row, 0).setData(Qt.Qt.UserRole, cont)
         self.valueChanged.emit()
         self.check_all_mounts()
@@ -824,12 +873,15 @@ See the <a href="https://brainvisa.info/configuration.html">BrainVisa configurat
             if container in in_container:
                 self._mount_table.item(idx, 0).setBackground(self._orange)
                 self._mount_table.item(idx, 1).setBackground(self._orange)
+                self._mount_table.item(idx, 2).setBackground(self._orange)
 
                 other_idx = in_container.index(container)
                 self._mount_table.item(
                     other_idx, 0).setBackground(self._orange)
                 self._mount_table.item(
                     other_idx, 1).setBackground(self._orange)
+                self._mount_table.item(
+                    other_idx, 2).setBackground(self._orange)
                 all_mounts_ok = False
 
             elif self.check_mount(host, container):
@@ -837,10 +889,13 @@ See the <a href="https://brainvisa.info/configuration.html">BrainVisa configurat
                     idx, 0).setBackground(Qt.QColor('white'))
                 self._mount_table.item(
                     idx, 1).setBackground(Qt.QColor('white'))
+                self._mount_table.item(
+                    idx, 2).setBackground(Qt.QColor('white'))
 
             else:
                 self._mount_table.item(idx, 0).setBackground(self._red)
                 self._mount_table.item(idx, 1).setBackground(self._red)
+                self._mount_table.item(idx, 2).setBackground(self._red)
                 all_mounts_ok = False
 
             in_container.append(container)
@@ -1079,7 +1134,7 @@ class ContainerImageEditor(Qt.QDialog):
         self.conf = conf
         self.container_status = container_status
         self.conf_path = conf_path
-        print(container_status)
+        # print(container_status)
 
         layout = Qt.QVBoxLayout()
         self.setLayout(layout)
@@ -1120,7 +1175,7 @@ class ContainerImageEditor(Qt.QDialog):
         self.validation_btns = validation_btns
 
     def install_rw(self, state):
-        print(state)
+        # print(state)
         if not state:
             self.remove_rw()
         else:
