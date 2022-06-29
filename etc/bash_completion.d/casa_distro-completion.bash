@@ -142,6 +142,9 @@ function _complete_casa_distro_option_()
     bv_maker_steps)
         COMPREPLY=($(compgen -W "info status sources configure build doc test pack install_pack test_pack testref testref_pack" -- "${word}"))
         ;;
+    install_thirdparty)
+        COMPREPLY=($(compgen -W "default all spm12-standalone freesurfer" -- "${word}"))
+        ;;
     esac
 }
 
@@ -517,7 +520,7 @@ function _complete_casa_distro_admin_()
             COMPREPLY=($(compgen -W "image=" -- "${word}"))
             ;;
         create_user_image)
-            COMPREPLY=($(compgen -W "version= name= base_image= distro= branch= system= image_version= environment_name= container_type= output= force= base_directory= install= install_doc= install_test= generate= zip= fakeroot= verbose=" -- "${word}"))
+            COMPREPLY=($(compgen -W "version= name= base_image= distro= branch= system= image_version= environment_name= container_type= output= force= base_directory= install= install_doc= install_test= install_thirdparty= generate= zip= fakeroot= verbose=" -- "${word}"))
             ;;
         singularity_deb)
             COMPREPLY=($(compgen -W "system= output= dockerhub= version= go_version=" -- "${word}"))

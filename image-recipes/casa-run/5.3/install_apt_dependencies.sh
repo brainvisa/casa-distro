@@ -213,9 +213,10 @@ brainvisa_python_runtime_dependencies=(
     python3-pyqt5.qtxmlpatterns
 
     python3-plotly
+    python3-pcl
 
-    python3-torch
-    python3-torchvision
+#    python3-torch  # will be installed via pip to get cuda support
+#    python3-torchvision
 )
 
 
@@ -225,13 +226,58 @@ brainvisa_python_runtime_dependencies=(
 # script. In order to generate this list, run the following command in a
 # casa-dev container where the whole BrainVISA tree has been compiled:
 #
-# <casa-distro>/share/list-shared-lib-packages.sh /casa/build /usr/local
+# <casa-distro>/share/scripts/list-shared-lib-packages.sh /casa/host/build /usr/local
 #
 # Please DO NOT add other packages to this list, so that it can be wiped and
 # regenerated easily. If other libraries are needed, consider creating a new
 # variable to store them.
 brainvisa_shared_library_dependencies=(
-    ## TODO regenerate this list once we are ready to make user images...
+    libcairo2
+    libdcmtk16
+    libgdk-pixbuf-2.0-0
+    libgfortran5
+    libglib2.0-0
+    libglu1-mesa
+    libgomp1
+    libjpeg-turbo8
+    libjxr0
+    libminc2-5.2.0
+    libnetcdf19
+    libopenjp2-7
+    libpng16-16
+    libpython3.10
+    libqt5core5a
+    libqt5dbus5
+    libqt5designer5
+    libqt5gui5
+    libqt5help5
+    libqt5multimedia5
+    libqt5multimediawidgets5
+    libqt5network5
+    libqt5opengl5
+    libqt5positioning5
+    libqt5printsupport5
+    libqt5qml5
+    libqt5quick5
+    libqt5quickwidgets5
+    libqt5sql5
+    libqt5svg5
+    libqt5test5
+    libqt5webchannel5
+    libqt5webengine5
+    libqt5webenginecore5
+    libqt5webenginewidgets5
+    libqt5webkit5
+    libqt5widgets5
+    libqt5x11extras5
+    libqt5xml5
+    libqt5xmlpatterns5
+    libqwt-qt5-6
+    libsigc++-2.0-0v5
+    libstdc++6
+    libsvm3
+    libtiff5
+    libxml2
 )
 
 # Programs and data that BrainVISA depends on at runtime
@@ -244,8 +290,6 @@ brainvisa_misc_runtime_dependencies=(
 # Other dependencies of BrainVISA (please indicate the installation reason for
 # each dependency).
 brainvisa_other_dependencies=(
-    # libjxr is needed for openslide (MIRCen's fork with CZI support)
-    libjxr0
     # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
     # displayed at the start of each executable.
     libqt5sql5-sqlite

@@ -12,12 +12,12 @@ if [ -z "$SVN_USERNAME" ]; then
     exit 1
 fi
 
-if [ "$1" = "Username for 'https://bioproj.extra.cea.fr': " ]; then
+if [ "$1" = "Username for 'https://bioproj.extra.cea.fr': " -o "$1" = "Username for 'https://bioproj.cea.fr': " ]; then
     # This informational message must be printed on stderr, because stdout is
     # used for outputting the username.
     echo "Using BioProj credentials stored in svn.secret (username '$SVN_USERNAME')" >&2
     printf '%s' "$SVN_USERNAME" && exit 0
-elif [ "$1" = "Password for 'https://${SVN_USERNAME}@bioproj.extra.cea.fr': " ]; then
+elif [ "$1" = "Password for 'https://${SVN_USERNAME}@bioproj.extra.cea.fr': " -o "$1" = "Password for 'https://${SVN_USERNAME}@bioproj.cea.fr': " ]; then
     if [ -z "$SVN_PASSWORD" ]; then
         echo 'No SVN_PASSWORD variable was found in svn.secret' >&2
         exit 1

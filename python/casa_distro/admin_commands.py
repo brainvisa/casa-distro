@@ -653,6 +653,7 @@ def create_user_image(
         install='yes',
         install_doc='yes',
         install_test='yes',
+        install_thirdparty='default',
         generate='yes',
         zip='no',
         verbose=True,
@@ -668,7 +669,7 @@ def create_user_image(
       installation directory. This modify the development environment by
       updating its installation directory.
 
-    - generate: generate a new image for the development environment. The ne
+    - generate: generate a new image for the development environment. The new
       image is based on base_image and the installation directory of the
       development environment is copied into the image in /casa/install.
 
@@ -723,6 +724,18 @@ def create_user_image(
         If "true", "yes" or "1", run 'make install-test' as part of the install
         step.
         If "false", "no" or "0", skip this step
+    install_thirdparty
+        default={install_thirdparty_default}
+        If not "none", no third-party software is installed in the image. If
+        "all", all available software will be installed during the ``generate``
+        step. If "default", a default list of software will be installed. Other
+        values are understood as a list of software
+        ("spm12-standalone,freesurfer"). Each will be installed from their host
+        system location into ``/usr/local`` on the container image. Software
+        location will be searched in a small search list (/usr/local, /i2bm/
+        local). If installed in another location, this location may be passed
+        after a ``=`` sign in the software name, ex:
+        ``spm12-standalone=/opt/spm,freesurfer``.
     generate
         default={generate_default}
         If "true", "yes" or "1", perform the image creation step.
@@ -904,14 +917,16 @@ def create_user_image(
         # filter kwargs to avoid passing unexpected or duplicate parameters
         kwargs = {k: v for k, v in kwargs.items()
                   if k in ('fakeroot', )}
-        image_id, msg = module.create_user_image(base_image=base_image,
-                                                 dev_config=config,
-                                                 version=version,
-                                                 output=output,
-                                                 force=force,
-                                                 base_directory=base_directory,
-                                                 verbose=verbose,
-                                                 **kwargs)
+        image_id, msg = module.create_user_image(
+            base_image=base_image,
+            dev_config=config,
+            version=version,
+            output=output,
+            force=force,
+            base_directory=base_directory,
+            verbose=verbose,
+            install_thirdparty=install_thirdparty,
+            **kwargs)
         if msg:
             print(msg)
 

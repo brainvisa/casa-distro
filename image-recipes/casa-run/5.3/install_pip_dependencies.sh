@@ -39,11 +39,11 @@ ${PIP_INSTALL} -U "pydantic>=1.9"
 
 # Packages not available in APT
 ${PIP_INSTALL} nipype
-# ${PIP_INSTALL} dipy  # dipy fails to install in python 3.10 by now (2022/03/03)
+${PIP_INSTALL} dipy
 
 # Runtime dependencies of Morphologist
-# ${PIP_INSTALL} torch
-# ${PIP_INSTALL} torch-vision
+${PIP_INSTALL} torch
+${PIP_INSTALL} torch-vision
 
 # Runtime dependency of Constellation
 ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
@@ -68,3 +68,6 @@ ${PIP_INSTALL} pip-search
 
 # used by fold dico tools (deep_folding etc)
 $PIP3 install 'pqdm' 'GitPython'
+
+# fix tornado for python 3.10
+$SUDO sed -i s/collections.MutableMapping/collections.abc.MutableMapping/ /usr/local/lib/python3.10/dist-packages/tornado/httputil.py

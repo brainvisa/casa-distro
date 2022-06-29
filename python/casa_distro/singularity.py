@@ -12,10 +12,12 @@ import subprocess
 import tempfile
 import getpass
 import uuid
+import shlex
 
 from . import six
 from .log import boolean_value
 from casa_distro.defaults import default_base_directory
+from .thirdparty import get_thirdparty_software
 
 try:
     from shutil import which as find_executable
@@ -99,6 +101,14 @@ class RecipeBuilder:
                 self.sections.setdefault('setup', []).append(
                     'cp -a %s %s'
                     % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+
+    def symlink(self, target, link_name):
+        '''
+        Create a symbolic link inside the VM
+        '''
+        self.sections.setdefault('setup', []).append(
+            'ln -s %s ${SINGULARITY_ROOTFS}/%s' % (target, link_name)
+        )
 
     def copy_user(self, source_file, dest_dir, preserve_symlinks=True,
                   preserve_ext_symlinks=True):
@@ -303,7 +313,8 @@ def create_user_image(base_image,
                       force='no',
                       fakeroot='yes',
                       base_directory=default_base_directory,
-                      verbose=None):
+                      verbose=None,
+                      install_thirdparty='all'):
     '''
     Returns
     -------
@@ -365,45 +376,86 @@ Bootstrap: localimage
 
     rb = RecipeBuilder(output)
     rb.copy_root(dev_config['directory'] + '/install', '/casa')
-    # # replace the python symlink (not needed any longer as copy_root here
-    # # preserves all symlinks)
-    # py_exe = osp.join(dev_config['directory'], 'install/bin/python')
-    # if osp.exists(py_exe) and osp.islink(py_exe):
-    #     py_link = os.readlink(py_exe)
-    #     rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
-    rb.install_casa_distro('/casa/casa-distro')
-    rb.run_user('if [ -f /casa/install/share/brainvisa-share-*/'
-                'database-*.sqlite ]; '
-                'then touch /casa/install/share/brainvisa-share-*/'
-                'database-*.sqlite; fi')
-    rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
-                % rb.image_id)
-    rb.write(recipe)
-    recipe.flush()
 
-    if verbose:
-        print('---------- Singularity recipe ----------', file=verbose)
-        print(open(recipe.name).read(), file=verbose)
-        print('----------------------------------------', file=verbose)
-        verbose.flush()
-    build_command = _singularity_build_command(force=force, fakeroot=fakeroot)
-    # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
-    # permission issue with --fakeroot and NFS root_squash.
+    scripts = []
+    temps = []
+    env = {}
     try:
-        subprocess.check_call(build_command + [output, recipe.name],
-                              cwd='/')
-    except Exception:
-        if fakeroot:
-            print('** Image creation has failed **', file=sys.stderr)
-            print('If you see an error message about fakeroot not working '
-                  'on your system, then try the following command (you '
-                  'need sudo permissions):', file=sys.stderr)
-            print('sudo singularity config fakeroot --add %s'
-                  % getpass.getuser(), file=sys.stderr)
-            print(file=sys.stderr)
-        raise
+        if install_thirdparty not in (None, 'none', 'None', 'NONE'):
+            for source_dir, symlink_name, setup_scripts, env_dict \
+                    in get_thirdparty_software(install_thirdparty):
+                print('installing %s from %s...' % (symlink_name, source_dir))
+                rb.copy_root(source_dir, '/usr/local')
+                if symlink_name:
+                    rb.symlink(osp.basename(source_dir),
+                               osp.join('/usr/local', symlink_name))
+                for script_file, script in setup_scripts.items():
+                    d = tempfile.mkdtemp(prefix='casa_distro_script')
+                    temps.append(d)
+                    tmp_name = osp.join(d, osp.basename(script_file))
+                    with open(tmp_name, 'w') as f:
+                        f.write(script)
+                    os.chmod(tmp_name, 0o755)
+                    rb.copy_root(tmp_name, osp.dirname(script_file))
+                    scripts.append(script_file)
+                env.update(env_dict)
 
-    return (rb.image_id, None)
+        if env:
+            d = tempfile.mkdtemp(prefix='casa_distro_env')
+            temps.append(d)
+            tmp_name = osp.join(d, '99-thirdparty.sh')
+            with open(tmp_name, 'w') as f:
+                for name, value in env.items():
+                    f.write('export %s="%s"\n' % (name, shlex.quote(value)))
+            os.chmod(tmp_name, 0o755)
+            rb.copy_root(tmp_name, '/.singularity.d/env')
+
+        # # replace the python symlink (not needed any longer as copy_root here
+        # # preserves all symlinks)
+        # py_exe = osp.join(dev_config['directory'], 'install/bin/python')
+        # if osp.exists(py_exe) and osp.islink(py_exe):
+        #     py_link = os.readlink(py_exe)
+        #     rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
+        rb.install_casa_distro('/casa/casa-distro')
+        rb.run_user('if [ -f /casa/install/share/brainvisa-share-*/'
+                    'database-*.sqlite ]; '
+                    'then touch /casa/install/share/brainvisa-share-*/'
+                    'database-*.sqlite; fi')
+        rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
+                    % rb.image_id)
+
+        for script_file in scripts:
+            rb.run_user(script_file)
+        rb.write(recipe)
+        recipe.flush()
+
+        if verbose:
+            print('---------- Singularity recipe ----------', file=verbose)
+            print(open(recipe.name).read(), file=verbose)
+            print('----------------------------------------', file=verbose)
+            verbose.flush()
+        build_command = _singularity_build_command(force=force,
+                                                   fakeroot=fakeroot)
+        # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
+        # permission issue with --fakeroot and NFS root_squash.
+        try:
+            subprocess.check_call(build_command + [output, recipe.name],
+                                  cwd='/')
+        except Exception:
+            if fakeroot:
+                print('** Image creation has failed **', file=sys.stderr)
+                print('If you see an error message about fakeroot not working '
+                      'on your system, then try the following command (you '
+                      'need sudo permissions):', file=sys.stderr)
+                print('sudo singularity config fakeroot --add %s'
+                      % getpass.getuser(), file=sys.stderr)
+                print(file=sys.stderr)
+            raise
+
+        return (rb.image_id, None)
+    finally:
+        for d in temps:
+            shutil.rmtree(d)
 
 
 _singularity_raw_version = None
