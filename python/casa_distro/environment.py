@@ -478,7 +478,8 @@ def update_container_image(container_type, image_name, url,
 
     local_metadata = {}
     if osp.exists(metadata_file):
-        local_metadata = json.load(open(metadata_file))
+        with open(metadata_file, encoding='utf-8') as f:
+            local_metadata = json.load(f)
     image_version = local_metadata.get('image_version')
 
     for num in reversed(sorted(images_dict.keys())):
