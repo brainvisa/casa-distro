@@ -816,7 +816,7 @@ Once the host-side directory has been chosen, it is displayed as the first colum
 </p>
 <p>A <b>"local" mount point</b> is only used in the speficic environment which is currently being configured.
 </p>
-<p>The global or local state is displayed in the check button in the 3rd column of mount paths edition. They can be chenged by clicking on the check button. <b>Be careful</b> because this will actually change the global user settings.
+<p>The global or local state is displayed in the check button in the 3rd column of mount paths edition. They can be changed by clicking on the check button. <b>Be careful</b> because this will actually change the global user settings.
 </p>
 <h3>Validation</h3>
 <p>
