@@ -653,7 +653,7 @@ def create_user_image(
         install='yes',
         install_doc='yes',
         install_test='yes',
-        install_thirdparty='default',
+        install_thirdparty='none',
         generate='yes',
         zip='no',
         verbose=True,
@@ -726,7 +726,7 @@ def create_user_image(
         If "false", "no" or "0", skip this step
     install_thirdparty
         default={install_thirdparty_default}
-        If not "none", no third-party software is installed in the image. If
+        If "none", no third-party software is installed in the image. If
         "all", all available software will be installed during the ``generate``
         step. If "default", a default list of software will be installed. Other
         values are understood as a list of software
