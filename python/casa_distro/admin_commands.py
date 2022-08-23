@@ -289,6 +289,7 @@ def create_base_image(type,
         VirtualBox window.
     """
     verbose = verbose_file(verbose)
+    cleanup = check_boolean('cleanup', cleanup)
 
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
@@ -759,6 +760,7 @@ def create_user_image(
     install_doc = check_boolean('install_doc', install_doc)
     install_test = check_boolean('install_test', install_test)
     generate = check_boolean('generate', generate)
+    cleanup = check_boolean('cleanup', cleanup)
     zip = check_boolean('zip', zip)
 
     verbose = verbose_file(verbose)
