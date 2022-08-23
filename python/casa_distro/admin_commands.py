@@ -193,6 +193,7 @@ def create_base_image(type,
                                       '{name}.{extension}'),
                       container_type='singularity',
                       verbose=True,
+                      cleanup='yes',
                       **kwargs):
     """Create a new virtual image
 
@@ -399,6 +400,7 @@ def create_base_image(type,
                                         output, metadata,
                                         image_builder=image_builder,
                                         verbose=verbose,
+                                        cleanup=cleanup,
                                         **kwargs)
     if msg:
         print(msg)
@@ -931,6 +933,7 @@ def create_user_image(
             base_directory=base_directory,
             verbose=verbose,
             install_thirdparty=install_thirdparty,
+            cleanup=cleanup,
             **kwargs)
         if msg:
             print(msg)
