@@ -210,7 +210,8 @@ def create_user_image(base_image,
                       force,
                       base_directory,
                       verbose,
-                      install_thirdparty='all'):
+                      install_thirdparty='all',
+                      cleanup=True):
     install_dir = osp.join(dev_config['directory'], 'install')
     vm_name = osp.splitext(osp.basename(output))[0]
     vm = VBoxMachine(vm_name)

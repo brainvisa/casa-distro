@@ -657,6 +657,7 @@ def create_user_image(
         generate='yes',
         zip='no',
         verbose=True,
+        cleanup='yes',
         **kwargs):
     """Create a "user" image given a development environment.
     The development environment is selected among existing ones its
@@ -740,6 +741,10 @@ def create_user_image(
         default={generate_default}
         If "true", "yes" or "1", perform the image creation step.
         If "false", "no" or "0", skip this step
+    cleanup
+        default={cleanup_default}
+        If "false", "no" or "0", do NOT clean up the temp image during the
+        generate step after failed build, can be helpful for debugging
     zip
         default={zip_default}
         If "true", "yes" or "1", zip the installed files for an "online"
