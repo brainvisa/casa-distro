@@ -1057,6 +1057,7 @@ class BBIDaily:
             'environment_name={0}'.format(dev_config['name']),
             'output=' + image,
             'force=yes',
+            'install_thirdparty=default',
             'install_doc=' + str(install_doc),
             'install_test=' + str(install_test),
         ])
