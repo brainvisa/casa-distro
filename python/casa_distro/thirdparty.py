@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import os.path as osp
 import glob
 import sys
+import json
 
 
 all_software = ['spm12-standalone', 'freesurfer']
@@ -51,14 +52,21 @@ def get_thirdparty_software(install_thirdparty='default'):
         software = all_software
     elif install_thirdparty.lower() == 'default':
         software = default_software
+    elif install_thirdparty.startswith('file://'):
+        filename = install_thirdparty[7:]
+        with open(filename) as f:
+            software = json.load(f)
     else:
-        software = [x.strip() for x in install_thirdparty.split(',')]
-    for soft_name in software:
-        sw_path1 = [x.strip() for x in soft_name.split('=')]
-        sw_path = None
-        if len(sw_path1) == 2:
-            soft_name, sw_path = sw_path1
-        else:
+        software_list = [x.strip() for x in install_thirdparty.split(',')]
+        software = {}
+        for soft_name in software_list:
+            sw_path1 = [x.strip() for x in soft_name.split('=', 1)]
+            sw_path = None
+            if len(sw_path1) == 2:
+                soft_name, sw_path = sw_path1
+            software[soft_name] = sw_path
+    for soft_name, sw_path in software.items():
+        if sw_path is None:
             for sp in search_paths:
                 if osp.exists(osp.join(sp, soft_name)):
                     sw_glob = [osp.join(sp, soft_name)]
@@ -67,10 +75,10 @@ def get_thirdparty_software(install_thirdparty='default'):
                 if sw_glob:
                     sw_path = osp.realpath(sorted(sw_glob)[0])
                     break
-        if sw_path is None:
-            raise ValueError(
-                'Could not find location of %s. Please specify it as %s=<path>'
-                % (soft_name, soft_name))
+            if sw_path is None:
+                raise ValueError(
+                    'Could not find location of %s. Please specify it as '
+                    '%s=<path>' % (soft_name, soft_name))
 
         init_fn = getattr(sys.modules[__name__],
                           'get_%s_init' % soft_name.replace('-', '_'),

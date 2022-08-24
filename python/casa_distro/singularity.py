@@ -402,7 +402,7 @@ Bootstrap: localimage
                     in get_thirdparty_software(install_thirdparty):
                 print('installing %s from %s...' % (symlink_name, source_dir))
                 rb.copy_root(source_dir, '/usr/local')
-                if symlink_name:
+                if symlink_name and osp.basename(source_dir) != symlink_name:
                     rb.symlink(osp.basename(source_dir),
                                osp.join('/usr/local', symlink_name))
                 for script_file, script in setup_scripts.items():
