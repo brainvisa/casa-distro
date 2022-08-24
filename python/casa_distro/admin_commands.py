@@ -193,6 +193,7 @@ def create_base_image(type,
                                       '{name}.{extension}'),
                       container_type='singularity',
                       verbose=True,
+                      cleanup='yes',
                       **kwargs):
     """Create a new virtual image
 
@@ -288,6 +289,7 @@ def create_base_image(type,
         VirtualBox window.
     """
     verbose = verbose_file(verbose)
+    cleanup = check_boolean('cleanup', cleanup)
 
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
@@ -399,6 +401,7 @@ def create_base_image(type,
                                         output, metadata,
                                         image_builder=image_builder,
                                         verbose=verbose,
+                                        cleanup=cleanup,
                                         **kwargs)
     if msg:
         print(msg)
@@ -657,6 +660,7 @@ def create_user_image(
         generate='yes',
         zip='no',
         verbose=True,
+        cleanup='yes',
         **kwargs):
     """Create a "user" image given a development environment.
     The development environment is selected among existing ones its
@@ -740,6 +744,10 @@ def create_user_image(
         default={generate_default}
         If "true", "yes" or "1", perform the image creation step.
         If "false", "no" or "0", skip this step
+    cleanup
+        default={cleanup_default}
+        If "false", "no" or "0", do NOT clean up the temp image during the
+        generate step after failed build, can be helpful for debugging
     zip
         default={zip_default}
         If "true", "yes" or "1", zip the installed files for an "online"
@@ -752,6 +760,7 @@ def create_user_image(
     install_doc = check_boolean('install_doc', install_doc)
     install_test = check_boolean('install_test', install_test)
     generate = check_boolean('generate', generate)
+    cleanup = check_boolean('cleanup', cleanup)
     zip = check_boolean('zip', zip)
 
     verbose = verbose_file(verbose)
@@ -926,6 +935,7 @@ def create_user_image(
             base_directory=base_directory,
             verbose=verbose,
             install_thirdparty=install_thirdparty,
+            cleanup=cleanup,
             **kwargs)
         if msg:
             print(msg)

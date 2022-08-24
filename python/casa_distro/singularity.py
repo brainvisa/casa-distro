@@ -329,7 +329,8 @@ def create_user_image(base_image,
                       fakeroot='yes',
                       base_directory=default_base_directory,
                       verbose=None,
-                      install_thirdparty='all'):
+                      install_thirdparty='all',
+                      cleanup=True):
     '''
     Returns
     -------
@@ -450,7 +451,8 @@ Bootstrap: localimage
             print('----------------------------------------', file=verbose)
             verbose.flush()
         build_command = _singularity_build_command(force=force,
-                                                   fakeroot=fakeroot)
+                                                   fakeroot=fakeroot,
+                                                   cleanup=cleanup)
         # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
         # permission issue with --fakeroot and NFS root_squash.
         try:
