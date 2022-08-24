@@ -89,7 +89,7 @@ class RecipeBuilder:
             # this variant is safer
             # the files section copies do not preserve symlinks.
             self.sections.setdefault('files', []).append(
-                '%s %s' % (source_file,
+                '%s %s' % (osp.realpath(source_file),
                            dest_dir + '/' + osp.basename(source_file)))
         else:
             self.sections.setdefault('setup', []).append(
@@ -99,13 +99,23 @@ class RecipeBuilder:
                 # alternative using rsync
                 self.sections.setdefault('setup', []).append(
                     'rsync -a --copy-unsafe-links %s %s'
-                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+                    % (osp.realpath(source_file),
+                       '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+                if osp.basename(osp.realpath(source_file)) \
+                        != osp.basename(source_file):
+                    self.sections.setdefault('setup', []).append(
+                        'mv ${SINGULARITY_ROOTFS}/%s/%s '
+                        '${SINGULARITY_ROOTFS}/%s/%s'
+                        % (dest_dir, osp.basename(osp.realpath(source_file)),
+                           dest_dir, osp.basename(source_file)))
             else:
                 # alternative using cp -a: preserve symlinks even outside the
                 # source tree
                 self.sections.setdefault('setup', []).append(
                     'cp -a %s %s'
-                    % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+                    % (osp.realpath(source_file),
+                       '${SINGULARITY_ROOTFS}/%s/%s'
+                       % (dest_dir, osp.basename(source_file))))
 
     def symlink(self, target, link_name):
         '''

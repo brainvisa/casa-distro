@@ -108,7 +108,7 @@ def get_spm12_standalone_init():
     https://github.com/brainvisa/casa-distro/issues/268
 
     We could have run the installation procedure the "official" way as in the
-    spm-docker project,but this would involve systematic download of the SPM
+    spm-docker project, but this would involve systematic download of the SPM
     distribution and of the full MCR distribution at each container build,
     which takes too much time. So for now SPM has to be pre-installed on the
     host system. We could improve the procedure and download / install it only
