@@ -1040,7 +1040,8 @@ class BBIDaily:
 
     def update_user_image(self, user_config, dev_config,
                           install_doc=True,
-                          install_test=True):
+                          install_test=True,
+                          install_thirdparty='default'):
         environment = user_config['name']
         if self.jenkins:
             if not self.jenkins.job_exists(environment):
@@ -1057,7 +1058,7 @@ class BBIDaily:
             'environment_name={0}'.format(dev_config['name']),
             'output=' + image,
             'force=yes',
-            'install_thirdparty=default',
+            'install_thirdparty=%s' % install_thirdparty,
             'install_doc=' + str(install_doc),
             'install_test=' + str(install_test),
         ])

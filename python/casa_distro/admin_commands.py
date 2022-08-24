@@ -991,6 +991,7 @@ def bbi_daily(distro=None, branch=None, system=None,
               recreate_user_envs='yes',
               user_tests='yes',
               base_directory=casa_distro_directory(),
+              install_thirdparty='default',
               verbose=None):
     '''BrainVISA Build infrastructure: daily/nightly automated tests
 
@@ -1092,6 +1093,9 @@ def bbi_daily(distro=None, branch=None, system=None,
     user_tests
         default = {user_tests_default}
         Boolean indicating if the tests must be performed on user environments
+    install_thirdparty
+        default = {install_thirdparty_default}
+        passed to "create_user_image" when update_user_images is true
     {base_directory}
     {verbose}
     '''
@@ -1213,6 +1217,7 @@ def bbi_daily(distro=None, branch=None, system=None,
                 success = bbi_daily.update_user_image(
                     user_config, dev_config,
                     install_doc=doc_build_success,
+                    install_thirdparty=install_thirdparty
                 )
                 if success:
                     successful_tasks.append('{0}: update user image'.format(
