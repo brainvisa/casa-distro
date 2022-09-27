@@ -48,4 +48,8 @@ build_dependencies=(
     libqt5x11extras5-dev
     libqt5xmlpatterns5-dev
     qtwebengine5-dev  # for PyQt
+
+    # Build dependencies of libminc
+    libhdf5-dev
+    libnetcdf-dev
 )

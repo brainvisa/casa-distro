@@ -67,6 +67,17 @@ sudo make install
 # and virtual C++ inheritance
 PY=3.10 PY_S=3.10 sh /build/build_sip_pyqt.sh
 
+# reinstall libminc 4.0.0 because newer versions can't properly read freesurfer
+# .mgz files
+cd "$tmp"
+git clone https://github.com/BIC-MNI/libminc.git --single-branch --branch libminc-2-3-00
+cd libminc
+cmake . -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial -DHDF5_LIBRARY=/usr/lib/x86_64-linux-gnu/libhdf5_serial.so -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DLIBMINC_BUILD_SHARED_LIBS=ON -DLIBMINC_MINC1_SUPPORT=ON
+make -j$(nproc)
+sudo make install
+cd ..
+rm -rf libminc
+
 ###############################################################################
 # Post-install configuration
 ###############################################################################

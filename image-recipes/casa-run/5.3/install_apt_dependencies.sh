@@ -215,6 +215,9 @@ brainvisa_python_runtime_dependencies=(
     python3-plotly
     python3-pcl
 
+    python3-celery
+    python3-redis
+
 #    python3-torch  # will be installed via pip to get cuda support
 #    python3-torchvision
 )
@@ -278,6 +281,7 @@ brainvisa_shared_library_dependencies=(
     libsvm3
     libtiff5
     libxml2
+    redis
 )
 
 # Programs and data that BrainVISA depends on at runtime
