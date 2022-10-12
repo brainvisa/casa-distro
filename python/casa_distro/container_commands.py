@@ -19,7 +19,7 @@ def setup_user(dir='/casa/setup', rw_install=False, distro=None,
 
         mkdir ~/brainvisa
         cd ~/brainvisa
-        singularity run --bind .:/casa/setup brainvisa-5.0.sif
+        singularity run -c --bind .:/casa/setup brainvisa-5.0.sif
 
     Parameters
     ----------
@@ -66,7 +66,7 @@ def setup_dev(distro, branch='master', system=None, image_version=None,
 
         mkdir -p ~/casa_distro/brainvisa-master
         cd ~/casa_distro
-        singularity run -B \\
+        singularity run -c -B \\
             ./brainvisa-master:/casa/setup casa-dev-ubuntu-18.04.sif \\
             brainvisa master
 
