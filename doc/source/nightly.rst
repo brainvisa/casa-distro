@@ -56,7 +56,7 @@ take inspiration from it to create your own personalized set-up.
 
      cd "$CASA_BASE_DIRECTORY"
      mkdir brainvisa-master-5.0
-     singularity run --bind ./brainvisa-master-5.0:/casa/setup \
+     singularity run -c --bind ./brainvisa-master-5.0:/casa/setup \
          casa-dev-5.0.sif distro=brainvisa branch=master
 
 6. Edit the ``conf/svn.secret`` file with your BioProj login and password.

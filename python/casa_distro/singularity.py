@@ -259,7 +259,7 @@ Bootstrap: localimage
         echo 'mkdir -p ~/casa_distro/brainvisa-master'
         echo "mv \"$SINGULARITY_CONTAINER\" ~/casa_distro/"
         echo 'cd ~/casa_distro'
-        echo "singularity run -B ./brainvisa-master:/casa/setup \\\\"
+        echo "singularity run -c -B ./brainvisa-master:/casa/setup \\\\"
         echo "    $SINGULARITY_NAME distro=core"
         echo
         echo 'If you have already setup such an environment, you should'
@@ -371,7 +371,7 @@ Bootstrap: localimage
         echo "mkdir -p ~/brainvisa-$CASA_VERSION"
         echo "mv \"$SINGULARITY_CONTAINER\" ~/brainvisa-$CASA_VERSION/"
         echo "cd ~/brainvisa-$CASA_VERSION"
-        echo "singularity run -B .:/casa/setup $SINGULARITY_NAME"
+        echo "singularity run -c -B .:/casa/setup $SINGULARITY_NAME"
         echo
         echo 'If you have already setup such an environment, you should'
         echo 'run the image using appropriate options, mount points, and'
