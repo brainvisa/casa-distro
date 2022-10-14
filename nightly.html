@@ -93,7 +93,7 @@ JSON file).:</p>
 <li><p>Create a directory for your development environment and set it up:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="s2">&quot;$CASA_BASE_DIRECTORY&quot;</span>
 <span class="n">mkdir</span> <span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span>
-<span class="n">singularity</span> <span class="n">run</span> <span class="o">--</span><span class="n">bind</span> <span class="o">./</span><span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span><span class="p">:</span><span class="o">/</span><span class="n">casa</span><span class="o">/</span><span class="n">setup</span> \
+<span class="n">singularity</span> <span class="n">run</span> <span class="o">-</span><span class="n">c</span> <span class="o">--</span><span class="n">bind</span> <span class="o">./</span><span class="n">brainvisa</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mf">5.0</span><span class="p">:</span><span class="o">/</span><span class="n">casa</span><span class="o">/</span><span class="n">setup</span> \
     <span class="n">casa</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="n">sif</span> <span class="n">distro</span><span class="o">=</span><span class="n">brainvisa</span> <span class="n">branch</span><span class="o">=</span><span class="n">master</span>
 </pre></div>
 </div>
