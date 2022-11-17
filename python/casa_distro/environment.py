@@ -514,10 +514,14 @@ def update_container_image(container_type, image_name, url,
     # image_name = osp.join(base_directory, osp.basename(remote_image))
 
     if not force and osp.exists(metadata_file):
-        if local_metadata.get('md5') == metadata.get('md5') \
-                and local_metadata.get('size') == metadata.get('size') \
-                and osp.isfile(image_name) \
-                and os.stat(image_name).st_size == metadata.get('size'):
+        if (local_metadata.get('md5') == metadata.get('md5')
+                and local_metadata.get('size') == metadata.get('size')
+                and osp.isfile(image_name)
+                and os.stat(image_name).st_size == metadata.get('size')) \
+                or (local_metadata.get('image_version')
+                    == metadata.get('image_version')
+                    and int(local_metadata.get('build_number'))
+                    > int(metadata.get('build_number'))):
             # if verbose:
             print('image %s is up-to-date.' % image)
             return

@@ -71,6 +71,7 @@ development_tools=(
     flake8
     gdb
     gdbserver
+    valgrind
     gedit
     git-man
     gitg

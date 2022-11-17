@@ -44,6 +44,9 @@ ${PIP_INSTALL} -U "redis>=4.2"
 ${PIP_INSTALL} nipype
 ${PIP_INSTALL} dipy
 
+# Runtime dependencies of soma-base
+${PIP_INSTALL} pycryptodome
+
 # Runtime dependencies of Morphologist
 ${PIP_INSTALL} torch
 ${PIP_INSTALL} torch-vision
