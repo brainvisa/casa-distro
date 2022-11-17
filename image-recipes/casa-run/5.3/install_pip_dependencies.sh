@@ -34,8 +34,11 @@ PIP3="$SUDO python3 -m pip --no-cache-dir"
 PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
 ${PIP_INSTALL} -U pip
 
-# we need pydantic >= 1.9, ubuntu 22/apt ships 1.8
+# soma-base v3 needs pydantic >= 1.9, ubuntu 22/apt ships 1.8
 ${PIP_INSTALL} -U "pydantic>=1.9"
+
+# Capsul v3 needs redis-py >= 4.2, Ubuntu 22/apt ships 3.5.3
+${PIP_INSTALL} -U "redis>=4.2"
 
 # Packages not available in APT
 ${PIP_INSTALL} nipype
