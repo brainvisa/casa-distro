@@ -52,19 +52,22 @@ def singularity_deb(dockerhub='ubuntu:20.04',
                     go_version='1.17'):
     """Create a Debian package to install Singularity.
     Perform the whole installation process from a rw system and Singularity
-    source. Then put the result in a *.deb file.
+    source. Then put the result in a ``*.deb`` file.
+
     Parameters
     ----------
-    dockerhub
+    dockerhub:
         default={dockerhub_default}
+
         Name of the base image system to pull from DockerHub.
-    output_dir
+    output_dir:
         default={output_dir_default}
+
         Location of the resulting Debian package file.
-    version
+    version:
         default={version_default}
+
         Version of Singularity to use. This must be a valid release version.
-@@ -83,146 +74,206 @@ def singularity_deb(system,
         Go language is not included in the final package.
     """
 
@@ -200,15 +203,15 @@ def create_base_image(type,
     Creating the casa-system image:
 
     - For Singularity you need to run these commands in order to create the
-      casa-system image:
+      casa-system image::
 
           cd "$CASA_BASE_DIRECTORY"
           singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
 
       Then you can directly use the ubuntu image as base for the run image. You
-      may build a "system" image as follows, but it's not needed:
+      may build a "system" image as follows, but it's not needed::
 
-          casa_distro_admin create_base_image base=ubuntu-18.04.sif \
+          casa_distro_admin create_base_image base=ubuntu-18.04.sif \\
               type=system image_version=ubuntu-18.04
 
     - For VirtualBox: TODO
@@ -249,9 +252,10 @@ def create_base_image(type,
 
         If "no", "false" or "0", do not cleanup after a failure during image
         building. This may allow to debug a problem after the failure. For
-        instance, with Singularity one can use a command like :
-          sudo singularity run --writable
-          /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
+        instance, with Singularity one can use a command like::
+
+            sudo singularity run --writable
+            /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
 
     force (allowed only if container_type=singularity)
         default=no
@@ -561,7 +565,8 @@ def publish_base_image(type=None,
       {publish_url}
 
     This directory location can be customized with
-    the following environment variables:
+    the following environment variables::
+
         BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
         BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
         BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
@@ -962,7 +967,8 @@ def publish_user_image(image):
       {publish_url}
 
     This directory location can be customized with
-    the following environment variables:
+    the following environment variables::
+
         BRAINVISA_PUBLISH_LOGIN (default=brainvisa)
         BRAINVISA_PUBLISH_SERVER (default=brainvisa.info)
         BRAINVISA_PUBLISH_DIR (default=/var/www/html/brainvisa.info_download)
@@ -1293,11 +1299,12 @@ def local_install(type, action=None, system='*',
 
         If not given, list the possible actions for the selected type and
         indicate if they were done or not. Can have one of the following
-        values:
-          "next" : perform the nex action not already done
-          "all" : perform all action not already done
-          coma separated list of acions : perform all selected actions
-              even if they were already done
+        values::
+
+            "next": perform the nex action not already done
+            "all": perform all action not already done
+            coma separated list of acions:
+                perform all selected actions even if they were already done
 
     system
         default={system_default}

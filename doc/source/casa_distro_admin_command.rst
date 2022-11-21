@@ -36,7 +36,7 @@ A casa-distro release is done by a member of the BrainVISA team using the ``casa
 Creation a base VirtualBox image
 ================================
 
-The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an *.iso file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL `<http://brainvisa.info/casa-distro/casa-<iso_name>.ova>`_ where `<iso name>̀ is the name of the *.iso file of the distribution. For instance if one uses `ubuntu-18.04.4-desktop-amd64.iso`, the uploaded image name would be `casa-ubuntu-18.04.4-desktop-amd64.ova`.
+The base VirtualBox image is a minimal configuration of a system image downloaded from internet as an ``*.iso`` file. It serves as starting point for the building of run and dev images. Once created, the image is published on BrainVISA website in the following URL ``http://brainvisa.info/casa-distro/casa-<iso_name>.ova`` where ``<iso name>̀`` is the name of the ``*.iso`` file of the distribution. For instance if one uses ``ubuntu-18.04.4-desktop-amd64.iso``, the uploaded image name would be ``casa-ubuntu-18.04.4-desktop-amd64.ova``.
 
 1) Install VirtualBox version 6 or greater
 2) Download an Ubuntu iso file from internet (any Debian based distro may work but only recent Ubuntu LTS are tested).
@@ -44,7 +44,7 @@ The base VirtualBox image is a minimal configuration of a system image downloade
 4) Perform Ubuntu minimal installation with an autologin account named "brainvisa" and with password "brainvisa"
 5) Perform system updates and install kernel module creation packages :
 
-.. code::
+.. code-block:: bash
 
     sudo apt update
     sudo apt upgrade

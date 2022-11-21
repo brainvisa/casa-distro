@@ -196,7 +196,7 @@ def help(command=None, format='text', full=False, file=None):
         if ``true`` or ``yes`` or ``1``, display each subcommand parameters
         documentation in the general help.
     """
-    print('HELP, format:', format)
+    # print('HELP, format:', format)
     full = check_boolean('full', full)
     if file is None:
         file = sys.stdout
@@ -265,6 +265,7 @@ Commands:
         global_help = formatted_help(global_help, format=format)
 
         commands_summary = [global_help]
+        prog_name = osp.basename(sys.argv[0])
         for command in commands:
             command_doc = get_doc(commands[command], indent=indent * 2,
                                   format=format)
@@ -277,8 +278,9 @@ Commands:
                     r'\s*parameters\s*-+\s*', command_doc, flags=re.I)[0]
             commands_summary.append('\n')
             if format == 'rst':
-                commands_summary.append('.. _' + command.replace('_', '-')
-                                        + '-help:')
+                commands_summary.append(
+                    '.. _' + ('%s-%s' % (prog_name, command)).replace('_', '-')
+                    + '-help:')
                 commands_summary.append('')
             commands_summary.append(indent + '-' * len(command))
             commands_summary.append(indent + command)
