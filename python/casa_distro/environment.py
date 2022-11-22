@@ -745,6 +745,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
         eimage = image
     else:
         eimage = config.get('image')
+        eimage = osp.normpath(osp.join(config.get('directory'), eimage))
     cid = config.get('image_id')
     if os.path.exists(eimage + '.json') and cid:
         with open(eimage + '.json') as f:
@@ -1015,10 +1016,11 @@ class BBIDaily:
         start = time.time()
         if not os.path.exists(user_config['directory']):
             os.makedirs(user_config['directory'])
+        eimage = osp.normpath(osp.join(user_config.get('directory'),
+                                       user_config['image']))
         result, log = self.call_output([
             'singularity', 'run',
-            '--bind', user_config['directory'] + ':/casa/setup:rw',
-            user_config['image'],
+            '--bind', user_config['directory'] + ':/casa/setup:rw', eimage,
         ])
         if result == 0:
             # Make the reference test data available in the user environment
@@ -1053,6 +1055,7 @@ class BBIDaily:
                                         **user_config)
         start = time.time()
         image = user_config['image']
+        image = osp.normpath(osp.join(user_config.get('directory'), image))
         if osp.exists(image):
             os.remove(image)
         result, log = self.call_output(self.casa_distro_admin_cmd + [
