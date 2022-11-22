@@ -1073,3 +1073,16 @@ class BBIDaily:
         self.log(user_config['name'], 'update user image', result, log,
                  duration=duration)
         return result == 0
+
+
+def get_env_host_dir(container_type):
+    ''' Try to determine, from the container, the host-side environment
+    directory. If it cannot be determined, returns None.
+    '''
+    host_dir = os.environ.get('CASA_HOST_DIR')
+    if host_dir:
+        return host_dir
+
+    if container_type == 'singularity':
+        return singularity.get_env_host_dir()
+    return None

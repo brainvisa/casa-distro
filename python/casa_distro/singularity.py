@@ -906,3 +906,19 @@ def setup(type, distro, branch, system, name, base_directory, image,
 def convert_image(source, metadata, output, convert_from, verbose=None):
     raise NotImplementedError(
         'Currently converting to singularity images is not implemented.')
+
+
+def get_env_host_dir():
+    ''' Get environment dir on host side, if possible
+    '''
+    host_dir = os.environ.get('CASA_HOST_DIR')
+    if host_dir:
+        return host_dir
+    bind = os.environ.get('SINGULARITY_BIND')
+    if bind:
+        binds = bind.split(',')
+        for bind in binds:
+            bpath = bind.split(':')
+            if len(bpath) >= 2 and osp.normpath(bpath[1]) == '/casa/setup':
+                return bpath[0]
+    return None

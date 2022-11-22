@@ -14,7 +14,8 @@ import subprocess
 import tempfile
 
 import casa_distro
-from casa_distro.environment import (prepare_environment_homedir, copytree, cp)
+from casa_distro.environment import (prepare_environment_homedir, copytree, cp,
+                                     get_env_host_dir)
 from casa_distro import downloader
 
 
@@ -210,7 +211,22 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
             '/casa/host/conf/casa_distro.json (in the container) and '
             'fix the path to the image file on the host filesystem.')
     if not image:
-        environment['image'] = '/unknown.sif'
+        environment['image'] = 'unknown.sif'
+    elif osp.isabs(image):
+        env_dir = get_env_host_dir(environment['container_type'])
+        if env_dir:
+            if not osp.isabs(env_dir):
+                print('The image path will be installed as an absolute path '
+                      '(non-movable). If you need a relative image path in '
+                      'Casa-Distro config, then please run the setup using '
+                      'the absolute path of the install enviromnemnt '
+                      'directory in the mount point option (-B or --bind for '
+                      'singularity)')
+            else:
+                # set as relative path to the env directory
+                image = osp.relpath(image, env_dir)
+                environment['image'] = image
+
     environment['name'] = osp.splitext(sing_name)[0]
     if not environment['name']:
         environment['name'] = '{}-{}'.format(environment['distro'],
@@ -387,6 +403,20 @@ used anymore, you may as well delete it if you wish.
             if not image:
                 raise ValueError('No image found')
     environment['image'] = image
+    if osp.isabs(image):
+        env_dir = get_env_host_dir(environment['container_type'])
+        if env_dir:
+            if not osp.isabs(env_dir):
+                print('The image path will be installed as an absolute path '
+                      '(non-movable). If you need a relative image path in '
+                      'Casa-Distro config, then please run the setup using '
+                      'the absolute path of the install enviromnemnt '
+                      'directory in the mount point option (-B or --bind for '
+                      'singularity)')
+            else:
+                # set as relative path to the env directory
+                image = osp.relpath(image, env_dir)
+                environment['image'] = image
     environment['name'] = name
     # keep image ID in metadata
     if osp.exists('/casa/image_id'):
