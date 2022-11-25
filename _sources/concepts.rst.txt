@@ -134,3 +134,10 @@ An images may be of three types:
 * **user image:** user-oriented, it contains a full system with |bv| already installed in it.
 * **dev image:** developer-oriented, it contains a system with all needed development tools, but not the |bv| software which are meant to be built by the developer, in the :ref:`environment` but outside of the image.
 * **run image:** normally not used by users nor by developers, but used by distribution maintainers to build a |bv| release (user image): it contains a system with the needed runtime third-party libraries and modules required to run the |bv| software. It is thus lighter than the corresponding dev image. A user image is a run image with |bv| additionally installed in it.
+
+.. _image_version:
+
+image_version
+=============
+
+Version of the image. This should not be confused with the branch or versions of the software to be built and packaged in the final user image (this is the :ref:`version` tag). This more represents the system and variants (for instance in BrainVisa, image_version 5.3 corresponds to an Ubuntu 22.04 system with python 3.10 and Qt 5).

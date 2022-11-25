@@ -42,8 +42,7 @@
             
   <section id="the-casa-distro-command">
 <h1>The casa_distro command<a class="headerlink" href="#the-casa-distro-command" title="Permalink to this heading">¶</a></h1>
-<p>HELP, format: rst
-Casa_distro is the BrainVISA suite distribution swiss knife.
+<p>Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See <a class="reference external" href="http://brainivsa.info/casa-distro">http://brainivsa.info/casa-distro</a> and
 <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a> for more information</p>
@@ -83,7 +82,7 @@ can be passed on the commandline, or set via the
 <section id="commands">
 <h2>Commands:<a class="headerlink" href="#commands" title="Permalink to this heading">¶</a></h2>
 <section id="help">
-<span id="help-help"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-help-help"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this heading">¶</a></h3>
 <p>Print global help or help about a command.</p>
 <section id="parameters">
 <h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h4>
@@ -98,11 +97,11 @@ documentation in the general help.</p>
 </section>
 </section>
 <section id="distro">
-<span id="distro-help"></span><h3>distro<a class="headerlink" href="#distro" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-distro-help"></span><h3>distro<a class="headerlink" href="#distro" title="Permalink to this heading">¶</a></h3>
 <p>List all available distro and provide information for each one.</p>
 </section>
 <section id="list">
-<span id="list-help"></span><h3>list<a class="headerlink" href="#list" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-list-help"></span><h3>list<a class="headerlink" href="#list" title="Permalink to this heading">¶</a></h3>
 <p>List run or dev environments created by “setup”/”setup_dev” command.</p>
 <section id="id1">
 <h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h4>
@@ -119,7 +118,7 @@ documentation in the general help.</p>
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
@@ -142,7 +141,7 @@ JSON format.</p>
 </section>
 </section>
 <section id="run">
-<span id="run-help"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-run-help"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this heading">¶</a></h3>
 <p>Start any command in a selected run or dev environment</p>
 <p>example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro <span class="nv">branch</span><span class="o">=</span>master ls -als /casa
@@ -163,7 +162,7 @@ JSON format.</p>
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
@@ -224,7 +223,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="pull-image">
-<span id="pull-image-help"></span><h3>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-pull-image-help"></span><h3>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this heading">¶</a></h3>
 <p>Update the container images. By default all images that are used by at
 least one environment are updated. There are two ways of selecting the
 image(s) to be downloaded:</p>
@@ -261,7 +260,7 @@ will be downloaded to a file named casa-dev-5.0.sif.</p>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
@@ -293,7 +292,7 @@ up-to-date.</p>
 </section>
 </section>
 <section id="list-images">
-<span id="list-images-help"></span><h3>list_images<a class="headerlink" href="#list-images" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-list-images-help"></span><h3>list_images<a class="headerlink" href="#list-images" title="Permalink to this heading">¶</a></h3>
 <p>List the locally installed container images.
 There are two ways of selecting the image(s):</p>
 <ol class="arabic">
@@ -317,7 +316,7 @@ of <code class="docutils literal notranslate"><span class="pre">distro</span></c
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
@@ -345,7 +344,7 @@ can be passed on the commandline, or set via the
 </section>
 </section>
 <section id="shell">
-<span id="shell-help"></span><h3>shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-shell-help"></span><h3>shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h3>
 <p>Start a bash shell in the configured container with the given pository
 configuration.</p>
 <section id="id5">
@@ -363,7 +362,7 @@ configuration.</p>
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
@@ -424,7 +423,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="mrun">
-<span id="mrun-help"></span><h3>mrun<a class="headerlink" href="#mrun" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-mrun-help"></span><h3>mrun<a class="headerlink" href="#mrun" title="Permalink to this heading">¶</a></h3>
 <p>Start any command in one or several container with the given
 repository configuration. By default, command is executed in
 all existing build workflows.</p>
@@ -448,7 +447,7 @@ casa_distro mrun bv_maker <span class="nv">system</span><span class="o">=</span>
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
@@ -509,7 +508,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="bv-maker">
-<span id="bv-maker-help"></span><h3>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-bv-maker-help"></span><h3>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this heading">¶</a></h3>
 <p>Start a bv_maker in the configured container with the given repository
 configuration.</p>
 <section id="id7">
@@ -527,7 +526,7 @@ configuration.</p>
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
@@ -555,7 +554,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="clean-images">
-<span id="clean-images-help"></span><h3>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-clean-images-help"></span><h3>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this heading">¶</a></h3>
 <p>Delete singularity images which are no longer used in any build workflow,
 or those listed in the “image” parameter.
 There are two ways of selecting the image(s):</p>
@@ -580,7 +579,7 @@ of <code class="docutils literal notranslate"><span class="pre">distro</span></c
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
@@ -611,7 +610,7 @@ ask confirmation before deleting an image</p>
 </section>
 </section>
 <section id="delete">
-<span id="delete-help"></span><h3>delete<a class="headerlink" href="#delete" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-delete-help"></span><h3>delete<a class="headerlink" href="#delete" title="Permalink to this heading">¶</a></h3>
 <p>Delete an existing environment.</p>
 <p>The whole environment directory will be removed and forgotten.</p>
 <p>Use with care.</p>
@@ -631,7 +630,7 @@ ask confirmation before deleting an image</p>
 <dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given system name.</p>
 </dd>
-<dt><span class="xref std std-ref">image_version</span></dt><dd><p>default=None</p>
+<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
 <p>If given, select environments having the given image version.</p>
 </dd>
 <dt>version</dt><dd><p>If given, select environment by its version (only applicable to user

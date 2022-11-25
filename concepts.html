@@ -139,6 +139,10 @@ generated, in this directory, by test commands.</div>
 * <strong>dev image:</strong> developer-oriented, it contains a system with all needed development tools, but not the <a class="reference external" href="http://brainvisa.info">BrainVISA</a> software which are meant to be built by the developer, in the <a class="reference internal" href="#environment"><span class="std std-ref">environment</span></a> but outside of the image.
 * <strong>run image:</strong> normally not used by users nor by developers, but used by distribution maintainers to build a <a class="reference external" href="http://brainvisa.info">BrainVISA</a> release (user image): it contains a system with the needed runtime third-party libraries and modules required to run the <a class="reference external" href="http://brainvisa.info">BrainVISA</a> software. It is thus lighter than the corresponding dev image. A user image is a run image with <a class="reference external" href="http://brainvisa.info">BrainVISA</a> additionally installed in it.</p>
 </section>
+<section id="image-version">
+<span id="id8"></span><h2>image_version<a class="headerlink" href="#image-version" title="Permalink to this heading">¶</a></h2>
+<p>Version of the image. This should not be confused with the branch or versions of the software to be built and packaged in the final user image (this is the <a class="reference internal" href="#version"><span class="std std-ref">version</span></a> tag). This more represents the system and variants (for instance in BrainVisa, image_version 5.3 corresponds to an Ubuntu 22.04 system with python 3.10 and Qt 5).</p>
+</section>
 </section>
 
 
@@ -161,6 +165,7 @@ generated, in this directory, by test commands.</div>
 <li><a class="reference internal" href="#branch">branch</a></li>
 <li><a class="reference internal" href="#version">version</a></li>
 <li><a class="reference internal" href="#image">image</a></li>
+<li><a class="reference internal" href="#image-version">image_version</a></li>
 </ul>
 </li>
 </ul>

@@ -1,4 +1,3 @@
-HELP, format: rst
 Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro and
@@ -34,7 +33,7 @@ Commands:
 =========
 
 
-.. _help-help:
+.. _casa-distro-help-help:
 
 ----
 help
@@ -51,7 +50,7 @@ full
     documentation in the general help.
 
 
-.. _distro-help:
+.. _casa-distro-distro-help:
 
 ------
 distro
@@ -59,7 +58,7 @@ distro
 List all available distro and provide information for each one.
 
 
-.. _list-help:
+.. _casa-distro-list-help:
 
 ----
 list
@@ -109,7 +108,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _run-help:
+.. _casa-distro-run-help:
 
 ---
 run
@@ -203,7 +202,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _pull-image-help:
+.. _casa-distro-pull-image-help:
 
 ----------
 pull_image
@@ -279,7 +278,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _list-images-help:
+.. _casa-distro-list-images-help:
 
 -----------
 list_images
@@ -339,7 +338,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _shell-help:
+.. _casa-distro-shell-help:
 
 -----
 shell
@@ -430,7 +429,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _mrun-help:
+.. _casa-distro-mrun-help:
 
 ----
 mrun
@@ -527,7 +526,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _bv-maker-help:
+.. _casa-distro-bv-maker-help:
 
 --------
 bv_maker
@@ -583,7 +582,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _clean-images-help:
+.. _casa-distro-clean-images-help:
 
 ------------
 clean_images
@@ -647,7 +646,7 @@ verbose
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
 
 
-.. _delete-help:
+.. _casa-distro-delete-help:
 
 ------
 delete
