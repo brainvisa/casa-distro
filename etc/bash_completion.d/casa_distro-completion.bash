@@ -1,5 +1,3 @@
-#/usr/bin/env bash
-
 function _complete_casa_distro_option_()
 {
     local word=${COMP_WORDS[COMP_CWORD]}
