@@ -1278,7 +1278,7 @@ def bbi_daily(distro=None, branch=None, system=None,
 
 
 @command
-def local_install(type, action=None, system='*',
+def local_install(type, action=None, version='*',
                   log_file='/etc/casa_local_install.log',
                   user='brainvisa'):
     '''
@@ -1306,11 +1306,11 @@ def local_install(type, action=None, system='*',
             coma separated list of acions:
                 perform all selected actions even if they were already done
 
-    system
-        default={system_default}
+    version
+        default={version_default}
 
-        System to used when searching for an image builder file. This is
-        used as a shell pattern, the default value match any system.
+        Image version to use for searching an image builder file. This is
+        used as a shell pattern, the default value match any version.
 
     log_file
         default={log_file_default}
@@ -1331,8 +1331,8 @@ def local_install(type, action=None, system='*',
 
     pattern = osp.join(osp.dirname(osp.dirname(osp.dirname(
         casa_distro.__file__))),
-        'share', 'docker', 'casa-{}'.format(type),
-        system, 'build_image.py')
+        'image-recipes', 'casa-{}'.format(type),
+        version, 'build_image.py')
     build_files = glob.glob(pattern)
     if not build_files:
         raise ValueError('No file corresponds to pattern {}'.format(pattern))
