@@ -362,7 +362,7 @@ fi
 # without this any sudo will fail with an error
 # "unable to allocate pty: Operation not permitted"
 
-$SUDO mount devpts /dev/pts -t devpts
+$SUDO mount devpts /dev/pts -t devpts || true
 
 ###############################################################################
 # Bidouille for AFNI, which requires a specific version of libgsl
