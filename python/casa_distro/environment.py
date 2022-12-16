@@ -742,10 +742,12 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
 
     # check image compatibility
     if image is not None:
+        print('image passed:', image)
         eimage = image
     else:
         eimage = config.get('image')
-        eimage = osp.normpath(osp.join(config.get('directory'), eimage))
+    eimage = osp.normpath(osp.join(config.get('directory'), eimage))
+    print('eimage:', eimage)
     cid = config.get('image_id')
     if os.path.exists(eimage + '.json') and cid:
         with open(eimage + '.json') as f:
@@ -772,7 +774,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
                       root=root,
                       cwd=cwd,
                       env=env,
-                      image=image,
+                      image=eimage,
                       container_options=container_options,
                       base_directory=base_directory,
                       verbose=verbose)

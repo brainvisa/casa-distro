@@ -845,9 +845,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             raise ValueError(
                 'image is missing from environment configuration file '
                 '(casa_distro.json)')
-        image = osp.join(base_directory, image)
-        if not osp.exists(image):
-            raise ValueError("'%s' does not exist" % image)
+    image = osp.join(base_directory, image)
+    if not osp.exists(image):
+        raise ValueError("'%s' does not exist" % image)
     singularity += [image]
     singularity += command
     if verbose:
