@@ -1,0 +1,120 @@
+# -*- mode: shell-script; eval: (sh-set-shell "bash"); -*-
+#
+# This file is sourced by the .bashrc that is created in every casa-distro
+# environment. By maintaining this file as part of the casa-distro Singularity
+# images, we can keep it up-to-date with future changes to the images or to
+# BrainVISA.
+#
+# casa-distro developers: please refrain from adding stuff that is specific to
+# your workflows here, add them to your .bashrc instead.
+
+
+# We first unset the PROMPT_COMMAND special variable, which is used by
+# Singularity to reset the value of PS1.
+unset PROMPT_COMMAND
+
+
+############################################################################
+# Useful settings inspired by Ubuntu's default .bashrc (/etc/skel/.bashrc) #
+############################################################################
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set a colored prompt if supported by the terminal
+if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
+else
+    color_prompt=
+fi
+
+shopt -s promptvars
+if [ "$color_prompt" = yes ]; then
+    PS1='${CASA_ENVIRONMENT:+($CASA_ENVIRONMENT)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${CASA_ENVIRONMENT:+($CASA_ENVIRONMENT)}\u@\h:\w\$ '
+fi
+unset color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${CASA_ENVIRONMENT:+($CASA_ENVIRONMENT)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+
+################################
+# BrainVISA-specific additions #
+################################
+
+# source additional bash_completion scripts from BrainVISA
+if [[ -n "$CASA_BUILD" ]] && [[ -d "$CASA_BUILD/etc/bash_completion.d" ]]; then
+    # from a build directory
+    for d in "$CASA_BUILD/etc/bash_completion.d/"*; do
+        if [[ -f "$d" ]]; then
+            . "$d"
+        fi
+    done
+elif [[ -d "/casa/install/etc/bash_completion.d" ]]; then
+    # else from an install directory
+    for d in "/casa/install/etc/bash_completion.d/"*; do
+        if [[ -f "$d" ]]; then
+            . "$d"
+        fi
+    done
+fi
