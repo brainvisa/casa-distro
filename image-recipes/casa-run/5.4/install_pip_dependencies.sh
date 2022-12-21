@@ -70,7 +70,7 @@ $SUDO jupyter nbextension enable --py ipyevents
 $SUDO jupyter nbextension enable --py ipycanvas
 
 # Runtime PyQt6
-${PIP_INSTALL} PyQt6 PyQt6-sip
+${PIP_INSTALL} PyQt6 PyQt6-sip PyQt6-WebEngine
 
 # useful tool: pip search has stopped working, but pip_search works
 ${PIP_INSTALL} pip-search
