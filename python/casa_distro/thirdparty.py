@@ -8,8 +8,13 @@ import sys
 import json
 
 
-all_software = ['spm12-standalone', 'freesurfer']
-default_software = ['spm12-standalone', ]
+all_software = {
+    'spm12-standalone': None,
+    'freesurfer': None,
+}
+default_software = {
+    'spm12-standalone': None,
+}
 search_paths = ['/usr/local', '/i2bm/local']
 
 
