@@ -285,6 +285,10 @@ brainvisa_shared_library_dependencies=(
     libtiff5
     libxml2
     redis
+    libqt5multimedia5-plugins
+    gstreamer1.0-qt5
+    gstreamer1.0-plugins-good
+    gstreamer1.0-pulseaudio
 )
 
 # Programs and data that BrainVISA depends on at runtime

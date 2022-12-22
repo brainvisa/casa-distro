@@ -290,6 +290,7 @@ brainvisa_shared_library_dependencies=(
     libqt6core5compat6
     gstreamer1.0-qt5
     gstreamer1.0-plugins-good
+    gstreamer1.0-pulseaudio
 )
 
 # Programs and data that BrainVISA depends on at runtime
