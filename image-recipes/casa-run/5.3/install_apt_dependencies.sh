@@ -242,12 +242,13 @@ brainvisa_shared_library_dependencies=(
     libdcmtk16
     libgdk-pixbuf-2.0-0
     libgfortran5
+    libgl1
     libglib2.0-0
     libglu1-mesa
     libgomp1
+    libhdf5-103-1
     libjpeg-turbo8
     libjxr0
-    libminc2-5.2.0
     libnetcdf19
     libopenjp2-7
     libpng16-16
@@ -284,11 +285,6 @@ brainvisa_shared_library_dependencies=(
     libsvm3
     libtiff5
     libxml2
-    redis
-    libqt5multimedia5-plugins
-    gstreamer1.0-qt5
-    gstreamer1.0-plugins-good
-    gstreamer1.0-pulseaudio
 )
 
 # Programs and data that BrainVISA depends on at runtime
@@ -296,6 +292,11 @@ brainvisa_misc_runtime_dependencies=(
     lftp
     sqlite3
     xbitmaps
+    redis
+    libqt5multimedia5-plugins
+    gstreamer1.0-qt5
+    gstreamer1.0-plugins-good
+    gstreamer1.0-pulseaudio
 )
 
 # Other dependencies of BrainVISA (please indicate the installation reason for
