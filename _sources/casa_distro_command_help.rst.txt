@@ -3,7 +3,7 @@ It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro and
 https://github.com/brainvisa/casa-distro for more information
 
-Version : 3.1.0
+Version : 3.2.0
 
 usage::
 

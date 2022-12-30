@@ -3,7 +3,7 @@ It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro and
 https://github.com/brainvisa/casa-distro for more information
 
-Version : 3.1.0
+Version : 3.2.0
 
 usage::
 
@@ -538,11 +538,11 @@ action
         coma separated list of acions:
             perform all selected actions even if they were already done
 
-system
+version
     default=*
 
-    System to used when searching for an image builder file. This is
-    used as a shell pattern, the default value match any system.
+    Image version to use for searching an image builder file. This is
+    used as a shell pattern, the default value match any version.
 
 log_file
     default=/etc/casa_local_install.log
