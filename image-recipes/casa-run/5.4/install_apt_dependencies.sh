@@ -288,6 +288,7 @@ brainvisa_shared_library_dependencies=(
     libqt6multimedia6
     libqt6webenginecore6
     libqt6core5compat6
+    qt6-image-formats-plugins
     gstreamer1.0-qt5
     gstreamer1.0-plugins-good
     gstreamer1.0-pulseaudio

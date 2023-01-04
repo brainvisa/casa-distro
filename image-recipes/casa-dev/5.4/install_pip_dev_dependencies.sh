@@ -31,3 +31,5 @@ $PIP3 install sphinx_rtd_theme
 
 # used to make graphs in docs
 $PIP3 install sphinxcontrib-mermaid
+
+$PIP3 install 'sip>6'
