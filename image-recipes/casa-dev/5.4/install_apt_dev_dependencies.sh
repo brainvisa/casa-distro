@@ -179,6 +179,7 @@ brainvisa_standard_dev_dependencies=(
     qt6-documentation-tools
     qt6-tools-private-dev
     libqt6core5compat6-dev
+    libqt6opengl6-dev
     qt6-l10n-tools
 )
 
