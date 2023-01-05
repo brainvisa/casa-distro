@@ -132,30 +132,34 @@ def get_spm12_standalone_init():
     # init script for axon
     spm_script = '''#!/usr/bin/env python
 
+import glob
+import os
 import sys
+
 sys.path.insert(0, '/casa/install/python')
 try:
     from brainvisa.configuration import neuroConfig
-    import glob
-    import os
-
-    conf = list(neuroConfig.readConfiguration(neuroConfig.mainPath, None, ''))
-    siteOptionFile = conf[0][1]
-    if siteOptionFile and os.path.exists(siteOptionFile):
-        neuroConfig.app.configuration.load(siteOptionFile)
-
-    neuroConfig.app.configuration.SPM.spm12_standalone_path = \
-        '/usr/local/spm12-standalone'
-    neuroConfig.app.configuration.SPM.spm12_standalone_command = \
-        '/usr/local/spm12-standalone/run_spm12.sh'
-    neuroConfig.app.configuration.SPM.spm12_standalone_mcr_path = \
-        glob.glob('/usr/local/spm12-standalone/mcr/v*')[0]
-
-    neuroConfig.app.configuration.save(siteOptionFile)
-
 except ImportError:
     # no axon in the image
     pass
+
+conf = list(neuroConfig.readConfiguration(neuroConfig.mainPath, None, ''))
+siteOptionFile = conf[0][1]
+if siteOptionFile and os.path.exists(siteOptionFile):
+    neuroConfig.app.configuration.load(siteOptionFile)
+
+neuroConfig.app.configuration.SPM.spm12_standalone_path = \
+    '/usr/local/spm12-standalone'
+neuroConfig.app.configuration.SPM.spm12_standalone_command = \
+    '/usr/local/spm12-standalone/run_spm12.sh'
+mcr_paths = glob.glob('/usr/local/spm12-standalone/mcr/v*')
+if len(mcr_paths) != 1:
+    raise RuntimeError("Cannot find the MATLAB Compiler Runtime in the "
+                       "expected location, please check your "
+                       "install_thirdparty setting.")
+neuroConfig.app.configuration.SPM.spm12_standalone_mcr_path = mcr_paths[0]
+
+neuroConfig.app.configuration.save(siteOptionFile)
 '''
     scripts = {'/casa/install/templates/brainvisa/spm.py': spm_script}
 
