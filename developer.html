@@ -44,11 +44,11 @@
 <ul>
 <li><p>The <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install both a released, compiled, version of BrainVISA (This is what a “regular user” needs), or a developer environment which will build from sources.</p></li>
 <li><p>Alternatively it is possible to install Casa-Distro from its sources on GitHub. To get the latest release you can simply download it from <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a>, using  the <code class="docutils literal notranslate"><span class="pre">git</span></code> command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/brainvisa/casa-distro.git /tmp/casa-distro
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/brainvisa/casa-distro.git<span class="w"> </span>/tmp/casa-distro
 </pre></div>
 </div>
 <p>Once downloaded, no “install step” is required, you can use the casa_distro command directly:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/tmp/casa-distro/bin/casa_distro <span class="nb">help</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/tmp/casa-distro/bin/casa_distro<span class="w"> </span><span class="nb">help</span>
 </pre></div>
 </div>
 </li>
@@ -61,7 +61,7 @@
 <h3>First time<a class="headerlink" href="#first-time" title="Permalink to this heading">¶</a></h3>
 <ul>
 <li><p>Developers will need access to source and development tools. Thus instead of installing a “user” release of BrainVISA using the <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">setup</span></code> command, they will rather install a developer image and setup. This is done (once casa-distro is installed) using the command <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">setup_dev</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro setup_dev <span class="nv">system</span><span class="o">=</span>ubuntu-18.04 <span class="nv">distro</span><span class="o">=</span>brainvisa <span class="nv">branch</span><span class="o">=</span>master
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>setup_dev<span class="w"> </span><span class="nv">system</span><span class="o">=</span>ubuntu-18.04<span class="w"> </span><span class="nv">distro</span><span class="o">=</span>brainvisa<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>master
 </pre></div>
 </div>
 <p>This will setup an <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> dedicated to development.</p>
@@ -75,7 +75,7 @@
 The file <code class="docutils literal notranslate"><span class="pre">svn.secret</span></code> may be created / edited to store login / password information for the svn <a class="reference external" href="http://bioproj.extra.cea.fr">BioProj</a> server. If not filled, the <code class="docutils literal notranslate"><span class="pre">svn</span></code> program will ask for them interactively, and propose to store them.</p>
 </li>
 <li><p>build everything:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro bv_maker <span class="nv">name</span><span class="o">=</span>opensource-dev-ubuntu-18.04
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>bv_maker<span class="w"> </span><span class="nv">name</span><span class="o">=</span>opensource-dev-ubuntu-18.04
 </pre></div>
 </div>
 <p>If <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a>, <a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a>, <a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a>, or <a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a> are not provided, all matching <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a> will be processed.</p>
@@ -92,11 +92,11 @@ The file <code class="docutils literal notranslate"><span class="pre">svn.secret
 <p>Bash completion scripts have been developed for <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> and <code class="docutils literal notranslate"><span class="pre">bv_maker</span></code>. Inside a casa-distro container, these completions are already setup and should be active as soon as environments have been built, and the container is restarted (exit a casa-distro shell and re-run it).
 On the host, it is possible to <em>source</em> the bash completion scripts. You can set it in your <code class="docutils literal notranslate"><span class="pre">$HOME/.bashrc</span></code> file by adding to it:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">BUILD_WF</span><span class="o">=</span><span class="nv">$HOME</span>/casa_distro/opensource-dev-ubuntu-18.04
-<span class="k">if</span> <span class="o">[</span> -f <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    . <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span>.<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/casa-distro/*/etc/bash_completion.d/casa_distro-completion.bash&quot;</span>
 <span class="k">fi</span>
-<span class="k">if</span> <span class="o">[</span> -f <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    . <span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash&quot;</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span>.<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$BUILD_WF</span><span class="s2">/host/src/development/brainvisa-cmake/*/etc/bash_completion.d/bv_maker-completion.bash&quot;</span>
 <span class="k">fi</span>
 </pre></div>
 </div>
@@ -187,8 +187,8 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.0.0.
+        &#169; Copyright 2017-2023, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.1.
     </div>
   </body>
 </html>

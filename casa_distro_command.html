@@ -45,7 +45,7 @@ See <a class="reference external" href="http://brainivsa.info/casa-distro">http:
 <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a> for more information</p>
 <p>Version : 3.2.0</p>
 <p>usage:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro &lt;general options&gt; &lt;command&gt; <span class="o">[</span>&lt;<span class="nb">command</span> parameters&gt;...<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>&lt;general<span class="w"> </span>options&gt;<span class="w"> </span>&lt;command&gt;<span class="w"> </span><span class="o">[</span>&lt;<span class="nb">command</span><span class="w"> </span>parameters&gt;...<span class="o">]</span>
 </pre></div>
 </div>
 <dl>
@@ -141,7 +141,7 @@ JSON format.</p>
 <span id="casa-distro-run-help"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this heading">¶</a></h3>
 <p>Start any command in a selected run or dev environment</p>
 <p>example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro <span class="nv">branch</span><span class="o">=</span>master ls -als /casa
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>master<span class="w"> </span>ls<span class="w"> </span>-als<span class="w"> </span>/casa
 </pre></div>
 </div>
 <section id="id2">
@@ -233,7 +233,7 @@ of <code class="docutils literal notranslate"><span class="pre">distro</span></c
 </li>
 <li><p>directly specifying an image name (<em>not</em> including bulild_number),
 e.g.:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro pull_image <span class="nv">image</span><span class="o">=</span>casa-run-5.0.sif
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>pull_image<span class="w"> </span><span class="nv">image</span><span class="o">=</span>casa-run-5.0.sif
 </pre></div>
 </div>
 </li>
@@ -296,7 +296,7 @@ There are two ways of selecting the image(s):</p>
 <li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
 of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">system</span></code>.</p></li>
 <li><p>directly specifying a full image name, e.g.:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro list_image <span class="nv">image</span><span class="o">=</span>casa-run-ubuntu-18.04.sif
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>list_image<span class="w"> </span><span class="nv">image</span><span class="o">=</span>casa-run-ubuntu-18.04.sif
 </pre></div>
 </div>
 </li>
@@ -426,7 +426,7 @@ repository configuration. By default, command is executed in
 all existing build workflows.</p>
 <p>example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Launch bv_maker on all build workflows using any version of Ubuntu</span>
-casa_distro mrun bv_maker <span class="nv">system</span><span class="o">=</span>ubuntu-*
+casa_distro<span class="w"> </span>mrun<span class="w"> </span>bv_maker<span class="w"> </span><span class="nv">system</span><span class="o">=</span>ubuntu-*
 </pre></div>
 </div>
 <section id="id6">
@@ -559,7 +559,7 @@ There are two ways of selecting the image(s):</p>
 <li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
 of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">system</span></code>.</p></li>
 <li><p>directly specifying a full image name, e.g.:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro clean_images <span class="nv">image</span><span class="o">=</span>casa-run-ubuntu-18.04.sif
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>clean_images<span class="w"> </span><span class="nv">image</span><span class="o">=</span>casa-run-ubuntu-18.04.sif
 </pre></div>
 </div>
 </li>
@@ -654,7 +654,7 @@ selected environment.</p>
 <h2>The complexity of arguments parsing<a class="headerlink" href="#the-complexity-of-arguments-parsing" title="Permalink to this heading">¶</a></h2>
 <p>As casa_distro runs a chain of sub-commands, each of them passing some user-provided arguments, there may be some ambiguity on who should receive arguments. The argument delimiter <code class="docutils literal notranslate"><span class="pre">--</span></code> should be used appropriately.
 For instance:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> anatomist /casa/tests/some_image.nii
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>-r<span class="w"> </span>~/casa_distro<span class="w"> </span>run<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>bug_fix<span class="w"> </span><span class="nv">gui</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>anatomist<span class="w"> </span>/casa/tests/some_image.nii
 </pre></div>
 </div>
 <p>Casa_distro will run the <code class="docutils literal notranslate"><span class="pre">anatomist</span></code> command through Docker or Singularity, which also parses its commandline options:</p>
@@ -663,7 +663,7 @@ For instance:</p>
 <li><p>It invokes <code class="docutils literal notranslate"><span class="pre">docker</span></code> or <code class="docutils literal notranslate"><span class="pre">singularity</span></code>, passing it some specific arguments, and the remaining <code class="docutils literal notranslate"><span class="pre">anatomist</span></code> and <code class="docutils literal notranslate"><span class="pre">/casa/tests/some_image.nii</span></code>, which will be executed in a bash shell inside docker.</p></li>
 </ul>
 <p>But the following command is ambiguous:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix bv_maker <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> --directory<span class="o">=</span>/tmp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>-r<span class="w"> </span>~/casa_distro<span class="w"> </span>run<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>bug_fix<span class="w"> </span>bv_maker<span class="w"> </span><span class="nv">gui</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>--directory<span class="o">=</span>/tmp
 </pre></div>
 </div>
 <p>Why ?</p>
@@ -671,11 +671,11 @@ For instance:</p>
 <p>In the first example there was not this ambiguity since <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> did not recognize the arguments <code class="docutils literal notranslate"><span class="pre">anatomist</span></code> and <code class="docutils literal notranslate"><span class="pre">/casa/tests/some_image.nii</span></code>, so passed them to the following (docker or singularity) command. But now, <code class="docutils literal notranslate"><span class="pre">--directory=/tmp</span></code> is understood by <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code>, used, and consumed by it.</p>
 <p>So, how to pass the option to bv_maker ?</p>
 <p>You have to stop arguments parsing inside <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> and make it pass the remaining arguments to the following command, using <code class="docutils literal notranslate"><span class="pre">--</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> -- bv_maker --directory<span class="o">=</span>/tmp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>-r<span class="w"> </span>~/casa_distro<span class="w"> </span>run<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>bug_fix<span class="w"> </span><span class="nv">gui</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>--<span class="w"> </span>bv_maker<span class="w"> </span>--directory<span class="o">=</span>/tmp
 </pre></div>
 </div>
 <p>The other useful option is to pass options to the container program (docker for instance) (not to the command executed inside docker), typically to mount host directories etc. This is done using the <code class="docutils literal notranslate"><span class="pre">container_optioins</span></code> option, followed by more options:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro -r ~/casa_distro run <span class="nv">branch</span><span class="o">=</span>bug_fix <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> <span class="nv">container_options</span><span class="o">=</span><span class="s1">&#39;-v /home/albert/my_data:/docker_data&#39;</span> -- anatomist /docker_data/image.nii
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>-r<span class="w"> </span>~/casa_distro<span class="w"> </span>run<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>bug_fix<span class="w"> </span><span class="nv">gui</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">container_options</span><span class="o">=</span><span class="s1">&#39;-v /home/albert/my_data:/docker_data&#39;</span><span class="w"> </span>--<span class="w"> </span>anatomist<span class="w"> </span>/docker_data/image.nii
 </pre></div>
 </div>
 </section>
@@ -852,8 +852,8 @@ distro
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.0.0.
+        &#169; Copyright 2017-2023, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.1.
     </div>
   </body>
 </html>

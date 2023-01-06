@@ -83,7 +83,7 @@
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">&lt;environment_full_dir&gt;</span></code> is obtained by replacing, in the full path of the environment directory, directory separators (<code class="docutils literal notranslate"><span class="pre">/</span></code> on Unix systems or <code class="docutils literal notranslate"><span class="pre">\</span></code> on Windows systems) by underscores (<code class="docutils literal notranslate"><span class="pre">_</span></code>). Ex:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/opt/brainvisa/brainvisa-5.0.0  -&gt;  <span class="nv">$HOME</span>/.local/share/casa-distro/opt_brainvisa_brainvisa-5.0.0
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/opt/brainvisa/brainvisa-5.0.0<span class="w">  </span>-&gt;<span class="w">  </span><span class="nv">$HOME</span>/.local/share/casa-distro/opt_brainvisa_brainvisa-5.0.0
 </pre></div>
 </div>
 </li>
@@ -115,7 +115,7 @@
 <p>Singularity 3 does not allow to mount the host <code class="docutils literal notranslate"><span class="pre">.ssh</span></code> directory into the already mounted container home directory. So there are 2 other options:</p>
 <ol class="arabic">
 <li><p>copy the host <code class="docutils literal notranslate"><span class="pre">.ssh</span></code> directory into the container home:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cp -a <span class="s2">&quot;/host/</span><span class="nv">$CASA_HOST_HOME</span><span class="s2">/.ssh&quot;</span> ~/
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cp<span class="w"> </span>-a<span class="w"> </span><span class="s2">&quot;/host/</span><span class="nv">$CASA_HOST_HOME</span><span class="s2">/.ssh&quot;</span><span class="w"> </span>~/
 </pre></div>
 </div>
 <p>But copying private ssh keys is not recommended for security reasons.</p>
@@ -123,12 +123,12 @@
 <li><dl>
 <dt>use a ssh agent:</dt><dd><ul>
 <li><p>install <code class="docutils literal notranslate"><span class="pre">keychain</span></code>. On debian-based Linux distributions, this is:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt-get install keychain
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>keychain
 </pre></div>
 </div>
 </li>
 <li><p>add in your host <code class="docutils literal notranslate"><span class="pre">$HOME/.bash_profile</span></code> file:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">eval</span> <span class="k">$(</span>keychain --eval --agents ssh id_rsa<span class="k">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">eval</span><span class="w"> </span><span class="k">$(</span>keychain<span class="w"> </span>--eval<span class="w"> </span>--agents<span class="w"> </span>ssh<span class="w"> </span>id_rsa<span class="k">)</span>
 </pre></div>
 </div>
 </li>
@@ -163,22 +163,22 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">software</span></code> sets <code class="docutils literal notranslate"><span class="pre">LD_LIBRARY_PATH</span></code> to use a software-only OpenGL rendering. This solution is the slowest but is a fallback when no other solution works.</p></li>
 </ul>
 <p>There are cases where the nvidia option makes things worse (see ssh connections below). If you ever need to disable the nvidia option, you can add an option <code class="docutils literal notranslate"><span class="pre">opengl=software</span></code> or <code class="docutils literal notranslate"><span class="pre">opengl=container</span></code> to <code class="docutils literal notranslate"><span class="pre">run</span></code>, <code class="docutils literal notranslate"><span class="pre">shell</span></code> and other subcommands:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro run <span class="nv">gui</span><span class="o">=</span><span class="m">1</span> <span class="nv">opengl</span><span class="o">=</span>software glxinfo
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>run<span class="w"> </span><span class="nv">gui</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">opengl</span><span class="o">=</span>software<span class="w"> </span>glxinfo
 </pre></div>
 </div>
 <p>If it is OK, you can set this option in the build workflow <code class="docutils literal notranslate"><span class="pre">casa_distro.json</span></code> config, under the <code class="docutils literal notranslate"><span class="pre">&quot;container_gui_env&quot;</span></code> key:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
-    <span class="s2">&quot;casa_distro_compatibility&quot;</span>: <span class="s2">&quot;3&quot;</span>,
-    <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;brainvida-5.0&quot;</span>,
-    <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;/home/bilbo/casa_distro/brainvisa-5.0.sif&quot;</span>,
-    <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;user&quot;</span>,
-    <span class="s2">&quot;system&quot;</span>: <span class="s2">&quot;ubuntu-18.04&quot;</span>,
-    <span class="s2">&quot;container_type&quot;</span>: <span class="s2">&quot;singularity&quot;</span>,
-    <span class="s2">&quot;distro&quot;</span>: <span class="s2">&quot;brainvisa&quot;</span>,
-    <span class="s2">&quot;container_options&quot;</span>: <span class="o">[</span>
-        <span class="s2">&quot;--softgl&quot;</span>,
-    <span class="o">]</span>,
-    <span class="c1"># ...</span>
+<span class="w">    </span><span class="s2">&quot;casa_distro_compatibility&quot;</span>:<span class="w"> </span><span class="s2">&quot;3&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;brainvida-5.0&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;image&quot;</span>:<span class="w"> </span><span class="s2">&quot;/home/bilbo/casa_distro/brainvisa-5.0.sif&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;type&quot;</span>:<span class="w"> </span><span class="s2">&quot;user&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;system&quot;</span>:<span class="w"> </span><span class="s2">&quot;ubuntu-18.04&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;container_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;singularity&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;distro&quot;</span>:<span class="w"> </span><span class="s2">&quot;brainvisa&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;container_options&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">        </span><span class="s2">&quot;--softgl&quot;</span>,
+<span class="w">    </span><span class="o">]</span>,
+<span class="w">    </span><span class="c1"># ...</span>
 <span class="o">}</span>
 </pre></div>
 </div>
@@ -210,14 +210,14 @@ either. Remote GLX rendering has always been a very delicate thing…</p>
 <p>Graphical commands (brainvisa, anatomist, others…) should run through a X11 server. Xquartz is installed in MacOS systems, but need to be started, and a bit configured.</p>
 <ul>
 <li><p>open Xquartz, either using the desktop / finder icon, or by running a X command such as:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xhost +
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xhost<span class="w"> </span>+
 </pre></div>
 </div>
 </li>
 <li><p>in the Xquartz preferences menu, go to “security” and check the option to enable network connections (tcp) to the X server</p></li>
 <li><p>quit the server, it needs to be restarted</p></li>
 <li><dl>
-<dt>run</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xhost +
+<dt>run</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xhost<span class="w"> </span>+
 </pre></div>
 </div>
 <p>to enable other users / apps to use the graphical server (this will start Xquartz, if not already running). Note that this command needs to be run again each time the Xquartz server is stopped / restarted.</p>
@@ -241,7 +241,7 @@ either. Remote GLX rendering has always been a very delicate thing…</p>
 <li><p>Shutdown the virtual machine, go to its configuration, and in the ‘Display’ section, chose ‘Graphics Controller: VMSVGA’, tick ‘Activate 3D acceleration’ and increase the ‘Video memory’ to 128Mb.</p></li>
 <li><p>setup shared directory to mount the computer filesystem (my user directory). For this I went into the ‘shared directory’ section of the VM configuration, and asked to have <code class="docutils literal notranslate"><span class="pre">/media/olivier</span></code> to point on my home directory (on my Mac: <code class="docutils literal notranslate"><span class="pre">/Users/olivier</span></code>) .</p></li>
 <li><p>There is an issue to fix before accessing <code class="docutils literal notranslate"><span class="pre">/media/olivier</span></code>, because of a permission issue. It is fixed by typing the following into the terminal:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo usermod -aG vboxsf <span class="k">$(</span>whoami<span class="k">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>usermod<span class="w"> </span>-aG<span class="w"> </span>vboxsf<span class="w"> </span><span class="k">$(</span>whoami<span class="k">)</span>
 </pre></div>
 </div>
 </li>
@@ -347,8 +347,8 @@ either. Remote GLX rendering has always been a very delicate thing…</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017-2022, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.0.0.
+        &#169; Copyright 2017-2023, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.1.
     </div>
   </body>
 </html>
