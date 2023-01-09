@@ -1002,7 +1002,7 @@ def bbi_daily(distro=None, branch=None, system=None,
               recreate_user_envs='yes',
               user_tests='yes',
               base_directory=casa_distro_directory(),
-              install_thirdparty='default',
+              install_thirdparty='none',
               verbose=None):
     '''BrainVISA Build infrastructure: daily/nightly automated tests
 
