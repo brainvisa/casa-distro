@@ -242,6 +242,7 @@ brainvisa_shared_library_dependencies=(
     libdcmtk16
     libgdk-pixbuf-2.0-0
     libgfortran5
+    libglapi-mesa
     libgl1
     libglib2.0-0
     libglu1-mesa
@@ -249,6 +250,7 @@ brainvisa_shared_library_dependencies=(
     libhdf5-103-1
     libjpeg-turbo8
     libjxr0
+    libllvm14
     libnetcdf19
     libopenjp2-7
     libpng16-16
@@ -284,7 +286,10 @@ brainvisa_shared_library_dependencies=(
     libstdc++6
     libsvm3
     libtiff5
+    libx11-6
+    libxext6
     libxml2
+    libzstd1
 )
 
 # Programs and data that BrainVISA depends on at runtime
