@@ -376,3 +376,18 @@ $SUDO mount devpts /dev/pts -t devpts || true
 # see: https://afni.nimh.nih.gov/pub/dist/doc/htmldoc/background_install/install_instructs/steps_linux_ubuntu20.html#slow-setup-install-prerequisite-packages
 
 $SUDO ln -s /usr/lib/x86_64-linux-gnu/libgsl.so.27 /usr/lib/x86_64-linux-gnu/libgsl.so.19
+
+###############################################################################
+# Patch Qt libs to remove ABI version checks
+###############################################################################
+
+# This is needed to run Qt from this container on a host which is using an
+# older kernel. The ABI tag forbids Qt libs to run using an old kernel, which
+# is most of the time overkill. As we don't know which host will run it (this
+# is the principle of virtualization) we rather remove this test.
+# Note: the risk is that the kernel actually lacks some features and it
+# may crash at runtime at an unexpected moment...
+# Most (all?) other system libraries apparently don't use this ABI tag, since
+# they do work on older kernels.
+
+$SUDO sh -c 'for l in /usr/lib/x86_64-linux-gnu/libQt5*.so.5; do strip --remove-section=.note.ABI-tag $l; done'
