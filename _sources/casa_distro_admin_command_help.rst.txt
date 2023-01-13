@@ -495,7 +495,7 @@ user_tests
     default = yes
     Boolean indicating if the tests must be performed on user environments
 install_thirdparty
-    default = default
+    default = none
     passed to "create_user_image" when update_user_images is true
 base_directory
     default= ``$HOME/casa_distro``
