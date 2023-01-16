@@ -20,6 +20,15 @@ build_dependencies=(
     #
     # cmake
 
+    # Build dependencies of MESA's libGL
+    byacc
+    flex
+    libxcb-randr0-dev
+    libxrandr-dev
+    llvm-dev
+    meson
+    python3-mako
+
     # Build dependencies of MIRCen's fork of openslide
     autoconf
     automake
