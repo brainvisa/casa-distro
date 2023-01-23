@@ -53,6 +53,41 @@ tmp=$(mktemp -d)
 # sudo make install
 
 
+# Install a software-rendering-only libGL to work around compatibility issues
+# e.g. with X2Go, see https://github.com/brainvisa/casa-distro/issues/321.
+# This corresponds to the opengl=software option of 'bv'.
+MESA_VERSION=22.0.5  # same version as distributed with Ubuntu 22.04
+MESA_FILENAME=mesa-${MESA_VERSION}.tar.xz
+MESA_SHA256SUM=5ee2dc06eff19e19b2867f12eb0db0905c9691c07974f6253f2f1443df4c7a35
+cd "$tmp"
+wget "https://archive.mesa3d.org/$MESA_FILENAME"
+if ! [ "$(sha256sum "$MESA_FILENAME")" \
+           = "$MESA_SHA256SUM  $MESA_FILENAME" ]; then
+    echo "ERROR: checksum of $MESA_FILENAME does not match." 2>&1
+    exit 1
+fi
+tar -Jxf "$MESA_FILENAME"
+cd mesa-"$MESA_VERSION"
+mkdir build
+cd build
+meson \
+    -D glx=xlib \
+    -D gallium-drivers=swrast \
+    -D platforms=x11 \
+    -D dri3=false \
+    -D dri-drivers= \
+    -D vulkan-drivers= \
+    -D buildtype=release
+ninja
+mkdir /usr/local/lib/mesa
+cp -d src/gallium/targets/libgl-xlib/libGL.so \
+   src/gallium/targets/libgl-xlib/libGL.so.1 \
+   src/gallium/targets/libgl-xlib/libGL.so.1.5.0 \
+   /usr/local/lib/mesa
+cd ../..
+rm -rf mesa-"$MESA_VERSION"
+
+
 # MIRCen's fork of openslide with support for CZI format
 #
 cd "$tmp"
