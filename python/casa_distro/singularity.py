@@ -695,6 +695,11 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         configured_env['SSH_AUTH_SOCK'] = '/casa/ssh_auth_sock'
         config['mounts']['/casa/ssh_auth_sock'] = '$SSH_AUTH_SOCK'
 
+    # workaround problem with Xvfb
+    if osp.exists(osp.join(casa_home_host_path, '.varlib/xkb')):
+        config['mounts']['/var/lib/xkb'] = osp.join(casa_home_host_path,
+                                                    '.varlib/xkb')
+
     home_mount = False
     host_homedir = os.path.realpath(os.path.expanduser('~'))
     for dest, source in config.get('mounts', {}).items():

@@ -648,6 +648,10 @@ def prepare_environment_homedir(casa_home_host_path):
     """
     if not osp.exists(casa_home_host_path):
         os.makedirs(casa_home_host_path)
+    # add a .varlib/xkb directory in order to mount /var/lib/xkb from there:
+    # Xvfb may fail if it cannot see and write a valid /var/lib/xkb
+    if not osp.exists(osp.join(casa_home_host_path, '.varlib/xkb')):
+        os.makedirs(osp.join(casa_home_host_path, '.varlib/xkb'))
     bashrc = osp.join(casa_home_host_path, '.bashrc')
     if not osp.exists(bashrc):
         with open(bashrc, 'w') as f:
