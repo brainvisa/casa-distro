@@ -66,9 +66,6 @@ def copy_build_files(base_dir, builder):
                       '/usr/local/bin/')
     builder.run_root('chmod a+rx /usr/local/bin/entrypoint')
 
-    # copy a software-only mesa libGL in /usr/local/lib # TODO
-    # builder.copy_root(os.path.join(base_dir, 'mesa'), '/usr/local/lib/')
-
 
 @builder.step
 def apt_dependencies(base_dir, builder):

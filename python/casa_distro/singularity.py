@@ -479,10 +479,6 @@ _singularity_raw_version = None
 _singularity_run_help = None
 
 
-def singularity_major_version():
-    return singularity_version()[0]
-
-
 def singularity_version():
     raw_version = singularity_raw_version()
     m = re.search(r'([0-9]+(\.[0-9]+)*)', raw_version)
@@ -699,6 +695,11 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         configured_env['SSH_AUTH_SOCK'] = '/casa/ssh_auth_sock'
         config['mounts']['/casa/ssh_auth_sock'] = '$SSH_AUTH_SOCK'
 
+    # workaround problem with Xvfb
+    if osp.exists(osp.join(casa_home_host_path, '.varlib/xkb')):
+        config['mounts']['/var/lib/xkb'] = osp.join(casa_home_host_path,
+                                                    '.varlib/xkb')
+
     home_mount = False
     host_homedir = os.path.realpath(os.path.expanduser('~'))
     for dest, source in config.get('mounts', {}).items():
@@ -722,7 +723,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             # is not in stdlib on Python 2. Also, beware of trailing slashes
             # (use os.path.normpath)!
             home_mount = True
-    if not home_mount and singularity_major_version() > 2:
+    if not home_mount:
         # singularity 3 doesn't mount the home directory automatically.
         singularity += ['--bind', host_homedir]
 
