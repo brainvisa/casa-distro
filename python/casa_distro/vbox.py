@@ -88,6 +88,7 @@ def create_image(base, base_metadata,
     if type == 'system':
         vm = VBoxMachine(name)
         if vm.exists():
+            msg = None
             vbox_manage(['export', name, '-o', output, '--ovf20'])
         else:
             # Create a machine in VirtualBox, set some parameters and start it.
@@ -319,19 +320,21 @@ class VBoxMachine:
         for line in output.split('\n'):
             line = line.strip()
             if line:
-                key, value = line.split('=', 1)
-                if key and key[0] == '"' and key[-1] == '"':
-                    key = key[1:-1]
-                if value:
-                    if value[0] == '"':
-                        if value[-1] == '"':
-                            value = value[1:-1]
-                    else:
-                        try:
-                            value = int(value)
-                        except ValueError:
-                            pass
-                result[key] = value
+                l = line.split('=', 1)
+                if len(l) == 2:
+                    key, value = l
+                    if key and key[0] == '"' and key[-1] == '"':
+                        key = key[1:-1]
+                    if value:
+                        if value[0] == '"':
+                            if value[-1] == '"':
+                                value = value[1:-1]
+                        else:
+                            try:
+                                value = int(value)
+                            except ValueError:
+                                pass
+                    result[key] = value
         return result
 
     def start(self, gui=False):
@@ -589,3 +592,5 @@ def vbox_import_vdi(image, vbox_machine, output,
 def convert_image(source, metadata, output, convert_from, verbose=None):
     raise NotImplementedError(
         'Currently converting to vbox images is not implemented.')
+
+
