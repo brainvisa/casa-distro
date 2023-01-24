@@ -196,7 +196,6 @@ def create_base_image(type,
                                       '{name}.{extension}'),
                       container_type='singularity',
                       verbose=True,
-                      cleanup='yes',
                       **kwargs):
     """Create a new virtual image
 
@@ -214,7 +213,13 @@ def create_base_image(type,
           casa_distro_admin create_base_image base=ubuntu-18.04.sif \\
               type=system image_version=ubuntu-18.04
 
-    - For VirtualBox: TODO
+    - For VirtualBox:
+
+      Ensure ~/casa-distro exists
+      Download ISO file for appropriate version of Ubuntu
+      Run the following command and follow printed instructions::
+
+          casa_distro_admin create_base_image type=system container_type=vbox image_version=5.3 gui=yes base=$HOME/Download/ubuntu-22.04.1-desktop-amd64.iso
 
     Parameters
     ----------
@@ -246,16 +251,6 @@ def create_base_image(type,
         Version (or branch) of the image
 
     {verbose}
-
-    cleanup (allowed only if container_type=singularity)
-        default=yes
-
-        If "no", "false" or "0", do not cleanup after a failure during image
-        building. This may allow to debug a problem after the failure. For
-        instance, with Singularity one can use a command like::
-
-            sudo singularity run --writable
-            /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
 
     force (allowed only if container_type=singularity)
         default=no
@@ -293,7 +288,6 @@ def create_base_image(type,
         VirtualBox window.
     """
     verbose = verbose_file(verbose)
-    cleanup = check_boolean('cleanup', cleanup)
 
     if type not in ('system', 'run', 'dev'):
         raise ValueError('Image type can only be "system", "run" or "dev"')
@@ -405,7 +399,6 @@ def create_base_image(type,
                                         output, metadata,
                                         image_builder=image_builder,
                                         verbose=verbose,
-                                        cleanup=cleanup,
                                         **kwargs)
     if msg:
         print(msg)
