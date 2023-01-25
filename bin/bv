@@ -40,6 +40,7 @@ verbose = None
 perform_run = True
 casa_distro_admin = False
 me = osp.basename(sys.argv[0])
+use_bv_options = True
 if me != 'bv':
     # we are invoked as another name from 'bv': we are obviously a symlink to
     # the bv script. In that situation we should:
@@ -53,6 +54,7 @@ if me != 'bv':
         if me in ('casa_distro', 'casa_distro_admin'):
             perform_run = False
             casa_distro_admin = (me == 'casa_distro_admin')
+            use_bv_options = False
         else:
             sys.argv.insert(1, me)
             bv = os.readlink(sys.argv[0])
@@ -60,17 +62,17 @@ if me != 'bv':
                 bv = osp.join(osp.dirname(sys.argv[0]), bv)
             sys.argv[0] = bv
             sys.argv.insert(1, '--')
-
 i = 1
-while i < len(sys.argv):
-    option = sys.argv[i]
-    if option in ('-h', '--help'):
-        help = True
-    elif option in ('-v', '--verbose'):
-        verbose = sys.stdout
-    else:
-        break
-    i += 1
+if use_bv_options:
+    while i < len(sys.argv):
+        option = sys.argv[i]
+        if option in ('-h', '--help'):
+            help = True
+        elif option in ('-v', '--verbose'):
+            verbose = sys.stdout
+        else:
+            break
+        i += 1
 command = sys.argv[i:]
 
 
@@ -216,5 +218,7 @@ if not version.startswith('3.'):
 # Ctrl+C
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-retcode = subprocess.call(host_command)
+env = os.environ.copy()
+env['CASA_DIR'] = environment_dir
+retcode = subprocess.call(host_command, env=env)
 sys.exit(retcode)
