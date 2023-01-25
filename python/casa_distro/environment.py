@@ -253,12 +253,12 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
     base directory. For each one, yield a dictionary corresponding to the
     casa_distro.json file with the "directory" item added.
     """
-    casa_distro_jsons = glob(osp.join(base_directory, '*',
-                                      'conf', 'casa_distro.json'))
-    if not casa_distro_jsons:
-        # Special case where base_directroy is the directory of an environment
-        casa_distro_jsons = glob(osp.join(base_directory, 'conf',
-                                          'casa_distro.json'))
+    casa_distro_jsons = set(glob(osp.join(base_directory, '*',
+                                          'conf', 'casa_distro.json')))
+    casa_dir = os.environ.get('CASA_DIR')
+    if casa_dir:
+        casa_distro_jsons.update(glob(osp.join(casa_dir, 'conf',
+                                               'casa_distro.json')))
     for casa_distro_json in sorted(casa_distro_jsons):
         with open(casa_distro_json) as f:
             environment_config = json.load(f)
