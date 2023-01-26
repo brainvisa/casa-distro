@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os.path as osp
 import sys
-import shutil
 
 from casa_distro import six
 from casa_distro.command import command, check_boolean
@@ -11,15 +10,9 @@ from casa_distro.environment import (casa_distro_directory,
                                      iter_environments,
                                      run_container,
                                      select_environment,
-                                     iter_images,
                                      update_image,
                                      find_image_update_url)
 from casa_distro.log import verbose_file
-
-if six.PY3:
-    interactive_input = input
-else:
-    interactive_input = raw_input  # noqa F821
 
 
 def size_to_string(full_size):
@@ -420,46 +413,6 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
 
 
 @command
-def list_images(distro=None, branch=None, system=None, image_version=None,
-                version=None, name=None, type=None,
-                image='*', base_directory=casa_distro_directory(),
-                verbose=None):
-    '''List the locally installed container images.
-    There are two ways of selecting the image(s):
-
-    1. filtered by environment, using the ``name`` selector, or a combination
-       of ``distro``, ``branch``, and ``system``.
-
-    2. directly specifying a full image name, e.g.::
-
-           casa_distro list_image image=casa-run-ubuntu-18.04.sif
-
-    Parameters
-    ----------
-    {distro}
-    {branch}
-    {system}
-    {image_version}
-    {version}
-    {name}
-    {type}
-    {image}
-    {base_directory}
-    {verbose}
-
-    '''
-    images_to_update = list(iter_images(base_directory=base_directory,
-                                        distro=distro, branch=branch,
-                                        system=system,
-                                        image_version=image_version,
-                                        version=version,
-                                        name=name, type=type,
-                                        image=image))
-
-    print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
-
-
-@command
 def shell(type=None, distro=None, branch=None, system=None, image_version=None,
           name=None,
           version=None,
@@ -636,122 +589,3 @@ def bv_maker(type='dev', distro=None, branch=None, system=None,
                container_options=container_options,
                args_list=args_list,
                verbose=verbose)
-
-
-@command
-def clean_images(distro=None, branch=None, system=None,
-                 image_version=None, version=None, name=None, type=None,
-                 image=None, verbose=False,
-                 base_directory=casa_distro_directory(), interactive=True):
-    '''
-    Delete singularity images which are no longer used in any build workflow,
-    or those listed in the "image" parameter.
-    There are two ways of selecting the image(s):
-
-    1. filtered by environment, using the ``name`` selector, or a combination
-       of ``distro``, ``branch``, and ``system``.
-
-    2. directly specifying a full image name, e.g.::
-
-           casa_distro clean_images image=casa-run-ubuntu-18.04.sif
-
-    Parameters
-    ----------
-    {distro}
-    {branch}
-    {system}
-    {image_version}
-    {version}
-    {name}
-    {type}
-    {image}
-    {base_directory}
-    interactive
-        default={interactive_default}
-        ask confirmation before deleting an image
-    {verbose}
-
-    '''
-    raise NotImplementedError('clean_image is beign rewritten')
-    # images_to_update = list(iter_images(base_directory=base_directory,
-    #                                     distro=distro, branch=branch,
-    #                                     system=system,
-    #                                     image_version=image_version,
-    #                                     version=version,
-    #                                     name=name, type=type,
-    #                                     image=image))
-
-    # print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
-
-    # for container_type, image_name \
-    #         in iter_images(base_directory=base_directory,
-    #                        distro=distro, branch=branch,
-    #                        system=system, image_version=image_version,
-    #                        name=name, type=type,
-    #                        image=image):
-    #     if interactive:
-    #         confirm = interactive_input(
-    #             'delete image %s : %s [y/N]: ' % (container_type, 
-    #                                               image_name))
-    #         if confirm not in ('y', 'yes', 'Y', 'YES'):
-    #             print('skip.')
-    #             continue
-    #     print('deleting image %s' % image_name)
-    #     delete_image(container_type, image_name)
-
-
-@command
-def delete(type=None, distro=None, branch=None, system=None,
-           image_version=None, version=None, name=None,
-           base_directory=casa_distro_directory(),
-           interactive=True):
-    """
-    Delete an existing environment.
-
-    The whole environment directory will be removed and forgotten.
-
-    Use with care.
-
-    Image files will be left untouched - use clean_images for this.
-
-    Parameters
-    ----------
-    {type}
-    {distro}
-    {branch}
-    {system}
-    {image_version}
-    {version}
-    {name}
-    {base_directory}
-    interactive
-        default={interactive_default}
-        if true (or 1, or yes), ask confirmation interactively for each
-        selected environment.
-    """
-    interactive = check_boolean('interactive', interactive)
-    if not interactive and type is None and distro is None and system is None \
-            and image_version is None and name is None:
-        raise RuntimeError(
-            'Refusing to delete all environments without confirmation. '
-            'Either use interactive=True, or provide an explicit pattern for '
-            'environment selection parameters')
-
-    for config in iter_environments(base_directory,
-                                    type=type,
-                                    distro=distro,
-                                    branch=branch,
-                                    system=system,
-                                    image_version=image_version,
-                                    version=version,
-                                    name=name):
-        if interactive:
-            confirm = interactive_input(
-                'delete environment %s [y/N]: ' % config['name'])
-            if confirm not in ('y', 'yes', 'Y', 'YES'):
-                print('skip.')
-                continue
-        print('deleting environment %s' % config['name'])
-        directory = config['directory']
-        print('rm -rf "%s"' % directory)
-        shutil.rmtree(directory)

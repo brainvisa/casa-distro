@@ -184,12 +184,6 @@ class RecipeBuilder:
                        "-o -name '*~' -exec rm -Rf '{}' \\;") % dest)
 
 
-def iter_images(base_directory):
-    for filename in os.listdir(base_directory):
-        if filename.endswith('.sif'):
-            yield osp.join(base_directory, filename)
-
-
 def _singularity_build_command(cleanup=True, force=False, fakeroot=True):
     build_command = []
     if not fakeroot:

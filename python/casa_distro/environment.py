@@ -353,58 +353,6 @@ def find_image_update_url(image, url):
     return None
 
 
-def iter_images(base_directory=casa_distro_directory(), **filter):
-    """
-    Iterate over locally installed images, with filtering.
-    Filtering may be environment-driven (filter from existing environments),
-    or image-driven (filter local image names even if they are not used in any
-    environment). Image-driven mode is used if none of the environment
-    selection filters are used (name, system, distro and branch are all None).
-    If you with to trigger the environment-driven mode without filtering, just
-    select "*" as one of the environment filter variables.
-    """
-    configs = set()  # avoid duplicates
-    if filter.get('name') or filter.get('system') \
-            or filter.get('image_version') or filter.get('distro') \
-            or filter.get('branch') or filter.get('type'):
-        # select by environment
-        for config in iter_environments(base_directory,
-                                        type=filter.get('type'),
-                                        distro=filter.get('distro'),
-                                        branch=filter.get('branch'),
-                                        system=filter.get('system'),
-                                        image_version=filter.get(
-                                            'image_version'),
-                                        name=filter.get('name'),
-                                        image=filter.get('image')):
-            image = (config['container_type'], config['image'])
-            if filter.get('type') == 'run':
-                # run / user environments may be linked to a user image
-                with open('%s.json' % image[1]) as f:
-                    image_meta = json.load(f)
-                if image_meta['type'] != filter['type']:
-                    continue
-            if image[1] not in configs:
-                configs.add(image[1])
-                yield image
-
-    else:
-        # select all environments first (some env may refer to images which
-        # are not present locally)
-        if not filter.get('image'):
-            for config in iter_environments(base_directory):
-                image = (config['container_type'], config['image'])
-                if image[1] not in configs:
-                    configs.add(image[1])
-                    yield image
-        # select by images
-        image_filter = filter.get('image')
-        for image in singularity.iter_images(base_directory=base_directory):
-            if not image_filter or fnmatch.filter([image], image_filter):
-                if image not in configs:
-                    yield ('singularity', image)
-
-
 def update_image(image, new_image_url, config_files=[], restart=False,
                  cleanup=True):
     """
