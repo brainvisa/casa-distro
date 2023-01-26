@@ -400,6 +400,11 @@ def update_image(image, new_image_url, config_files=[], restart=False,
         with open(filename) as f:
             metadata = json.load(f)
         metadata['image'] = new_image
+        image_id = new_metadata.get('image_id')
+        if image_id:
+            metadata['image_id'] = image_id
+        else:
+            metadata.pop('image_id', None)
         with open(filename, 'w') as f:
             json.dump(metadata, f,
                       indent=4, separators=(',', ': '))
