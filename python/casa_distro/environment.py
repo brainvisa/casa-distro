@@ -20,7 +20,7 @@ from casa_distro.six.moves import shlex_quote
 
 from casa_distro import share_directories
 from casa_distro import singularity
-from casa_distro.web import url_listdir, urlopen
+from casa_distro.web import url_listdir
 from casa_distro import downloader
 
 
@@ -34,6 +34,12 @@ bv_maker_branches = {
 
 # We need to duplicate this function to allow copying over
 # an existing directory
+
+image_re = re.compile(
+    r'(?P<name>[\w-]+)'
+    r'(?:-(?P<version>\d+\.\d+(?:\.\d+)?)'
+    r'(?:-(?P<patch>\d+))?)?'
+    r'\.(?P<extension>\w+)$')
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
@@ -272,8 +278,8 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
         }
         if 'WSL_DISTRO_NAME' in os.environ:
             # On Winows/WSL2, /dev/shm is a symlink to /run/shm. This
-            # is supposed to be a directory like device stored in memory.
-            # To avoid failur of some programs, /run/shm is mounted as
+            # is supposed to be a directory-like device stored in memory.
+            # To avoid failure of some programs, /run/shm is mounted as
             # /tmp so that it behave like a writable directory as expected.
             config['mounts']['/run/shm'] = '/tmp'
         config['env'] = {
@@ -311,41 +317,6 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
             yield config
 
 
-def get_environment_image(config, base_directory=casa_distro_directory()):
-    """
-    Get the container image actually used by the given environment.
-    It may be an updated version of the initial image.
-    """
-    image = config['image']
-    image_id = config.get('image_id')
-    if image_id:
-        images = list(iter_images(base_directory=base_directory,
-                                  type='run',
-                                  image_id=image_id))
-        if images:
-            return images[0]
-    images = list(iter_images(
-            base_directory=base_directory,
-            type=config.get('type'),
-            image_version=config.get('image_version'),
-            container_type=config.get('container_type'),
-            system=config.get('system')))
-    img_confs = {}
-    for image in images:
-        with open('%s.json' % image[1]) as f:
-            conf = json.load(f)
-        bn = conf.get('build_number', 0)
-        conf['image'] = image[1]
-        if bn is None:
-            bn = 0
-        img_confs[bn] = conf
-    images = [img_confs[k]['image']
-              for k in sorted(img_confs.keys(), reverse=True)]
-    if images:
-        return images[0]
-    return (None, None)
-
-
 def get_run_base_of_dev_image(image):
     """
     Get the run image associated to a given dev image
@@ -355,6 +326,31 @@ def get_run_base_of_dev_image(image):
     # image with the correct uuid)
     assert '-dev-' in image
     return image.replace('-dev-', '-run-', 1)
+
+
+def find_image_update_url(image, url):
+    base = osp.basename(image)
+    m = image_re.match(base)
+    if m:
+        name = m.group('name')
+        version = m.group('version')
+        patch = m.group('patch')
+        extension = m.group('extension')
+        patch = int(patch or 0)
+        new_patch = patch
+        for file in url_listdir(url):
+            other_base = osp.basename(file)
+            m = image_re.match(other_base)
+            if (m and
+                m.group('name') == name and
+                m.group('version') == version and
+                m.group('extension') == extension):
+                    other_patch = int(m.group('patch') or 0)
+                    if other_patch > patch and other_patch > new_patch:
+                        new_patch = other_patch
+        if new_patch > patch:
+            return f'{url}/{name}-{version}-{new_patch}.{extension}'
+    return None
 
 
 def iter_images(base_directory=casa_distro_directory(), **filter):
@@ -393,7 +389,7 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
                 yield image
 
     else:
-        # select all environments first (some envd may refer to images which
+        # select all environments first (some env may refer to images which
         # are not present locally)
         if not filter.get('image'):
             for config in iter_environments(base_directory):
@@ -407,168 +403,65 @@ def iter_images(base_directory=casa_distro_directory(), **filter):
             if not image_filter or fnmatch.filter([image], image_filter):
                 if image not in configs:
                     yield ('singularity', image)
-        # for image in docker.iter_images(base_directory=base_directory):
-        #     if not filter or fnmatch.filter([image], filter):
-        #         yield ('docker', image)
-        # for image in vbox.iter_images(base_directory=base_directory):
-        #     if not filter or fnmatch.filter([image], filter):
-        #         yield ('vbox', image)
 
 
-def image_remote_location(container_type, image_name, url):
-    if container_type == 'docker':
-        raise NotImplementedError('docker case not implemented yet.')
-    return '%s/%s' % (url, osp.basename(image_name))
-
-
-def update_container_image(container_type, image_name, url,
-                           base_directory=casa_distro_directory(),
-                           force=False,
-                           verbose=None, new_only=False):
+def update_image(image, new_image_url, config_files=[], restart=False,
+                 cleanup=True):
     """
-    Download a container image.
+    Download an image from a given URL to replace an existing image file.
 
     Parameters
     ----------
-    container_type: str
-        singularity, docker, vbox
-    image_name: str
+    image: str
         image filename (full path)
-    url: str
-        pattern (e.g. 'https://brainvisa.info/download/{container_type}')
-    base_directory: str
-        Directory where images and environments are stored.
-    force: bool
-        download image even if it seems up-to-date
-    verbose: file
-        print things
-    new_only: bool
-        download only if the local image is missing (don't really update)
+    new_image_url: str
+        Full URL of the new image file
+    config_files: list[str]
+        Names of the config files to modify to point to the new downloaded
+        image.
+    restart: bool
+        if True, always start the download from the begining of the file.
+        Otherwise, download will start after current file size (to allow
+        to continue the download after an interruption)
+    cleanup: bool
+        if True, delete the image at the end
     """
-    url = url.format(container_type=container_type)
-    remote_image = image_remote_location(container_type, image_name, url)
+    target_dir = osp.dirname(image)
+    new_name = osp.basename(new_image_url)
 
-    if not os.path.isabs(image_name) and not osp.exists(image_name):
-        image_name = osp.join(base_directory, image_name)
+    # Download the json file first
+    new_json = f'{target_dir}/{new_name}.json'
+    downloader.download_file(new_image_url + '.json',
+                             new_json,
+                             allow_continue=False,
+                             use_tmp=False)
+    with open(new_json) as f:
+        new_metadata = json.load(f)
 
-    image = osp.basename(image_name)
-
-    metadata_file = '%s.json' % image_name
-    if new_only and osp.exists(metadata_file) and osp.exists(image_name):
-        print('image %s already exists.' % image, file=verbose)
-        return  # don't update
-
-    json_url = '%s.json' % remote_image
-
-    # retrieve list of compatible images
-    images = url_listdir(osp.dirname(json_url))
-    image_url_base, image_ext = osp.splitext(remote_image)
-    image_url_pattern = re.compile(
-        re.escape(osp.basename(image_url_base))
-        + r'(-([0-9]+))?\%s\.json' % image_ext)
-    images_dict = {}
-    for image_url in images:
-        m = image_url_pattern.match(image_url)
-        if m:
-            if m.group(2) is None:
-                num = 0
-            else:
-                num = int(m.group(2))
-            images_dict[num] = '%s/%s' % (osp.dirname(json_url), image_url)
-
-    local_metadata = {}
-    if osp.exists(metadata_file):
-        if sys.version_info[0] == 2:
-            with open(metadata_file) as f:
-                local_metadata = json.load(f)
-        else:
-            with open(metadata_file, encoding='utf-8') as f:
-                local_metadata = json.load(f)
-    image_version = local_metadata.get('image_version')
-
-    for num in reversed(sorted(images_dict.keys())):
-        json_url = images_dict[num]
-        try:
-            f = None
-            try:
-                f = urlopen(json_url)
-                if f.getcode() == 404:
-                    continue
-                metadata = json.loads(f.read().decode('utf-8'))
-            except Exception as e:
-                print('%s could not be read:' % json_url, e)
-        finally:
-            if f:
-                f.close()
-            del f
-        if image_version and metadata.get('image_version') != image_version:
-            # mismatching
-            continue
-        # check compatibility ?
-        break
-    else:
-        print('no matching image found for', image)
-        return
-
-    remote_image = json_url[:-5]
-    # image_name = osp.join(base_directory, osp.basename(remote_image))
-
-    if not force and osp.exists(metadata_file):
-        if (local_metadata.get('md5') == metadata.get('md5')
-                and local_metadata.get('size') == metadata.get('size')
-                and osp.isfile(image_name)
-                and os.stat(image_name).st_size == metadata.get('size')) \
-                or (local_metadata.get('image_version')
-                    == metadata.get('image_version')
-                    and int(local_metadata.get('build_number'))
-                    > int(metadata.get('build_number'))):
-            # if verbose:
-            print('image %s is up-to-date.' % image)
-            return
-    # if verbose:
-    print('pulling image: %s' % image_name)
-    tmp_metadata_file = list(osp.split(metadata_file))
-    tmp_metadata_file[-1] = '.%s' % tmp_metadata_file[-1]
-    tmp_metadata_file = osp.join(*tmp_metadata_file)
-
-    tmp_image_name = list(osp.split(image_name))
-    tmp_image_name[-1] = '.%s' % tmp_image_name[-1]
-    tmp_image_name = osp.join(*tmp_image_name)
-
-    download_all = True
-    if osp.exists(tmp_metadata_file):
-        older_metadata = json.load(open(tmp_metadata_file))
-        if older_metadata['md5'] == metadata['md5']:
-            download_all = False
-
-    json.dump(metadata, open(tmp_metadata_file, 'w'),
-              indent=4, separators=(',', ': '))
-    downloader.download_file(remote_image, image_name,
-                             allow_continue=not download_all,
+    # Then download the image file
+    new_image = f'{target_dir}/{new_name}'
+    downloader.download_file(new_image_url,
+                             new_image,
+                             allow_continue=not restart,
                              use_tmp=True,
-                             md5_check=metadata['md5'],
+                             md5_check=new_metadata['md5'],
                              callback=downloader.stdout_progress)
 
-    # move metadata to final location
-    os.rename(tmp_metadata_file, metadata_file)
+    # Change the config files
+    for filename in config_files:
+        with open(filename) as f:
+            metadata = json.load(f)
+        metadata['image'] = new_image
+        with open(filename, 'w') as f:
+            json.dump(metadata, f,
+                      indent=4, separators=(',', ': '))
 
-
-def delete_image(container_type, image_name):
-    """
-    Delete a container image files
-    """
-    if container_type in ('singularity', 'vbox'):
-        if not os.path.isabs(image_name) and not osp.exists(image_name):
-            image_name = osp.join(casa_distro_directory(), image_name)
-        if os.path.exists(image_name):
-            os.unlink(image_name)
-        metadata = '%s.json' % image_name
-        if os.path.exists(metadata):
-            os.unlink(metadata)
-    elif container_type == 'docker':
-        raise NotImplementedError('docker case not implemented yet.')
-    else:
-        raise ValueError('unknown container type: %s' % container_type)
+    # Finally remove old image
+    if cleanup:
+        if osp.exists(image):
+            os.remove(image)
+        if osp.exists(image + '.json'):
+            os.remove(image + '.json')
 
 
 def select_environment(base_directory, **kwargs):

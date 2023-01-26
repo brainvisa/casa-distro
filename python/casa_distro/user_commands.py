@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
+import os.path as osp
 import sys
 import shutil
 
@@ -13,8 +12,8 @@ from casa_distro.environment import (casa_distro_directory,
                                      run_container,
                                      select_environment,
                                      iter_images,
-                                     update_container_image,
-                                     delete_image)
+                                     update_image,
+                                     find_image_update_url)
 from casa_distro.log import verbose_file
 
 if six.PY3:
@@ -300,27 +299,45 @@ def run(type=None, distro=None, branch=None, system=None, image_version=None,
 @command
 def pull_image(distro=None, branch=None, system=None, image_version=None,
                version=None, name=None, type=None,
-               image='*', base_directory=casa_distro_directory(),
+               image=None, base_directory=casa_distro_directory(),
                url=default_download_url,
-               force=False, verbose=None):
-    '''Update the container images. By default all images that are used by at
-    least one environment are updated. There are two ways of selecting the
-    image(s) to be downloaded:
+               mode='standard', cleanup='yes', verbose=None):
+    '''Update the container images. By default the current image and
+    all images that are used by at least one casa-distro environment
+    are selected (these environments are listed by the ``list`` command).
+    There are two ways of selecting the image(s) to be updated:
 
     1. filtered by environment, using the ``name`` selector, or a combination
        of ``distro``, ``branch``, and ``image_version``.
 
            casa_distro pull_image type=dev image_version=5.0
 
-    2. directly specifying an image name (*not* including bulild_number),
-       e.g.::
+    2. directly specifying an image file name
 
-           casa_distro pull_image image=casa-run-5.0.sif
+           casa_distro pull_image image=/home/me/casa-run-5.0.sif
 
-    Note that even though the build number does not appear in the local image
-    name, this command will always pull the image with the highest
-    build_number, e.g. the image that is named casa-dev-5.0-1.sif on the server
-    will be downloaded to a file named casa-dev-5.0.sif.
+    Then the command look for an updated version of selected images in the
+    site given by ``url`` parameter. These files are downloaded (as well as
+    the corresponding JSON metadata file) and the config files using the
+    current images are modified to use the updated ones. Finally, the original
+    images are deleted (unless ``cleanup=no`` is used).
+
+    Updated images are located using file name pattern. An updatable image
+    file name must match the following pattern:
+
+        ``{{name}}-{{version}}[-{{patch}}].{{extension}}``
+
+    Where:
+
+        ``{{name}}`` is the name of the image (e.g ``casa-dev``)
+        ``{{version}}`` is the image version with pattern x.y[.z]
+        ``{{patch}}`` is an integer
+        ``{{version}}`` is the file name extension (e.g. ``sif``)
+
+    An updated version of a given image is any other image with the same
+    pattern having the same ``name``, ``version`` and ``extension`` and a
+    higher ``patch``. If several updated version are available for an image,
+    the one with the greatest ``patch`` is selected.
 
     Parameters
     ----------
@@ -335,44 +352,71 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
     {image}
     url
         default={url_default}
-        URL where to download image if it is not found.
-    force
-        default=False
-        force re-download of images even if they are locally present and
-        up-to-date.
+        URL where to download images.
+    mode
+        default={mode_default}
+        Possible values are:
+            - standard: download only newer version of existing image
+            - force: re-download of images even if they are locally present
+              and up-to-date.
+            - fake: don't change anything to images. Just display what images
+              and config files would be modified by other modes.
+    cleanup
+        default={cleanup_default}
+        if true (or 1, or yes), remove current image when succesfully finished
+        to download new one.
     {verbose}
-
     '''
+    mode = mode.lower()
+    if mode == 'fake':
+        verbose = 'yes'
+    elif mode == 'force':
+        raise NotImplementedError('mode=force is not implemented yet')
     verbose = verbose_file(verbose)
-    images_to_update = list(iter_images(base_directory=base_directory,
-                                        distro=distro, branch=branch,
-                                        system=system,
-                                        image_version=image_version,
-                                        version=version,
-                                        name=name, type=type,
-                                        image=image))
 
-    if not images_to_update and image not in (None, '') and '*' not in image:
-        if image.endswith('.sif') or image.endswith('.simg'):
-            container_type = 'singularity'
-            images_to_update = [(container_type, image)]
-        elif image.endswith('.ova') or image.endswith('.vdi'):
-            container_type = 'vbox'
-            images_to_update = [(container_type, image)]
+    to_update = {}
+    if image:
+        if not osp.exists(image):
+            raise ValueError(f'No such image file: {image}')
+        to_update[image] = []
+    for environment in iter_environments(base_directory,
+                                         distro=distro,
+                                         branch=branch,
+                                         system=system,
+                                         type=type,
+                                         image_version=image_version,
+                                         version=version,
+                                         name=name):
+        if image:
+            if image == environment['image']:
+                to_update[image].append(environment)
+        else:
+            env_image = environment['image']
+            to_update.setdefault(env_image, []).append(environment)
 
+    # Find updated version of images
+    updates = {}
+    for image in to_update:
+        update_url = find_image_update_url(image, url)
+        if update_url:
+            updates[image] = update_url
     if verbose:
-        print('images_to_update:\n%s'
-              % '\n'.join(['%s\t: %s' % i for i in images_to_update]),
-              file=verbose)
-
-    for container_type, image in images_to_update:
-        update_container_image(container_type, image,
-                               base_directory=base_directory,
-                               verbose=verbose, url=url, force=force)
-    if not images_to_update:
-        print('No build workflow match selection criteria',
-              file=sys.stderr)
-        return 1
+        for image, environments in to_update.items():
+            update_url = updates.get(image)
+            if update_url:
+                print(image, '<-', update_url, file=verbose)
+                for e in environments:
+                    print('  ->', f'{e["directory"]}/conf/casa_distro.json',
+                          file=verbose)
+            else:
+                print(image, '==')
+    if mode != 'fake':
+        for image, environments in to_update.items():
+            update_url = updates.get(image)
+            if update_url:
+                config_files = [f'{e["directory"]}/conf/casa_distro.json'
+                                for e in environments]
+                update_image(image, update_url, config_files, )
 
 
 @command
@@ -628,31 +672,32 @@ def clean_images(distro=None, branch=None, system=None,
     {verbose}
 
     '''
+    raise NotImplementedError('clean_image is beign rewritten')
+    # images_to_update = list(iter_images(base_directory=base_directory,
+    #                                     distro=distro, branch=branch,
+    #                                     system=system,
+    #                                     image_version=image_version,
+    #                                     version=version,
+    #                                     name=name, type=type,
+    #                                     image=image))
 
-    images_to_update = list(iter_images(base_directory=base_directory,
-                                        distro=distro, branch=branch,
-                                        system=system,
-                                        image_version=image_version,
-                                        version=version,
-                                        name=name, type=type,
-                                        image=image))
+    # print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
 
-    print('\n'.join(['%s\t: %s' % i for i in images_to_update]))
-
-    for container_type, image_name \
-            in iter_images(base_directory=base_directory,
-                           distro=distro, branch=branch,
-                           system=system, image_version=image_version,
-                           name=name, type=type,
-                           image=image):
-        if interactive:
-            confirm = interactive_input(
-                'delete image %s : %s [y/N]: ' % (container_type, image_name))
-            if confirm not in ('y', 'yes', 'Y', 'YES'):
-                print('skip.')
-                continue
-        print('deleting image %s' % image_name)
-        delete_image(container_type, image_name)
+    # for container_type, image_name \
+    #         in iter_images(base_directory=base_directory,
+    #                        distro=distro, branch=branch,
+    #                        system=system, image_version=image_version,
+    #                        name=name, type=type,
+    #                        image=image):
+    #     if interactive:
+    #         confirm = interactive_input(
+    #             'delete image %s : %s [y/N]: ' % (container_type, 
+    #                                               image_name))
+    #         if confirm not in ('y', 'yes', 'Y', 'YES'):
+    #             print('skip.')
+    #             continue
+    #     print('deleting image %s' % image_name)
+    #     delete_image(container_type, image_name)
 
 
 @command
