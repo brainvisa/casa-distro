@@ -118,6 +118,20 @@ class RecipeBuilder:
                        '${SINGULARITY_ROOTFS}/%s/%s'
                        % (dest_dir, osp.basename(source_file))))
 
+    def extract_tar(self, source_file, dest_dir):
+        ''' Extract a tar archive into the dest directory
+
+        Returns
+        -------
+        list of root files / directories
+        '''
+        self.sections.setdefault('setup', []).append(
+            'if [ ! -d ${SINGULARITY_ROOTFS}/' + dest_dir + ' ]; then '
+            'mkdir -p ${SINGULARITY_ROOTFS}/' + dest_dir + '; fi')
+        self.sections.setdefault('setup', []).append(
+            'pushd ${SINGULARITY_ROOTFS}/' + dest_dir + '; tar xf %s; popd'
+            % osp.realpath(source_file))
+
     def symlink(self, target, link_name):
         '''
         Create a symbolic link inside the VM
@@ -403,7 +417,13 @@ Bootstrap: localimage
             for source_dir, symlink_name, setup_scripts, env_dict \
                     in get_thirdparty_software(install_thirdparty):
                 print('installing %s from %s...' % (symlink_name, source_dir))
-                rb.copy_root(source_dir, '/usr/local')
+                if source_dir.endswith('.tar') \
+                        or source_dir.endswith('.tar.gz') \
+                        or source_dir.endswith('.tar.bz2'):
+                    rb.extract_tar(source_dir, '/usr/local')
+                    source_dir = '.tar'.join(source_dir.split('.tar')[:-1])
+                else:
+                    rb.copy_root(source_dir, '/usr/local')
                 if symlink_name and osp.basename(source_dir) != symlink_name:
                     rb.symlink(osp.basename(source_dir),
                                osp.join('/usr/local', symlink_name))
