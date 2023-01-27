@@ -251,10 +251,11 @@ Bootstrap: localimage
         echo 'commands:'
         echo
         echo 'mkdir -p ~/casa_distro/brainvisa-master'
-        echo "mv \"$SINGULARITY_CONTAINER\" ~/casa_distro/"
+        echo "mv \"${{SINGULARITY_CONTAINER:-$APPTAINER_CONTAINER}}\"" \
+             "~/casa_distro/"
         echo 'cd ~/casa_distro'
         echo "singularity run -c -B ./brainvisa-master:/casa/setup \\\\"
-        echo "    $SINGULARITY_NAME distro=core"
+        echo "    ${{SINGULARITY_NAME:-$APPTAINER_NAME}} distro=core"
         echo
         echo 'If you have already setup such an environment, you should'
         echo 'run the image using appropriate options, mount points, and'
@@ -363,9 +364,11 @@ Bootstrap: localimage
         echo "directory ~/brainvisa-$CASA_VERSION, run the following commands:"
         echo
         echo "mkdir -p ~/brainvisa-$CASA_VERSION"
-        echo "mv \"$SINGULARITY_CONTAINER\" ~/brainvisa-$CASA_VERSION/"
+        echo "mv \"${{SINGULARITY_CONTAINER:-$APPTAINER_CONTAINER}}\"" \
+             "~/brainvisa-$CASA_VERSION/"
         echo "cd ~/brainvisa-$CASA_VERSION"
-        echo "singularity run -c -B .:/casa/setup $SINGULARITY_NAME"
+        echo "singularity run -c -B .:/casa/setup" \
+             "${{SINGULARITY_NAME:-$APPTAINER_NAME}}"
         echo
         echo 'If you have already setup such an environment, you should'
         echo 'run the image using appropriate options, mount points, and'
@@ -909,7 +912,8 @@ def get_env_host_dir():
     host_dir = os.environ.get('CASA_HOST_DIR')
     if host_dir:
         return host_dir
-    bind = os.environ.get('SINGULARITY_BIND')
+    bind = (os.environ.get('SINGULARITY_BIND')
+            or os.environ.get('APPTAINER_BIND'))
     if bind:
         binds = bind.split(',')
         for bind in binds:

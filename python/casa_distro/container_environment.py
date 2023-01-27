@@ -192,10 +192,11 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
         environment['branch'] = os.environ['CASA_BRANCH']
     if 'CASA_VERSION' in os.environ:
         environment['version'] = os.environ['CASA_VERSION']
-    environment['image'] = os.getenv('SINGULARITY_CONTAINER')
+    environment['image'] = (os.getenv('SINGULARITY_CONTAINER')
+                            or os.getenv('APPTAINER_CONTAINER'))
     # test consistency: on Mac there is a problem here
     image = environment['image']
-    sing_name = os.getenv('SINGULARITY_NAME')
+    sing_name = os.getenv('SINGULARITY_NAME') or os.getenv('APPTAINER_NAME')
     if image and osp.basename(image) != sing_name:
         # on mac/singularity 3 beta, we get:
         # SINGULARITY_CONTAINER=/dev/sda
@@ -378,9 +379,11 @@ used anymore, you may as well delete it if you wish.
         'container_type': 'singularity',
     })
     if image is None:
-        image = os.getenv('SINGULARITY_CONTAINER')
+        image = (os.getenv('SINGULARITY_CONTAINER')
+                 or os.getenv('APPTAINER_CONTAINER'))
         # test consistency: on Mac there is a problem here
-        sing_name = os.getenv('SINGULARITY_NAME')
+        sing_name = (os.getenv('SINGULARITY_NAME')
+                     or os.getenv('APPTAINER_NAME'))
         if image and osp.basename(image) != sing_name:
             # on mac/singularity 3 beta, we get:
             # SINGULARITY_CONTAINER=/dev/sda
