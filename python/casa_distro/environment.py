@@ -344,12 +344,14 @@ def find_image_update_url(image, url):
             if (m and
                 m.group('name') == name and
                 m.group('version') == version and
-                m.group('extension') == extension):
-                    other_patch = int(m.group('patch') or 0)
+                m.group('extension') == extension):  # noqa: E129
+                    other_patch = int(m.group('patch') or 0)  # noqa: E117
                     if other_patch > patch and other_patch > new_patch:
                         new_patch = other_patch
         if new_patch > patch:
-            return f'{url}/{name}-{version}-{new_patch}.{extension}'
+            return '{}/{}-{}-{}.{}'.format(
+                url, name, version, new_patch, extension
+            )
     return None
 
 
@@ -378,7 +380,7 @@ def update_image(image, new_image_url, config_files=[], restart=False,
     new_name = osp.basename(new_image_url)
 
     # Download the json file first
-    new_json = f'{target_dir}/{new_name}.json'
+    new_json = '{}/{}.json'.format(target_dir, new_name)
     downloader.download_file(new_image_url + '.json',
                              new_json,
                              allow_continue=False,
@@ -387,7 +389,9 @@ def update_image(image, new_image_url, config_files=[], restart=False,
         new_metadata = json.load(f)
 
     # Then download the image file
-    new_image = f'{target_dir}/{new_name}'
+    new_image = '{}/{}'.format(
+        target_dir, new_name
+    )
     downloader.download_file(new_image_url,
                              new_image,
                              allow_continue=not restart,
