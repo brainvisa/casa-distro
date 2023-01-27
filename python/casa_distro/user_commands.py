@@ -418,12 +418,12 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
         for image, environments in to_update.items():
             update_url = updates.get(image)
             if update_url:
-                six.print(image, '<-', update_url, file=verbose)
+                print(image, '<-', update_url, file=verbose)
                 for e in environments:
-                    six.print('  ->', '{}/conf/casa_distro.json'.format(
+                    print('  ->', '{}/conf/casa_distro.json'.format(
                         e["directory"]), file=verbose)
             else:
-                six.print(image, '==', file=verbose)
+                print(image, '==', file=verbose)
     if mode != 'fake':
         for image, environments in to_update.items():
             update_url = updates.get(image)
