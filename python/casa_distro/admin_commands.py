@@ -291,7 +291,7 @@ def create_base_image(type,
 
         For vbox container type only. If value is "yes", "true" or "1", display
         VirtualBox window.
-    """
+    """  # noqa: E501
     verbose = verbose_file(verbose)
     cleanup = check_boolean('cleanup', cleanup)
 
@@ -822,18 +822,47 @@ def create_user_image(
                                            extension=extension,
                                            **metadata)
     base_images = glob.glob(base_image_pattern)
-    if len(base_images) > 1:
-        raise ValueError('Found several images: {}'.format(', '.join(
-            base_images)))
-    elif not base_images:
-        raise ValueError('Cannot find file: {}'.format(base_image_pattern))
-    base_image = base_images[0]
-    with open('%s.json' % base_image) as f:
-        base_metadata = json.load(f)
-        if base_metadata.get('image_id') != config.get('origin_run'):
+    if len(base_images) == 0:
+        base_image_pattern_patch \
+            = base_image.format(base_directory=base_directory,
+                                extension='-*%s' % extension,
+                                **metadata)
+        base_images = glob.glob(base_image_pattern_patch)
+        if len(base_images) == 0:
+            raise ValueError(
+                'Cannot find file: {} or {}'.format(base_image_pattern,
+                                                    base_image_pattern_patch))
+
+    if 'origin_run' not in config:
+        dev_json = osp.join(config['directory'], config['image']) + '.json'
+        if osp.exists(dev_json):
+            with open(dev_json) as f:
+                dev_config = json.load(f)
+        if 'origin_run' in dev_config:
+            config['origin_run'] = dev_config['origin_run']
+        else:
+            print('warning, dev image does not have run image info. '
+                  'Cannot check consistency.', file=sys.stderr)
+            if len(base_images) != 1:
+                raise ValueError(
+                    'Found several images: {}'.format(', '.join(base_images)))
+
+    base_found = False
+    for base_image in base_images:
+        with open('%s.json' % base_image) as f:
+            base_metadata = json.load(f)
+            if base_metadata.get('image_id') == config.get('origin_run'):
+                base_found = True
+                break
+
+    if not base_found:
+        if len(base_images) == 1:
             print('mismatching run images in dev metadata and the one found '
                   'here.', file=sys.stderr)
-            # TODO check compatibility or/and look for another one
+        else:
+            raise ValueError('No matching run image found from dev metadata')
+
+    print('using run image:', base_image)
     metadata['origin_run'] = base_metadata.get('image_id')
 
     # check whether the dev environment image is compatibe with the base run
@@ -841,6 +870,7 @@ def create_user_image(
     if 'origin_run' not in config:
         print('warning, dev image does not have run image info. '
               'Cannot check consistency.', file=sys.stderr)
+        print(config)
     else:
         if metadata['origin_run'] != config.get('origin_run'):
             # not the same: smells rotten but the run image may be compatibe
