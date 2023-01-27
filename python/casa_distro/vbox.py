@@ -229,7 +229,7 @@ def create_user_image(base_image,
     # Copy all VirtualBox specific files in home directory except Desktop
     # that contains only shortcuts that are managed below
     copy_to_home = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
-                            'share', 'vbox', 'home')
+                            'image-recipes', 'vbox', 'home')
     for i in os.listdir(copy_to_home):
         if i == 'Desktop':
             continue

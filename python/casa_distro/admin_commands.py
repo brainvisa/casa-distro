@@ -865,7 +865,8 @@ def create_user_image(
               'Cannot check consistency.', file=sys.stderr)
         print(config)
     else:
-        if metadata['origin_run'] != config.get('origin_run'):
+        if (metadata.get('container_type') != 'vbox'
+                and metadata['origin_run'] != config.get('origin_run')):
             # not the same: smells rotten but the run image may be compatibe
             # with the (older) used for the dev image
             compat = base_metadata.get('compatibility', [])
