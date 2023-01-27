@@ -320,9 +320,9 @@ class VBoxMachine:
         for line in output.split('\n'):
             line = line.strip()
             if line:
-                l = line.split('=', 1)
-                if len(l) == 2:
-                    key, value = l
+                lst = line.split('=', 1)
+                if len(lst) == 2:
+                    key, value = lst
                     if key and key[0] == '"' and key[-1] == '"':
                         key = key[1:-1]
                     if value:
@@ -592,5 +592,3 @@ def vbox_import_vdi(image, vbox_machine, output,
 def convert_image(source, metadata, output, convert_from, verbose=None):
     raise NotImplementedError(
         'Currently converting to vbox images is not implemented.')
-
-

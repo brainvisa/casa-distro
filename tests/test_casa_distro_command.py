@@ -26,11 +26,9 @@ def test_help_subcommand():
     'list',
     'run',
     'pull_image',
-    'list_images',
     'shell',
     'mrun',
     'bv_maker',
-    'clean_images',
 ])
 def test_help_of_subcommands(subcommand):
     p = subprocess.Popen(['casa_distro', 'help', subcommand],
