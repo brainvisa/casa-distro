@@ -504,7 +504,7 @@ def check_singularity_version():
               'please install Singularity {1} or later '
               '(see https://brainvisa.info/).'
               .format(
-                  singularity_raw_version(),
+                  raw_version,
                   '.'.join(str(i) for i in MINIMUM_SINGULARITY_VERSION),
               )
               , file=sys.stderr)
