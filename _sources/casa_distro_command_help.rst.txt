@@ -207,24 +207,42 @@ verbose
 ----------
 pull_image
 ----------
-Update the container images. By default all images that are used by at
-least one environment are updated. There are two ways of selecting the
-image(s) to be downloaded:
+Update the container images. By default the current image and
+all images that are used by at least one casa-distro environment
+are selected (these environments are listed by the ``list`` command).
+There are two ways of selecting the image(s) to be updated:
 
 1. filtered by environment, using the ``name`` selector, or a combination
    of ``distro``, ``branch``, and ``image_version``.
 
        casa_distro pull_image type=dev image_version=5.0
 
-2. directly specifying an image name (*not* including bulild_number),
-   e.g.::
+2. directly specifying an image file name
 
-       casa_distro pull_image image=casa-run-5.0.sif
+       casa_distro pull_image image=/home/me/casa-run-5.0.sif
 
-Note that even though the build number does not appear in the local image
-name, this command will always pull the image with the highest
-build_number, e.g. the image that is named casa-dev-5.0-1.sif on the server
-will be downloaded to a file named casa-dev-5.0.sif.
+Then the command look for an updated version of selected images in the
+site given by ``url`` parameter. These files are downloaded (as well as
+the corresponding JSON metadata file) and the config files using the
+current images are modified to use the updated ones. Finally, the original
+images are deleted (unless ``cleanup=no`` is used).
+
+Updated images are located using file name pattern. An updatable image
+file name must match the following pattern:
+
+    ``{name}-{version}[-{patch}].{extension}``
+
+Where:
+
+    ``{name}`` is the name of the image (e.g ``casa-dev``)
+    ``{version}`` is the image version with pattern x.y[.z]
+    ``{patch}`` is an integer
+    ``{version}`` is the file name extension (e.g. ``sif``)
+
+An updated version of a given image is any other image with the same
+pattern having the same ``name``, ``version`` and ``extension`` and a
+higher ``patch``. If several updated version are available for an image,
+the one with the greatest ``patch`` is selected.
 
 Parameters
 ----------
@@ -267,71 +285,19 @@ base_directory
     in the environment configuration.
 url
     default=https://brainvisa.info/download
-    URL where to download image if it is not found.
-force
-    default=False
-    force re-download of images even if they are locally present and
-    up-to-date.
-verbose
-    default=None
-
-    Print more detailed information if value is ``yes``, ``true`` or ``1``.
-
-
-.. _casa-distro-list-images-help:
-
------------
-list_images
------------
-List the locally installed container images.
-There are two ways of selecting the image(s):
-
-1. filtered by environment, using the ``name`` selector, or a combination
-   of ``distro``, ``branch``, and ``system``.
-
-2. directly specifying a full image name, e.g.::
-
-       casa_distro list_image image=casa-run-ubuntu-18.04.sif
-
-Parameters
-----------
-:ref:`distro`
-    default=None
-
-    If given, select environment having the given distro name.
-:ref:`branch`
-    default=None
-
-    If given, select environment having the given branch.
-:ref:`system`
-    default=None
-
-    If given, select environments having the given system name.
-:ref:`image_version`
-    default=None
-
-    If given, select environments having the given image version.
-version
-    If given, select environment by its version (only applicable to user
-    environments, not dev)
-:ref:`name <env_name>`
-    default=None
-
-    If given, select environment by its name. It replaces type, distro,
-    branch and system and is shorter to select one.
-:ref:`type <env_type>`
-    default=None
-
-    If given, select environment having the given type.
-:ref:`image`
-    Force usage of a specific virtual image instead of the one defined
-    in the environment configuration.
-base_directory
-    default= ``$HOME/casa_distro``
-
-    Directory where images and environments are stored. This parameter
-    can be passed on the commandline, or set via the
-    ``CASA_BASE_DIRECTORY`` environment variable.
+    URL where to download images.
+mode
+    default=standard
+    Possible values are:
+        - standard: download only newer version of existing image
+        - force: re-download of images even if they are locally present
+          and up-to-date.
+        - fake: don't change anything to images. Just display what images
+          and config files would be modified by other modes.
+cleanup
+    default=yes
+    if true (or 1, or yes), remove current image when succesfully finished
+    to download new one.
 verbose
     default=None
 
@@ -580,122 +546,3 @@ verbose
     default=None
 
     Print more detailed information if value is ``yes``, ``true`` or ``1``.
-
-
-.. _casa-distro-clean-images-help:
-
-------------
-clean_images
-------------
-Delete singularity images which are no longer used in any build workflow,
-or those listed in the "image" parameter.
-There are two ways of selecting the image(s):
-
-1. filtered by environment, using the ``name`` selector, or a combination
-   of ``distro``, ``branch``, and ``system``.
-
-2. directly specifying a full image name, e.g.::
-
-       casa_distro clean_images image=casa-run-ubuntu-18.04.sif
-
-Parameters
-----------
-:ref:`distro`
-    default=None
-
-    If given, select environment having the given distro name.
-:ref:`branch`
-    default=None
-
-    If given, select environment having the given branch.
-:ref:`system`
-    default=None
-
-    If given, select environments having the given system name.
-:ref:`image_version`
-    default=None
-
-    If given, select environments having the given image version.
-version
-    If given, select environment by its version (only applicable to user
-    environments, not dev)
-:ref:`name <env_name>`
-    default=None
-
-    If given, select environment by its name. It replaces type, distro,
-    branch and system and is shorter to select one.
-:ref:`type <env_type>`
-    default=None
-
-    If given, select environment having the given type.
-:ref:`image`
-    Force usage of a specific virtual image instead of the one defined
-    in the environment configuration.
-base_directory
-    default= ``$HOME/casa_distro``
-
-    Directory where images and environments are stored. This parameter
-    can be passed on the commandline, or set via the
-    ``CASA_BASE_DIRECTORY`` environment variable.
-interactive
-    default=True
-    ask confirmation before deleting an image
-verbose
-    default=False
-
-    Print more detailed information if value is ``yes``, ``true`` or ``1``.
-
-
-.. _casa-distro-delete-help:
-
-------
-delete
-------
-Delete an existing environment.
-
-The whole environment directory will be removed and forgotten.
-
-Use with care.
-
-Image files will be left untouched - use clean_images for this.
-
-Parameters
-----------
-:ref:`type <env_type>`
-    default=None
-
-    If given, select environment having the given type.
-:ref:`distro`
-    default=None
-
-    If given, select environment having the given distro name.
-:ref:`branch`
-    default=None
-
-    If given, select environment having the given branch.
-:ref:`system`
-    default=None
-
-    If given, select environments having the given system name.
-:ref:`image_version`
-    default=None
-
-    If given, select environments having the given image version.
-version
-    If given, select environment by its version (only applicable to user
-    environments, not dev)
-:ref:`name <env_name>`
-    default=None
-
-    If given, select environment by its name. It replaces type, distro,
-    branch and system and is shorter to select one.
-base_directory
-    default= ``$HOME/casa_distro``
-
-    Directory where images and environments are stored. This parameter
-    can be passed on the commandline, or set via the
-    ``CASA_BASE_DIRECTORY`` environment variable.
-interactive
-    default=True
-    if true (or 1, or yes), ask confirmation interactively for each
-    selected environment.

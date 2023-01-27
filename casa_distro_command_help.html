@@ -211,9 +211,10 @@ call the container system.</p>
 </section>
 <section id="pull-image">
 <span id="casa-distro-pull-image-help"></span><h2>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this heading">¶</a></h2>
-<p>Update the container images. By default all images that are used by at
-least one environment are updated. There are two ways of selecting the
-image(s) to be downloaded:</p>
+<p>Update the container images. By default the current image and
+all images that are used by at least one casa-distro environment
+are selected (these environments are listed by the <code class="docutils literal notranslate"><span class="pre">list</span></code> command).
+There are two ways of selecting the image(s) to be updated:</p>
 <ol class="arabic">
 <li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
 of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">image_version</span></code>.</p>
@@ -221,17 +222,33 @@ of <code class="docutils literal notranslate"><span class="pre">distro</span></c
 <div><p>casa_distro pull_image type=dev image_version=5.0</p>
 </div></blockquote>
 </li>
-<li><p>directly specifying an image name (<em>not</em> including bulild_number),
-e.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">pull_image</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="n">sif</span>
-</pre></div>
-</div>
+<li><p>directly specifying an image file name</p>
+<blockquote>
+<div><p>casa_distro pull_image image=/home/me/casa-run-5.0.sif</p>
+</div></blockquote>
 </li>
 </ol>
-<p>Note that even though the build number does not appear in the local image
-name, this command will always pull the image with the highest
-build_number, e.g. the image that is named casa-dev-5.0-1.sif on the server
-will be downloaded to a file named casa-dev-5.0.sif.</p>
+<p>Then the command look for an updated version of selected images in the
+site given by <code class="docutils literal notranslate"><span class="pre">url</span></code> parameter. These files are downloaded (as well as
+the corresponding JSON metadata file) and the config files using the
+current images are modified to use the updated ones. Finally, the original
+images are deleted (unless <code class="docutils literal notranslate"><span class="pre">cleanup=no</span></code> is used).</p>
+<p>Updated images are located using file name pattern. An updatable image
+file name must match the following pattern:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">{name}-{version}[-{patch}].{extension}</span></code></p>
+</div></blockquote>
+<p>Where:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">{name}</span></code> is the name of the image (e.g <code class="docutils literal notranslate"><span class="pre">casa-dev</span></code>)
+<code class="docutils literal notranslate"><span class="pre">{version}</span></code> is the image version with pattern x.y[.z]
+<code class="docutils literal notranslate"><span class="pre">{patch}</span></code> is an integer
+<code class="docutils literal notranslate"><span class="pre">{version}</span></code> is the file name extension (e.g. <code class="docutils literal notranslate"><span class="pre">sif</span></code>)</p>
+</div></blockquote>
+<p>An updated version of a given image is any other image with the same
+pattern having the same <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">extension</span></code> and a
+higher <code class="docutils literal notranslate"><span class="pre">patch</span></code>. If several updated version are available for an image,
+the one with the greatest <code class="docutils literal notranslate"><span class="pre">patch</span></code> is selected.</p>
 <section id="id3">
 <h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
 <dl>
@@ -266,63 +283,23 @@ can be passed on the commandline, or set via the
 in the environment configuration.</p>
 </dd>
 <dt>url</dt><dd><p>default=https://brainvisa.info/download
-URL where to download image if it is not found.</p>
+URL where to download images.</p>
 </dd>
-<dt>force</dt><dd><p>default=False
-force re-download of images even if they are locally present and
-up-to-date.</p>
+<dt>mode</dt><dd><p>default=standard
+Possible values are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>standard: download only newer version of existing image</p></li>
+<li><p>force: re-download of images even if they are locally present
+and up-to-date.</p></li>
+<li><p>fake: don’t change anything to images. Just display what images
+and config files would be modified by other modes.</p></li>
+</ul>
+</div></blockquote>
 </dd>
-<dt>verbose</dt><dd><p>default=None</p>
-<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="list-images">
-<span id="casa-distro-list-images-help"></span><h2>list_images<a class="headerlink" href="#list-images" title="Permalink to this heading">¶</a></h2>
-<p>List the locally installed container images.
-There are two ways of selecting the image(s):</p>
-<ol class="arabic">
-<li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
-of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">system</span></code>.</p></li>
-<li><p>directly specifying a full image name, e.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">list_image</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span>
-</pre></div>
-</div>
-</li>
-</ol>
-<section id="id4">
-<h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
-<dl>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given distro name.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given branch.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
-<p>If given, select environments having the given system name.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
-<p>If given, select environments having the given image version.</p>
-</dd>
-<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
-environments, not dev)</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment by its name. It replaces type, distro,
-branch and system and is shorter to select one.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given type.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</p>
-</dd>
-<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
-<p>Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
+<dt>cleanup</dt><dd><p>default=yes
+if true (or 1, or yes), remove current image when succesfully finished
+to download new one.</p>
 </dd>
 <dt>verbose</dt><dd><p>default=None</p>
 <p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
@@ -334,8 +311,8 @@ can be passed on the commandline, or set via the
 <span id="casa-distro-shell-help"></span><h2>shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h2>
 <p>Start a bash shell in the configured container with the given pository
 configuration.</p>
-<section id="id5">
-<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
+<section id="id4">
+<h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -419,8 +396,8 @@ all existing build workflows.</p>
 <span class="n">casa_distro</span> <span class="n">mrun</span> <span class="n">bv_maker</span> <span class="n">system</span><span class="o">=</span><span class="n">ubuntu</span><span class="o">-*</span>
 </pre></div>
 </div>
-<section id="id6">
-<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
+<section id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -498,8 +475,8 @@ call the container system.</p>
 <span id="casa-distro-bv-maker-help"></span><h2>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this heading">¶</a></h2>
 <p>Start a bv_maker in the configured container with the given repository
 configuration.</p>
-<section id="id7">
-<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<section id="id6">
+<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=dev</p>
 <p>If given, select environment having the given type.</p>
@@ -540,105 +517,6 @@ call the container system.</p>
 </dl>
 </section>
 </section>
-<section id="clean-images">
-<span id="casa-distro-clean-images-help"></span><h2>clean_images<a class="headerlink" href="#clean-images" title="Permalink to this heading">¶</a></h2>
-<p>Delete singularity images which are no longer used in any build workflow,
-or those listed in the “image” parameter.
-There are two ways of selecting the image(s):</p>
-<ol class="arabic">
-<li><p>filtered by environment, using the <code class="docutils literal notranslate"><span class="pre">name</span></code> selector, or a combination
-of <code class="docutils literal notranslate"><span class="pre">distro</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, and <code class="docutils literal notranslate"><span class="pre">system</span></code>.</p></li>
-<li><p>directly specifying a full image name, e.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">clean_images</span> <span class="n">image</span><span class="o">=</span><span class="n">casa</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span>
-</pre></div>
-</div>
-</li>
-</ol>
-<section id="id8">
-<h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
-<dl>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given distro name.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given branch.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
-<p>If given, select environments having the given system name.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
-<p>If given, select environments having the given image version.</p>
-</dd>
-<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
-environments, not dev)</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment by its name. It replaces type, distro,
-branch and system and is shorter to select one.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given type.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#image"><span class="std std-ref">image</span></a></dt><dd><p>Force usage of a specific virtual image instead of the one defined
-in the environment configuration.</p>
-</dd>
-<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
-<p>Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
-</dd>
-<dt>interactive</dt><dd><p>default=True
-ask confirmation before deleting an image</p>
-</dd>
-<dt>verbose</dt><dd><p>default=False</p>
-<p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="delete">
-<span id="casa-distro-delete-help"></span><h2>delete<a class="headerlink" href="#delete" title="Permalink to this heading">¶</a></h2>
-<p>Delete an existing environment.</p>
-<p>The whole environment directory will be removed and forgotten.</p>
-<p>Use with care.</p>
-<p>Image files will be left untouched - use clean_images for this.</p>
-<section id="id9">
-<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
-<dl>
-<dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given type.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given distro name.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment having the given branch.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a></dt><dd><p>default=None</p>
-<p>If given, select environments having the given system name.</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#image-version"><span class="std std-ref">image_version</span></a></dt><dd><p>default=None</p>
-<p>If given, select environments having the given image version.</p>
-</dd>
-<dt>version</dt><dd><p>If given, select environment by its version (only applicable to user
-environments, not dev)</p>
-</dd>
-<dt><a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a></dt><dd><p>default=None</p>
-<p>If given, select environment by its name. It replaces type, distro,
-branch and system and is shorter to select one.</p>
-</dd>
-<dt>base_directory</dt><dd><p>default= <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code></p>
-<p>Directory where images and environments are stored. This parameter
-can be passed on the commandline, or set via the
-<code class="docutils literal notranslate"><span class="pre">CASA_BASE_DIRECTORY</span></code> environment variable.</p>
-</dd>
-<dt>interactive</dt><dd><p>default=True
-if true (or 1, or yes), ask confirmation interactively for each
-selected environment.</p>
-</dd>
-</dl>
-</section>
-</section>
 </section>
 
 
@@ -670,28 +548,16 @@ selected environment.</p>
 <li><a class="reference internal" href="#id3">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#list-images">list_images</a><ul>
+<li><a class="reference internal" href="#shell">shell</a><ul>
 <li><a class="reference internal" href="#id4">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#shell">shell</a><ul>
+<li><a class="reference internal" href="#mrun">mrun</a><ul>
 <li><a class="reference internal" href="#id5">Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#mrun">mrun</a><ul>
-<li><a class="reference internal" href="#id6">Parameters</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#bv-maker">bv_maker</a><ul>
-<li><a class="reference internal" href="#id7">Parameters</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#clean-images">clean_images</a><ul>
-<li><a class="reference internal" href="#id8">Parameters</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#delete">delete</a><ul>
-<li><a class="reference internal" href="#id9">Parameters</a></li>
+<li><a class="reference internal" href="#id6">Parameters</a></li>
 </ul>
 </li>
 </ul>

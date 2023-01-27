@@ -122,7 +122,14 @@ may build a “system” image as follows, but it’s not needed:</p>
 </pre></div>
 </div>
 </li>
-<li><p>For VirtualBox: TODO</p></li>
+<li><p>For VirtualBox:</p>
+<p>Ensure ~/casa-distro exists
+Download ISO file for appropriate version of Ubuntu
+Run the following command and follow printed instructions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>casa_distro_admin create_base_image type=system container_type=vbox image_version=5.3 gui=yes base=$HOME/Download/ubuntu-22.04.1-desktop-amd64.iso
+</pre></div>
+</div>
+</li>
 </ul>
 <section id="id2">
 <h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
@@ -150,15 +157,6 @@ type and container type.</p>
 </dd>
 <dt>verbose</dt><dd><p>default=True</p>
 <p>Print more detailed information if value is <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
-</dd>
-<dt>cleanup (allowed only if container_type=singularity)</dt><dd><p>default=yes</p>
-<p>If “no”, “false” or “0”, do not cleanup after a failure during image
-building. This may allow to debug a problem after the failure. For
-instance, with Singularity one can use a command like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">singularity</span> <span class="n">run</span> <span class="o">--</span><span class="n">writable</span>
-<span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">rootfs</span><span class="o">-</span><span class="mi">79744</span><span class="n">fb2</span><span class="o">-</span><span class="n">f3a7</span><span class="o">-</span><span class="mi">11</span><span class="n">ea</span><span class="o">-</span><span class="n">a080</span><span class="o">-</span><span class="n">ce9ed5978945</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
-</pre></div>
-</div>
 </dd>
 <dt>force (allowed only if container_type=singularity)</dt><dd><p>default=no</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code> or 1, erase existing image without asking any
