@@ -30,7 +30,8 @@ else:  # python 2.7
     from pipes import quote
 
 
-MINIMUM_SINGULARITY_VERSION = (3, 0, 0)
+# we need support for --pwd, which appeared in Singularity 3.1
+MINIMUM_SINGULARITY_VERSION = (3, 1, 0)
 
 
 class RecipeBuilder:
@@ -191,9 +192,12 @@ def _singularity_build_command(cleanup=True, force=False, fakeroot=True):
         if 'SINGULARITY_TMPDIR' in os.environ:
             build_command += ['SINGULARITY_TMPDIR='
                               + os.environ['SINGULARITY_TMPDIR']]
+        if 'APPTAINER_TMPDIR' in os.environ:
+            build_command += ['APPTAINER_TMPDIR='
+                              + os.environ['APPTAINER_TMPDIR']]
         if 'TMPDIR' in os.environ:
             build_command += ['TMPDIR=' + os.environ['TMPDIR']]
-    build_command += ['singularity', 'build', '--disable-cache']
+    build_command += [singularity_executable(), 'build', '--disable-cache']
     if fakeroot:
         build_command += ['--fakeroot']
     if not cleanup:
@@ -308,8 +312,9 @@ Bootstrap: localimage
                 print('If you see an error message about fakeroot not working '
                       'on your system, then try the following command (you '
                       'need sudo permissions):', file=sys.stderr)
-                print('sudo singularity config fakeroot --add %s'
-                      % getpass.getuser(), file=sys.stderr)
+                print('sudo %s config fakeroot --add %s'
+                      % (singularity_name(), getpass.getuser()),
+                      file=sys.stderr)
                 print(file=sys.stderr)
             raise
 
@@ -461,8 +466,9 @@ Bootstrap: localimage
                 print('If you see an error message about fakeroot not working '
                       'on your system, then try the following command (you '
                       'need sudo permissions):', file=sys.stderr)
-                print('sudo singularity config fakeroot --add %s'
-                      % getpass.getuser(), file=sys.stderr)
+                print('sudo %s config fakeroot --add %s'
+                      % (singularity_name(), getpass.getuser()),
+                      file=sys.stderr)
                 print(file=sys.stderr)
             raise
 
@@ -473,64 +479,92 @@ Bootstrap: localimage
 
 
 _singularity_raw_version = None
-_singularity_run_help = None
 
 
-def singularity_version():
+def check_singularity_version():
+    """Check if Singularity is recent enough.
+
+    A warning message is printed to stderr if Singularity is too old.
+    """
     raw_version = singularity_raw_version()
+    if raw_version.startswith('apptainer'):
+        # We support every version of apptainer
+        return True
+    # We are on Singularity (not apptainer), check the version
     m = re.search(r'([0-9]+(\.[0-9]+)*)', raw_version)
     if m:
         version = m.group(1)
-        return tuple(int(x) for x in version.split('.'))
+        version_tuple = tuple(int(x) for x in version.split('.'))
     else:
         raise RuntimeError(
             'Cannot determine singularity numerical version : '
             'version string = "{0}"'.format(raw_version))
+    if version_tuple < MINIMUM_SINGULARITY_VERSION:
+        print('Your version of Singularity ({0}) is not supported, '
+              'please install Singularity {1} or later '
+              '(see https://brainvisa.info/).'
+              .format(
+                  raw_version,
+                  '.'.join(str(i) for i in MINIMUM_SINGULARITY_VERSION),
+              )
+              , file=sys.stderr)
+        return False
+    return True
+
+
+# These variables take different values if we are runnnig Singularity or
+# Apptainer.
+_singularity_executable = None
+_singularity_name = None
+_envvar_prefix = None
+
+
+def singularity_executable(exit_if_missing=True):
+    global _singularity_executable
+    if not _singularity_executable:
+        _singularity_executable = find_executable('apptainer')
+    if not _singularity_executable:
+        _singularity_executable = find_executable('singularity')
+    if not _singularity_executable:
+        if exit_if_missing:
+            sys.exit(
+                'Cannot find singularity nor apptainer on the PATH. You need '
+                'to install Apptainer or Singularity in order to use '
+                'BrainVISA, see https://brainvisa.info/ for detailed '
+                'instructions.'
+            )
+    return _singularity_executable
+
+
+def singularity_name():
+    global _singularity_name
+    if _singularity_name is None:
+        if singularity_executable().endswith('apptainer'):
+            _singularity_name = 'apptainer'
+        else:
+            _singularity_name = 'singularity'
+    return _singularity_name
+
+
+def envvar_prefix():
+    if _singularity_name is None:
+        if singularity_executable().endswith('apptainer'):
+            _envvar_prefix = 'APPTAINER'
+        else:
+            _envvar_prefix = 'SINGULARITY'
+    return _envvar_prefix
 
 
 def singularity_raw_version():
     global _singularity_raw_version
     if _singularity_raw_version is None:
         output = subprocess.check_output(
-            ['singularity', '--version'],
+            [singularity_executable(), '--version'],
             universal_newlines=True,  # backward-compatible text=True
             bufsize=-1,
         )
         _singularity_raw_version = output.strip()
     return _singularity_raw_version
-
-
-def singularity_run_help(error_msg=None):
-    """
-    Useful to get available commandline options, because they differ with
-    versions and systems.
-    """
-    global _singularity_run_help
-    if _singularity_run_help is None:
-        try:
-            _singularity_run_help = subprocess.check_output(
-                ['singularity', 'help', 'run'],
-                universal_newlines=True,  # backward-compatible text=True
-                bufsize=-1,
-            )
-        except OSError:
-            strings = {
-                'singularity_version':
-                    '.'.join(str(i) for i in MINIMUM_SINGULARITY_VERSION)}
-            if not error_msg:
-                error_msg = 'Cannot execute singularity. Please install ' \
-                    'Singularity %(singularity_version)s or later (see ' \
-                    'https://brainvisa.info/).' % strings
-            else:
-                error_msg = error_msg % strings
-            sys.exit(error_msg)
-    return _singularity_run_help
-
-
-def singularity_has_option(option, error_msg=None):
-    doc = singularity_run_help(error_msg=error_msg)
-    match = re.search(r'(\s|\|)' + re.escape(option) + r'(\s|\|)', doc)
-    return match is not None
 
 
 def _X_has_proprietary_nvidia():
@@ -644,18 +678,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     Return the exit code of the command, or raise an exception if the command
     cannot be run.
     """
-    # With --cleanenv only variables prefixd by SINGULARITYENV_ are transmitted
-    # to the container
     temps = []
 
-    singularity = ['singularity', 'run']
-    if singularity_has_option(
-            '--cleanenv', error_msg=config.get('container_failure_message',
-                                               None)):
-        singularity.append('--cleanenv')
-    if cwd and singularity_has_option('--pwd'):
-        singularity += ['--pwd', cwd]
-
+    singularity = [singularity_executable(), 'run', '--cleanenv']
     if root:
         singularity = ['sudo'] + singularity
 
@@ -726,12 +751,10 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
 
     singularity_home = None
 
-    # Creates environment with variables prefixed by SINGULARITYENV_
-    # with --cleanenv only these variables are given to the container
-    container_env = os.environ.copy()
+    # Environment variables to set in the container
+    container_env = {}
     # allow to access host home directory from the container
-    container_env['SINGULARITYENV_CASA_HOST_HOME'] \
-        = os.path.realpath(os.path.expanduser('~'))
+    container_env['CASA_HOST_HOME'] = os.path.realpath(os.path.expanduser('~'))
     for name, value in configured_env.items():
         value = value.format(**config)
         value = osp.expandvars(value)
@@ -742,30 +765,24 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
             # Should we even allow that?
             singularity_home = value
         else:
-            singularityenv_name = six.ensure_str('SINGULARITYENV_' + name,
-                                                 locale.getpreferredencoding())
-            container_env[singularityenv_name] = value
+            name = six.ensure_str(name, locale.getpreferredencoding())
+            container_env[name] = value
     default_casa_home = '/casa/home'
     if singularity_home is None:
         singularity_home = default_casa_home
 
-    if singularity_has_option('--home'):
-        # In singularity >= 3.0 host home directory is mounted
-        # and configured (e.g. in environment variables) if no
-        # option is given.
-        singularity += ['--home',
-                        '%s:%s' % (casa_home_host_path, singularity_home)]
-    else:
-        container_env['SINGULARITYENV_HOME'] = singularity_home
-        singularity += ['--bind',
-                        '%s:%s' % (casa_home_host_path, singularity_home)]
+    # In singularity >= 3.0 host home directory is mounted
+    # and configured (e.g. in environment variables) if no
+    # option is given.
+    singularity += ['--home',
+                    '%s:%s' % (casa_home_host_path, singularity_home)]
 
     container_options = config.get(
         'container_options', []) + (container_options or [])
 
     if cwd:
         for i, opt in enumerate(container_options):
-            if opt == '--pwd' and singularity_has_option('--pwd'):
+            if opt == '--pwd':
                 container_options = (
                     container_options[:i] + container_options[i + 2:])
                 break
@@ -780,7 +797,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     # These options/environment variables can interfere, unset them.
     while '--nv' in container_options:
         container_options.remove('--nv')
-    container_env.pop('SINGULARITYENV_SOFTWARE_OPENGL', None)
+    container_env.pop('SOFTWARE_OPENGL', None)
 
     # if needed, write an ini.sh mounted in /casa/start_scripts
     init_script = []
@@ -800,30 +817,13 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
 
     elif opengl == 'software':
         # activate mesa path in entrypoint
-        container_env['SINGULARITYENV_SOFTWARE_OPENGL'] = '1'
+        container_env['SOFTWARE_OPENGL'] = '1'
         # this variable avoids to use "funny" transparent visuals
-        container_env['SINGULARITYENV_XLIB_SKIP_ARGB_VISUALS'] = '1'
+        container_env['XLIB_SKIP_ARGB_VISUALS'] = '1'
     elif opengl == 'container':
         pass  # nothing to do
     else:
         raise ValueError('Invalid value for the opengl option')
-
-    if singularity_version()[:3] == (3, 3, 0) and sys.platform == 'darwin':
-        # the beta of singularity 3.3 for Mac doesn't pass envars in any way
-        # (no --env option, --home doesn't work, SINGULARITYENV_something vars
-        # are not transmitted). We work around this using a mount and a bash
-        # script. Bidouille bidouille... ;)
-        forbidden = set(['HOME', 'SINGULARITYENV_HOME', 'PWD', 'PATH',
-                         'LD_LIBRARY_PATH', 'PYTHONPATH'])
-        for var, value in container_env.items():
-            if var not in forbidden:
-                if var.startswith('SINGULARITYENV_'):
-                    init_script.append('export %s="%s"'
-                                       % (var[15:], value))
-                else:
-                    init_script.append('export %s="%s"' % (var, value))
-        # --home does not work either
-        init_script.append('export HOME=%s' % singularity_home)
 
     if init_script:
         tmpdir = tempfile.mkdtemp(prefix='casa_singularity')
@@ -848,6 +848,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         raise ValueError("'%s' does not exist" % image)
     singularity += [image]
     singularity += command
+    env_for_singularity = os.environ.copy()
+    for n, v in six.iteritems(container_env):
+        env_for_singularity[envvar_prefix() + 'ENV_' + n] = v
     if verbose:
         print('-' * 40, file=verbose)
         print('Consolidated casa_distro environment configuration:',
@@ -858,8 +861,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
               file=verbose)
         print(*("'%s'" % i for i in singularity), file=verbose)
         print('\nUsing the following environment:', file=verbose)
-        for n in sorted(container_env):
-            v = container_env[n]
+        for n in sorted(env_for_singularity):
+            v = env_for_singularity[n]
             print('    %s=%s' % (n, v), file=verbose)
         print('-' * 40, file=verbose)
         # When verbose is stdout or stderr we must flush buffers to avoid the
@@ -869,7 +872,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
 
     retval = 127
     try:
-        retval = subprocess.call(singularity, env=container_env)
+        retval = subprocess.call(singularity, env=env_for_singularity)
     except KeyboardInterrupt:
         pass  # avoid displaying a stack trace
     finally:
@@ -878,18 +881,11 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
                 shutil.rmtree(temp)
             else:
                 os.unlink(temp)
-    if retval == 255:
-        # This exit code is returned by Singularity 2 when it is given a .sif
-        # image.
-        if singularity_version() < MINIMUM_SINGULARITY_VERSION:
-            print('Your version of Singularity ({0}) is not supported, '
-                  'please install Singularity {1} or later '
-                  '(see https://brainvisa.info/).'
-                  .format(
-                      singularity_raw_version(),
-                      '.'.join(str(i) for i in MINIMUM_SINGULARITY_VERSION),
-                  )
-                  , file=sys.stderr)
+    if retval != 0:
+        # If execution fails, the error could be due to either the container
+        # command, or an incompatibility with Singularity: check the version of
+        # Singularity and tell the user to upgrade if it is too old.
+        check_singularity_version()
     return retval
 
 
