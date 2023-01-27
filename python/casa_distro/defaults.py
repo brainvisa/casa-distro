@@ -12,5 +12,9 @@ publish_server = os.environ.get('BRAINVISA_PUBLISH_SERVER', 'brainvisa.info')
 publish_login = os.environ.get('BRAINVISA_PUBLISH_LOGIN', 'brainvisa')
 publish_dir = os.environ.get('BRAINVISA_PUBLISH_DIR',
                              '/var/www/html/brainvisa.info_download')
-publish_url = f'{publish_login}@{publish_server}:{publish_dir}/'
-default_download_url = f'https://{publish_server}/download'
+publish_url = '{}@{}:{}/'.format(
+    publish_login, publish_server, publish_dir
+)
+default_download_url = 'https://{}/download'.format(
+    publish_server
+)

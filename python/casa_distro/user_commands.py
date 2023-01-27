@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
+import glob
+import json
 import os.path as osp
 import sys
 
@@ -370,7 +374,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
     to_update = {}
     if image:
         if not osp.exists(image):
-            raise ValueError(f'No such image file: {image}')
+            raise ValueError('No such image file: {}'.format(image))
         to_update[image] = []
     for environment in iter_environments(base_directory,
                                          distro=distro,
@@ -387,28 +391,45 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
             env_image = environment['image']
             to_update.setdefault(env_image, []).append(environment)
 
+            # Check for update of run image associated with environment
+            j = env_image + '.json'
+            if osp.exists(j):
+                with open(j) as f:
+                    metadata = json.load(f)
+                run_id = metadata.get('origin_run')
+                for run_j in glob.glob((
+                        '{}/'
+                        'casa-run-{}*.json').format(
+                            osp.dirname(env_image),
+                            environment.get("image_version", ""))):
+                    with open(run_j) as f:
+                        run_metadata = json.load(f)
+                        if run_metadata.get('image_id') == run_id:
+                            to_update[run_j[:-5]] = []
+
     # Find updated version of images
     updates = {}
     for image in to_update:
         update_url = find_image_update_url(image, url)
         if update_url:
             updates[image] = update_url
+
     if verbose:
         for image, environments in to_update.items():
             update_url = updates.get(image)
             if update_url:
-                print(image, '<-', update_url, file=verbose)
+                six.print(image, '<-', update_url, file=verbose)
                 for e in environments:
-                    print('  ->', f'{e["directory"]}/conf/casa_distro.json',
-                          file=verbose)
+                    six.print('  ->', '{}/conf/casa_distro.json'.format(
+                        e["directory"]), file=verbose)
             else:
-                print(image, '==')
+                six.print(image, '==', file=verbose)
     if mode != 'fake':
         for image, environments in to_update.items():
             update_url = updates.get(image)
             if update_url:
-                config_files = [f'{e["directory"]}/conf/casa_distro.json'
-                                for e in environments]
+                config_files = ['{}/conf/casa_distro.json'.format(
+                    e["directory"]) for e in environments]
                 update_image(image, update_url, config_files, )
 
 
