@@ -115,6 +115,20 @@ class RecipeBuilder:
                        '${SINGULARITY_ROOTFS}/%s/%s'
                        % (dest_dir, osp.basename(source_file))))
 
+    def extract_tar(self, source_file, dest_dir):
+        ''' Extract a tar archive into the dest directory
+
+        Returns
+        -------
+        list of root files / directories
+        '''
+        self.sections.setdefault('setup', []).append(
+            'if [ ! -d ${SINGULARITY_ROOTFS}/' + dest_dir + ' ]; then '
+            'mkdir -p ${SINGULARITY_ROOTFS}/' + dest_dir + '; fi')
+        self.sections.setdefault('setup', []).append(
+            'tar -C ${SINGULARITY_ROOTFS}/' + dest_dir + ' -xf %s'
+            % osp.realpath(source_file))
+
     def symlink(self, target, link_name):
         '''
         Create a symbolic link inside the VM
