@@ -115,7 +115,13 @@ def install_thirdparty_software(install_thirdparty, builder):
             for source_dir, symlink_name, setup_scripts, env_dict \
                     in get_thirdparty_software(install_thirdparty):
                 print('installing %s from %s...' % (symlink_name, source_dir))
-                builder.copy_root(source_dir, '/usr/local')
+                if source_dir.endswith('.tar') \
+                        or source_dir.endswith('.tar.gz') \
+                        or source_dir.endswith('.tar.bz2'):
+                    builder.extract_tar(source_dir, '/usr/local')
+                    source_dir = '.tar'.join(source_dir.split('.tar')[:-1])
+                else:
+                    builder.copy_root(source_dir, '/usr/local')
                 if symlink_name and osp.basename(source_dir) != symlink_name:
                     builder.symlink(osp.basename(source_dir),
                                     osp.join('/usr/local', symlink_name))
@@ -132,9 +138,11 @@ def install_thirdparty_software(install_thirdparty, builder):
 
             if env:
                 builder.environment(env)
-    finally:
+    except Exception:
         for d in temps:
             shutil.rmtree(d)
+        raise
+    return temps
 
 
 def get_spm12_standalone_init():
@@ -192,6 +200,8 @@ if len(mcr_paths) != 1:
                        "install_thirdparty setting.")
 neuroConfig.app.configuration.SPM.spm12_standalone_mcr_path = mcr_paths[0]
 
+from pprint import pprint
+pprint(neuroConfig.app.configuration)
 neuroConfig.app.configuration.save(siteOptionFile)
 '''
     scripts = {'/casa/install/templates/brainvisa/spm.py': spm_script}

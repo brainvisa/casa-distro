@@ -122,6 +122,9 @@ class ImageBuilder:
                 environment.
             environment(environment_dict): set environment variables values
                 that are available at run time.
+            extract_tar(source_file, dest_dir):
+                untar a local archive file in a directory in the target
+                environment.
 
     '''
     def __init__(self, name, base):

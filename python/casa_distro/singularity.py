@@ -412,51 +412,54 @@ Bootstrap: localimage
     rb = RecipeBuilder(output)
     rb.copy_root(dev_config['directory'] + '/install', '/casa')
 
-    install_thirdparty_software(install_thirdparty, rb)
-
-    # # replace the python symlink (not needed any longer as copy_root here
-    # # preserves all symlinks)
-    # py_exe = osp.join(dev_config['directory'], 'install/bin/python')
-    # if osp.exists(py_exe) and osp.islink(py_exe):
-    #     py_link = os.readlink(py_exe)
-    #     rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
-    rb.install_casa_distro('/casa/casa-distro')
-    rb.run_user('if [ -f /casa/install/share/brainvisa-share-*/'
-                'database-*.sqlite ]; '
-                'then touch /casa/install/share/brainvisa-share-*/'
-                'database-*.sqlite; fi')
-    rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
-                % rb.image_id)
-
-    rb.write(recipe)
-    recipe.flush()
-
-    if verbose:
-        print('---------- Singularity recipe ----------', file=verbose)
-        print(open(recipe.name).read(), file=verbose)
-        print('----------------------------------------', file=verbose)
-        verbose.flush()
-    build_command = _singularity_build_command(force=force,
-                                               fakeroot=fakeroot,
-                                               cleanup=cleanup)
-    # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
-    # permission issue with --fakeroot and NFS root_squash.
+    temps = install_thirdparty_software(install_thirdparty, rb)
     try:
-        subprocess.check_call(build_command + [output, recipe.name],
-                              cwd='/')
-    except Exception:
-        if fakeroot:
-            print('** Image creation has failed **', file=sys.stderr)
-            print('If you see an error message about fakeroot not working '
-                  'on your system, then try the following command (you '
-                  'need sudo permissions):', file=sys.stderr)
-            print('sudo %s config fakeroot --add %s'
-                  % (singularity_name(), getpass.getuser()),
-                  file=sys.stderr)
-            print(file=sys.stderr)
-        raise
+        # # replace the python symlink (not needed any longer as copy_root here
+        # # preserves all symlinks)
+        # py_exe = osp.join(dev_config['directory'], 'install/bin/python')
+        # if osp.exists(py_exe) and osp.islink(py_exe):
+        #     py_link = os.readlink(py_exe)
+        #     rb.run_root('ln -sf %s /casa/install/bin/python' % py_link)
+        rb.install_casa_distro('/casa/casa-distro')
+        rb.run_user('if [ -f /casa/install/share/brainvisa-share-*/'
+                    'database-*.sqlite ]; '
+                    'then touch /casa/install/share/brainvisa-share-*/'
+                    'database-*.sqlite; fi')
+        rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
+                    % rb.image_id)
 
-    return (rb.image_id, None)
+        rb.write(recipe)
+        recipe.flush()
+
+        if verbose:
+            print('---------- Singularity recipe ----------', file=verbose)
+            print(open(recipe.name).read(), file=verbose)
+            print('----------------------------------------', file=verbose)
+            verbose.flush()
+        build_command = _singularity_build_command(force=force,
+                                                   fakeroot=fakeroot,
+                                                   cleanup=cleanup)
+        # Set cwd to a directory that root is allowed to 'cd' into, to avoid a
+        # permission issue with --fakeroot and NFS root_squash.
+        try:
+            subprocess.check_call(build_command + [output, recipe.name],
+                                  cwd='/')
+        except Exception:
+            if fakeroot:
+                print('** Image creation has failed **', file=sys.stderr)
+                print('If you see an error message about fakeroot not working '
+                      'on your system, then try the following command (you '
+                      'need sudo permissions):', file=sys.stderr)
+                print('sudo %s config fakeroot --add %s'
+                      % (singularity_name(), getpass.getuser()),
+                      file=sys.stderr)
+                print(file=sys.stderr)
+            raise
+
+        return (rb.image_id, None)
+    finally:
+        for d in temps:
+            shutil.rmtree(d)
 
 
 _singularity_raw_version = None
