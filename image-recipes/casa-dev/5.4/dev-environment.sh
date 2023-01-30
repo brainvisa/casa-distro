@@ -28,7 +28,6 @@ if [ -z "$BRAINVISA_BVMAKER_CFG" ]; then
     export BRAINVISA_BVMAKER_CFG="$CASA_CONF/bv_maker.cfg"
 fi
 
-PATH=${PATH}:/usr/local/bin
 PATH=${PATH}:/casa/host/bootstrap/brainvisa-cmake/bin
 PATH=${PATH}:/casa/bootstrap/brainvisa-cmake/bin
 LD_LIBRARY_PATH=/casa/host/lib:${LD_LIBRARY_PATH}

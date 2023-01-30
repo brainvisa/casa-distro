@@ -498,6 +498,20 @@ def prepare_environment_homedir(casa_home_host_path):
     """
     if not osp.exists(casa_home_host_path):
         os.makedirs(casa_home_host_path)
+        # Create symbolic links to config files/directories in CASA_HOST_HOME
+        for config_basename in ('.anatomist', '.brainvisa',
+                                '.soma-workflow', '.soma-workflow.cfg'):
+            container_config_path = osp.join(casa_home_host_path,
+                                             config_basename)
+            # Path to the host home directory seen from within the container
+            host_config_path = osp.join(
+                '/host',
+                osp.abspath(
+                    os.path.join(os.path.expanduser('~'), config_basename)
+                ).lstrip(os.sep)
+            )
+            if not osp.lexists(container_config_path):
+                os.symlink(host_config_path, container_config_path)
     # add a .varlib/xkb directory in order to mount /var/lib/xkb from there:
     # Xvfb may fail if it cannot see and write a valid /var/lib/xkb
     if not osp.exists(osp.join(casa_home_host_path, '.varlib/xkb')):

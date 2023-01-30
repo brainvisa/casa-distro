@@ -683,6 +683,8 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
     singularity = [singularity_executable(), 'run', '--cleanenv']
     if root:
         singularity = ['sudo'] + singularity
+    if cwd:
+        singularity += ['--pwd', cwd]
 
     overlay = osp.join(config['directory'], 'overlay.img')
     if osp.exists(overlay):

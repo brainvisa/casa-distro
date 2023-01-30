@@ -88,6 +88,7 @@ def create_image(base, base_metadata,
     if type == 'system':
         vm = VBoxMachine(name)
         if vm.exists():
+            msg = None
             vbox_manage(['export', name, '-o', output, '--ovf20'])
         else:
             # Create a machine in VirtualBox, set some parameters and start it.
@@ -228,7 +229,7 @@ def create_user_image(base_image,
     # Copy all VirtualBox specific files in home directory except Desktop
     # that contains only shortcuts that are managed below
     copy_to_home = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
-                            'share', 'vbox', 'home')
+                            'image-recipes', 'vbox', 'home')
     for i in os.listdir(copy_to_home):
         if i == 'Desktop':
             continue
@@ -319,19 +320,21 @@ class VBoxMachine:
         for line in output.split('\n'):
             line = line.strip()
             if line:
-                key, value = line.split('=', 1)
-                if key and key[0] == '"' and key[-1] == '"':
-                    key = key[1:-1]
-                if value:
-                    if value[0] == '"':
-                        if value[-1] == '"':
-                            value = value[1:-1]
-                    else:
-                        try:
-                            value = int(value)
-                        except ValueError:
-                            pass
-                result[key] = value
+                lst = line.split('=', 1)
+                if len(lst) == 2:
+                    key, value = lst
+                    if key and key[0] == '"' and key[-1] == '"':
+                        key = key[1:-1]
+                    if value:
+                        if value[0] == '"':
+                            if value[-1] == '"':
+                                value = value[1:-1]
+                        else:
+                            try:
+                                value = int(value)
+                            except ValueError:
+                                pass
+                    result[key] = value
         return result
 
     def start(self, gui=False):
