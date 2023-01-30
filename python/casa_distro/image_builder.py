@@ -97,6 +97,28 @@ def get_image_builder(build_file):
 
 
 class ImageBuilder:
+    '''
+    Each ImageBuilder instance defines a recipe to install elements in a
+    virtual environment. This is used to create Singularity or VirtualBox
+    images but can also be used to install a local machine (via shell command
+    `casa_distro_admin install_local`).
+
+    Each image builder must define a serie of installation steps. Each step
+    is a method receiving two parameters:
+
+      - base_dir which is the base directory of the casa-distro environment
+      - builder wich is a generic object whose API allows to perform
+        installation actions. All builders must have the following methods:
+
+            run_user(command): execute a shell command as user
+            run_root(command): execute a shell command as root
+            def copy_user(source_file, dest_dir, preserve_symlinks=True,
+                          preserve_ext_symlinks=True):
+                copy files as user.
+            copy_root(ource_file, dest_dir, preserve_symlinks=True,
+                      preserve_ext_symlinks=True):
+                copy files as root.
+    '''
     def __init__(self, name, base):
         self.name = name
         self.base = base
