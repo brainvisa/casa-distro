@@ -106,12 +106,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
     try:
         shutil.copystat(src, dst)
     except OSError as why:
-        if (shutil.WindowsError is not None
-                and isinstance(why, shutil.WindowsError)):
-            # Copying file access times may fail on Windows
-            pass
-        else:
-            errors.append((src, dst, str(why)))
+        errors.append((src, dst, str(why)))
     if errors:
         raise shutil.Error(errors)
 
