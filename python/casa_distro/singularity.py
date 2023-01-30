@@ -129,7 +129,7 @@ class RecipeBuilder:
             'if [ ! -d ${SINGULARITY_ROOTFS}/' + dest_dir + ' ]; then '
             'mkdir -p ${SINGULARITY_ROOTFS}/' + dest_dir + '; fi')
         self.sections.setdefault('setup', []).append(
-            'pushd ${SINGULARITY_ROOTFS}/' + dest_dir + '; tar xf %s; popd'
+            'tar -C ${SINGULARITY_ROOTFS}/' + dest_dir + ' -xf %s'
             % osp.realpath(source_file))
 
     def symlink(self, target, link_name):
