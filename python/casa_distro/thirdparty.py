@@ -2,10 +2,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os.path as osp
-import glob
-import sys
 import json
+import glob
+import os
+import os.path as osp
+import shutil
+import sys
+import tempfile
 
 
 all_software = {
@@ -102,6 +105,36 @@ def get_thirdparty_software(install_thirdparty='default'):
             env = {}
 
         yield sw_path, soft_name, scripts, env
+
+
+def install_thirdparty_software(install_thirdparty, builder):
+    temps = []
+    try:
+        env = {}
+        if install_thirdparty not in (None, 'none', 'None', 'NONE'):
+            for source_dir, symlink_name, setup_scripts, env_dict \
+                    in get_thirdparty_software(install_thirdparty):
+                print('installing %s from %s...' % (symlink_name, source_dir))
+                builder.copy_root(source_dir, '/usr/local')
+                if symlink_name and osp.basename(source_dir) != symlink_name:
+                    builder.symlink(osp.basename(source_dir),
+                                    osp.join('/usr/local', symlink_name))
+                for script_file, script in setup_scripts.items():
+                    d = tempfile.mkdtemp(prefix='casa_distro_script')
+                    temps.append(d)
+                    tmp_name = osp.join(d, osp.basename(script_file))
+                    with open(tmp_name, 'w') as f:
+                        f.write(script)
+                    os.chmod(tmp_name, 0o755)
+                    builder.copy_root(tmp_name, osp.dirname(script_file))
+                    builder.run_user(script_file)
+                env.update(env_dict)
+
+            if env:
+                builder.environment(env)
+    finally:
+        for d in temps:
+            shutil.rmtree(d)
 
 
 def get_spm12_standalone_init():
