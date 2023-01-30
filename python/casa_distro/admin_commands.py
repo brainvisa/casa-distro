@@ -828,6 +828,7 @@ def create_user_image(
 
     if 'origin_run' not in config:
         dev_json = osp.join(config['directory'], config['image']) + '.json'
+        print('!!!', dev_json)
         if osp.exists(dev_json):
             with open(dev_json) as f:
                 dev_config = json.load(f)
