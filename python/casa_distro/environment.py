@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+import errno
 import fnmatch
 import getpass
 from glob import glob
@@ -11,6 +12,7 @@ import os.path as osp
 import re
 import shutil
 import socket
+import stat
 import subprocess
 import sys
 import time
@@ -32,9 +34,6 @@ bv_maker_branches = {
     'trunk': 'integration',
 }
 
-# We need to duplicate this function to allow copying over
-# an existing directory
-
 image_re = re.compile(
     r'(?P<name>[\w-]+)'
     r'(?:-(?P<version>\d+\.\d+(?:\.\d+)?)'
@@ -42,6 +41,88 @@ image_re = re.compile(
     r'\.(?P<extension>\w+)$')
 
 
+# Copy of shutil.copystat but not setting extended attributes
+# because trying to set them causes errors on some systems.
+def copystat(src, dst, follow_symlinks=True):
+    """Copy file metadata
+
+    Copy the permission bits, last access time, last modification time, and
+    flags from `src` to `dst`. On Linux, copystat() also copies the "extended
+    attributes" where possible. The file contents, owner, and group are
+    unaffected. `src` and `dst` are path names given as strings.
+
+    If the optional flag `follow_symlinks` is not set, symlinks aren't
+    followed if and only if both `src` and `dst` are symlinks.
+    """
+    def _nop(*args, **kwargs):
+        pass
+
+    # follow symlinks (aka don't not follow symlinks)
+    follow = follow_symlinks or not (os.path.islink(src)
+                                     and os.path.islink(dst))
+    if follow:
+        # use the real function if it exists
+        def lookup(name):
+            return getattr(os, name, _nop)
+    else:
+        # use the real function only if it exists
+        # *and* it supports follow_symlinks
+        def lookup(name):
+            fn = getattr(os, name, _nop)
+            if fn in os.supports_follow_symlinks:
+                return fn
+            return _nop
+
+    st = lookup("stat")(src, follow_symlinks=follow)
+    mode = stat.S_IMODE(st.st_mode)
+    lookup("utime")(dst, ns=(st.st_atime_ns, st.st_mtime_ns),
+                    follow_symlinks=follow)
+    try:
+        lookup("chmod")(dst, mode, follow_symlinks=follow)
+    except NotImplementedError:
+        # if we got a NotImplementedError, it's because
+        #   * follow_symlinks=False,
+        #   * lchown() is unavailable, and
+        #   * either
+        #       * fchownat() is unavailable or
+        #       * fchownat() doesn't implement AT_SYMLINK_NOFOLLOW.
+        #         (it returned ENOSUP.)
+        # therefore we're out of options--we simply cannot chown the
+        # symlink.  give up, suppress the error.
+        # (which is what shutil always did in this circumstance.)
+        pass
+    if hasattr(st, 'st_flags'):
+        try:
+            lookup("chflags")(dst, st.st_flags, follow_symlinks=follow)
+        except OSError as why:
+            for err in 'EOPNOTSUPP', 'ENOTSUP':
+                if hasattr(errno, err) and why.errno == getattr(errno, err):
+                    break
+            else:
+                raise
+
+
+# Copy og shutil.copy2 using our patched copystat
+def copy2(src, dst, follow_symlinks=True):
+    """Copy data and metadata. Return the file's destination.
+
+    Metadata is copied with copystat(). Please see the copystat function
+    for more information.
+
+    The destination may be a directory.
+
+    If follow_symlinks is false, symlinks won't be followed. This
+    resembles GNU's "cp -P src dst".
+    """
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(src))
+    shutil.copyfile(src, dst, follow_symlinks=follow_symlinks)
+    copystat(src, dst, follow_symlinks=follow_symlinks)
+    return dst
+
+
+# We need to duplicate copytree function to allow copying over
+# an existing directory and to use customized copy2 and copystat
 def copytree(src, dst, symlinks=False, ignore=None):
     """Recursively copy a directory tree using copy2().
     If exception(s) occur, an Error is raised with a list of reasons.
@@ -88,25 +169,15 @@ def copytree(src, dst, symlinks=False, ignore=None):
             continue
         srcname = os.path.join(src, name)
         dstname = os.path.join(dst, new_name)
-        try:
-            if symlinks and os.path.islink(srcname):
-                linkto = os.readlink(srcname)
-                os.symlink(linkto, dstname)
-            elif os.path.isdir(srcname):
-                copytree(srcname, dstname, symlinks, ignore)
-            else:
-                # Will raise a SpecialFileError for unsupported file types
-                shutil.copy2(srcname, dstname)
-        # catch the Error from the recursive copytree so that we can
-        # continue with other files
-        except shutil.Error as err:
-            errors.extend(err.args[0])
-        except EnvironmentError as why:
-            errors.append((srcname, dstname, str(why)))
-    try:
-        shutil.copystat(src, dst)
-    except OSError as why:
-        errors.append((src, dst, str(why)))
+        if symlinks and os.path.islink(srcname):
+            linkto = os.readlink(srcname)
+            os.symlink(linkto, dstname)
+        elif os.path.isdir(srcname):
+            copytree(srcname, dstname, symlinks, ignore)
+        else:
+            # Will raise a SpecialFileError for unsupported file types
+            copy2(srcname, dstname)
+    copystat(src, dst)
     if errors:
         raise shutil.Error(errors)
 
