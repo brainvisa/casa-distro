@@ -244,7 +244,8 @@ def create_user_image(base_image,
         for i in os.listdir(d):
             c = configparser.ConfigParser()
             c.optionxform = str
-            c.read_file(open(osp.join(d, i)))
+            with open(osp.join(d, i)) as desktop_file:
+                c.read_file(desktop_file)
             icon = glob.glob(c['Desktop Entry']['Icon'].format(
                 install_dir=install_dir))
             if icon:
@@ -252,8 +253,13 @@ def create_user_image(base_image,
                 c['Desktop Entry']['Icon'] = icon.replace(install_dir,
                                                           '/casa/install')
             f = osp.join(tmp, i)
-            c.write(open(f, 'w'))
+            with open(f, 'w') as desktop_file:
+                c.write(desktop_file)
             vm.copy_user(f, '/home/brainvisa/Desktop')
+            # Desktop files must be made "trusted" to activate them
+            vm.run_user("chmod +x '/home/brainvisa/Desktop/{filename}' && "
+                        "gio set '/home/brainvisa/Desktop/{filename}' "
+                        "metadata::trusted true".format(filename=i))
     finally:
         shutil.rmtree(tmp)
 
