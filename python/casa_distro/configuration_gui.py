@@ -331,13 +331,13 @@ div.note {
     padding: 5px;
 }
 
-div.code {
-    background-color: #f0fff0;
+div.highlight pre {
+    background-color: #eeffcc;
+    border-color: #a0c090;
     border-style: solid none solid none;
     border-width: 1px;
     border-radius: 0px;
     padding: 3px;
-    border-color: #d0d090;
 }
 </style>
 <h1>Managing BrainVISA installation options</h1>
@@ -367,9 +367,9 @@ div.code {
 <p>It is possible to both install the "local" distro (normally the "brainvisa" distro) in read-write mode, then add additional downloaded ones. To do so, check the local install option, and select additional distros.
 </p>
 <p>Inside the container, the read-only install directory is:
-<div class="code">/casa/install</div>
+<div class="highlight"><pre>/casa/install</pre></div>
 The read-write install location will be:
-<div class="code">/casa/host/install</div>
+<div class="highlight"><pre>/casa/host/install</pre></div>
 </p>
 <div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or many python language modules, do not support installation split across several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
 </div>
@@ -637,6 +637,8 @@ div.highlight pre {
     border-color: #a0c090;
     border-style: solid none solid none;
     border-width: 1px;
+    border-radius: 0px;
+    padding: 3px;
 }
 </style>
 <h1>The two configuration files</h1>
