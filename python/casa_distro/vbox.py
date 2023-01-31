@@ -21,6 +21,8 @@ except ImportError:
     # commands without it
     configparser = None
 
+from .thirdparty import install_thirdparty_software
+
 
 def vbox_manage_command(cmd_options):
     '''
@@ -288,6 +290,10 @@ def create_user_image(base_image,
     vm.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                 % vm.image_id)
 
+    temps = install_thirdparty_software(install_thirdparty, vm)
+    for d in temps:
+        shutil.rmtree(d)
+
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
     vm.remove(delete=True, verbose=verbose)
@@ -385,6 +391,10 @@ class VBoxMachine:
             for i in range(attempts):
                 time.sleep(wait)
                 if subprocess.call(command) == 0:
+                    # Create temporary directory
+                    self.run_root(
+                        'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(
+                            self.tmp_dir))
                     return True
         return False
 
@@ -561,8 +571,6 @@ class VBoxMachine:
         """
 
         self.start_and_wait(verbose=verbose, gui=gui)
-        self.run_root(
-            'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
 
         for step in image_builder.steps:
             if verbose:
