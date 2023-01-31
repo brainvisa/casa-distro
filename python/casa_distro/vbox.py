@@ -79,6 +79,7 @@ def create_image(base, base_metadata,
                  video_memory='50',
                  disk_size='131072',
                  gui='no',
+                 cleanup='yes',
                  verbose=None):
 
     gui = boolean_value(gui)
@@ -149,38 +150,51 @@ def create_image(base, base_metadata,
             1)  Perform Ubuntu minimal installation with an autologin account
                 named "brainvisa" and with password "brainvisa"
 
-            2)  Perform system updates and install packages required for kernel
-                module creation :
+            2)  Remove unneeded packages to minimize the system:
 
                     sudo apt update
+                    sudo apt install aptitude
+                    # Mark unneeded packages as auto-installed with Aptitude
+                    sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \\
+                        -o APT::Autoremove::RecommendsImportant=0 autoremove
                     sudo apt upgrade
-                    sudo apt install gcc make perl
 
-            3)  Add brainvisa user to group vboxsf
+            3)  Add brainvisa user to group vboxsf for access to shared folders
 
                     sudo addgroup brainvisa vboxsf
 
-            4)  Disable automatic software update in "Update" tab of Software &
+            4)  Set the timezone to UTC:
+                    sudo timedatectl set-timezone UTC
+
+            5)  Disable automatic software update in "Update" tab of Software &
                 Updates properties. Otherwise installation may fail because
                 installation database is locked.
 
-            5)  Disable screen saver.
+            6)  Disable screen saver.
 
-            6)  Set root password to "brainvisa" (this is necessary to
+            7)  Set root password to "brainvisa" (this is necessary to
                 automatically connect to the VM to perform post-install)
 
-            7)  Reboot the VM
-
             8)  Download and install VirtualBox guest additions
+                (virtualbox-guest-utils and virtualbox-guest-x11)
 
-            9)  Shut down the VM
+            9)  Clean APT cache files
 
-            10) Check and adjust the VM in VirualBox (especially 3D
-                acceleration, processors and memory)
+                sudo apt clean
+                sudo rm -rf /var/lib/apt/lists/*
 
-            11) restart the command to export the VM to OVA format
+            9) Add the keyboard selection widget to the bottom panel, and make
+               sure to activate the English keyboard before exiting the VM.
 
-            12) You can manually remove the VM and its associated files from
+            10) Shut down the VM
+
+            11) Check and adjust the VM in VirualBox (enable 3D acceleration,
+                enable RTC in UTC, check processors and memory)
+
+            12) restart the casa_distro_admin create_base_image command to
+                export the VM to OVA format
+
+            13) You can manually remove the VM and its associated files from
                 VirtualBox.
             '''
         return (str(uuid.uuid4()), msg)
