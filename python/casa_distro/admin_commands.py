@@ -211,15 +211,23 @@ def create_base_image(type,
       may build a "system" image as follows, but it's not needed::
 
           casa_distro_admin create_base_image base=ubuntu-18.04.sif \\
-              type=system image_version=ubuntu-18.04
+              type=system image_version=5.0
 
     - For VirtualBox:
 
-      Ensure ~/casa-distro exists
-      Download ISO file for appropriate version of Ubuntu
-      Run the following command and follow printed instructions::
+      1. Download a Ubuntu image to your CASA base directory, e.g.
+         lubuntu-22.04.1-desktop-amd64.iso
 
-          casa_distro_admin create_base_image type=system container_type=vbox image_version=5.3 gui=yes base=$HOME/Download/ubuntu-22.04.1-desktop-amd64.iso
+      2. Run create_user_image::
+
+          casa_distro_admin create_user_image \\
+              container_type=vbox \\
+              type=system \\
+              base=lubuntu-22.04.1-desktop-amd64.iso \\
+              image_version=5.3
+
+      3. Follow the instructions that are printed in the terminal to install
+         and configure Lubuntu appropriately.
 
     Parameters
     ----------
@@ -251,6 +259,16 @@ def create_base_image(type,
         Version (or branch) of the image
 
     {verbose}
+
+    cleanup (effective only if container_type=singularity)
+        default=yes
+
+        If "no", "false" or "0", do not cleanup after a failure during image
+        building. This may allow to debug a problem after the failure. For
+        instance, with Singularity one can use a command like::
+
+            sudo singularity run --writable
+            /tmp/rootfs-79744fb2-f3a7-11ea-a080-ce9ed5978945 /bin/bash
 
     force (allowed only if container_type=singularity)
         default=no
@@ -828,6 +846,7 @@ def create_user_image(
 
     if 'origin_run' not in config:
         dev_json = osp.join(config['directory'], config['image']) + '.json'
+        print('!!!', dev_json)
         if osp.exists(dev_json):
             with open(dev_json) as f:
                 dev_config = json.load(f)

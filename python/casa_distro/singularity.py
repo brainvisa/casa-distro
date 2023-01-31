@@ -17,17 +17,14 @@ import shlex
 from . import six
 from .log import boolean_value
 from casa_distro.defaults import default_base_directory
-from .thirdparty import get_thirdparty_software
+from .thirdparty import install_thirdparty_software
 
 try:
     from shutil import which as find_executable
 except ImportError:
     from distutils.spawn import find_executable
 
-if hasattr(shlex, 'quote'):
-    quote = shlex.quote
-else:  # python 2.7
-    from pipes import quote
+quote = shlex.quote
 
 
 # we need support for --pwd, which appeared in Singularity 3.1
@@ -183,6 +180,12 @@ class RecipeBuilder:
                 self.sections.setdefault('setup', []).append(
                     'cp -a %s %s'
                     % (source_file, '${SINGULARITY_ROOTFS}/' + dest_dir + '/'))
+
+    def environment(self, environment_dict):
+        for variable, value in environment_dict.items():
+            self.sections.setdefault('environment', []).append(
+                'export {}="{}"'.format(variable, value)
+            )
 
     def write(self, file):
         for section, lines in self.sections.items():
@@ -409,45 +412,8 @@ Bootstrap: localimage
     rb = RecipeBuilder(output)
     rb.copy_root(dev_config['directory'] + '/install', '/casa')
 
-    scripts = []
-    temps = []
-    env = {}
+    temps = install_thirdparty_software(install_thirdparty, rb)
     try:
-        if install_thirdparty not in (None, 'none', 'None', 'NONE'):
-            for source_dir, symlink_name, setup_scripts, env_dict \
-                    in get_thirdparty_software(install_thirdparty):
-                print('installing %s from %s...' % (symlink_name, source_dir))
-                if source_dir.endswith('.tar') \
-                        or source_dir.endswith('.tar.gz') \
-                        or source_dir.endswith('.tar.bz2'):
-                    rb.extract_tar(source_dir, '/usr/local')
-                    source_dir = '.tar'.join(source_dir.split('.tar')[:-1])
-                else:
-                    rb.copy_root(source_dir, '/usr/local')
-                if symlink_name and osp.basename(source_dir) != symlink_name:
-                    rb.symlink(osp.basename(source_dir),
-                               osp.join('/usr/local', symlink_name))
-                for script_file, script in setup_scripts.items():
-                    d = tempfile.mkdtemp(prefix='casa_distro_script')
-                    temps.append(d)
-                    tmp_name = osp.join(d, osp.basename(script_file))
-                    with open(tmp_name, 'w') as f:
-                        f.write(script)
-                    os.chmod(tmp_name, 0o755)
-                    rb.copy_root(tmp_name, osp.dirname(script_file))
-                    scripts.append(script_file)
-                env.update(env_dict)
-
-        if env:
-            d = tempfile.mkdtemp(prefix='casa_distro_env')
-            temps.append(d)
-            tmp_name = osp.join(d, '99-thirdparty.sh')
-            with open(tmp_name, 'w') as f:
-                for name, value in env.items():
-                    f.write('export %s="%s"\n' % (name, quote(value)))
-            os.chmod(tmp_name, 0o755)
-            rb.copy_root(tmp_name, '/.singularity.d/env')
-
         # # replace the python symlink (not needed any longer as copy_root here
         # # preserves all symlinks)
         # py_exe = osp.join(dev_config['directory'], 'install/bin/python')
@@ -462,8 +428,6 @@ Bootstrap: localimage
         rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                     % rb.image_id)
 
-        for script_file in scripts:
-            rb.run_user(script_file)
         rb.write(recipe)
         recipe.flush()
 
