@@ -115,9 +115,17 @@ class ImageBuilder:
             def copy_user(source_file, dest_dir, preserve_symlinks=True,
                           preserve_ext_symlinks=True):
                 copy files as user.
-            copy_root(ource_file, dest_dir, preserve_symlinks=True,
+            copy_root(source_file, dest_dir, preserve_symlinks=True,
                       preserve_ext_symlinks=True):
                 copy files as root.
+            symlink(target, link_name): create a symlink in the target
+                environment.
+            environment(environment_dict): set environment variables values
+                that are available at run time.
+            extract_tar(source_file, dest_dir):
+                untar a local archive file in a directory in the target
+                environment.
+
     '''
     def __init__(self, name, base):
         self.name = name

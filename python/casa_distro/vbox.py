@@ -515,6 +515,10 @@ class VBoxMachine:
                          'copyto', '--target-directory', dest_dir,
                          source])
 
+    def environment(self, environment_dict):
+        for variable, value in environment_dict.items():
+            raise NotImplementedError()
+
     def install_casa_distro(self, dest):
         """This is a no op because we do not use casa_distro with VirtualBox"""
         pass
