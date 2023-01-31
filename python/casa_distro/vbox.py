@@ -294,6 +294,7 @@ class VBoxMachine:
         self.tmp_dir = '/tmp/casa_distro'
         # identify image/build with a unique identifier
         self.image_id = str(uuid.uuid4())
+        self.environment = {}
 
     def exists(self):
         '''
@@ -495,9 +496,28 @@ class VBoxMachine:
                          'copyto', '--target-directory', dest_dir,
                          source])
 
+    def symlink(self, target, link_name):
+        self.run_root("ln -s {} {}".format(link_name, target))
+
     def environment(self, environment_dict):
+        self.environment.update(environment_dict)
+        tmp = tempfile.NamedTemporaryFile()
         for variable, value in environment_dict.items():
-            raise NotImplementedError()
+            print('export {}="{}"'.format(variable, value), file=tmp)
+        tmp.flush()
+        self.copy_root(tmp.name, '/tmp')
+        dest_tmp = '/tmp/{}'.format(osp.basename(tmp.name))
+        self.run_root(('sed -n w/etc/profile.d/casa_distro.sh {tmp} &&'
+                       ' rm {tmp}').format(tmp=dest_tmp))
+
+    def extract_tar(self, source_file, dest_dir):
+        self.copy_root(source_file, '/tmp')
+        tar_tmp = '/tmp/{}'.format(osp.basename(source_file))
+        self.run_root((
+            'if [ ! -d "{dest_dir}" ]; then mkdir -p "{dest_dir}"; fi && '
+            'tar -C {dest_dir} -xf "{tar_tmp}" && '
+            'rm "{tar_tmp}"'
+        ).format(tar_tmp=tar_tmp, dest_dir=dest_dir))
 
     def install_casa_distro(self, dest):
         """This is a no op because we do not use casa_distro with VirtualBox"""
