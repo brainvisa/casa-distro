@@ -529,8 +529,7 @@ class VBoxMachine:
         self.run_root('ln -s "{}" "{}"'.format(target, link_name))
 
     def environment(self, environment_dict):
-        self.environment.update(environment_dict)
-        tmp = tempfile.NamedTemporaryFile()
+        tmp = tempfile.NamedTemporaryFile(mode='w+')
         for variable, value in environment_dict.items():
             print('export {}="{}"'.format(variable, value), file=tmp)
         tmp.flush()
