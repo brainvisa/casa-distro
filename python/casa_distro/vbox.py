@@ -21,6 +21,8 @@ except ImportError:
     # commands without it
     configparser = None
 
+from .thirdparty import install_thirdparty_software
+
 
 def vbox_manage_command(cmd_options):
     '''
@@ -273,7 +275,7 @@ def create_user_image(base_image,
             # Desktop files must be made "trusted" to activate them
             vm.run_user("chmod +x '/home/brainvisa/Desktop/{filename}' && "
                         "gio set '/home/brainvisa/Desktop/{filename}' "
-                        "metadata::trusted true".format(filename=i))
+                        "metadata::trusted true || true".format(filename=i))
     finally:
         shutil.rmtree(tmp)
 
@@ -287,6 +289,10 @@ def create_user_image(base_image,
                 "/home/brainvisa/.bashrc")
     vm.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                 % vm.image_id)
+
+    temps = install_thirdparty_software(install_thirdparty, vm)
+    for d in temps:
+        shutil.rmtree(d)
 
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
@@ -384,6 +390,10 @@ class VBoxMachine:
             for i in range(attempts):
                 time.sleep(wait)
                 if subprocess.call(command) == 0:
+                    # Create temporary directory
+                    self.run_root(
+                        'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(
+                            self.tmp_dir))
                     return True
         return False
 
@@ -515,9 +525,27 @@ class VBoxMachine:
                          'copyto', '--target-directory', dest_dir,
                          source])
 
+    def symlink(self, target, link_name):
+        self.run_root('ln -s "{}" "{}"'.format(target, link_name))
+
     def environment(self, environment_dict):
+        tmp = tempfile.NamedTemporaryFile(mode='w+')
         for variable, value in environment_dict.items():
-            raise NotImplementedError()
+            print('export {}="{}"'.format(variable, value), file=tmp)
+        tmp.flush()
+        self.copy_root(tmp.name, '/tmp')
+        dest_tmp = '/tmp/{}'.format(osp.basename(tmp.name))
+        self.run_root(('sed -n w/etc/profile.d/casa_distro.sh {tmp} &&'
+                       ' rm {tmp}').format(tmp=dest_tmp))
+
+    def extract_tar(self, source_file, dest_dir):
+        self.copy_root(source_file, '/tmp')
+        tar_tmp = '/tmp/{}'.format(osp.basename(source_file))
+        self.run_root((
+            'if [ ! -d "{dest_dir}" ]; then mkdir -p "{dest_dir}"; fi && '
+            'tar -C {dest_dir} -xf "{tar_tmp}" && '
+            'rm "{tar_tmp}"'
+        ).format(tar_tmp=tar_tmp, dest_dir=dest_dir))
 
     def install_casa_distro(self, dest):
         """This is a no op because we do not use casa_distro with VirtualBox"""
@@ -541,8 +569,6 @@ class VBoxMachine:
         """
 
         self.start_and_wait(verbose=verbose, gui=gui)
-        self.run_root(
-            'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
 
         for step in image_builder.steps:
             if verbose:
