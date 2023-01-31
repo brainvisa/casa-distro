@@ -212,9 +212,23 @@ def create_base_image(type,
       may build a "system" image as follows, but it's not needed::
 
           casa_distro_admin create_base_image base=ubuntu-18.04.sif \\
-              type=system image_version=ubuntu-18.04
+              type=system image_version=5.0
 
-    - For VirtualBox: TODO
+    - For VirtualBox:
+
+      1. Download a Ubuntu image to your CASA base directory, e.g.
+         lubuntu-22.04.1-desktop-amd64.iso
+
+      2. Run create_user_image::
+
+          casa_distro_admin create_user_image \\
+              container_type=vbox \\
+              type=system \\
+              base=lubuntu-22.04.1-desktop-amd64.iso \\
+              image_version=5.3
+
+      3. Follow the instructions that are printed in the terminal to install
+         and configure Lubuntu appropriately.
 
     Parameters
     ----------
@@ -247,7 +261,7 @@ def create_base_image(type,
 
     {verbose}
 
-    cleanup (allowed only if container_type=singularity)
+    cleanup (effective only if container_type=singularity)
         default=yes
 
         If "no", "false" or "0", do not cleanup after a failure during image

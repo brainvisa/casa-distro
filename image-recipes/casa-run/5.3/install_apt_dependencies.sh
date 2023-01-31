@@ -67,7 +67,8 @@ $SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
 # files. (use 'apt-key export' to write neurodebian-key.gpg).
 $SUDO cp /build/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
-$SUDO apt-key add /build/neurodebian-key.gpg
+$SUDO cp /build/neurodebian-key.gpg \
+      /etc/apt/trusted.gpg.d/neurodebian.asc
 
 
 ###############################################################################

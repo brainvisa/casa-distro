@@ -180,6 +180,12 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
         'casa_distro_compatibility': str(casa_distro.version_major),
         'type': 'user',
         'container_type': 'singularity',
+        # This is specific for soma-workflow but how useful to run jobs inside
+        # containers. This way users don't have to setup that themselves
+        'env': {
+            'SOMAWF_INPUT_PARAMS': '$SOMAWF_INPUT_PARAMS',
+            'SOMAWF_OUTPUT_PARAMS': '$SOMAWF_OUTPUT_PARAMS',
+        }
     }
     environment['distro'] = os.getenv('CASA_DISTRO')
     if not environment['distro']:
@@ -377,6 +383,12 @@ used anymore, you may as well delete it if you wish.
         'image_version': image_version,
         'branch': branch,
         'container_type': 'singularity',
+        # This is specific for soma-workflow but how useful to run jobs inside
+        # containers. This way users don't have to setup that themselves
+        'env': {
+            'SOMAWF_INPUT_PARAMS': '$SOMAWF_INPUT_PARAMS',
+            'SOMAWF_OUTPUT_PARAMS': '$SOMAWF_OUTPUT_PARAMS',
+        }
     })
     if image is None:
         image = (os.getenv('SINGULARITY_CONTAINER')

@@ -278,7 +278,6 @@ class InstallEditor(Qt.QDialog):
                     json.dump(new_conf, f, indent=4)
 
     def help(self):
-        print('help')
         try:
             self.help_widget = QtWebEngineWidgets.QWebEngineView()
         except Exception:
@@ -332,13 +331,13 @@ div.note {
     padding: 5px;
 }
 
-div.code {
-    background-color: #f0fff0;
+div.highlight pre {
+    background-color: #eeffcc;
+    border-color: #a0c090;
     border-style: solid none solid none;
     border-width: 1px;
     border-radius: 0px;
     padding: 3px;
-    border-color: #d0d090;
 }
 </style>
 <h1>Managing BrainVISA installation options</h1>
@@ -368,9 +367,9 @@ div.code {
 <p>It is possible to both install the "local" distro (normally the "brainvisa" distro) in read-write mode, then add additional downloaded ones. To do so, check the local install option, and select additional distros.
 </p>
 <p>Inside the container, the read-only install directory is:
-<div class="code">/casa/install</div>
+<div class="highlight"><pre>/casa/install</pre></div>
 The read-write install location will be:
-<div class="code">/casa/host/install</div>
+<div class="highlight"><pre>/casa/host/install</pre></div>
 </p>
 <div class="note">It is <b>not possible</b> to use the read-only "brainvisa" core distro and install only additional toolboxes in a read-write filesystem. As some tools like the <tt>brainvisa</tt> program, or many python language modules, do not support installation split across several locations. So the main "brainvisa" distro has to be actually reinstalled in another location before toolboxes are installed.
 </div>
@@ -430,8 +429,12 @@ class CasaLauncher(Qt.QDialog):
         conf_line = Qt.QHBoxLayout()
         conf_line.addWidget(Qt.QLabel('<b>Configuration:</b>'))
         conf_line.addStretch(1)
-        self._conf_btn = Qt.QPushButton('...')
+        self._conf_btn = Qt.QPushButton('Env...')
         conf_line.addWidget(self._conf_btn)
+        self._user_conf_btn = Qt.QPushButton('User...')
+        conf_line.addWidget(self._user_conf_btn)
+        self._conf_help_btn = Qt.QPushButton('?')
+        conf_line.addWidget(self._conf_help_btn)
 
         cont_line = None
         if self.conf['container_type'] == 'singularity':
@@ -477,6 +480,8 @@ class CasaLauncher(Qt.QDialog):
         self._mount_manager.valueChanged.connect(self.block_launchers)
         self._launchers.launched.connect(self.close_and_launch)
         self._conf_btn.clicked.connect(self.edit_configuration)
+        self._user_conf_btn.clicked.connect(self.edit_user_configuration)
+        self._conf_help_btn.clicked.connect(self.help_configuration)
         if hasattr(self, '_container_btn'):
             self._container_btn.clicked.connect(self.edit_container)
         if hasattr(self, '_inst_btn'):
@@ -484,7 +489,7 @@ class CasaLauncher(Qt.QDialog):
 
     def save_conf(self):
         if self._mount_manager.check_all_mounts():
-            # print('SAVE')
+            print('SAVE')
             conf_wo_mounts = dict(self.conf)
             if 'mounts' in self.conf:
                 del conf_wo_mounts['mounts']
@@ -492,18 +497,17 @@ class CasaLauncher(Qt.QDialog):
             user_config_file = user_config_filename()
             if osp.exists(user_config_file):
                 with open(user_config_file) as f:
-                    uconf = json.load(f)
+                    old_uconf = json.load(f)
             else:
-                uconf = {}
+                old_uconf = {}
 
-            old_umounts = uconf.get('mounts', {})
-            if 'mounts' in uconf:
-                del uconf['mounts']
+            if 'mounts' in self.global_conf:
+                del self.global_conf['mounts']
             mounts = self._mount_manager.mounts
             for container, hg in mounts.items():
                 host, is_global = hg
                 if is_global:
-                    uconf.setdefault('mounts', {})[container] = host
+                    self.global_conf.setdefault('mounts', {})[container] = host
                 else:
                     conf_wo_mounts.setdefault('mounts', {})[container] = host
             try:
@@ -511,12 +515,13 @@ class CasaLauncher(Qt.QDialog):
                     json.dump(conf_wo_mounts, conf_file, indent=4)
             except (IOError, OSError):
                 # read-only shared environment ?
-                pass
-            if uconf.get('mounts', {}) != old_umounts:
+                print('Warning: the configuration could not be saved. Perhaps '
+                      'it is a read-only site-wide install.')
+            if old_uconf != self.global_conf:
                 if not osp.isdir(osp.dirname(user_config_file)):
                     os.makedirs(osp.dirname(user_config_file))
                 with open(user_config_file, 'w') as f:
-                    json.dump(uconf, f, indent=4)
+                    json.dump(self.global_conf, f, indent=4)
 
             self.accept()
 
@@ -555,6 +560,130 @@ class CasaLauncher(Qt.QDialog):
             self.conf.update(config_edit.edited_config())
             self._mount_manager.update_ui()
             self.block_launchers()
+
+    def edit_user_configuration(self):
+        dialog = Qt.QDialog(self)
+        layout = Qt.QVBoxLayout()
+        dialog.setLayout(layout)
+        config_edit = ConfigEditor(self.global_conf)
+        validation_btns = Qt.QDialogButtonBox(
+            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel)
+
+        layout.addWidget(config_edit)
+        layout.addWidget(validation_btns)
+
+        validation_btns.accepted.connect(dialog.accept)
+        validation_btns.rejected.connect(dialog.reject)
+
+        preserved = set(['mounts', 'name', 'distro', 'system', 'branch',
+                         'type', 'image', 'container_type'])
+        if dialog.exec_():
+            edited_conf = config_edit.edited_config()
+            for k in list(edited_conf.keys()):
+                if k in preserved:
+                    del edited_conf[k]
+            self.global_conf.update(edited_conf)
+            self._mount_manager.update_ui()
+            self.block_launchers()
+
+    def help_configuration(self):
+        try:
+            self.help_widget = QtWebEngineWidgets.QWebEngineView()
+        except Exception:
+            print('QWebEngineView failed, using QWebView')
+            self.help_widget = Qt.QWebView()
+        self.help_widget.setWindowTitle('How to configure mount points')
+        help_text = '''<style>
+body {
+    font-family: sans-serif;
+    border-width: 10px;
+    border-color: #8880A0;
+    border-style: solid;
+    border-radius: 6px;
+    margin: 0px;
+    padding: 10px;
+    text-align: justify;
+}
+
+a {
+    color: #2878A2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+h1 {
+    background-color: #C8D0EF;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+    margin-bottom: 0px;
+    color: #2878A2;
+}
+
+h2 {
+    background-color: #B0C0EB;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+div.highlight pre {
+    background-color: #eeffcc;
+    border-color: #a0c090;
+    border-style: solid none solid none;
+    border-width: 1px;
+    border-radius: 0px;
+    padding: 3px;
+}
+</style>
+<h1>The two configuration files</h1>
+<p>Configuration options are not saved in a single file, but in two: the <b>environment configuration</b> and the <b>user configuration</b>.
+</p>
+
+<h2>User configuration</h2>
+<p>The <b>user config</b> is simpler: it is a personal configuration, not shared with other users, but shared across all Casa-Distro environments. It has priority over the environment configuration. It is stored in:
+<div class="highlight"><pre>
+    $HOME/.config/casa-distro/casa_distro3.json
+</pre></div>
+</p>
+<p>As it is shared across environments, we also call it "global". The <b>global mounts</b> definitions are stored there.
+</p>
+
+<h2>Environment configuration</h2>
+<p>The <b>environment configuration</b> is restricted to the current environment (casa-distro install). However there are two distinct install situations:
+</p>
+
+<h3>User installation, personal environment</h3>
+
+<p>This is when the user installs a BrainVISA distribution for himself. The <em>environment</em> (install directory) has a local home directory inside (on the host machine filesystem), and the environment can actually be considered "local".
+</p>
+
+<h3>Site installation, environment shared across users</h3>
+
+<p>This is when a lab admin installs a BrainVISA distribution for all users. The <em>environment</em> is thus shared across users, and its configuration is also shared. It is normally read-only, so users cannot modify it. They can still modify the <em>user configuration</em>, however.
+</p>
+
+<p>There is no environment-specific, user-specific configuration in a site-wide install.
+</p>
+
+<p>In all cases, the environment configuration file is stored in:
+
+<div class="highlight"><pre>
+&lt;environment_dir&gt;/conf/casa-distro.json
+</pre></div>
+on host side, or inside the container:
+<div class="highlight"><pre>
+/casa/host/conf/casa-distro.json
+</pre></div>
+</p>
+'''  # noqa: E501
+        self.help_widget.setHtml(help_text)
+        self.help_widget.show()
 
     def edit_install(self):
         dialog = InstallEditor(self.conf, self.conf_path, self)
@@ -825,7 +954,7 @@ After mount points have been edited, they must be validated (using the "OK" butt
 
 <h2>Other configuration issues and useful mounts</h2>
 <p>
-See the <a href="https://brainvisa.info/configuration.html">BrainVisa configuration section</a> on the web site
+See the <a href="https://brainvisa.info/web/configuration.html">BrainVisa configuration section</a> on the web site
 </p>
 '''  # noqa: E501
         self.help_widget.setHtml(help_text)
