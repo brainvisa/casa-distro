@@ -68,7 +68,7 @@ $SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
 $SUDO cp /build/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
 $SUDO cp /build/neurodebian-key.gpg \
-      /etc/apt/trusted.gpg.d/libnvidia-container.asc
+      /etc/apt/trusted.gpg.d/neurodebian.asc
 
 
 ###############################################################################
