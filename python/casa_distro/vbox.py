@@ -275,7 +275,7 @@ def create_user_image(base_image,
             # Desktop files must be made "trusted" to activate them
             vm.run_user("chmod +x '/home/brainvisa/Desktop/{filename}' && "
                         "gio set '/home/brainvisa/Desktop/{filename}' "
-                        "metadata::trusted true".format(filename=i))
+                        "metadata::trusted true || true".format(filename=i))
     finally:
         shutil.rmtree(tmp)
 
@@ -320,7 +320,6 @@ class VBoxMachine:
         self.tmp_dir = '/tmp/casa_distro'
         # identify image/build with a unique identifier
         self.image_id = str(uuid.uuid4())
-        self.environment = {}
 
     def exists(self):
         '''
@@ -527,7 +526,7 @@ class VBoxMachine:
                          source])
 
     def symlink(self, target, link_name):
-        self.run_root("ln -s {} {}".format(link_name, target))
+        self.run_root('ln -s "{}" "{}"'.format(target, link_name))
 
     def environment(self, environment_dict):
         self.environment.update(environment_dict)
