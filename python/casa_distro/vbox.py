@@ -170,7 +170,8 @@ def create_image(base, base_metadata,
 
             5)  Disable automatic software update in "Update" tab of Software &
                 Updates properties. Otherwise installation may fail because
-                installation database is locked.
+                installation database is locked. Also, disable release upgrade
+                prompts (Show new distribution releases: Never).
 
             6)  Disable screen saver.
 
@@ -180,8 +181,11 @@ def create_image(base, base_metadata,
             8)  Download and install VirtualBox guest additions
                 (virtualbox-guest-utils and virtualbox-guest-x11)
 
-            9)  Clean APT cache files
+            9)  Free disk space by cleaning configuration files and cache
+                directories (can be huge, e.g. /var/lib/snapd) as well as APT
+                cache files
 
+                sudo aptitude purge ?config-files
                 sudo apt clean
                 sudo rm -rf /var/lib/apt/lists/*
 
