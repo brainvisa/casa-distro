@@ -296,10 +296,16 @@ def create_user_image(base_image,
     for d in temps:
         shutil.rmtree(d)
 
+    # Desktop icons must be validated manually. Therefore, automatic saving
+    # of the image is disabled until a solution is found.
+    print()
+    print('''Virtual machine is ready. Please activate desktop icons by
+right-clicking on them and selecting "allow launching". Then press return
+to save the OVA image.''')
+    input('Press <return> when ready to export VirtualBox machine.')
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
-    vm.remove(delete=True, verbose=verbose)
-
+    # vm.remove(delete=True, verbose=verbose)
     return (vm.image_id, None)
 
 
