@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import glob
-import json
 import os.path as osp
 import sys
 
@@ -392,21 +391,25 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
             to_update.setdefault(env_image, []).append(environment)
 
             # Check for update of run image associated with environment
-            j = env_image + '.json'
-            if osp.exists(j):
-                with open(j) as f:
-                    metadata = json.load(f)
-                run_id = metadata.get('origin_run')
-                for run_j in glob.glob((
-                        '{}/'
-                        'casa-run-{}*.json').format(
-                            osp.dirname(env_image),
-                            environment.get("image_version", ""))):
-                    with open(run_j) as f:
-                        run_metadata = json.load(f)
-                        if run_metadata.get('image_id') == run_id:
-                            to_update[run_j[:-5]] = []
-
+            compatible_run_images = []
+            _, extension = osp.splitext(env_image)
+            g = ('{}/'
+                 'casa-run-{}*{}').format(
+                    osp.dirname(env_image),
+                    environment.get("image_version", ""),
+                    extension)  # noqa: E261,E128
+            for run_image in glob.glob(g):
+                if osp.exists(run_image):
+                    compatible_run_images.append(run_image)
+        if len(compatible_run_images) == 1:
+            to_update[compatible_run_images[0]] = []
+        elif len(compatible_run_images) > 1:
+            raise RuntimeError(('{} run images are compatible with {}, '
+                'cannot select which one to update: {}').format(  # noqa: E127,E128,E501
+                    len(compatible_run_images),
+                    env_image,
+                    ', '.join(compatible_run_images)
+            ))
     # Find updated version of images
     updates = {}
     for image in to_update:

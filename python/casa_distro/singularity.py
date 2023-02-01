@@ -831,7 +831,9 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
                 '(casa_distro.json)')
     image = osp.join(base_directory, image)
     if not osp.exists(image):
-        raise ValueError("'%s' does not exist" % image)
+        image = osp.join(osp.realpath(base_directory), image)
+        if not osp.exists(image):
+            raise ValueError("'%s' does not exist" % image)
     singularity += [image]
     singularity += command
     env_for_singularity = os.environ.copy()
