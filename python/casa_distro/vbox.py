@@ -21,6 +21,8 @@ except ImportError:
     # commands without it
     configparser = None
 
+from .thirdparty import install_thirdparty_software
+
 
 def vbox_manage_command(cmd_options):
     '''
@@ -79,6 +81,7 @@ def create_image(base, base_metadata,
                  video_memory='50',
                  disk_size='131072',
                  gui='no',
+                 cleanup='yes',
                  verbose=None):
 
     gui = boolean_value(gui)
@@ -149,38 +152,51 @@ def create_image(base, base_metadata,
             1)  Perform Ubuntu minimal installation with an autologin account
                 named "brainvisa" and with password "brainvisa"
 
-            2)  Perform system updates and install packages required for kernel
-                module creation :
+            2)  Remove unneeded packages to minimize the system:
 
                     sudo apt update
+                    sudo apt install aptitude
+                    # Mark unneeded packages as auto-installed with Aptitude
+                    sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \\
+                        -o APT::Autoremove::RecommendsImportant=0 autoremove
                     sudo apt upgrade
-                    sudo apt install gcc make perl
 
-            3)  Add brainvisa user to group vboxsf
+            3)  Add brainvisa user to group vboxsf for access to shared folders
 
                     sudo addgroup brainvisa vboxsf
 
-            4)  Disable automatic software update in "Update" tab of Software &
+            4)  Set the timezone to UTC:
+                    sudo timedatectl set-timezone UTC
+
+            5)  Disable automatic software update in "Update" tab of Software &
                 Updates properties. Otherwise installation may fail because
                 installation database is locked.
 
-            5)  Disable screen saver.
+            6)  Disable screen saver.
 
-            6)  Set root password to "brainvisa" (this is necessary to
+            7)  Set root password to "brainvisa" (this is necessary to
                 automatically connect to the VM to perform post-install)
 
-            7)  Reboot the VM
-
             8)  Download and install VirtualBox guest additions
+                (virtualbox-guest-utils and virtualbox-guest-x11)
 
-            9)  Shut down the VM
+            9)  Clean APT cache files
 
-            10) Check and adjust the VM in VirualBox (especially 3D
-                acceleration, processors and memory)
+                sudo apt clean
+                sudo rm -rf /var/lib/apt/lists/*
 
-            11) restart the command to export the VM to OVA format
+            9) Add the keyboard selection widget to the bottom panel, and make
+               sure to activate the English keyboard before exiting the VM.
 
-            12) You can manually remove the VM and its associated files from
+            10) Shut down the VM
+
+            11) Check and adjust the VM in VirualBox (enable 3D acceleration,
+                enable RTC in UTC, check processors and memory)
+
+            12) restart the casa_distro_admin create_base_image command to
+                export the VM to OVA format
+
+            13) You can manually remove the VM and its associated files from
                 VirtualBox.
             '''
         return (str(uuid.uuid4()), msg)
@@ -244,7 +260,8 @@ def create_user_image(base_image,
         for i in os.listdir(d):
             c = configparser.ConfigParser()
             c.optionxform = str
-            c.read_file(open(osp.join(d, i)))
+            with open(osp.join(d, i)) as desktop_file:
+                c.read_file(desktop_file)
             icon = glob.glob(c['Desktop Entry']['Icon'].format(
                 install_dir=install_dir))
             if icon:
@@ -252,8 +269,13 @@ def create_user_image(base_image,
                 c['Desktop Entry']['Icon'] = icon.replace(install_dir,
                                                           '/casa/install')
             f = osp.join(tmp, i)
-            c.write(open(f, 'w'))
+            with open(f, 'w') as desktop_file:
+                c.write(desktop_file)
             vm.copy_user(f, '/home/brainvisa/Desktop')
+            # Desktop files must be made "trusted" to activate them
+            vm.run_user("chmod +x '/home/brainvisa/Desktop/{filename}' && "
+                        "gio set '/home/brainvisa/Desktop/{filename}' "
+                        "metadata::trusted true || true".format(filename=i))
     finally:
         shutil.rmtree(tmp)
 
@@ -267,6 +289,10 @@ def create_user_image(base_image,
                 "/home/brainvisa/.bashrc")
     vm.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                 % vm.image_id)
+
+    temps = install_thirdparty_software(install_thirdparty, vm)
+    for d in temps:
+        shutil.rmtree(d)
 
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
@@ -364,6 +390,10 @@ class VBoxMachine:
             for i in range(attempts):
                 time.sleep(wait)
                 if subprocess.call(command) == 0:
+                    # Create temporary directory
+                    self.run_root(
+                        'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(
+                            self.tmp_dir))
                     return True
         return False
 
@@ -495,9 +525,27 @@ class VBoxMachine:
                          'copyto', '--target-directory', dest_dir,
                          source])
 
+    def symlink(self, target, link_name):
+        self.run_root('ln -s "{}" "{}"'.format(target, link_name))
+
     def environment(self, environment_dict):
+        tmp = tempfile.NamedTemporaryFile(mode='w+')
         for variable, value in environment_dict.items():
-            raise NotImplementedError()
+            print('export {}="{}"'.format(variable, value), file=tmp)
+        tmp.flush()
+        self.copy_root(tmp.name, '/tmp')
+        dest_tmp = '/tmp/{}'.format(osp.basename(tmp.name))
+        self.run_root(('sed -n w/etc/profile.d/casa_distro.sh {tmp} &&'
+                       ' rm {tmp}').format(tmp=dest_tmp))
+
+    def extract_tar(self, source_file, dest_dir):
+        self.copy_root(source_file, '/tmp')
+        tar_tmp = '/tmp/{}'.format(osp.basename(source_file))
+        self.run_root((
+            'if [ ! -d "{dest_dir}" ]; then mkdir -p "{dest_dir}"; fi && '
+            'tar -C {dest_dir} -xf "{tar_tmp}" && '
+            'rm "{tar_tmp}"'
+        ).format(tar_tmp=tar_tmp, dest_dir=dest_dir))
 
     def install_casa_distro(self, dest):
         """This is a no op because we do not use casa_distro with VirtualBox"""
@@ -521,8 +569,6 @@ class VBoxMachine:
         """
 
         self.start_and_wait(verbose=verbose, gui=gui)
-        self.run_root(
-            'if [ ! -e "{0}" ]; then mkdir "{0}"; fi'.format(self.tmp_dir))
 
         for step in image_builder.steps:
             if verbose:

@@ -132,7 +132,12 @@ def install_thirdparty_software(install_thirdparty, builder):
                     with open(tmp_name, 'w') as f:
                         f.write(script)
                     os.chmod(tmp_name, 0o755)
-                    builder.copy_root(tmp_name, osp.dirname(script_file))
+                    dest_dir = osp.dirname(script_file)
+                    builder.run_root(('if [ ! -d "{dest_dir}" ]; then '
+                                      'mkdir -p "{dest_dir}"; '
+                                      'fi').format(dest_dir=dest_dir))
+                    builder.copy_root(tmp_name, dest_dir)
+                    builder.run_root('chmod a+rx "{}"'.format(script_file))
                     builder.run_user(script_file)
                 env.update(env_dict)
 

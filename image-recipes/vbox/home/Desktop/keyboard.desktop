@@ -1,5 +1,6 @@
 [Desktop Entry]
-Type=Link
+Version=1.0
+Type=Application
 Name=Keyboard Layout
-URL=file:///home/brainvisa/change_keyboard_layout/index.html
-Icon=/usr/share/icons/gnome/48x48/devices/keyboard.png
+Exec=xdg-open file:///home/brainvisa/change_keyboard_layout/index.html
+Icon=/usr/share/icons/Humanity/devices/24/input-keyboard.svg
