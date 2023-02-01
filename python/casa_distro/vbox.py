@@ -192,7 +192,14 @@ def create_image(base, base_metadata,
             9) Add the keyboard selection widget to the bottom panel, and make
                sure to activate the English keyboard before exiting the VM.
 
-            10) Shut down the VM
+            10) Reboot the VM, hold Shift during the reboot to enter Rescue
+                mode, open a root shell, and run these commands to shrink the
+                image:
+
+                systemctl rescue
+                systemctl stop systemd-journald
+                mount -o remount,ro /
+                zerofree -v /dev/sda1
 
             11) Check and adjust the VM in VirualBox (enable 3D acceleration,
                 enable RTC in UTC, check processors and memory)
