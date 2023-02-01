@@ -254,6 +254,7 @@ def create_user_image(base_image,
     # Copy desktop shortcut files after finding the appropriate share directory
     # containing icon files. Replace '{install_dir}' in icon Path by
     # appropriate value.
+    vm.run_root('apt update && apt install -y dbus-x11')
     tmp = tempfile.mkdtemp()
     try:
         d = osp.join(copy_to_home, 'Desktop')
@@ -273,9 +274,10 @@ def create_user_image(base_image,
                 c.write(desktop_file)
             vm.copy_user(f, '/home/brainvisa/Desktop')
             # Desktop files must be made "trusted" to activate them
-            vm.run_user("chmod +x '/home/brainvisa/Desktop/{filename}' && "
-                        "gio set '/home/brainvisa/Desktop/{filename}' "
-                        "metadata::trusted true || true".format(filename=i))
+            cmd = ('chmod +x "/home/brainvisa/Desktop/{filename}" && '
+                   'dbus-launch gio set "/home/brainvisa/Desktop/{filename}" '
+                   'metadata::trusted true').format(filename=i)
+            vm.run_user(cmd)
     finally:
         shutil.rmtree(tmp)
 
@@ -294,10 +296,16 @@ def create_user_image(base_image,
     for d in temps:
         shutil.rmtree(d)
 
+    # Desktop icons must be validated manually. Therefore, automatic saving
+    # of the image is disabled until a solution is found.
+    print()
+    print('''Virtual machine is ready. Please activate desktop icons by
+right-clicking on them and selecting "allow launching". Then press return
+to save the OVA image.''')
+    input('Press <return> when ready to export VirtualBox machine.')
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
-    vm.remove(delete=True, verbose=verbose)
-
+    # vm.remove(delete=True, verbose=verbose)
     return (vm.image_id, None)
 
 
