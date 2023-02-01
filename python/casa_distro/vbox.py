@@ -155,7 +155,7 @@ def create_image(base, base_metadata,
             2)  Remove unneeded packages to minimize the system:
 
                     sudo apt update
-                    sudo apt install aptitude
+                    sudo apt install aptitude zerofree
                     # Mark unneeded packages as auto-installed with Aptitude
                     sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \\
                         -o APT::Autoremove::RecommendsImportant=0 autoremove
@@ -170,7 +170,8 @@ def create_image(base, base_metadata,
 
             5)  Disable automatic software update in "Update" tab of Software &
                 Updates properties. Otherwise installation may fail because
-                installation database is locked.
+                installation database is locked. Also, disable release upgrade
+                prompts (Show new distribution releases: Never).
 
             6)  Disable screen saver.
 
@@ -180,15 +181,25 @@ def create_image(base, base_metadata,
             8)  Download and install VirtualBox guest additions
                 (virtualbox-guest-utils and virtualbox-guest-x11)
 
-            9)  Clean APT cache files
+            9)  Free disk space by cleaning configuration files and cache
+                directories (can be huge, e.g. /var/lib/snapd) as well as APT
+                cache files
 
+                sudo aptitude purge ?config-files
                 sudo apt clean
                 sudo rm -rf /var/lib/apt/lists/*
 
             9) Add the keyboard selection widget to the bottom panel, and make
                sure to activate the English keyboard before exiting the VM.
 
-            10) Shut down the VM
+            10) Reboot the VM, hold Shift during the reboot to enter Rescue
+                mode, open a root shell, and run these commands to shrink the
+                image:
+
+                systemctl rescue
+                systemctl stop systemd-journald
+                mount -o remount,ro /
+                zerofree -v /dev/sda1
 
             11) Check and adjust the VM in VirualBox (enable 3D acceleration,
                 enable RTC in UTC, check processors and memory)
