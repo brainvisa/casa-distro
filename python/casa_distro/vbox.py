@@ -155,7 +155,7 @@ def create_image(base, base_metadata,
             2)  Remove unneeded packages to minimize the system:
 
                     sudo apt update
-                    sudo apt install aptitude
+                    sudo apt install aptitude zerofree
                     # Mark unneeded packages as auto-installed with Aptitude
                     sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \\
                         -o APT::Autoremove::RecommendsImportant=0 autoremove
@@ -170,7 +170,8 @@ def create_image(base, base_metadata,
 
             5)  Disable automatic software update in "Update" tab of Software &
                 Updates properties. Otherwise installation may fail because
-                installation database is locked.
+                installation database is locked. Also, disable release upgrade
+                prompts (Show new distribution releases: Never).
 
             6)  Disable screen saver.
 
@@ -180,15 +181,25 @@ def create_image(base, base_metadata,
             8)  Download and install VirtualBox guest additions
                 (virtualbox-guest-utils and virtualbox-guest-x11)
 
-            9)  Clean APT cache files
+            9)  Free disk space by cleaning configuration files and cache
+                directories (can be huge, e.g. /var/lib/snapd) as well as APT
+                cache files
 
+                sudo aptitude purge ?config-files
                 sudo apt clean
                 sudo rm -rf /var/lib/apt/lists/*
 
             9) Add the keyboard selection widget to the bottom panel, and make
                sure to activate the English keyboard before exiting the VM.
 
-            10) Shut down the VM
+            10) Reboot the VM, hold Shift during the reboot to enter Rescue
+                mode, open a root shell, and run these commands to shrink the
+                image:
+
+                systemctl rescue
+                systemctl stop systemd-journald
+                mount -o remount,ro /
+                zerofree -v /dev/sda1
 
             11) Check and adjust the VM in VirualBox (enable 3D acceleration,
                 enable RTC in UTC, check processors and memory)
@@ -254,6 +265,7 @@ def create_user_image(base_image,
     # Copy desktop shortcut files after finding the appropriate share directory
     # containing icon files. Replace '{install_dir}' in icon Path by
     # appropriate value.
+    vm.run_root('apt update && apt install -y dbus-x11')
     tmp = tempfile.mkdtemp()
     try:
         d = osp.join(copy_to_home, 'Desktop')
@@ -273,9 +285,10 @@ def create_user_image(base_image,
                 c.write(desktop_file)
             vm.copy_user(f, '/home/brainvisa/Desktop')
             # Desktop files must be made "trusted" to activate them
-            vm.run_user("chmod +x '/home/brainvisa/Desktop/{filename}' && "
-                        "gio set '/home/brainvisa/Desktop/{filename}' "
-                        "metadata::trusted true || true".format(filename=i))
+            cmd = ('chmod +x "/home/brainvisa/Desktop/{filename}" && '
+                   'dbus-launch gio set "/home/brainvisa/Desktop/{filename}" '
+                   'metadata::trusted true').format(filename=i)
+            vm.run_user(cmd)
     finally:
         shutil.rmtree(tmp)
 
@@ -294,10 +307,16 @@ def create_user_image(base_image,
     for d in temps:
         shutil.rmtree(d)
 
+    # Desktop icons must be validated manually. Therefore, automatic saving
+    # of the image is disabled until a solution is found.
+    print()
+    print('''Virtual machine is ready. Please activate desktop icons by
+right-clicking on them and selecting "allow launching". Then press return
+to save the OVA image.''')
+    input('Press <return> when ready to export VirtualBox machine.')
     vm.stop(verbose=verbose)
     vm.export(output=output, verbose=verbose)
-    vm.remove(delete=True, verbose=verbose)
-
+    # vm.remove(delete=True, verbose=verbose)
     return (vm.image_id, None)
 
 
