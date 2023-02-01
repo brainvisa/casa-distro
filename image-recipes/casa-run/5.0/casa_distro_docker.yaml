@@ -1,5 +1,0 @@
-image_sources:
-  - name: casa-run
-    tags:
-      - ubuntu-18.04
-    visibility: public

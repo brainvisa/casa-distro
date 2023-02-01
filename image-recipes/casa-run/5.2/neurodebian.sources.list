@@ -1,4 +1,0 @@
-deb http://neurodebian.g-node.org data main contrib non-free
-#deb-src http://neurodebian.g-node.org data main contrib non-free
-deb http://neurodebian.g-node.org focal main contrib non-free
-#deb-src http://neurodebian.g-node.org focal main contrib non-free
