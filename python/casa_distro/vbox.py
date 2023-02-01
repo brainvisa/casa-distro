@@ -155,7 +155,7 @@ def create_image(base, base_metadata,
             2)  Remove unneeded packages to minimize the system:
 
                     sudo apt update
-                    sudo apt install aptitude
+                    sudo apt install aptitude zerofree
                     # Mark unneeded packages as auto-installed with Aptitude
                     sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \\
                         -o APT::Autoremove::RecommendsImportant=0 autoremove
