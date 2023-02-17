@@ -192,22 +192,19 @@ def create_image(base, base_metadata,
             9) Add the keyboard selection widget to the bottom panel, and make
                sure to activate the English keyboard before exiting the VM.
 
-            10) Reboot the VM, hold Shift during the reboot to enter Rescue
-                mode, open a root shell, and run these commands to shrink the
-                image:
+            10) Shut down the VM.
 
-                systemctl rescue
-                systemctl stop systemd-journald
-                mount -o remount,ro /
-                zerofree -v /dev/sda1
+            11) Follow the instructions in the vm.compress_disk_image()
+                function in vbox.py to drastically reduce the size of the
+                resulting image.
 
-            11) Check and adjust the VM in VirualBox (enable 3D acceleration,
+            12) Check and adjust the VM in VirualBox (enable 3D acceleration,
                 enable RTC in UTC, check processors and memory)
 
-            12) restart the casa_distro_admin create_base_image command to
+            13) restart the casa_distro_admin create_base_image command to
                 export the VM to OVA format
 
-            13) You can manually remove the VM and its associated files from
+            14) You can manually remove the VM and its associated files from
                 VirtualBox.
             '''
         return (str(uuid.uuid4()), msg)
@@ -221,6 +218,7 @@ def create_image(base, base_metadata,
                      verbose=verbose,
                      gui=gui)
         vbox.stop(verbose=verbose)
+        vm.compress_disk_image()
         vbox.export(output=output, verbose=verbose)
         vbox.remove(delete=True, verbose=verbose)
 
@@ -315,6 +313,7 @@ right-clicking on them and selecting "allow launching". Then press return
 to save the OVA image.''')
     input('Press <return> when ready to export VirtualBox machine.')
     vm.stop(verbose=verbose)
+    vm.compress_disk_image()
     vm.export(output=output, verbose=verbose)
     # vm.remove(delete=True, verbose=verbose)
     return (vm.image_id, None)
@@ -602,6 +601,30 @@ class VBoxMachine:
             six.print_('Exporting', self.name, 'to', output,
                        file=verbose, flush=True)
         vbox_manage(['export', self.name, '-o', output, '--ovf20'])
+
+    def compress_disk_image(self):
+        # Maybe we could automate this whole process with VBoxManage commands,
+        # but that would be fragile and we do not run it often...
+        print()
+        print('''\
+The virtual machine is ready, but it contains a lot of wasted disk space
+used by deleted temporary files. Please follow these instructions to
+minimize the size of the resulting image:
+
+1. Set up a utility VM with the zerofree package installed, e.g. a casa-system
+   VM or a (l)ubuntu live ISO
+2. In the parameters of that VM, add the disk of {name} as a secondary hard
+   disk
+3. Boot the utility VM, and run this command:
+
+       zerofree -v /dev/<hard_drive_of_{name}>
+
+4. Shut down the utility VM.
+5. Remove the disk of {name} from the configuration of the utility VM
+
+When this is done, please press Return to save the OVA image.'''
+              .format(name=self.name))
+        input('Press <return> when ready to export VirtualBox machine.')
 
 
 def vbox_import_image(image, vbox_machine, verbose=None):

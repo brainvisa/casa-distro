@@ -112,9 +112,9 @@ generally_useful_packages=(
     wget
     xz-utils
     lxterminal
-    gpicview
+    lximage-qt
     vim
-    mousepad
+    featherpad
     nano
     openjdk-11-jre # java is used by some external tools (populse mri_conv...)
     openjdk-11-jre-headless
