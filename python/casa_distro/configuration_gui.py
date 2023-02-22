@@ -112,9 +112,32 @@ class InstallEditor(Qt.QDialog):
         self.distros.setSelectionMode(self.distros.ExtendedSelection)
         self.url_edit.editingFinished.connect(self.url_changed)
 
+        update_url = 'https://brainvisa.info/download/updates'
+        upd_grp = Qt.QGroupBox('install bugfix patches:')
+        self.upd_grp = upd_grp
+        layout.addWidget(upd_grp)
+        upd_grp_l = Qt.QVBoxLayout()
+        upd_grp.setLayout(upd_grp_l)
+        if 'read-only' in inst_type:
+            self.prereq_warn_upd = Qt.QLabel(
+                'Install from internal image must be checked\n'
+                'before updates can be installed')
+            upd_grp_l.addWidget(self.prereq_warn_upd)
+
+        self.upd_wid = Qt.QWidget()
+        upd_grp_l.addWidget(self.upd_wid)
+        self.upd_grp_l = upd_grp_l
+
+        lay = Qt.QVBoxLayout()
+        self.upd_wid.setLayout(lay)
+        self.upd_chb = Qt.QCheckBox('install new patches from %s' % update_url)
+        lay.addWidget(self.upd_chb)
+
         if 'read-only' in inst_type:
             self.dl_wid.hide()
             self.dl_grp.setEnabled(False)
+            self.upd_wid.hide()
+            self.upd_grp.setEnabled(False)
         else:
             self.update_distros()
 
@@ -129,6 +152,7 @@ class InstallEditor(Qt.QDialog):
 
         if hasattr(self, 'unpack_btn'):
             self.unpack_btn.toggled.connect(self.local_install_checked)
+        self.upd_chb.toggled.connect(self.install_updates)
         validation_btns.accepted.connect(self.accept)
         validation_btns.rejected.connect(self.reject)
         validation_btns.helpRequested.connect(self.help)
@@ -276,6 +300,23 @@ class InstallEditor(Qt.QDialog):
                 new_conf['distro'] = 'custom'
                 with open(self.conf_path, 'w') as f:
                     json.dump(new_conf, f, indent=4)
+
+    def install_updates(self, on):
+        if not on:
+            return
+
+        from . import patch_install
+        to_update = patch_install.list_updates()
+        if not to_update:
+            self.prereq_warn_upd = Qt.QLabel('No new updates available')
+            self.upd_grp_l.addWidget(self.prereq_warn_upd)
+        else:
+            print('updating the following files:', to_update)
+            patch_install.patch_install()
+
+            self.prereq_warn_upd = Qt.QLabel('Update done.')
+            self.upd_grp_l.addWidget(self.prereq_warn_upd)
+        self.upd_grp.setEnabled(False)
 
     def help(self):
         try:
