@@ -18,7 +18,7 @@ all_software = {
 default_software = {
     'spm12-standalone': None,
 }
-search_paths = ['/usr/local', '/i2bm/local']
+search_paths = ['/usr/local', '/drf/local', '/i2bm/local']
 
 
 def get_thirdparty_software(install_thirdparty='default'):

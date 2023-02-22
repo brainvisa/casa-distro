@@ -753,9 +753,9 @@ def create_user_image(
         from a JSON file. Other values are understood as a list of software
         ("spm12-standalone,freesurfer"). Each will be installed from their host
         system location into ``/usr/local`` on the container image. Software
-        location will be searched in a small search list (/usr/local, /i2bm/
-        local). If installed in another location, this location may be passed
-        after a ``=`` sign in the software name, ex:
+        location will be searched in a small search list (/usr/local,
+        /drf/local, /i2bm/local). If installed in another location, this
+        location may be passed after a ``=`` sign in the software name, ex:
         ``spm12-standalone=/opt/spm,freesurfer``.
         If a JSON file is used, then the file syntax is a dictionary, keys are
         thirdparty software names ("spm12-standalone"), and values are
