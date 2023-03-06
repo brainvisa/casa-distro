@@ -383,6 +383,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
                                          image_version=image_version,
                                          version=version,
                                          name=name):
+        compatible_run_images = []
         if image:
             if image == environment['image']:
                 to_update[image].append(environment)
@@ -391,7 +392,6 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
             to_update.setdefault(env_image, []).append(environment)
 
             # Check for update of run image associated with environment
-            compatible_run_images = []
             _, extension = osp.splitext(env_image)
             g = ('{}/'
                  'casa-run-{}*{}').format(
