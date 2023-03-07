@@ -13,6 +13,7 @@ builder = ImageBuilder('casa-run', base='casa-run-5.3.{extension}')
 BUILD_FILES = [
     'install_apt_dev_dependencies.sh',
     'install_pip_dev_dependencies.sh',
+    'install_other_dev_dependencies.sh',
     'install_casa_dev_components.sh',
 ]
 """List of files that are copied into /build and removed when done."""
@@ -54,6 +55,12 @@ def apt_dev_dependencies(base_dir, builder):
 def pip_dev_dependencies(base_dir, builder):
     """Run install_pip_dev_dependencies.sh."""
     builder.run_root('/build/install_pip_dev_dependencies.sh')
+
+
+@builder.step
+def other_dev_dependencies(base_dir, builder):
+    """Run install_other_dev_dependencies.sh."""
+    builder.run_root('/build/install_other_dev_dependencies.sh')
 
 
 @builder.step
