@@ -113,6 +113,40 @@ sudo make install
 cd ..
 rm -rf libminc
 
+
+# install draco lib (meshes compression lib)
+cd "$tmp"
+wget https://github.com/google/draco/archive/refs/tags/1.5.6.tar.gz
+tar xf 1.5.6.tar.gz
+rm -f 1.5.6.tar.gz
+wget https://github.com/gulrak/filesystem/archive/refs/tags/v1.5.14.tar.gz
+tar xf v1.5.14.tar.gz
+rm -f v1.5.14.tar.gz
+wget https://github.com/syoyo/tinygltf/archive/refs/tags/v2.8.3.tar.gz
+tar xf v2.8.3.tar.gz
+rm -f v2.8.3.tar.gz
+# install quick and dirty thirdparty deps
+mv filesystem-1.5.14/include draco-1.5.6/third_party/filesystem/
+mv tinygltf-2.8.3/*.h tinygltf-2.8.3/*.hpp draco-1.5.6/third_party/tinygltf/
+mkdir draco-build
+cd draco-build
+cmake -DCMAKE_CXX_FLAGS:STRING="-fPIC -DDRACO_ATTRIBUTE_VALUES_DEDUPLICATION_SUPPORTED=1 -DDRACO_ATTRIBUTE_INDICES_DEDUPLICATION_SUPPORTED=1" -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DCMAKE_BUILD_TYPE=Release -DDRACO_ANIMATION_ENCODING=ON -DDRACO_BACKWARDS_COMPATIBILITY=ON -DDRACO_DECODER_ATTRIBUTE_DEDUPL=ON -DDRACO_FAST=ON -DDRACO_GLTF_BITSTREAM=ON -DDRACO_IE_COMPATIBLE=ON -DDRACO_JS_GLUE=ON -DDRACO_MESH_COMPRESSION=ON -DDRACO_POINT_CLOUD_COMPRESSION=ON -DDRACO_PREDICTIVE_EDGEBREAKER=ON -DDRACO_STANDARD_EDGEBREAKER=ON -DDRACO_TESTS=OFF -DDRACO_TRANSCODER_SUPPORTED=ON -DDRACO_WASM=ON -DDRACO_EIGEN_PATH=/usr/include/eigen3 ../draco-1.5.6
+make -j$(nproc)
+sudo make install
+
+# needed for DarcoPy
+sudo pip3 install scikit-build
+
+# install DracoPy
+cd "$tmp"
+git clone --depth=1 -b decode_texture https://github.com/denisri/DracoPy.git
+cd DracoPy
+export CPPFLAGS="-I/usr/local/include -DDRACO_ATTRIBUTE_VALUES_DEDUPLICATION_SUPPORTED=1 -DDRACO_ATTRIBUTE_INDICES_DEDUPLICATION_SUPPORTED=1"
+export LDFLAGS="-L/usr/local/lib -ldraco"
+python3 setup.py build
+sudo python3 setup.py install --prefix /usr/local
+
+
 ###############################################################################
 # Post-install configuration
 ###############################################################################
