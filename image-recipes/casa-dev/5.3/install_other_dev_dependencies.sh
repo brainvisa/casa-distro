@@ -52,3 +52,4 @@ ln -s ../node/bin/* .
 rm $tmp/node-v18.14.2-linux-x64.tar.xz
 
 npm install -g @gltf-transform/core @gltf-transform/extensions @gltf-transform/functions @gltf-transform/cli
+ln -s ../node/bin/gltf-transform /usr/local/bin/
