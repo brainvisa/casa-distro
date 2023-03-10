@@ -446,7 +446,7 @@ def update_image(image, new_image_url, config_files=[], restart=False,
     new_name = osp.basename(new_image_url)
 
     # Download the json file first
-    new_json = '{}/{}.json'.format(target_dir, new_name)
+    new_json = osp.join(target_dir, '{}.json'.format(new_name))
     downloader.download_file(new_image_url + '.json',
                              new_json,
                              allow_continue=False,
@@ -455,9 +455,7 @@ def update_image(image, new_image_url, config_files=[], restart=False,
         new_metadata = json.load(f)
 
     # Then download the image file
-    new_image = '{}/{}'.format(
-        target_dir, new_name
-    )
+    new_image = osp.join(target_dir, '{}'.format(new_name))
     downloader.download_file(new_image_url,
                              new_image,
                              allow_continue=not restart,

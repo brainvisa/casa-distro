@@ -61,4 +61,7 @@ build_dependencies=(
     # Build dependencies of libminc
     libhdf5-dev
     libnetcdf-dev
+
+    # Build dependencies for draco
+    libeigen3-dev
 )
