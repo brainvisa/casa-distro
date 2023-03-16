@@ -250,7 +250,7 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
                             'casa_distro.json'), 'w'),
               indent=4, separators=(',', ': '))
 
-    prepare_environment_homedir(osp.join(setup_dir, 'home'))
+    prepare_environment_homedir(osp.join(setup_dir, 'home'), environment)
     print('The software is now setup in a new user environment.')
     print('Now you can add in the PATH environment variable of your host '
           'system the bin/ subdirectory of the install directory. You may add '
@@ -445,7 +445,7 @@ used anymore, you may as well delete it if you wish.
                             'casa_distro.json'), 'w'),
               indent=4, separators=(',', ': '))
 
-    prepare_environment_homedir(osp.join(setup_dir, 'home'))
+    prepare_environment_homedir(osp.join(setup_dir, 'home'), environment)
 
     svn_secret = osp.join(setup_dir, 'conf', 'svn.secret')
     with open(svn_secret, 'w') as f:
