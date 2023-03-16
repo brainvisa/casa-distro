@@ -548,7 +548,26 @@ def prepare_user_config():
               .format(user_config_file))
 
 
-def prepare_environment_homedir(casa_home_host_path):
+def mounted_in_container(path, config):
+    """Test if a given host path is identically available in the container.
+
+    This function returns True only if the given path is available on the
+    container under the same path as on the host.
+    """
+    identical_mounts = {
+        os.path.normpath(container_path)
+        for container_path, host_path in config.get('mounts', {}).items()
+        if os.path.normpath(container_path) == os.path.normpath(host_path)
+    }
+    split_path = os.path.normpath(path).split(os.sep)
+    for n in range(2, len(split_path)):
+        path_prefix = os.sep.join(split_path[:n])
+        if path_prefix in identical_mounts:
+            return True
+    return False
+
+
+def prepare_environment_homedir(casa_home_host_path, config):
     """Create or complete a home directory for an environment.
 
     This function has two roles:
@@ -562,6 +581,12 @@ def prepare_environment_homedir(casa_home_host_path):
     """
     if not osp.exists(casa_home_host_path):
         os.makedirs(casa_home_host_path)
+        host_home_dir = os.path.abspath(os.path.expanduser('~'))
+        if mounted_in_container(host_home_dir, config):
+            host_home_dir_from_container = host_home_dir
+        else:
+            host_home_dir_from_container = osp.join(
+                '/host', host_home_dir.lstrip(os.sep))
         # Create symbolic links to config files/directories in CASA_HOST_HOME
         for config_basename in ('.anatomist', '.brainvisa',
                                 '.soma-workflow', '.soma-workflow.cfg'):
@@ -569,10 +594,7 @@ def prepare_environment_homedir(casa_home_host_path):
                                              config_basename)
             # Path to the host home directory seen from within the container
             host_config_path = osp.join(
-                '/host',
-                osp.abspath(
-                    os.path.join(os.path.expanduser('~'), config_basename)
-                ).lstrip(os.sep)
+                host_home_dir_from_container, config_basename
             )
             if not osp.lexists(container_config_path):
                 os.symlink(host_config_path, container_config_path)
@@ -658,7 +680,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
 
     # Prepare the home directory of the container (create it if needed, and
     # ensure that necessary files are present.)
-    prepare_environment_homedir(host_path_of_container_home)
+    prepare_environment_homedir(host_path_of_container_home, config)
     prepare_user_config()
 
     container_type = config.get('container_type')
