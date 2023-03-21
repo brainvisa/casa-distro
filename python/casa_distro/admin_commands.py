@@ -18,7 +18,7 @@ import zipfile
 
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
-                                  publish_url)
+                                  publish_url, default_download_url)
 from casa_distro.environment import (BBIDaily,
                                      casa_distro_directory,
                                      iter_environments,
@@ -1214,7 +1214,8 @@ def bbi_daily(distro=None, branch=None, system=None,
             success = bbi_daily.update_base_images(dev_images)
             # Then, download the corresponding run image (iterate on JSONs on
             # the server until we find the run image with the correct uuid)
-            run_images = set(get_run_base_of_dev_image(image)
+            run_images = set(get_run_base_of_dev_image(
+                image, url=default_download_url)
                              for image in dev_images)
             success = bbi_daily.update_base_images(run_images)
 
