@@ -494,7 +494,8 @@ class VBoxMachine:
         else:
             vbox_manage(['guestcontrol', '--username', 'root',
                          '--password', self.root_password, self.name, 'copyto',
-                         '--target-directory', self.tmp_dir, source_file])
+                         '--target-directory', self.tmp_dir + os.sep,
+                         source_file])
             f = os.path.basename(source_file)
             self.run_root('cp --no-preserve=mode "{tmp}/{f}" "{dest}/{f}" '
                           '&& rm "{tmp}/{f}"'.format(tmp=self.tmp_dir,
@@ -513,6 +514,8 @@ class VBoxMachine:
             tmp = tempfile.mkdtemp()
             dir, base = osp.split(source)
             tar = osp.join(tmp, base + '.tar')
+            if osp.basename(dest_dir) == '':
+                dest_dir = osp.dirname(dest_dir)  # strip trailing slashes
             dest_tar = osp.join(dest_dir, base + '.tar')
             try:
                 subprocess.call(['ls', '-l', tmp])
@@ -540,7 +543,7 @@ class VBoxMachine:
         else:
             vbox_manage(['guestcontrol', '--username', self.user,
                         '--password', self.user_password, self.name,
-                         'copyto', '--target-directory', dest_dir,
+                         'copyto', '--target-directory', dest_dir + os.sep,
                          source])
 
     def symlink(self, target, link_name):
