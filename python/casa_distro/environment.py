@@ -16,6 +16,7 @@ import stat
 import subprocess
 import sys
 import time
+import tempfile
 
 from casa_distro import six
 from casa_distro.six.moves import shlex_quote
@@ -383,15 +384,53 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
             yield config
 
 
-def get_run_base_of_dev_image(image):
+def get_run_base_of_dev_image(image, url=None):
     """
     Get the run image associated to a given dev image
     """
-    # FIXME: this could yield a mismatch between casa-run and casa-dev
-    # versions. We should iterate on JSONs on the server until we find the run
-    # image with the correct uuid)
-    assert '-dev-' in image
-    return image.replace('-dev-', '-run-', 1)
+    if url is not None:
+        base = osp.basename(image)
+        m = image_re.match(base)
+        if m:
+            with open(image + '.json') as f:
+                meta = json.load(f)
+            run_id = meta.get('origin_run')
+            version = m.group('version')
+            extension = m.group('extension')
+
+            tmpi = tempfile.mkstemp(prefix='casa_distro', suffix='.json')
+            os.close(tmpi[0])
+            tmp = tmpi[1]
+            try:
+                for file in url_listdir(url):
+                    if not file.endswith('.' + extension):
+                        continue
+                    other_base = osp.basename(file)
+                    m = image_re.match(other_base)
+                    if (m and
+                            m.group('version') == version and
+                            m.group('extension') == extension):  # noqa: E129
+                        other_json = osp.join(url, file + '.json')
+                        downloader.download_file(
+                            other_json,
+                            tmp,
+                            allow_continue=False,
+                            use_tmp=False,
+                            method='internal')
+                        with open(tmp) as f:
+                            im_meta = json.load(f)
+                        other_id = im_meta.get('image_id')
+                        if other_id is not None and other_id == run_id:
+                            return file
+            finally:
+                os.unlink(tmp)
+
+    if url is None:
+        # FIXME: this could yield a mismatch between casa-run and casa-dev
+        # versions. We should iterate on JSONs on the server until we find the
+        # run image with the correct uuid)
+        assert '-dev-' in image
+        return image.replace('-dev-', '-run-', 1)
 
 
 def find_image_update_url(image, url):
