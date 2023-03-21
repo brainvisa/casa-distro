@@ -48,8 +48,8 @@ ${PIP_INSTALL} dipy
 ${PIP_INSTALL} pycryptodome
 
 # Runtime dependencies of Morphologist
-${PIP_INSTALL} torch
-${PIP_INSTALL} torch-vision
+${PIP_INSTALL} torch --extra-index-url https://download.pytorch.org/whl/cu116
+${PIP_INSTALL} torch-vision --extra-index-url https://download.pytorch.org/whl/cu116
 
 # Runtime dependency of Constellation
 ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
