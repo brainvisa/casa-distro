@@ -390,6 +390,7 @@ def get_run_base_of_dev_image(image, url=None):
     """
     if url is not None:
         base = osp.basename(image)
+        dirname = osp.dirname(image)
         m = image_re.match(base)
         if m:
             with open(image + '.json') as f:
@@ -421,7 +422,7 @@ def get_run_base_of_dev_image(image, url=None):
                             im_meta = json.load(f)
                         other_id = im_meta.get('image_id')
                         if other_id is not None and other_id == run_id:
-                            return file
+                            return osp.join(dirname, file)
             finally:
                 os.unlink(tmp)
 
