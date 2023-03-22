@@ -67,7 +67,8 @@ $SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
 # files. (use 'apt-key export' to write neurodebian-key.gpg).
 $SUDO cp /build/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
-$SUDO apt-key add /build/neurodebian-key.gpg
+$SUDO cp /build/neurodebian-key.gpg \
+      /etc/apt/trusted.gpg.d/neurodebian.asc
 
 
 ###############################################################################
@@ -111,8 +112,10 @@ generally_useful_packages=(
     wget
     xz-utils
     lxterminal
+    lximage-qt
     gpicview
     vim
+    featherpad
     mousepad
     nano
     openjdk-11-jre # java is used by some external tools (populse mri_conv...)
@@ -242,12 +245,15 @@ brainvisa_shared_library_dependencies=(
     libdcmtk16
     libgdk-pixbuf-2.0-0
     libgfortran5
+    libglapi-mesa
+    libgl1
     libglib2.0-0
     libglu1-mesa
     libgomp1
+    libhdf5-103-1
     libjpeg-turbo8
     libjxr0
-    libminc2-5.2.0
+    libllvm14
     libnetcdf19
     libopenjp2-7
     libpng16-16
@@ -283,14 +289,10 @@ brainvisa_shared_library_dependencies=(
     libstdc++6
     libsvm3
     libtiff5
+    libx11-6
+    libxext6
     libxml2
-    redis
-    libqt6multimedia6
-    libqt6webenginecore6
-    libqt6core5compat6
-    gstreamer1.0-qt5
-    gstreamer1.0-plugins-good
-    gstreamer1.0-pulseaudio
+    libzstd1
 )
 
 # Programs and data that BrainVISA depends on at runtime
@@ -298,6 +300,13 @@ brainvisa_misc_runtime_dependencies=(
     lftp
     sqlite3
     xbitmaps
+    redis
+    libqt6multimedia6
+    libqt6webenginecore6
+    libqt6core5compat6
+    gstreamer1.0-qt5
+    gstreamer1.0-plugins-good
+    gstreamer1.0-pulseaudio
 )
 
 # Other dependencies of BrainVISA (please indicate the installation reason for
@@ -377,3 +386,18 @@ $SUDO mount devpts /dev/pts -t devpts || true
 # see: https://afni.nimh.nih.gov/pub/dist/doc/htmldoc/background_install/install_instructs/steps_linux_ubuntu20.html#slow-setup-install-prerequisite-packages
 
 $SUDO ln -s /usr/lib/x86_64-linux-gnu/libgsl.so.27 /usr/lib/x86_64-linux-gnu/libgsl.so.19
+
+###############################################################################
+# Patch Qt libs to remove ABI version checks
+###############################################################################
+
+# This is needed to run Qt from this container on a host which is using an
+# older kernel. The ABI tag forbids Qt libs to run using an old kernel, which
+# is most of the time overkill. As we don't know which host will run it (this
+# is the principle of virtualization) we rather remove this test.
+# Note: the risk is that the kernel actually lacks some features and it
+# may crash at runtime at an unexpected moment...
+# Most (all?) other system libraries apparently don't use this ABI tag, since
+# they do work on older kernels.
+
+$SUDO sh -c 'for l in /usr/lib/x86_64-linux-gnu/libQt*.so.?; do strip --remove-section=.note.ABI-tag $l; done'

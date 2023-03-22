@@ -20,6 +20,15 @@ build_dependencies=(
     #
     # cmake
 
+    # Build dependencies of MESA's libGL
+    byacc
+    flex
+    libxcb-randr0-dev
+    libxrandr-dev
+    llvm-dev
+    meson
+    python3-mako
+
     # Build dependencies of MIRCen's fork of openslide
     autoconf
     automake
@@ -52,4 +61,7 @@ build_dependencies=(
     # Build dependencies of libminc
     libhdf5-dev
     libnetcdf-dev
+
+    # Build dependencies for draco
+    libeigen3-dev
 )

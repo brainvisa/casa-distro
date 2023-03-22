@@ -53,6 +53,41 @@ tmp=$(mktemp -d)
 # sudo make install
 
 
+# Install a software-rendering-only libGL to work around compatibility issues
+# e.g. with X2Go, see https://github.com/brainvisa/casa-distro/issues/321.
+# This corresponds to the opengl=software option of 'bv'.
+MESA_VERSION=22.0.5  # same version as distributed with Ubuntu 22.04
+MESA_FILENAME=mesa-${MESA_VERSION}.tar.xz
+MESA_SHA256SUM=5ee2dc06eff19e19b2867f12eb0db0905c9691c07974f6253f2f1443df4c7a35
+cd "$tmp"
+wget "https://archive.mesa3d.org/$MESA_FILENAME"
+if ! [ "$(sha256sum "$MESA_FILENAME")" \
+           = "$MESA_SHA256SUM  $MESA_FILENAME" ]; then
+    echo "ERROR: checksum of $MESA_FILENAME does not match." 2>&1
+    exit 1
+fi
+tar -Jxf "$MESA_FILENAME"
+cd mesa-"$MESA_VERSION"
+mkdir build
+cd build
+meson \
+    -D glx=xlib \
+    -D gallium-drivers=swrast \
+    -D platforms=x11 \
+    -D dri3=false \
+    -D dri-drivers= \
+    -D vulkan-drivers= \
+    -D buildtype=release
+ninja
+mkdir /usr/local/lib/mesa
+cp -d src/gallium/targets/libgl-xlib/libGL.so \
+   src/gallium/targets/libgl-xlib/libGL.so.1 \
+   src/gallium/targets/libgl-xlib/libGL.so.1.5.0 \
+   /usr/local/lib/mesa
+cd ../..
+rm -rf mesa-"$MESA_VERSION"
+
+
 # MIRCen's fork of openslide with support for CZI format
 #
 cd "$tmp"
@@ -66,7 +101,6 @@ sudo make install
 # reinstall an older sip and PyQt5 from sources because of a bug in sip 4.19.25
 # and virtual C++ inheritance
 PY=3.10 PY_S=3.10 sh /build/build_sip_pyqt.sh
-# PY=3.10 PY_S=3.10 sh /build/build_sip_pyqt6.sh
 
 # reinstall libminc 4.0.0 because newer versions can't properly read freesurfer
 # .mgz files
@@ -78,6 +112,40 @@ make -j$(nproc)
 sudo make install
 cd ..
 rm -rf libminc
+
+
+# install draco lib (meshes compression lib)
+cd "$tmp"
+wget https://github.com/google/draco/archive/refs/tags/1.5.6.tar.gz
+tar xf 1.5.6.tar.gz
+rm -f 1.5.6.tar.gz
+wget https://github.com/gulrak/filesystem/archive/refs/tags/v1.5.14.tar.gz
+tar xf v1.5.14.tar.gz
+rm -f v1.5.14.tar.gz
+wget https://github.com/syoyo/tinygltf/archive/refs/tags/v2.8.3.tar.gz
+tar xf v2.8.3.tar.gz
+rm -f v2.8.3.tar.gz
+# install quick and dirty thirdparty deps
+mv filesystem-1.5.14/include draco-1.5.6/third_party/filesystem/
+mv tinygltf-2.8.3/*.h tinygltf-2.8.3/*.hpp draco-1.5.6/third_party/tinygltf/
+mkdir draco-build
+cd draco-build
+cmake -DCMAKE_CXX_FLAGS:STRING="-fPIC -DDRACO_ATTRIBUTE_VALUES_DEDUPLICATION_SUPPORTED=1 -DDRACO_ATTRIBUTE_INDICES_DEDUPLICATION_SUPPORTED=1" -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DCMAKE_BUILD_TYPE=Release -DDRACO_ANIMATION_ENCODING=ON -DDRACO_BACKWARDS_COMPATIBILITY=ON -DDRACO_DECODER_ATTRIBUTE_DEDUPL=ON -DDRACO_FAST=ON -DDRACO_GLTF_BITSTREAM=ON -DDRACO_IE_COMPATIBLE=ON -DDRACO_JS_GLUE=ON -DDRACO_MESH_COMPRESSION=ON -DDRACO_POINT_CLOUD_COMPRESSION=ON -DDRACO_PREDICTIVE_EDGEBREAKER=ON -DDRACO_STANDARD_EDGEBREAKER=ON -DDRACO_TESTS=OFF -DDRACO_TRANSCODER_SUPPORTED=ON -DDRACO_WASM=ON -DDRACO_EIGEN_PATH=/usr/include/eigen3 ../draco-1.5.6
+make -j$(nproc)
+sudo make install
+
+# needed for DarcoPy
+sudo pip3 install scikit-build
+
+# install DracoPy
+cd "$tmp"
+git clone --depth=1 -b decode_texture https://github.com/denisri/DracoPy.git
+cd DracoPy
+export CPPFLAGS="-I/usr/local/include -DDRACO_ATTRIBUTE_VALUES_DEDUPLICATION_SUPPORTED=1 -DDRACO_ATTRIBUTE_INDICES_DEDUPLICATION_SUPPORTED=1"
+export LDFLAGS="-L/usr/local/lib -ldraco"
+python3 setup.py build
+sudo python3 setup.py install --prefix /usr/local
+
 
 ###############################################################################
 # Post-install configuration

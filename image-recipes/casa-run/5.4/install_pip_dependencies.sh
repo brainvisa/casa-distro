@@ -48,8 +48,8 @@ ${PIP_INSTALL} dipy
 ${PIP_INSTALL} pycryptodome
 
 # Runtime dependencies of Morphologist
-${PIP_INSTALL} torch
-${PIP_INSTALL} torch-vision
+${PIP_INSTALL} torch --extra-index-url https://download.pytorch.org/whl/cu116
+${PIP_INSTALL} torch-vision --extra-index-url https://download.pytorch.org/whl/cu116
 
 # Runtime dependency of Constellation
 ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar.gz
@@ -77,6 +77,10 @@ ${PIP_INSTALL} pip-search
 
 # used by fold dico tools (deep_folding etc)
 $PIP3 install 'pqdm' 'GitPython'
+
+# used for GLTF, GLB 3D formats support
+# (+ DracoPy which will be compiled in install_compiled_dependencies.sh)
+$PIP3 install "webp" "pygltflib"
 
 # fix tornado for python 3.10
 $SUDO sed -i s/collections.MutableMapping/collections.abc.MutableMapping/ /usr/local/lib/python3.10/dist-packages/tornado/httputil.py

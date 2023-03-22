@@ -44,6 +44,7 @@ def mount_points(base_dir, builder):
 @builder.step
 def copy_build_files(base_dir, builder):
     """Copy files that are necessary for building the image."""
+    builder.run_root('if [ ! -e /build ]; then mkdir /build; fi')
     for f in BUILD_FILES:
         # /build is used instead of /tmp here because /tmp can be bind-mounted
         # during build on Singularity (and the copied files are hidden by this
@@ -64,9 +65,6 @@ def copy_build_files(base_dir, builder):
     builder.copy_root(os.path.join(base_dir, 'entrypoint'),
                       '/usr/local/bin/')
     builder.run_root('chmod a+rx /usr/local/bin/entrypoint')
-
-    # copy a software-only mesa libGL in /usr/local/lib # TODO
-    # builder.copy_root(os.path.join(base_dir, 'mesa'), '/usr/local/lib/')
 
 
 @builder.step
