@@ -454,7 +454,7 @@ def find_image_update_url(image, url):
                     other_patch = int(m.group('patch') or 0)  # noqa: E117
                     if other_patch > patch and other_patch > new_patch:
                         new_patch = other_patch
-        if new_patch > patch:
+        if new_patch > patch or not osp.exists(image):
             return '{}/{}-{}-{}.{}'.format(
                 url, name, version, new_patch, extension
             )

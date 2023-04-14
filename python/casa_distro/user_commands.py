@@ -372,8 +372,6 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
 
     to_update = {}
     if image:
-        if not osp.exists(image):
-            raise ValueError('No such image file: {}'.format(image))
         to_update[image] = []
     for environment in iter_environments(base_directory,
                                          distro=distro,
