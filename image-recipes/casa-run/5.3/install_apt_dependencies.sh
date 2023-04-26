@@ -201,7 +201,6 @@ brainvisa_python_runtime_dependencies=(
     python3-matplotlib
     python3-scipy
     python3-skimage
-    python3-sklearn
 
     python3-sip
     python3-pyqt5
