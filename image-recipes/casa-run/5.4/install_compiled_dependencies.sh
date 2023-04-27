@@ -139,12 +139,17 @@ sudo pip3 install scikit-build
 
 # install DracoPy
 cd "$tmp"
-git clone --depth=1 -b decode_texture https://github.com/denisri/DracoPy.git
-cd DracoPy
+# git clone --depth=1 -b decode_texture https://github.com/denisri/DracoPy.git
+wget https://github.com/seung-lab/DracoPy/archive/refs/tags/1.3.0.tar.gz
+tar xf 1.3.0.tar.gz
+rm -f 1.3.0.tar.gz
+cd DracoPy-1.3.0
 export CPPFLAGS="-I/usr/local/include -DDRACO_ATTRIBUTE_VALUES_DEDUPLICATION_SUPPORTED=1 -DDRACO_ATTRIBUTE_INDICES_DEDUPLICATION_SUPPORTED=1"
 export LDFLAGS="-L/usr/local/lib -ldraco"
 python3 setup.py build
 sudo python3 setup.py install --prefix /usr/local
+cd ..
+rm -rf DracoPy-1.3.0
 
 
 ###############################################################################
