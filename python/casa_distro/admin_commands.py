@@ -1211,13 +1211,15 @@ def bbi_daily(distro=None, branch=None, system=None,
         if update_base_images:
             # First, update dev images
             dev_images = set(config['image'] for config in dev_configs)
-            success = bbi_daily.update_base_images(dev_images)
             # Then, download the corresponding run image (iterate on JSONs on
             # the server until we find the run image with the correct uuid)
+            # (we must find these images before updating dev images because
+            # they may have been removed after that)
             run_images = set(get_run_base_of_dev_image(
                 image, url=default_download_url)
                              for image in dev_images)
-            success = bbi_daily.update_base_images(run_images)
+            success = bbi_daily.update_base_images(dev_images)
+            success &= bbi_daily.update_base_images(run_images)
 
             if success:
                 successful_tasks.append('update_base_images')
