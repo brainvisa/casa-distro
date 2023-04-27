@@ -518,7 +518,7 @@ def update_image(image, new_image_url, config_files=[], restart=False,
                       indent=4, separators=(',', ': '))
 
     # Finally remove old image
-    if cleanup:
+    if cleanup and osp.abspath(image) != osp.abspath(new_image):
         if osp.exists(image):
             os.remove(image)
         if osp.exists(image + '.json'):
