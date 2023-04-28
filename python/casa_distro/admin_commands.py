@@ -1298,7 +1298,8 @@ def bbi_daily(distro=None, branch=None, system=None,
                     continue
 
             # Reload the full user config from the installed user environment
-            user_config = select_environment(user_config['directory'])
+            user_config = select_environment(
+                base_directory, directory=user_config['directory'])
 
             if user_tests:
                 successful, failed = bbi_daily.tests(user_config, dev_config)
