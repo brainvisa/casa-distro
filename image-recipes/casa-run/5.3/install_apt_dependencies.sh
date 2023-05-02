@@ -82,7 +82,7 @@ $SUDO apt-get -o Acquire::Retries=3 update
 fsl_runtime_dependencies=(
     bc
     dc
-    libopenblas-base
+    libopenblas0
     tcsh
 )
 
