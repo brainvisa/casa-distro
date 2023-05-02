@@ -87,6 +87,8 @@ fsl_runtime_dependencies=(
 
 # Runtime dependencies of FreeSurfer
 freesurfer_runtime_dependencies=(
+    perl
+    tcl
     tcsh
 )
 
