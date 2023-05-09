@@ -198,7 +198,7 @@ brainvisa_python_runtime_dependencies=(
     # python3-dipy  # not packaged in APT -> use pip
     python3-fastcluster
     python3-h5py
-    python3-matplotlib
+    # python3-matplotlib # installed by pip until bug fixed https://github.com/matplotlib/matplotlib/issues/21688
     python3-scipy
     python3-skimage
 
