@@ -47,6 +47,9 @@ ${PIP_INSTALL} dipy
 # Runtime dependencies of soma-base
 ${PIP_INSTALL} pycryptodome
 
+# Installation by pip instead of apt until bug fixed: https://github.com/matplotlib/matplotlib/issues/21688
+${PIP_INSTALL} matplotlib==3.4.3
+
 # Runtime dependencies of Morphologist
 ${PIP_INSTALL} torch --extra-index-url https://download.pytorch.org/whl/cu116
 ${PIP_INSTALL} torch-vision --extra-index-url https://download.pytorch.org/whl/cu116
