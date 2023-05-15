@@ -1,0 +1,313 @@
+#! /bin/bash
+
+#
+# Setup run dependencies with conda
+#
+
+set -x
+set -e
+
+conda=/conda/bin/conda
+
+build_dependencies=(
+    # General build dependencies (notably useful for pip-compiled packages)
+    gcc
+    gxx
+    git
+    cmake
+    make
+    patch
+    pkg-config
+
+    # Build dependencies of MESA's libGL
+ #   #! byacc
+ #   flex
+ #   #! was libxcb-randr0-dev
+ #   libxrandr-devel
+ #   llvmdev #? was llvm-dev
+ #   meson
+ #   mako
+    mesa
+
+    # Build dependencies of MIRCen's fork of openslide
+    autoconf
+    automake
+    libtool
+    pkg-config  # needed for autoreconf
+    openjpeg #? was libopenjp2-7-dev
+    libtiff #? was libtiff-dev
+    cairo #? was libcairo2-dev
+    gdk-pixbuf #? was libgdk-pixbuf2.0-dev
+    glib #? was libglib2.0-dev
+    libxml2 #? was libxml2-dev
+    jxrlib #? was libjxr-dev
+
+
+    # Build dependencies of SIP/PyQt
+#    libqt5svg5-dev  # qtconsole needs PyQt5.QtSvg
+#    libqt5opengl5-dev
+#    qttools5-dev
+#    qtmultimedia5-dev
+#    libqt5webchannel5-dev
+#    libqt5webkit5-dev
+#    libqt5webview5-dev
+#    libqt5x11extras5-dev
+#    libqt5xmlpatterns5-dev
+#    qtwebengine5-dev  # for PyQt
+
+    # Build dependencies of libminc
+    hdf5 #? was libhdf5-dev
+    libnetcdf #? was libnetcdf-dev
+
+    # Build dependencies for draco
+    draco
+#    eigen #? was libeigen3-dev
+
+    pyqt
+)
+
+# Runtime dependencies of FSL
+fsl_runtime_dependencies=(
+    bc
+    #! dc
+    libblas #? was libopenblas-base
+    tcsh
+)
+
+# Runtime dependencies of MATLAB
+matlab_runtime_dependencies=(
+    lsb-release #? was lsb-core
+    #! libxext6
+    #! libxt6
+    #! libxmu6
+)
+
+# Generally useful packages
+generally_useful_packages=(
+    ca-certificates
+    curl
+    file
+    ipython
+    notebook #? was jupyter-notebook  # for interactive Python use
+    #! less
+    lsb-release
+    setuptools  # needed for most source installs with python3-pip
+    #! ssh-client  # notably useful for Git repositories over SSH
+    #! sudo
+    tree
+    unzip
+    #! wget
+    xz #? was xz-utils
+    #! lxterminal
+    #! lximage-qt
+    vim
+    #! featherpad
+    nano
+    openjdk #? was openjdk-11-jre # java is used by some external tools (populse mri_conv...)
+    #! openjdk-11-jre-headless
+    #! jarwrapper
+    #! was java-common
+    #! java-wrappers
+    font-ttf-noto-emoji #? was fonts-noto-color-emoji
+    #! udev
+)
+
+# Dependencies of headless Anatomist
+headless_anatomist_dependencies=(
+    #! mesa-utils
+    xorg-libx11 #? was x11-utils
+    # xvfb
+)
+
+$conda install -y ${build_dependencies[@]} ${fsl_runtime_dependencies[@]} ${matlab_runtime_dependencies[@]} ${generally_useful_packages[@]} ${headless_anatomist_dependencies[@]}
+
+export PATH="/conda/bin:$PATH"
+export LD_LIBRARY_PATH="/conda/lib:$LD_LIBRARY_PATH"
+
+# MIRCen's fork of openslide with support for CZI format
+#
+tmp=$(mktemp -d)
+
+cd "$tmp"
+wget https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.0.tar.gz
+tar xf v2.5.0.tar.gz
+cd openjpeg-2.5.0
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release "-DCMAKE_INSTALL_PREFIX=/conda"
+make
+make install
+cp libopenjp2.pc /conda/lib/pkgconfig/
+
+cd "$tmp"
+git clone --depth=1 https://github.com/MIRCen/openslide.git
+cd openslide
+autoreconf --install
+./configure --prefix="/conda"
+make -j$(nproc)
+make install
+
+# reinstall libminc 4.0.0 because newer versions can't properly read freesurfer
+# .mgz files
+cd "$tmp"
+git clone https://github.com/BIC-MNI/libminc.git --single-branch --branch libminc-2-3-00
+cd libminc
+cmake . -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DLIBMINC_BUILD_SHARED_LIBS=ON -DLIBMINC_MINC1_SUPPORT=ON "-DCMAKE_INSTALL_PREFIX=/conda"
+make -j$(nproc)
+make install
+cd ..
+rm -rf libminc
+
+rm -Rf "$tmp"
+
+
+pip_installed_dependencies=(
+    'pydantic>=1.9'
+    'redis-py>=4.2'
+    nipype
+    dipy
+    pycryptodome
+    'matplotlib==3.4.3'
+)
+
+pip_packages_runtime_dependencies=(
+    click  # dependency of nipype
+    isodate  # dependency of nipype
+    prov  # dependency of nipype
+    simplejson  # dependency of nipype
+    tqdm  # dependency of dipy
+)
+
+# Python packages needed at runtime by BrainVISA
+brainvisa_python_runtime_dependencies=(
+    #! python-is-python3
+
+    # python3-crypto  # seems obsolete, not longer available
+    cryptography  # needed by populse_mia
+    html2text
+    #! python3-mysqldb
+    openpyxl
+    paramiko
+    pillow #? was python3-pil  # used in anatomist, morphologist, nuclear_imaging, snapbase
+    requests
+    six
+    sqlalchemy
+    traits
+    xmltodict
+    yaml
+    joblib
+    configobj
+    mpi4py
+    nibabel
+    pyparsing
+    pydot
+    pydicom
+
+    cython
+    xlrd
+    xlwt
+    pandas
+    lark
+
+    # The following dependencies are installed with pip for various reasons,
+    # see install_pip_dependencies.sh.
+    #
+    # TODO: when upgrading the base system (i.e. switching to Ubuntu 20.04),
+    # check that they work when installed with apt.
+    #
+    pyzmq
+    ipython
+    #! python3-jupyter-client
+    qtconsole #? was python3-qtconsole
+    nbsphinx
+    sphinx-gallery
+
+    pkgconfig  # TODO: check if necessary for h5py installation
+    numpy
+    # python3-dipy  # not packaged in APT -> use pip
+    fastcluster
+    h5py
+    scipy
+    scikit-image #? was python3-skimage
+
+    pyqt
+
+    # python3-sip
+    # python3-pyqt5
+    # python3-pyqt5.qtmultimedia
+    # python3-pyqt5.qtopengl
+    # python3-pyqt5.qtsvg
+    # python3-pyqt5.qtwebkit
+    # python3-pyqt5.qtsql
+    # python3-pyqt5.qtwebsockets
+    # python3-pyqt5.qtxmlpatterns
+
+    pyopengl #? was python3-opengl
+
+    plotly
+    pcl
+
+    celery # used by Capsul v3
+
+    pycryptodome
+
+#    python3-torch  # will be installed via pip to get cuda support
+#    python3-torchvision
+)
+
+brainvisa_shared_library_dependencies=(
+    cairo-devel-cos6-x86_64 #? was libcairo2
+    #! libdcmtk16
+    gdk-pixbuf2-devel-cos6-x86_64 #? was libgdk-pixbuf-2.0-0
+    libgfortran5
+    libglapi-mesa
+    libgl1
+    libglib2.0-0
+    libglu1-mesa
+    libgomp1
+    libhdf5-103-1
+    libjpeg-turbo8
+    libjxr0
+    libllvm14
+    libnetcdf19
+    libopenjp2-7
+    libpng16-16
+    libpython3.10
+    libqt5core5a
+    libqt5dbus5
+    libqt5designer5
+    libqt5gui5
+    libqt5help5
+    libqt5multimedia5
+    libqt5multimediawidgets5
+    libqt5network5
+    libqt5opengl5
+    libqt5positioning5
+    libqt5printsupport5
+    libqt5qml5
+    libqt5quick5
+    libqt5quickwidgets5
+    libqt5sql5
+    libqt5svg5
+    libqt5test5
+    libqt5webchannel5
+    libqt5webengine5
+    libqt5webenginecore5
+    libqt5webenginewidgets5
+    libqt5webkit5
+    libqt5widgets5
+    libqt5x11extras5
+    libqt5xml5
+    libqt5xmlpatterns5
+    libqwt-qt5-6
+    libsigc++-2.0-0v5
+    libstdc++6
+    libsvm3
+    libtiff5
+    libx11-6
+    libxext6
+    libxml2
+    libzstd1
+)
+
+"$conda" install -y ${pip_installed_dependencies[@]} ${pip_packages_runtime_dependencies[@]} ${brainvisa_python_runtime_dependencies[@]}

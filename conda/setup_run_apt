@@ -1,0 +1,10 @@
+#! /bin/bash
+
+#
+# Setup run dependencies with apt
+#
+
+set -x
+set -e
+
+apt install -y wget build-essential distro-info-data
