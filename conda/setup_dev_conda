@@ -1,0 +1,124 @@
+#! /bin/bash
+
+#
+# Setup dev dependencies with conda
+#
+
+set -x
+set -e
+
+conda=/casa/conda/bin/conda
+
+if [ -e /casa/conda/bin/nano ]; then
+    # if nano is installed, we assume that this script has already been
+    # executed.
+    echo "setup_dev_conda already executed => execution canceled"
+    exit 0
+fi
+
+# Source version control
+version_control_packages=(
+    git
+    git-lfs
+    #! git-man
+    #! subversion still necessary ?
+)
+
+# Configure/build toolchain
+toolchain_packages=(
+    automake
+    clang
+    cmake
+    #! cmake-curses-gui
+    gxx
+    gcc
+    gfortran
+    #! libc-dev
+    make
+    pkg-config
+    #! pyqt5-dev
+    #! pyqt5-dev-tools
+    #! python3-sip-dev
+    #! qtchooser
+)
+
+# Development tools and convenience utilities
+development_tools=(
+    ack-grep
+    bash-completion
+    emacs-nox
+    flake8
+    gdb
+    gdbserver
+    valgrind
+    gedit
+    git-man
+    gitg
+    gitk
+    kate
+    kdiff3
+    kompare
+    kwrite
+    locate
+    meld
+    nano
+    python2  # only for flake8 tests of casa-distro
+    python3-autopep8
+    python3-objgraph
+    python3-venv
+    spyder
+    strace
+    tox
+    vim
+    xterm
+    xdot
+)
+
+# Documentation building
+documentation_building_packages=(
+    doxygen
+    ghostscript
+    graphviz
+    nbconvert #? was jupyter-nbconvert
+    pandoc
+    sphinx
+    sphinx-gallery
+    #! texlive-latex-base
+    #! texlive-latex-extra  # needed by doxygen to render LaTeX formulas
+    #! texlive-fonts-recommended
+    wkhtmltopdf
+)
+
+brainvisa_standard_dev_dependencies=(
+    #! libasound2-dev
+    libblitz #? was libblitz0-dev
+    boost-cpp #? was libboost-dev
+    #! libboost-filesystem-dev
+    #! libboost-system-dev
+    dcmtk #? was libdcmtk-dev
+    libexpat #? was libexpat1-dev
+    #! libgl1-mesa-dev
+    libglib #? was libglib2.0-dev
+    libglu #? was libglu1-mesa-dev
+    libjpeg-turbo #? was libjpeg-dev
+    #! libminc-dev
+    netcdf4 #? was libnetcdf-dev
+    #! libomp-dev  # OpenMP with the clang compiler
+    #! libopenjp2-7-dev
+    libpng #? was libpng-dev
+    #! libqt5x11extras5-dev
+    #! libqwt-qt5-dev
+    libsigcpp #? was libsigc++-2.0-dev
+    #! libspnav-dev
+    libsvm #? was libsvm-dev
+    libtiff #? was libtiff-dev
+    #! libvtk9-dev
+    #! libvtk9-qt-dev
+    libxml2 #? was libxml2-dev
+    #! qttools5-dev
+    #! qtmultimedia5-dev
+    #! qttools5-dev-tools
+    #! zlib1g-dev
+)
+
+$conda install -y ${version_control_packages[@]} ${toolchain_packages[@]} ${documentation_building_packages[@]} ${brainvisa_standard_dev_dependencies[@]}

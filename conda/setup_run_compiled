@@ -1,0 +1,51 @@
+#! /bin/bash
+
+#
+# Setup run dependencies requiring software compilation
+#
+
+set -x
+set -e
+
+if [ -e /casa/conda/lib/pkgconfig/libopenjp2.pc ]; then
+    # if libopenjp2.pc is installed, we assume that this script has already been
+    # executed.
+    echo "setup_run_compiled already executed => execution canceled"
+    exit 0
+fi
+
+# MIRCen's fork of openslide with support for CZI format
+#
+tmp=$(mktemp -d)
+
+cd "$tmp"
+wget https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.0.tar.gz
+tar xf v2.5.0.tar.gz
+cd openjpeg-2.5.0
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release "-DCMAKE_INSTALL_PREFIX=/casa/conda"
+make
+make install
+cp libopenjp2.pc /casa/conda/lib/pkgconfig/
+
+cd "$tmp"
+git clone --depth=1 https://github.com/MIRCen/openslide.git
+cd openslide
+autoreconf --install
+./configure --prefix="/casa/conda"
+make -j$(nproc)
+make install
+
+# reinstall libminc 4.0.0 because newer versions can't properly read freesurfer
+# .mgz files
+cd "$tmp"
+git clone https://github.com/BIC-MNI/libminc.git --single-branch --branch libminc-2-3-00
+cd libminc
+cmake . -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DLIBMINC_BUILD_SHARED_LIBS=ON -DLIBMINC_MINC1_SUPPORT=ON "-DCMAKE_INSTALL_PREFIX=/casa/conda"
+make -j$(nproc)
+make install
+cd ..
+rm -rf libminc
+
+rm -Rf "$tmp"

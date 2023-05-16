@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%environment
+    export HOME=/casa/home
+
+%post
+    mkdir /casa
+    apt update
+
+%runscript
+    echo "Start casa container"
+    export PATH=/casa/conda/bin:$PATH
+    export LD_LIBRARY_PATH=/casa/conda/lib:$LD_LIBRARY_PATH
+
+    exec "$@"
