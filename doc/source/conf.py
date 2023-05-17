@@ -260,7 +260,7 @@ bv_cmake_version = '1.0'
 swf_version = '1.0'
 bv_web_version = '5.0'
 try:
-    from brainvisa.maker import version as bv_cmake_v
+    from brainvisa_cmake import version as bv_cmake_v
     bv_cmake_version = '%s.%s' % (bv_cmake_v.version_major,
                                   bv_cmake_v.version_minor)
 except ImportError:
