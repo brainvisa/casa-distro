@@ -9,8 +9,8 @@ set -e
 
 conda=/casa/conda/bin/conda
 
-if [ -e /casa/conda/bin/nano ]; then
-    # if nano is installed, we assume that this script has already been
+if [ -e /casa/conda/bin/gdb ]; then
+    # if gdb is installed, we assume that this script has already been
     # executed.
     echo "setup_dev_conda already executed => execution canceled"
     exit 0
@@ -44,34 +44,32 @@ toolchain_packages=(
 
 # Development tools and convenience utilities
 development_tools=(
-    ack-grep
+    #! ack-grep
     bash-completion
-    emacs-nox
+    nox #? was emacs-nox
     flake8
     gdb
-    gdbserver
+    #! gdbserver
     valgrind
-    gedit
-    git-man
-    gitg
-    gitk
-    kate
-    kdiff3
-    kompare
-    kwrite
-    locate
+    #! gedit
+    #! git-man
+    #! gitg
+    #! gitk
+    #! kate
+    #! kdiff3
+    #! kompare
+    #! kwrite
+    #! locate
     meld
-    nano
-    python2  # only for flake8 tests of casa-distro
-    python3-autopep8
-    python3-objgraph
-    python3-venv
+    autopep8
+    objgraph
+    #! venv
     spyder
-    strace
+    #! strace
     tox
     vim
-    xterm
-    xdot
+    #! xterm
+    #! xdot
 )
 
 # Documentation building
@@ -108,13 +106,14 @@ brainvisa_standard_dev_dependencies=(
     libpng #? was libpng-dev
     #! libqt5x11extras5-dev
     #! libqwt-qt5-dev
-    libsigcpp #? was libsigc++-2.0-dev
+    libsigcpp<3 #? was libsigc++-2.0-dev
     #! libspnav-dev
     libsvm #? was libsvm-dev
     libtiff #? was libtiff-dev
     #! libvtk9-dev
     #! libvtk9-qt-dev
     libxml2 #? was libxml2-dev
+    mesalib # necessary to have GL/gl.h found by Qt CMake files
     #! qttools5-dev
     #! qtmultimedia5-dev
     #! qttools5-dev-tools

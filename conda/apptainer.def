@@ -2,14 +2,25 @@ Bootstrap: docker
 From: ubuntu:22.04
 
 %environment
-    export HOME=/casa/home
+    export CASA=/casa
+    export CASA_CONF=$CASA/conf
+    export HOME=$CASA/home
+    export CASA_SRC=$CASA/src
+    export CASA_BUILD=$CASA/build
+    export CASA_INSTALL=$CASA/install
+    export CASA_TESTS=$CASA/tests
+    export BRAINVISA_BVMAKER_CFG=$CASA_SRC/bv_maker.cfg
+    for f in "$CASA_SRC/environment.sh" "$CASA_CONF/environment.sh" "$CASA/environment.sh"; do
+        if [ -e "$f" ]; then
+            source "$f"
+        fi
+    done
 
 %post
     mkdir /casa
     apt update
 
 %runscript
-    echo "Start casa container"
     export PATH=/casa/conda/bin:$PATH
     export LD_LIBRARY_PATH=/casa/conda/lib:$LD_LIBRARY_PATH
 
