@@ -7,7 +7,7 @@
 set -x
 set -e
 
-conda=/casa/conda/bin/conda
+conda=/casa/conda/bin/mamba
 
 if [ -e /casa/conda/bin/gdb ]; then
     # if gdb is installed, we assume that this script has already been
@@ -106,7 +106,7 @@ brainvisa_standard_dev_dependencies=(
     libpng #? was libpng-dev
     #! libqt5x11extras5-dev
     #! libqwt-qt5-dev
-    libsigcpp<3 #? was libsigc++-2.0-dev
+    'libsigcpp<3' #? was libsigc++-2.0-dev
     #! libspnav-dev
     libsvm #? was libsvm-dev
     libtiff #? was libtiff-dev

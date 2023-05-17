@@ -14,7 +14,7 @@ if [ -e /casa/conda/bin/git ]; then
     exit 0
 fi
 
-conda=/casa/conda/bin/conda
+conda=/casa/conda/bin/mamba
 
 build_dependencies=(
     # General build dependencies (notably useful for pip-compiled packages)
