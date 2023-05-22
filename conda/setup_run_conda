@@ -70,7 +70,17 @@ build_dependencies=(
     draco
 #    eigen #? was libeigen3-dev
 
-    pyqt
+
+    # Commented-out packaes that needs pyqt package in order
+    # to avoid an upgrade of sip package. The sip command
+    # is only installed with sip package version 4.* but sip
+    # package depends on sip 6.*
+    # pyqt
+    # qtconsole #? was python3-qtconsole
+    pyqt5-sip
+    'sip=4'
+    qt-main
+    qtconsole-base
 )
 
 # Runtime dependencies of FSL
@@ -186,7 +196,6 @@ brainvisa_python_runtime_dependencies=(
     pyzmq
     ipython
     #! python3-jupyter-client
-    qtconsole #? was python3-qtconsole
     nbsphinx
     sphinx-gallery
 
@@ -198,7 +207,6 @@ brainvisa_python_runtime_dependencies=(
     scipy
     scikit-image #? was python3-skimage
 
-    pyqt
 
     # python3-sip
     # python3-pyqt5
