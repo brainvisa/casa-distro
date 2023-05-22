@@ -31,6 +31,7 @@ root_apptainer="apptainer run --writable --fakeroot --containall -B $casaconda:/
 if [ ! -e "$system_image" ]; then
     apptainer build --sandbox "$casaconda/system" "$script_dir/apptainer.def"
     $root_apptainer /casa/src/casa-distro/conda/setup_run_apt
+    $root_apptainer /casa/src/casa-distro/conda/setup_dev_apt
 fi
 
 if [ ! -e "$casaconda/Miniforge3-Linux-x86_64.sh" ]; then
