@@ -71,16 +71,18 @@ build_dependencies=(
 #    eigen #? was libeigen3-dev
 
 
-    # Commented-out packaes that needs pyqt package in order
+    # Commented-out packages that needs pyqt package in order
     # to avoid an upgrade of sip package. The sip command
     # is only installed with sip package version 4.* but sip
     # package depends on sip 6.*
     # pyqt
     # qtconsole #? was python3-qtconsole
+    # 'matplotlib==3.4.3'
     pyqt5-sip
     'sip=4'
     qt-main
     qtconsole-base
+    'matplotlib-base==3.4.3'
 )
 
 # Runtime dependencies of FSL
@@ -145,7 +147,7 @@ pip_installed_dependencies=(
     nipype
     dipy
     pycryptodome
-    'matplotlib==3.4.3'
+    # Matplotlib moved upward due to dependencies with sip
 )
 
 pip_packages_runtime_dependencies=(

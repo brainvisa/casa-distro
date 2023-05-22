@@ -1,0 +1,11 @@
+#! /bin/bash
+
+#
+# Setup run dependencies with apt
+#
+
+set -x
+set -e
+
+apt install -y libgl1-mesa-dev
+
