@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: ubuntu:22.04
+From: ubuntu
 
 %environment
     export CASA=/casa
@@ -19,6 +19,7 @@ From: ubuntu:22.04
 %post
     mkdir /casa
     apt update
+    apt install distro-info-data # to get lsb_release
 
 %runscript
     export PATH=/casa/conda/bin:$PATH

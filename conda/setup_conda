@@ -49,7 +49,7 @@ if [ ! -e "$casaconda/conda" ]; then
     $apptainer /casa/src/casa-distro/conda/setup_dev_conda
 fi
 
-#$root_apptainer /casa/src/casa-distro/conda/setup_run_compiled
+$root_apptainer /casa/src/casa-distro/conda/setup_run_compiled
 
 if [ ! -e "$casaconda/src" ]; then
     $apptainer git clone https://github.com/sapetnioc/brainvisa-submodules /casa/src

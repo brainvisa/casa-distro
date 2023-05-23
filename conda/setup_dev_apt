@@ -8,4 +8,4 @@ set -x
 set -e
 
 apt install -y libgl1-mesa-dev
-
+# yum install mesa-libGL

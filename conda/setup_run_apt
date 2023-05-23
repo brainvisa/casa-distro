@@ -7,4 +7,5 @@
 set -x
 set -e
 
-apt install -y wget build-essential distro-info-data
+# apt install -y wget # build-essential
+# yum install wget

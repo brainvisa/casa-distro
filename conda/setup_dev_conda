@@ -20,6 +20,7 @@ fi
 version_control_packages=(
     git
     git-lfs
+    vcstool
     #! git-man
     #! subversion still necessary ?
 )

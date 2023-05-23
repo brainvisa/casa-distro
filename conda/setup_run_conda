@@ -75,14 +75,14 @@ build_dependencies=(
     # to avoid an upgrade of sip package. The sip command
     # is only installed with sip package version 4.* but sip
     # package depends on sip 6.*
-    # pyqt
-    # qtconsole #? was python3-qtconsole
-    # 'matplotlib==3.4.3'
-    pyqt5-sip
-    'sip=4'
-    qt-main
-    qtconsole-base
-    'matplotlib-base==3.4.3'
+    pyqt
+    qtconsole #? was python3-qtconsole
+    'matplotlib==3.4.3'
+    #pyqt5-sip
+    #'sip=4'
+    #qt-main
+    #qtconsole-base
+    #'matplotlib-base==3.4.3'
 )
 
 # Runtime dependencies of FSL
