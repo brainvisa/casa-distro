@@ -169,6 +169,7 @@ brainvisa_standard_dev_dependencies=(
     qt6-webview-dev
     qt6-tools-dev
     qt6-webengine-dev
+    qt6-webengine-dev-tools
     qmake6
     python3-pyqt6.sip
     designer-qt6
