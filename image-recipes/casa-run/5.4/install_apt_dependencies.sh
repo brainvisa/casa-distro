@@ -298,6 +298,7 @@ brainvisa_shared_library_dependencies=(
     libxext6
     libxml2
     libzstd1
+    libxcb-cursor0
 )
 
 # Programs and data that BrainVISA depends on at runtime
@@ -308,6 +309,7 @@ brainvisa_misc_runtime_dependencies=(
     redis
     libqt6multimedia6
     libqt6webenginecore6
+    libqt6webenginewidgets6
     libqt6core5compat6
     gstreamer1.0-qt5
     gstreamer1.0-plugins-good
