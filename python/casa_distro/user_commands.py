@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import glob
+import os
 import os.path as osp
 import sys
 
@@ -372,7 +373,10 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
 
     to_update = {}
     if image:
-        to_update[image] = []
+        full_image = image
+        if not osp.isabs(full_image):
+            full_image = osp.normpath(osp.join(os.getcwd(), image))
+        to_update[full_image] = []
     for environment in iter_environments(base_directory,
                                          distro=distro,
                                          branch=branch,
@@ -382,11 +386,15 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
                                          version=version,
                                          name=name):
         compatible_run_images = []
+        full_image = environment['image']
+        if not osp.isabs(full_image):
+            full_image = osp.normpath(osp.join(
+                environment.get('directory', os.getcwd()), full_image))
         if image:
             if image == environment['image']:
-                to_update[image].append(environment)
+                to_update[full_image].append(environment)
         else:
-            env_image = environment['image']
+            env_image = full_image
             to_update.setdefault(env_image, []).append(environment)
 
             # Check for update of run image associated with environment
@@ -410,16 +418,24 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
             ))
     # Find updated version of images
     updates = {}
+    up_to_date = set()
     for image in to_update:
-        update_url = find_image_update_url(image, url)
+        update_url, uptodate = find_image_update_url(image, url)
         if update_url:
-            updates[image] = update_url
+            if not uptodate:
+                updates[image] = update_url
+            else:
+                up_to_date.add(update_url)
 
     if verbose:
         for image, environments in to_update.items():
             update_url = updates.get(image)
             if update_url:
-                print(image, '<-', update_url, file=verbose)
+                if update_url not in up_to_date:
+                    print(full_image, '<-', update_url, file=verbose)
+                else:
+                    print(full_image, '==', update_url, '[done]',
+                          file=verbose)
                 for e in environments:
                     print('  ->', '{}/conf/casa_distro.json'.format(
                         e["directory"]), file=verbose)
@@ -429,9 +445,16 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
         for image, environments in to_update.items():
             update_url = updates.get(image)
             if update_url:
+                if update_url not in up_to_date:
+                    up_to_date.add(update_url)
+                    do_update = True
+                else:
+                    do_update = False
                 config_files = ['{}/conf/casa_distro.json'.format(
                     e["directory"]) for e in environments]
-                update_image(image, update_url, config_files, )
+                rel_images = [e.get('image') for e in environments]
+                update_image(image, update_url, config_files,
+                             do_update=do_update, rel_images=rel_images)
 
 
 @command

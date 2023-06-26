@@ -435,6 +435,14 @@ def get_run_base_of_dev_image(image, url=None):
 
 
 def find_image_update_url(image, url):
+    '''
+    Returns
+    -------
+        download_url: str
+            download url
+        up_to_date: bool
+            if the image is already the latest version
+    '''
     base = osp.basename(image)
     m = image_re.match(base)
     if m:
@@ -454,15 +462,16 @@ def find_image_update_url(image, url):
                     other_patch = int(m.group('patch') or 0)  # noqa: E117
                     if other_patch > patch and other_patch > new_patch:
                         new_patch = other_patch
+        dl_url = '{}/{}-{}-{}.{}'.format(url, name, version, new_patch,
+                                         extension)
         if new_patch > patch or not osp.exists(image):
-            return '{}/{}-{}-{}.{}'.format(
-                url, name, version, new_patch, extension
-            )
-    return None
+            return dl_url, False
+        return dl_url, True
+    return None, True
 
 
 def update_image(image, new_image_url, config_files=[], restart=False,
-                 cleanup=True):
+                 cleanup=True, do_update=True, rel_images=None):
     """
     Download an image from a given URL to replace an existing image file.
 
@@ -481,33 +490,49 @@ def update_image(image, new_image_url, config_files=[], restart=False,
         to continue the download after an interruption)
     cleanup: bool
         if True, delete the image at the end
+    do_update: bool
+        if not True, do not actually download the image, normally because
+        it has already been done for another environment.
+    rel_images: list of bool
+        if specified, this list tells if each config file should use
+        relative image filenames.
+        The list should have the same size as the config_files parameter.
+        If empty, or if any value is not true, then the absolute image name
+        is used.
     """
     target_dir = osp.dirname(image)
     new_name = osp.basename(new_image_url)
 
     # Download the json file first
     new_json = osp.join(target_dir, '{}.json'.format(new_name))
-    downloader.download_file(new_image_url + '.json',
-                             new_json,
-                             allow_continue=False,
-                             use_tmp=False)
+    if do_update:
+        downloader.download_file(new_image_url + '.json',
+                                 new_json,
+                                 allow_continue=False,
+                                 use_tmp=False)
     with open(new_json) as f:
         new_metadata = json.load(f)
 
-    # Then download the image file
     new_image = osp.join(target_dir, '{}'.format(new_name))
-    downloader.download_file(new_image_url,
-                             new_image,
-                             allow_continue=not restart,
-                             use_tmp=True,
-                             md5_check=new_metadata['md5'],
-                             callback=downloader.stdout_progress)
+    if do_update:
+        # Then download the image file
+        downloader.download_file(new_image_url,
+                                 new_image,
+                                 allow_continue=not restart,
+                                 use_tmp=True,
+                                 md5_check=new_metadata['md5'],
+                                 callback=downloader.stdout_progress)
 
     # Change the config files
-    for filename in config_files:
+    for i, filename in enumerate(config_files):
+        if rel_images and len(rel_images) > i and rel_images[i]:
+            new_image_e = osp.relpath(new_image,
+                                      osp.dirname(osp.dirname(filename)))
+        else:
+            new_image_e = new_image
         with open(filename) as f:
             metadata = json.load(f)
-        metadata['image'] = new_image
+        metadata['image'] = new_image_e
         image_id = new_metadata.get('image_id')
         if image_id:
             metadata['image_id'] = image_id
