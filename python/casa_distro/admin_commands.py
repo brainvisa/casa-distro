@@ -928,7 +928,8 @@ def create_user_image(
         if retcode != 0:
             sys.exit('make ' + ' '.join(install_targets)
                      + ' failed, aborting.')
-        sub_cmd = ['make',
+        sub_cmd = ['bv_env_test',
+                   'make',
                    'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
                    'post-install']
         retcode = run_container(
