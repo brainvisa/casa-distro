@@ -906,12 +906,18 @@ def create_user_image(
         install_targets += ['install-test'] if install_test else []
         # install_doc and install_test also depend on install-runtime and
         # will do it again
+        # we use bash -c 'make...' in order to allow user .profile
+        # customization (paths for Qt6 in pip install...)
+        sub_cmd = [
+            'make',
+            'BRAINVISA_INSTALL_PREFIX=/casa/host/install'] \
+            + install_targets
         retcode = run_container(
             config=config,
             command=[
-                'make',
-                'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-            ] + install_targets,
+                'bash',
+                '-c',
+                ' '.join(sub_cmd)],
             gui=False,
             opengl="container",
             root=False,
@@ -925,11 +931,14 @@ def create_user_image(
         if retcode != 0:
             sys.exit('make ' + ' '.join(install_targets)
                      + ' failed, aborting.')
+        sub_cmd = ['make',
+                   'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
+                   'post-install']
         retcode = run_container(
             config=config,
-            command=['make',
-                     'BRAINVISA_INSTALL_PREFIX=/casa/host/install',
-                     'post-install'],
+            command=['bash',
+                     '-c',
+                     ' '.join(sub_cmd)],
             gui=False,
             opengl="container",
             root=False,
