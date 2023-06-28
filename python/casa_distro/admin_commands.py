@@ -906,6 +906,7 @@ def create_user_image(
         # we use bash -c 'make...' in order to allow user .profile
         # customization (paths for Qt6 in pip install...)
         sub_cmd = [
+            'bv_env_test',
             'make',
             'BRAINVISA_INSTALL_PREFIX=/casa/host/install'] \
             + install_targets
