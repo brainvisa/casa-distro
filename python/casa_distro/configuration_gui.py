@@ -18,6 +18,8 @@ import shutil
 import tempfile
 
 try:
+    from soma.qt_gui import qt_backend
+    qt_backend.set_qt_backend(compatible_qt5=True)  # for PyQt6
     from soma.qt_gui.qt_backend import Qt
     from soma.qt_gui.qt_backend.QtCore import Signal
     try:
@@ -594,7 +596,7 @@ class CasaLauncher(Qt.QDialog):
         validation_btns.rejected.connect(dialog.reject)
 
         preserved = set(['mounts'])
-        if dialog.exec_():
+        if dialog.exec():
             for k in list(self.conf.keys()):
                 if k not in preserved:
                     del self.conf[k]
@@ -618,7 +620,7 @@ class CasaLauncher(Qt.QDialog):
 
         preserved = set(['mounts', 'name', 'distro', 'system', 'branch',
                          'type', 'image', 'container_type'])
-        if dialog.exec_():
+        if dialog.exec():
             edited_conf = config_edit.edited_config()
             for k in list(edited_conf.keys()):
                 if k in preserved:
@@ -729,7 +731,7 @@ on host side, or inside the container:
     def edit_install(self):
         dialog = InstallEditor(self.conf, self.conf_path, self)
         dialog.setWindowModality(Qt.Qt.WindowModal)
-        if dialog.exec_() == dialog.Accepted:
+        if dialog.exec() == dialog.Accepted:
             self.update_install_status()
 
     def update_install_status(self):
@@ -785,7 +787,7 @@ on host side, or inside the container:
         dialog = ContainerImageEditor(self.conf, self.container_status,
                                       self.conf_path, self)
         dialog.setWindowModality(Qt.Qt.WindowModal)
-        dialog.exec_()
+        dialog.exec()
         self.update_container_status()
 
 
@@ -875,7 +877,7 @@ class MountManager(Qt.QWidget):
         host_mount_choice = Qt.QFileDialog(
             None, 'host side directory (in /host)', '/host')
         host_mount_choice.setFileMode(Qt.QFileDialog.Directory)
-        if host_mount_choice.exec_():
+        if host_mount_choice.exec():
             self.modified = True
             self.valueChanged.emit()
             self._mount_table.setRowCount(self._mount_table.rowCount() + 1)
@@ -1581,7 +1583,7 @@ def main_gui():
     dialog = CasaLauncher(conf_path)
     dialog.show()
 
-    app.exec_()
+    app.exec()
 
 
 if __name__ == "__main__":
