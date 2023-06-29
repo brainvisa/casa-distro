@@ -1010,7 +1010,7 @@ class BBIDaily:
             o = o.split('\n')
             # Extract the third line that follows each line containing ': Test
             # command:'
-            commands = [o[i+3][o[i+3].find(':')+2:].strip()
+            commands = [o[i+2][o[i+2].find(':')+2:].strip()
                         for i in range(len(o))
                         if ': Test command:' in o[i]]
             timeouts = [o[i+1][o[i+1].find(':')+2:].strip()
