@@ -82,7 +82,13 @@ $SUDO apt-get -o Acquire::Retries=3 update
 fsl_runtime_dependencies=(
     bc
     dc
-    libopenblas-base
+    libopenblas0
+)
+
+# Runtime dependencies of FreeSurfer
+freesurfer_runtime_dependencies=(
+    perl
+    tcl
     tcsh
 )
 
@@ -343,6 +349,7 @@ brainvisa_test_dependencies=(
 # rules).
 $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${fsl_runtime_dependencies[@]} \
+    ${freesurfer_runtime_dependencies[@]} \
     ${matlab_runtime_dependencies[@]} \
     ${generally_useful_packages[@]} \
     ${headless_anatomist_dependencies[@]} \
