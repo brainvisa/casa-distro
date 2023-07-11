@@ -1,70 +1,26 @@
-#!/bin/bash
+#!/bin/sh
 
-set -e
-set -x
 
-casaconda="$1"
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-if [ -z "$casaconda" ]; then
-    echo "Missing destination directory"
-    exit 1
+installer_url=https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+# installer_url=https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+# installer_url=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+installer=$(echo $installer_url | awk '{split($0, s, "/"); print(s[length(s)])}')
+if [ ! -e "$CASA/$installer" ]; then
+    wget -O "$CASA/$installer" $installer_url
 fi
 
-if [ ! -e "$casaconda" ]; then
-    mkdir "$casaconda"
+mkdir "$CONDA"
+sh "$CASA/$installer" -u -b -p "$CONDA"
+if [ -e "$CONDA/bin/mamba" ]; then
+    # If mamba is installed, we use conda-forge
+    export conda="$CONDA/bin/mamba"
+    export conda_install="-y"
+    # Use most recent glibc ABI (the one used by conda-forge to compile Qt)
+    "$conda" install -y sysroot-conda_2_28-x86_64
+else
+    # mamba is not installed, we use anaconda
+    export conda="$CONDA/bin/conda"
+    export conda_install="-y --solver=libmamba"
+    # Install packages to use mamba to find packages
+    "$conda" install -y -n base conda-libmamba-solver
 fi
-
-if [ ! -e "$casaconda/home" ]; then
-    mkdir "$casaconda/home"
-    for f in .gitconfig .git-credentials; do
-        if [ -e "$HOME/$f" ]; then
-            cp "$HOME/$f" "$casaconda/home"
-        fi
-    done
-fi
-
-system_image="$casaconda/system"
-apptainer="apptainer -s run --containall -B $casaconda:/casa -B /tmp $system_image"
-root_apptainer="apptainer run --writable --fakeroot --containall -B $casaconda:/casa -B /tmp $system_image"
-
-if [ ! -e "$system_image" ]; then
-    apptainer build --sandbox "$casaconda/system" "$script_dir/apptainer.def"
-    $root_apptainer /casa/src/casa-distro/conda/setup_run_apt
-    $root_apptainer /casa/src/casa-distro/conda/setup_dev_apt
-fi
-
-if [ ! -e "$casaconda/Miniforge3-Linux-x86_64.sh" ]; then
-    wget -O "$casaconda/Miniforge3-Linux-x86_64.sh" https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-fi
-
-
-conda="$apptainer /casa/conda/bin/conda"
-if [ ! -e "$casaconda/conda" ]; then
-    mkdir "$casaconda/conda"
-    $apptainer sh "/casa/Miniforge3-Linux-x86_64.sh" -u -b -p "/casa/conda"
-#    $conda update conda -y
-    $conda install -y mamba
-    $apptainer /casa/src/casa-distro/conda/setup_run_conda
-    $apptainer /casa/src/casa-distro/conda/setup_dev_conda
-fi
-
-$root_apptainer /casa/src/casa-distro/conda/setup_run_compiled
-
-if [ ! -e "$casaconda/src" ]; then
-    $apptainer git clone https://github.com/sapetnioc/brainvisa-submodules /casa/src
-    $apptainer git -C /casa/src submodule update --init --recursive
-    cd $casaconda/src
-    for d in *; do
-        if [ -d "$d" ]; then
-            main_branch=$( $apptainer git -C /casa/src/$d branch -r --contains HEAD --format '%(refname)' | grep --invert-match HEAD | python -c 'import sys; print(sys.stdin.read().split("/")[-1])' )
-            $apptainer git -C "/casa/src/$d" checkout $main_branch
-        fi
-    done
-fi
-
-
-# Update all sources
-# $apptainer git -C /casa/src submodule foreach git pull
-
-$apptainer /casa/src/brainvisa-cmake/bin/bv_env bash
