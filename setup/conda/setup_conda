@@ -12,13 +12,13 @@ fi
 mkdir "$CONDA"
 sh "$CASA/$installer" -u -b -p "$CONDA"
 if [ -e "$CONDA/bin/mamba" ]; then
-    # If mamba is installed, we use conda-forge
+    # If mamba is installed
     export conda="$CONDA/bin/mamba"
     export conda_install="-y"
     # Use most recent glibc ABI (the one used by conda-forge to compile Qt)
     "$conda" install -y sysroot-conda_2_28-x86_64
 else
-    # mamba is not installed, we use anaconda
+    # mamba is not installed
     export conda="$CONDA/bin/conda"
     export conda_install="-y --solver=libmamba"
     # Install packages to use mamba to find packages

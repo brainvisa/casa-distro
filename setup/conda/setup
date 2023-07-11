@@ -1,0 +1,44 @@
+#!/bin/sh
+
+export CASA="$1"
+if [ -z "$CASA" ]; then
+    echo "Missing target directory"
+    exit 1
+fi
+
+export CASA_DISTRO="$2"
+if [ -z "$CASA_DISTRO" ]; then
+    echo "Missing distro"
+    exit 1
+fi
+
+export CONDA="$CASA/conda"
+export CASA_SRC="$CASA/src"
+export CASA_DISTRO_SRC="$CASA_SRC/casa-distro"
+
+set -e
+set -x
+
+if [ ! -e "$CASA_SRC" ]; then
+    mkdir --parents "$CASA_SRC"
+    git -C "$CASA_SRC" clone --branch conda https://github.com/brainvisa/casa-distro
+    git -C "$CASA_SRC" clone --branch conda https://github.com/brainvisa/brainvisa-cmake
+fi
+
+if [ ! -e "$CASA/conf" ]; then
+    mkdir "$CASA/conf"
+    ln -s ../src/casa-distro/setup/conda/bv_maker.cfg "$CASA/conf"
+    cat > "$CASA/conf/environment.sh" << END_OF_FILE
+export CASA_DISTRO=$CASA_DISTRO
+END_OF_FILE
+fi
+
+
+if [ ! -e "$CONDA" ]; then
+    . "$CASA/src/casa-distro/setup/conda/setup_conda"
+    ln -s ../../../../src/casa-distro/setup/conda/casa-distro_activate.sh "$CONDA/etc/conda/activate.d"
+    ln -s ../../../../src/casa-distro/setup/conda/casa-distro_deactivate.sh "$CONDA/etc/conda/deactivate.d"
+    "$CASA/setup_run_conda"
+    "$CASA/setup_run_compiled"
+    "$CASA/setup_dev_conda"
+fi

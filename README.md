@@ -4,6 +4,12 @@
 # casa-distro
 Unified development environment for BrainVISA projects.
 
+## Setup development environment
+
+```shell
+sh <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/setup/conda/setup) /somewhere```
+```
+
 ## Documentation
 
 * on github, master branch: https://brainvisa.github.io/casa-distro/
