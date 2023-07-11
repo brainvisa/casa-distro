@@ -38,7 +38,7 @@ if [ ! -e "$CONDA" ]; then
     . "$CASA/src/casa-distro/setup/conda/setup_conda"
     ln -s ../../../../src/casa-distro/setup/conda/casa-distro_activate.sh "$CONDA/etc/conda/activate.d"
     ln -s ../../../../src/casa-distro/setup/conda/casa-distro_deactivate.sh "$CONDA/etc/conda/deactivate.d"
-    "$CASA/setup_run_conda"
-    "$CASA/setup_run_compiled"
-    "$CASA/setup_dev_conda"
+    "$CASA/src/casa-distro/setup/conda/setup_run_conda"
+    "$CASA/src/casa-distro/setup/conda/setup_run_compiled"
+    "$CASA/src/casa-distro/setup/conda/setup_dev_conda"
 fi
