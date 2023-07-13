@@ -12,6 +12,7 @@ if [ -z "$CASA_DISTRO" ]; then
     exit 1
 fi
 
+export CASA_BRANCH=master
 export CONDA="$CASA/conda"
 export CASA_SRC="$CASA/src"
 export CASA_DISTRO_SRC="$CASA_SRC/casa-distro"
@@ -30,7 +31,8 @@ if [ ! -e "$CASA/conf" ]; then
     ln -s ../src/casa-distro/setup/conda/bv_maker.cfg "$CASA/conf"
     cat > "$CASA/conf/environment.json" << END_OF_FILE
 {
-    "CASA_DISTRO": "$CASA_DISTRO"
+    "CASA_DISTRO": "$CASA_DISTRO",
+    "CASA_BRANCH": "$CASA_BRANCH"
 }
 END_OF_FILE
 fi
