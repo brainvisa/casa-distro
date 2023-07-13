@@ -106,6 +106,7 @@ outputs:
         - zstd
         - libnetcdf
         - draco
+        - pyqtwebkit # or pyqtwebengine ? I do not know which is better.
     about:
       summary: Software base infrastructure for BrainVISA tools
       license: GPL
