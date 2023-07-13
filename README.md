@@ -7,8 +7,17 @@ Unified development environment for BrainVISA projects.
 ## Setup development environment
 
 ```shell
-sh <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/setup/conda/setup) /somewhere```
+sh {dir} {package} <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/setup/conda/setup)
 ```
+
+Where `{dir}` is the path of the development directory and `{package}` is the name of a predefined set of software components. These package name is passed to brainvisa-cmake to select components. It can be any 
+package defined in brainvisa-cmake but here are the most useful:
+
+- brainvisa-dev: all components whose sources are publicly available.
+- brainvisa: components included in BrainVISA distribution.
+- brainvisa-cea: components deployed in Neurospin, MirCEN and SHFJ labs.
+- brainvisa-cati: components used internally by CATI members.
+- brainvisa-web: components necessary to build brainvisa.info web site.
 
 ## Documentation
 
