@@ -1,13 +1,10 @@
-[![travis](https://travis-ci.com/brainvisa/casa-distro.svg?branch=master)](https://travis-ci.com/brainvisa/casa-distro)
-[![codecov](https://codecov.io/gh/brainvisa/casa-distro/branch/master/graph/badge.svg)](https://codecov.io/gh/brainvisa/casa-distro)
-
 # casa-distro
 Unified development environment for BrainVISA projects.
 
 ## Setup development environment
 
 ```shell
-sh {dir} {package} <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/setup/conda/setup)
+sh {dir} {package} <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup)
 ```
 
 Where `{dir}` is the path of the development directory and `{package}` is the name of a predefined set of software components. These package name is passed to brainvisa-cmake to select components. It can be any 
