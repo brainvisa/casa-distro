@@ -16,6 +16,7 @@ if [ -e "$CONDA/bin/mamba" ]; then
     export conda="$CONDA/bin/mamba"
     export conda_install="-y"
     # Use most recent glibc ABI (the one used by conda-forge to compile Qt)
+    "$conda" update -y conda mamba
     "$conda" install -y sysroot-conda_2_28-x86_64
 else
     # mamba is not installed
