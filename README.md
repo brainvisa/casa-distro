@@ -4,7 +4,7 @@ Unified development environment for BrainVISA projects.
 ## Setup development environment
 
 ```shell
-sh {dir} {package} <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup)
+sh <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup) {dir} {package}
 ```
 
 Where `{dir}` is the path of the development directory and `{package}` is the name of a predefined set of software components. These package name is passed to brainvisa-cmake to select components. It can be any 
