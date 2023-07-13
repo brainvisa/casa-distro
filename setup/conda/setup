@@ -28,8 +28,10 @@ fi
 if [ ! -e "$CASA/conf" ]; then
     mkdir "$CASA/conf"
     ln -s ../src/casa-distro/setup/conda/bv_maker.cfg "$CASA/conf"
-    cat > "$CASA/conf/environment.sh" << END_OF_FILE
-export CASA_DISTRO=$CASA_DISTRO
+    cat > "$CASA/conf/environment.json" << END_OF_FILE
+{
+    "CASA_DISTRO": "$CASA_DISTRO"
+}
 END_OF_FILE
 fi
 
