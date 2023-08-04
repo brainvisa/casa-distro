@@ -103,11 +103,11 @@ class ImageBuilder:
     images but can also be used to install a local machine (via shell command
     `casa_distro_admin install_local`).
 
-    Each image builder must define a serie of installation steps. Each step
+    Each image builder must define a series of installation steps. Each step
     is a method receiving two parameters:
 
       - base_dir which is the base directory of the casa-distro environment
-      - builder wich is a generic object whose API allows to perform
+      - builder which is a generic object whose API allows to perform
         installation actions. All builders must have the following methods:
 
             run_user(command): execute a shell command as user

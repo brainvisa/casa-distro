@@ -485,7 +485,7 @@ def update_image(image, new_image_url, config_files=[], restart=False,
         Names of the config files to modify to point to the new downloaded
         image.
     restart: bool
-        if True, always start the download from the begining of the file.
+        if True, always start the download from the beginning of the file.
         Otherwise, download will start after current file size (to allow
         to continue the download after an interruption)
     cleanup: bool

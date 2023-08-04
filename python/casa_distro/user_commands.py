@@ -360,7 +360,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
               and config files would be modified by other modes.
     cleanup
         default={cleanup_default}
-        if true (or 1, or yes), remove current image when succesfully finished
+        if true (or 1, or yes), remove current image when successfully finished
         to download new one.
     {verbose}
     '''

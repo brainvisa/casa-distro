@@ -497,7 +497,7 @@ def check_singularity_version():
     return True
 
 
-# These variables take different values if we are runnnig Singularity or
+# These variables take different values if we are running Singularity or
 # Apptainer.
 _singularity_executable = None
 _singularity_name = None

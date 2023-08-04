@@ -986,7 +986,7 @@ Once the host-side directory has been chosen, it is displayed as the first colum
 <h3>Global / local mounts</h3>
 <p>A <b>"global" mount point</b> is shared between all user casa-distro environments: it is saved in the host user configuration file.
 </p>
-<p>A <b>"local" mount point</b> is only used in the speficic environment which is currently being configured.
+<p>A <b>"local" mount point</b> is only used in the specific environment which is currently being configured.
 </p>
 <p>The global or local state is displayed in the check button in the 3rd column of mount paths edition. They can be changed by clicking on the check button. <b>Be careful</b> because this will actually change the global user settings.
 </p>
@@ -1453,7 +1453,7 @@ class ContainerImageEditor(Qt.QDialog):
 
         confirm = Qt.QMessageBox.question(
             self, 'Remove writable directory ?',
-            'This will completely remove the system image direcotry:<br/>'
+            'This will completely remove the system image directory:<br/>'
             '<b>%s</b>.<br>Are you sure ?' % image)
 
         if confirm == Qt.QMessageBox.Yes:
@@ -1495,7 +1495,7 @@ class ContainerImageEditor(Qt.QDialog):
 
         confirm = Qt.QMessageBox.question(
             self, 'Create writable directory ?',
-            'This will create the system image direcotry:<br/>'
+            'This will create the system image directory:<br/>'
             '<b>%s</b>.<br>Are you sure ?' % image_dir)
 
         if confirm == Qt.QMessageBox.Yes:

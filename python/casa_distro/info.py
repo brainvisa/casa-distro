@@ -27,7 +27,7 @@ casa-distro
 ===========
 
 Casa-distro package is the user component of a BrainVISA project allowing to
-distribute containers containing standard compilation environements for
+distribute containers containing standard compilation environments for
 various BrainVISA distributions.
 '''
 LICENSE = 'CeCILL-B'
