@@ -96,7 +96,7 @@ the same syntax and options. In the future it will change to more
 "conventional" arguments syntax (say, "--opengl container" instead of
 "opengl=container").
 
-See the doc in casa_distro::
+See the doc in casa_distro:
 
     casa_distro help run
 ''')
