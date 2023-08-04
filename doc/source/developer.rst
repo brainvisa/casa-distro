@@ -1,6 +1,6 @@
-====================================================
-Developping in the Casa-Distro BrainVISA environment
-====================================================
+===================================================
+Developing in the Casa-Distro BrainVISA environment
+===================================================
 
 .. Casa-distro project is the metronome and swiss knife for the management of compilation and publication of CASA software distributions. It contains all tools to create and publish the virtual images as well as tools for the management of the whole distro creation pipeline (configuration source retrieval, compilation, packaging, publication, etc.).
 

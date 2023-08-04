@@ -51,7 +51,7 @@ The hardware representation of an environment is a set of directories in the :re
   | - **host/conf:** configuration of the environment (config file, BioProj passwords, ``bv_maker.cfg``, etc.). The content of this directory is the input of the compilation, packaging and testing steps. There are some predefined content for ``conf`` that can be generated with the command ``casa_distro setup_dev`` but the whole environment can be customized by editing files in this directory.
   | - **host/src:** source of selected components for the workflow. The content
     of this directory is first created by ``bv_maker`` from within a
-    Docker container running the targeted operting system. Simply call
+    Docker container running the target operating system. Simply call
     ``casa_distro bv_maker`` for this. The same command can be used to
     update sources to latest revision or to recompile when source code has
     been modified.
