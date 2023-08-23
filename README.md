@@ -3,18 +3,24 @@ Unified development environment for BrainVISA projects.
 
 ## Setup Conda development environment
 
+All compilation dependencies are taken from conda-forge repository except low level OpenGL library that must be installed on the host system. On Debian based distro (such as Ubuntu) this can be done by installing `libglu1-mesa-dev` package with `apt install` command.
+
+The up to date setup process is contained in [a shell script that is stored on GitHub](https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup) and requires two parameters:
+- `{dir}`: the path of the development directory that is to be created and setup.
+- `{package}`: the name of a predefined set of software components. This package name is passed to brainvisa-cmake to select components. It can be any package defined in brainvisa-cmake but here are the most useful:
+  - brainvisa-dev: all components whose sources are publicly available.
+  - brainvisa: components included in BrainVISA distribution.
+  - brainvisa-cea: components deployed in Neurospin, MirCEN and SHFJ labs.
+  - brainvisa-cati: components used internally by CATI members.
+  - brainvisa-web: components necessary to build brainvisa.info web site.
+
+The following command (where `{dir}` and `{package}` must be replaced) can be used in a shell to directly download and execute the setup script:
+
 ```shell
 sh <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup) {dir} {package}
 ```
 
-Where `{dir}` is the path of the development directory and `{package}` is the name of a predefined set of software components. These package name is passed to brainvisa-cmake to select components. It can be any 
-package defined in brainvisa-cmake but here are the most useful:
-
-- brainvisa-dev: all components whose sources are publicly available.
-- brainvisa: components included in BrainVISA distribution.
-- brainvisa-cea: components deployed in Neurospin, MirCEN and SHFJ labs.
-- brainvisa-cati: components used internally by CATI members.
-- brainvisa-web: components necessary to build brainvisa.info web site.
+Where `{dir}` is the path of the development directory and `{package}` is 
 
 ## Use a Conda development environment
 
