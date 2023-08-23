@@ -19,7 +19,7 @@ if [ -e "$CONDA/bin/mamba" ]; then
     # Due to an incompatibility between conda an mamba (seen on August 23th, 2023),
     # force the version of conda until a patch is released on mamba (code is already
     # patched on github, current mamba version is 1.4.9).
-    "$conda" install 'conda=23.5.2'
+    "$conda" install -y 'conda=23.5.2'
     "$conda" update -y mamba
     # "$conda" update -y conda mamba
 
