@@ -1,7 +1,7 @@
 # casa-distro
 Unified development environment for BrainVISA projects.
 
-## Setup development environment
+## Setup Conda development environment
 
 ```shell
 sh <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup) {dir} {package}
@@ -15,6 +15,25 @@ package defined in brainvisa-cmake but here are the most useful:
 - brainvisa-cea: components deployed in Neurospin, MirCEN and SHFJ labs.
 - brainvisa-cati: components used internally by CATI members.
 - brainvisa-web: components necessary to build brainvisa.info web site.
+
+## Use a Conda development environment
+
+The usage of a Conda based casa-distro environment uses the activation/deactiavtion system shipped with Conda. In order to "enter" the developpment environment (that means mainly setting environment variables such as PATH, etc.), on can use:
+
+```
+. {dir}/conda/bin/activate
+```
+
+It is possible de "go back" to the initial environment with the following command:
+
+```
+conda deactivate
+```
+
+## Software building
+
+Once the development environment is activated, all commands from build tree are in `PATH` and can be used directly, including `bv_maker`. However, some projects are still using the `conda` branch that makes the `bv_maker sources` fail. Therefore, until all is merged in master branch, it is necessary to run separatly `bv_maker source` from other commands such as `bv_maker configure build`.
+
 
 ## Documentation
 
