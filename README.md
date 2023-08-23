@@ -34,6 +34,21 @@ conda deactivate
 
 Once the development environment is activated, all commands from build tree are in `PATH` and can be used directly, including `bv_maker`. However, some projects are still using the `conda` branch that makes the `bv_maker sources` fail. Therefore, until all is merged in master branch, it is necessary to run separatly `bv_maker source` from other commands such as `bv_maker configure build`.
 
+## Build and publish Conda packages
+
+Conda packages are build using brainvisa-cmake component. Conda packages are defined in the `setup/conda/recipe/brainvisa.yaml` file. Each package can contain files of one or more brainvsa-cmake component. For each component files are copied using `make install` from build tree. Therefore, a full compilation with `bv_maker` must be done before creating packages. Package creation is done with the following command:
+
+```
+mamba build $CASA_SRC/casa-distro/setup/conda/recipe
+```
+
+This creates a full Conda repository in the directory `conda/conda-bld`. This directory can be used directly with `conda install` or `mamba install` with the `-c` option. Note, that `-c` requires URLs, therefore the directory must be absolute and prefixed with `file://`.
+
+Publishing the repository on the web can be simply done by exposing the `conda-bld` files on a server. For publishing on the still experimental server `https://brainvisa.info/download/conda`, one can use: 
+
+```
+rsync -a --delete "$CONDA_PREFIX/conda-bld/" brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/conda/
+```
 
 ## Documentation
 
