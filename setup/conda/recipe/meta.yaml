@@ -8,7 +8,7 @@ source:
   # url: https://brainvisa.info/download/conda/brainvisa-{{ brainvisa.version }}.tar.xz
   # url: file:///home/yann/casaconda/repository/brainvisa-{{ brainvisa.version }}.tar.xz
   # sha256: {{ brainvisa.sha256 }}
-  path: ../src
+  path: .
 
 build:
   number: 0
