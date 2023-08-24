@@ -17,11 +17,12 @@ if [ -e "$CONDA/bin/mamba" ]; then
     export conda_install="-y"
 
     # Due to an incompatibility between conda an mamba (seen on August 23th, 2023),
-    # force the version of conda until a patch is released on mamba (code is already
-    # patched on github, current mamba version is 1.4.9).
-    "$conda" install -y 'conda=23.5.2'
+    # force the version of conda and conda-build until a patch is released on mamba
+    # (code is already patched on github, current mamba version is 1.4.9).
+    "$conda" install -y 'conda=23.5.2' 'conda-build=3.25'
     "$conda" update -y mamba
     # "$conda" update -y conda mamba
+    # "$conda" install -y conda-build
 
     # Use most recent glibc ABI (the one used by conda-forge to compile Qt)
     "$conda" install -y sysroot-conda_2_28-x86_64
