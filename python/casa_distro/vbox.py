@@ -260,10 +260,26 @@ def create_user_image(base_image,
             continue
         vm.copy_user(osp.join(copy_to_home, i), '/home/brainvisa')
 
+    vm.run_root('apt update && apt install -y dbus-x11')
+
+    if verbose:
+        six.print_('Copying', install_dir, 'to /casa/install in VM',
+                   file=verbose, flush=True)
+    vm.run_user('mkdir /casa/install')
+    vm.copy_user(install_dir, '/casa')
+    vm.run_user("/bin/sed -i '$a if [ -e /casa/install/bin/bv_env.sh ]\\; "
+                "then source /casa/install/bin/bv_env.sh /casa/install\\; fi' "
+                "/home/brainvisa/.bashrc")
+    vm.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
+                % vm.image_id)
+
+    temps = install_thirdparty_software(install_thirdparty, vm)
+    for d in temps:
+        shutil.rmtree(d)
+
     # Copy desktop shortcut files after finding the appropriate share directory
     # containing icon files. Replace '{install_dir}' in icon Path by
     # appropriate value.
-    vm.run_root('apt update && apt install -y dbus-x11')
     tmp = tempfile.mkdtemp()
     try:
         d = osp.join(copy_to_home, 'Desktop')
@@ -290,21 +306,10 @@ def create_user_image(base_image,
     finally:
         shutil.rmtree(tmp)
 
-    if verbose:
-        six.print_('Copying', install_dir, 'to /casa/install in VM',
-                   file=verbose, flush=True)
-    vm.run_user('mkdir /casa/install')
-    vm.copy_user(install_dir, '/casa')
-    vm.run_user("/bin/sed -i '$a if [ -e /casa/install/bin/bv_env.sh ]\\; "
-                "then source /casa/install/bin/bv_env.sh /casa/install\\; fi' "
-                "/home/brainvisa/.bashrc")
-    vm.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
-                % vm.image_id)
-
-    temps = install_thirdparty_software(install_thirdparty, vm)
-    for d in temps:
-        shutil.rmtree(d)
-
+    # [2023-09-05-Nicolas SOUEDET] - The following issue may be fixed now
+    # because desktop shortcut target files are now installed before
+    # programatic creation and validation. Must be confirmed during
+    # next release 5.2.0.
     # Desktop icons must be validated manually. Therefore, automatic saving
     # of the image is disabled until a solution is found.
     print()
