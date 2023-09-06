@@ -12,10 +12,20 @@ if [ -z "$CASA_DISTRO" ]; then
     exit 1
 fi
 
-export CASA_BRANCH=master
+export CASA_BRANCH="$3"
+if [ -z "$CASA_BRANCH" ]; then
+    export CASA_BRANCH=master
+fi
+
+export CASA_DISTRO_VERSION="$4"
+if [ -z "$CASA_DISTRO_VERSION" ]; then
+    export CASA_DISTRO_VERSION="${HOSTNAME}_${USER}_${CASA_BRANCH}"
+fi
+
 export CONDA="$CASA/conda"
 export CASA_SRC="$CASA/src"
 export CASA_DISTRO_SRC="$CASA_SRC/casa-distro"
+
 
 set -e
 set -x
@@ -35,6 +45,7 @@ if [ ! -e "$CASA/conf" ]; then
     cat > "$CASA/conf/environment.json" << END_OF_FILE
 {
     "CASA_DISTRO": "$CASA_DISTRO",
+    "CASA_DISTRO_VERSION": "$CASA_DISTRO_VERSION",
     "CASA_BRANCH": "$CASA_BRANCH"
 }
 END_OF_FILE
@@ -48,4 +59,9 @@ if [ ! -e "$CONDA" ]; then
     "$CASA/src/casa-distro/setup/conda/setup_run_conda"
     "$CASA/src/casa-distro/setup/conda/setup_run_compiled"
     "$CASA/src/casa-distro/setup/conda/setup_dev_conda"
+fi
+
+if [ ! -e "$CONDA/recipe" ]; then
+    mkdir "$CONDA/recipe"
+    cp   
 fi

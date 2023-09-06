@@ -1,8 +1,8 @@
-{% set brainvisa = load_file_data(os.path.join(RECIPE_DIR, 'brainvisa.yaml')) %}
+#{% set brainvisa = load_file_data(os.path.join(RECIPE_DIR, 'brainvisa.yaml')) %}
 
 package:
   name: brainvisa
-  version: {{ brainvisa.version }}
+  # version: {{ brainvisa.version }}
 
 source:
   # url: https://brainvisa.info/download/conda/brainvisa-{{ brainvisa.version }}.tar.xz
@@ -30,9 +30,9 @@ outputs:
 
       run:
         - sysroot-conda_2_28-x86_64
-        - {{ pin_compatible('sysroot_linux-64', max_pin='x.x') }}
-        - {{ pin_compatible('libstdcxx-ng', min_pin='x.x', max_pin='x') }}
-        - {{ pin_compatible('libgcc-ng', min_pin='x.x', max_pin='x') }}
+        - "{{ pin_compatible('sysroot_linux-64', max_pin='x.x') }}"
+        - "{{ pin_compatible('libstdcxx-ng', min_pin='x.x', max_pin='x') }}"
+        - "{{ pin_compatible('libgcc-ng', min_pin='x.x', max_pin='x') }}"
         - font-ttf-noto-emoji
         - lsb-release
         - matplotlib 3.4.3
@@ -119,7 +119,7 @@ outputs:
         - make
         - pkg-config
       run:
-        - {{ pin_subpackage('brainvisa-base', exact=True) }}
+        - "{{ pin_subpackage('brainvisa-base', exact=True) }}"
     about:
       summary: Data readers/writers and processing tools in C++ and Python
       license: GPL
@@ -133,7 +133,7 @@ outputs:
         - pkg-config
 
       run:
-        - {{ pin_subpackage('brainvisa-data-processing', exact=True) }}
+        - "{{ pin_subpackage('brainvisa-data-processing', exact=True) }}"
     
     about:
       summary: Neuroimaging visualization tool for the BrainVISA project
@@ -147,8 +147,8 @@ outputs:
         - make
         - pkg-config
       run:
-        - {{ pin_subpackage('anatomist', exact=True) }}
-        - {{ pin_subpackage('brainvisa-spm', exact=True) }}
+        - "{{ pin_subpackage('anatomist', exact=True) }}"
+        - "{{ pin_subpackage('brainvisa-spm', exact=True) }}"
     about:
       summary: Neuroimaging method for cross-subject brain alignment. 
       license: GPL
@@ -161,7 +161,7 @@ outputs:
         - make
         - pkg-config
       run:
-        - {{ pin_subpackage('anatomist', exact=True) }}
+        - "{{ pin_subpackage('anatomist', exact=True) }}"
     about:
       summary: Links between SPM and BrainVISA. 
       license: GPL
@@ -174,7 +174,7 @@ outputs:
         - make
         - pkg-config
       run:
-        - {{ pin_subpackage('anatomist', exact=True) }}
+        - "{{ pin_subpackage('anatomist', exact=True) }}"
     about:
       summary: Links between Freesurfer and BrainVISA. 
       license: GPL
@@ -187,7 +187,7 @@ outputs:
         - make
         - pkg-config
       run:
-        - {{ pin_subpackage('anatomist', exact=True) }}
+        - "{{ pin_subpackage('anatomist', exact=True) }}"
     about:
       summary: BrainVISA toolbox providing surface-based generation and processing methods for MR brain data. 
       license: GPL
@@ -200,7 +200,7 @@ outputs:
         - make
         - pkg-config
       run:
-        - {{ pin_subpackage('anatomist', exact=True) }}
+        - "{{ pin_subpackage('anatomist', exact=True) }}"
     about:
       summary: Analysis of the laminar structure of the cortex in high resolution MRI. 
       license: GPL
@@ -213,7 +213,7 @@ outputs:
         - make
         - pkg-config
       run:
-        - {{ pin_subpackage('anatomist', exact=True) }}
+        - "{{ pin_subpackage('anatomist', exact=True) }}"
     about:
       summary: Brain segmentation and sulcal analysis. 
       license: GPL
@@ -235,13 +235,13 @@ outputs:
     script: noop.sh
     requirements:
       run:
-        - {{ pin_subpackage('brainvisa-base', exact=True) }}
-        - {{ pin_subpackage('brainvisa-data-processing', exact=True) }}
-        - {{ pin_subpackage('brainvisa-disco', exact=True) }}
-        - {{ pin_subpackage('brainvisa-spm', exact=True) }}
-        - {{ pin_subpackage('brainvisa-freesurfer', exact=True) }}
-        - {{ pin_subpackage('brainvisa-highres-cortex', exact=True) }}
-        - {{ pin_subpackage('morphologist', exact=True) }}
+        - "{{ pin_subpackage('brainvisa-base', exact=True) }}"
+        - "{{ pin_subpackage('brainvisa-data-processing', exact=True) }}"
+        - "{{ pin_subpackage('brainvisa-disco', exact=True) }}"
+        - "{{ pin_subpackage('brainvisa-spm', exact=True) }}"
+        - "{{ pin_subpackage('brainvisa-freesurfer', exact=True) }}"
+        - "{{ pin_subpackage('brainvisa-highres-cortex', exact=True) }}"
+        - "{{ pin_subpackage('morphologist', exact=True) }}"
         # - {{ pin_subpackage('brainrat', exact=True) }}
     
     about:

@@ -42,18 +42,31 @@ Once the development environment is activated, all commands from build tree are 
 
 ## Build and publish Conda packages
 
-Conda packages are build using brainvisa-cmake component. Conda packages are defined in the `setup/conda/recipe/brainvisa.yaml` file. Each package can contain files of one or more brainvsa-cmake component. For each component files are copied using `make install` from build tree. Therefore, a full compilation with `bv_maker` must be done before creating packages. Package creation is done with the following command:
+Conda packages are build using brainvisa-cmake component and packages (packages were called component groups in former version of brainvisa-cmake). A single brainvisa-cmake package must be selected to create a full repository with this package an all dependent packages and components. In this repository, two kind of conda packages are created:
+
+- each brainvisa-cmake components has a conda package with its own version
+- each branvisa-cmake package that is not a component uses a repository global distro version
+
+The repository directory is created with the following commands where:
+- *`{repository_path}`* is the path of a non existant (or empty) directory where packages and index files will be put.
+- *`{package}`* is the name of the top-level package to install. For instance `brainvisa` or `brainvisa-cea`.
+- *`{global_version}`* is the version used for all packages not corresponding to a brainvsa-cmake component.
 
 ```
-mamba build $CASA_SRC/casa-distro/setup/conda/recipe
+# Make sure compilation is up to date. To date doc is not taken into account.
+bv_maker configure build
+python -m casa_distro.conda_packages {repository_path} {package} {global_version}
 ```
 
-This creates a full Conda repository in the directory `conda/conda-bld`. This directory can be used directly with `conda install` or `mamba install` with the `-c` option. Note, that `-c` requires URLs, therefore the directory must be absolute and prefixed with `file://`.
 
-Publishing the repository on the web can be simply done by exposing the `conda-bld` files on a server. For publishing on the still experimental server `https://brainvisa.info/download/conda`, one can use: 
+
+This creates a full Conda repository in the directory `{repository_path}`. This directory can be used directly with `conda install` or `mamba install` with the `-c` option.
+
+Publishing the repository on the web can be simply done by exposing the repository directory on a server. For publishing on the still experimental server `https://brainvisa.info/download/conda`, one can use: 
 
 ```
-rsync -a --delete "$CONDA_PREFIX/conda-bld/" brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/conda/
+# Do not forget the trailing / on the repository path
+rsync -a --progress --delete {repository_path}/ brainvisa@brainvisa.info:/var/www/html/brainvisa.info_download/conda/
 ```
 
 ## Documentation
