@@ -334,6 +334,8 @@ brainvisa_other_dependencies=(
     libxm4
     libglw1-mesa
     gsl-bin
+    # used in some scripts (snapshots processes in brainvisa) and useful anyway
+    imagemagick
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run
