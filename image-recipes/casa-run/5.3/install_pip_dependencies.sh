@@ -35,7 +35,8 @@ PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
 ${PIP_INSTALL} -U pip
 
 # soma-base v3 needs pydantic >= 1.9, ubuntu 22/apt ships 1.8
-${PIP_INSTALL} -U "pydantic>=1.9"
+# but 2.x is still incompatible.
+${PIP_INSTALL} -U "pydantic>=1.9,<2"
 
 # Capsul v3 needs redis-py >= 4.2, Ubuntu 22/apt ships 3.5.3
 ${PIP_INSTALL} -U "redis>=4.2"
