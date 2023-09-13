@@ -1,3 +1,4 @@
+from itertools import chain
 import json
 import os
 import pathlib
@@ -10,6 +11,9 @@ import tempfile
 from brainvisa_cmake.brainvisa_projects import packages_definition
 from brainvisa_cmake.utils import get_components_info
 
+dependencies_translation = {
+   'redis': ['redis-py'],
+}
 packages_metadata = {
     'brainvisa-base': {
         'depends': [
@@ -106,8 +110,10 @@ def generate_repository(repository, distro, distro_version,
 
     def package_version(package):
         version = None
-        if package in packages_definition:
-            version = components_info.get(package, {}).get('version')
+        if package in extended_packages_definition:
+            version = extended_packages_definition[package].get('version')
+            if version is None:
+                version = components_info.get(package, {}).get('version')
             if version is None:
               version = distro_version
         if version is None:
@@ -131,18 +137,56 @@ def generate_repository(repository, distro, distro_version,
     l64 = repository / 'linux-64'
     l64.mkdir(exist_ok=True)
 
+    extended_packages_definition = packages_definition.copy()
+    extend_packages = []
+    for component in packages:
+        component_info = components_info.get(component)
+        if component_info:
+            for n, d in component_info.get('alternative_depends', {}).items():
+                version = component_info['version']
+                alternative_package = f'{component}-{n}'
+                extend_packages.append(alternative_package)
+                extended_packages_definition[alternative_package] = {
+                    'version': version,
+                    'depends': [
+                        f'{component}=={version}',
+                    ] + d
+                }
+    packages.update(extend_packages)
+
     # https://docs.conda.io/projects/conda-build/en/stable/resources/package-spec.html
     for package in packages:
-        package_info = packages_definition[package]
+        package_info = extended_packages_definition[package]
         metadata = packages_metadata.get(package, {})
         version = package_version(package)
+        component_info = components_info.get(package)
 
         # Parse and resolve package dependencies
+        component_depends = []
+        if component_info:
+            for d in component_info.get('depends', []):
+                l = d.split(None, 1)
+                if len(l) == 1:
+                   p = l[0]
+                   v = None
+                else:
+                   p,v = l
+                t = dependencies_translation.get(p)
+                if t is None:
+                    component_depends.append(d)
+                else:
+                    for i in t:
+                        if v:
+                            component_depends.append(f'{i} {v}')
+                        else:
+                            component_depends.append(i)
+            
+
         depends = []
         for p in package_info.get('packages', ()):
             v = package_version(p)
             depends.append(f'{p}=={v}')
-        for d in metadata.get('depends', []):
+        for d in chain(component_depends, package_info.get('depends', []), metadata.get('depends', [])):
           m = re.match('^{{(.*)}}', d)
           if m:
             d = eval(m.group(1))
@@ -168,11 +212,13 @@ def generate_repository(repository, distro, distro_version,
             with open(info / 'index.json', 'w') as f:
               json.dump(index, f, indent=4)
             
-            if package in components_info:
+            if component_info:
                 # Package is a component, run make to install its files
                 env = os.environ.copy()
                 env['BRAINVISA_INSTALL_PREFIX'] = str(tmp)
                 subprocess.check_call(['make', f'install-{package}'],
+                                      env=env, cwd=env['CASA_BUILD'])
+                subprocess.check_call(['make', f'install-{package}-doc'],
                                       env=env, cwd=env['CASA_BUILD'])
 
 
