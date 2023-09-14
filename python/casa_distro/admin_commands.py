@@ -1221,7 +1221,8 @@ def bbi_daily(distro=None, branch=None, system=None,
 
         if update_base_images:
             # First, update dev images
-            dev_images = set(config['image'] for config in dev_configs)
+            dev_images = set(osp.join(config['directory'], config['image'])
+                             for config in dev_configs)
             # Then, download the corresponding run image (iterate on JSONs on
             # the server until we find the run image with the correct uuid)
             # (we must find these images before updating dev images because
