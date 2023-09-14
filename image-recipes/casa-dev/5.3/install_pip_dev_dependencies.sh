@@ -26,6 +26,11 @@ PIP3="$SUDO python3 -m pip --no-cache-dir"
 # Python packages that do not exist as APT packages
 $PIP3 install pre-commit
 
+# sphinx_rtd_theme needs docutils <0.19,
+# sphinxcontrib-mermaid needs >=0.18.1 in order to avoid a bug
+# apt ships 0.17.1 which is not good enough
+$PIP3 install -U "docutils<0.19"
+
 # used in colorado
 $PIP3 install sphinx_rtd_theme
 
