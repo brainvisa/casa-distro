@@ -60,8 +60,3 @@ if [ ! -e "$CONDA" ]; then
     "$CASA/src/casa-distro/setup/conda/setup_run_compiled"
     "$CASA/src/casa-distro/setup/conda/setup_dev_conda"
 fi
-
-if [ ! -e "$CONDA/recipe" ]; then
-    mkdir "$CONDA/recipe"
-    cp   
-fi
