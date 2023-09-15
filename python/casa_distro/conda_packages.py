@@ -218,8 +218,9 @@ def generate_repository(repository, distro, distro_version,
                 env['BRAINVISA_INSTALL_PREFIX'] = str(tmp)
                 subprocess.check_call(['make', f'install-{package}'],
                                       env=env, cwd=env['CASA_BUILD'])
-                subprocess.check_call(['make', f'install-{package}-doc'],
-                                      env=env, cwd=env['CASA_BUILD'])
+                # Do not install doc until doc generation works with Conda
+                # subprocess.check_call(['make', f'install-{package}-doc'],
+                #                       env=env, cwd=env['CASA_BUILD'])
 
 
             # List all files in temporary directory
