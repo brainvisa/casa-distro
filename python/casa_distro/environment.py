@@ -777,6 +777,103 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
                       base_directory=base_directory,
                       verbose=verbose)
 
+def get_test_commands(casa_distro_cmd=None, config=None, log_lines=None):
+    '''
+    This function is the result of the extraction of most of
+    the code of BBIDaily.get_test_commands() method to make it
+    compatible with a conda environment (that does not use
+    casa_distro command and environment)
+
+    This function returns a dictionary
+    whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
+    values are a list of commands to run to perform the test.
+
+    If casa-distro is used, three options must be given:
+      casa_distro_cmd: the casa_distro executable
+      config: a casa-distro environment dictionary.
+      log_lines: a list that is extended with log lines for
+                 the test extraction process.
+    '''
+    if casa_distro_cmd is None:
+        cmd = [
+            'ctest', '--print-labels'
+        ]
+    else:
+        cmd = casa_distro_cmd + [
+            'run',
+            'name={0}'.format(config['name']),
+            'cwd=/casa/host/build',
+            '--',
+            'ctest', '--print-labels'
+        ]
+    # universal_newlines is the old name to request text-mode (text=True)
+    o = subprocess.check_output(cmd, bufsize=-1,
+                                universal_newlines=True)
+    labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
+    if log_lines is not None:
+        log_lines += ['$ ' + ' '.join(shlex_quote(arg) for arg in cmd),
+                        o, '\n']
+    tests = {}
+    for label in labels:
+        if casa_distro_cmd is None:
+            cmd = [
+                'ctest', '-V', '-L',
+                '^{0}$'.format(label)
+            ]
+            env = os.environ.copy()
+            env['BRAINVISA_TEST_REMOTE_COMMAND'] = 'echo'
+        else:
+            cmd = casa_distro_cmd + [
+                'run',
+                'name={0}'.format(config['name']),
+                'cwd=/casa/host/build',
+                'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
+                '--',
+                'ctest', '-V', '-L',
+                '^{0}$'.format(label)
+            ] + config.get('ctest_options', [])
+            env = None
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, bufsize=-1,
+                                universal_newlines=True,
+                                env=env)
+        o, stderr = p.communicate()
+        if log_lines is not None:
+            log_lines += ['$ ' + ' '.join(shlex_quote(arg) for arg in cmd),
+                            o, '\n']
+        if p.returncode != 0:
+            # We want to hide stderr unless ctest returns a nonzero exit
+            # code. In the case of test filtering where no tests are
+            # matched (e.g. with ctest_options=['-R', 'dummyfilter']), the
+            # annoying message 'No tests were found!!!' is printed to
+            # stderr by ctest, but it exits with return code 0.
+            sys.stderr.write(stderr)
+            raise RuntimeError('ctest failed with the above error')
+        o = o.split('\n')
+        # Extract the third line that follows each line containing ': Test
+        # command:'
+        commands = []
+        i = 0
+        while i < len(o):
+            line = o[i]
+            m = re.match(r'(^[^:]*): Test command: .*$', line)
+            if m:
+                prefix = f'{m.group(1)}: '
+                command = None
+                i += 1
+                while i < len(o) and o[i].startswith(prefix):
+                    command = o[i][len(prefix):]
+                    i += 1
+                if command:
+                    commands.append(command)
+            i+= 1
+        if commands:
+            tests[label] = commands
+    if log_lines is not None:
+        log_lines += ['Final test dictionary:',
+                        json.dumps(tests, indent=4, separators=(',', ': '))]
+    return tests
+
 
 class BBIDaily:
     def __init__(self, base_directory, jenkins=None):
@@ -944,64 +1041,8 @@ class BBIDaily:
         whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
         values are a list of commands to run to perform the test.
         '''
-        cmd = self.casa_distro_cmd + [
-            'run',
-            'name={0}'.format(config['name']),
-            'cwd=/casa/host/build',
-            '--',
-            'ctest', '--print-labels'
-        ]
-        # universal_newlines is the old name to request text-mode (text=True)
-        o = subprocess.check_output(cmd, bufsize=-1,
-                                    universal_newlines=True)
-        labels = [i.strip() for i in o.split('\n')[2:] if i.strip()]
-        log_lines = ['$ ' + ' '.join(shlex_quote(arg) for arg in cmd),
-                     o, '\n']
-        tests = {}
-        for label in labels:
-            cmd = self.casa_distro_cmd + [
-                'run',
-                'name={0}'.format(config['name']),
-                'cwd=/casa/host/build',
-                'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
-                '--',
-                'ctest', '-V', '-L',
-                '^{0}$'.format(label)
-            ] + config.get('ctest_options', [])
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, bufsize=-1,
-                                 universal_newlines=True)
-            o, stderr = p.communicate()
-            log_lines += ['$ ' + ' '.join(shlex_quote(arg) for arg in cmd),
-                          o, '\n']
-            if p.returncode != 0:
-                # We want to hide stderr unless ctest returns a nonzero exit
-                # code. In the case of test filtering where no tests are
-                # matched (e.g. with ctest_options=['-R', 'dummyfilter']), the
-                # annoying message 'No tests were found!!!' is printed to
-                # stderr by ctest, but it exits with return code 0.
-                sys.stderr.write(stderr)
-                raise RuntimeError('ctest failed with the above error')
-            o = o.split('\n')
-            # Extract the third line that follows each line containing ': Test
-            # command:'
-            commands = [o[i+3][o[i+3].find(':')+2:].strip()
-                        for i in range(len(o))
-                        if ': Test command:' in o[i]]
-            timeouts = [o[i+1][o[i+1].find(':')+2:].strip()
-                        for i in range(len(o))
-                        if ': Test command:' in o[i]]
-            timeouts = [x[x.find(':')+2:] for x in timeouts]
-            if commands:  # skip empty command lists
-                for i, command in enumerate(commands):
-                    if float(timeouts[i]) < 9.999e+06:
-                        command = 'timeout -k 10 %s %s' % (timeouts[i],
-                                                           command)
-                        commands[i] = command
-                tests[label] = commands
-        log_lines += ['Final test dictionary:',
-                      json.dumps(tests, indent=4, separators=(',', ': '))]
-
+        log_lines = []
+        tests = get_test_commands(self.casa_distro_cmd, config, log_lines)
         if log_config_name is None:
             log_config_name = config['name']
         self.log(log_config_name, 'get test commands', 0, '\n'.join(log_lines))
