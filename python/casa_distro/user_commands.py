@@ -394,19 +394,23 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
             if image == environment['image']:
                 to_update[full_image].append(environment)
         else:
-            env_image = full_image
-            to_update.setdefault(env_image, []).append(environment)
+            # don't look for a run image associated with a user image
+            # (especially because they don't have an image_version and
+            # this inroduces ambiguities)
+            if environment.get('type') != 'user':
+                env_image = full_image
+                to_update.setdefault(env_image, []).append(environment)
 
-            # Check for update of run image associated with environment
-            _, extension = osp.splitext(env_image)
-            g = ('{}/'
-                 'casa-run-{}*{}').format(
-                    osp.dirname(env_image),
-                    environment.get("image_version", ""),
-                    extension)  # noqa: E261,E128
-            for run_image in glob.glob(g):
-                if osp.exists(run_image):
-                    compatible_run_images.append(run_image)
+                # Check for update of run image associated with environment
+                _, extension = osp.splitext(env_image)
+                g = ('{}/'
+                     'casa-run-{}*{}').format(
+                        osp.dirname(env_image),
+                        environment.get("image_version", ""),
+                        extension)  # noqa: E261,E128
+                for run_image in glob.glob(g):
+                    if osp.exists(run_image):
+                        compatible_run_images.append(run_image)
         if len(compatible_run_images) == 1:
             to_update[compatible_run_images[0]] = []
         elif len(compatible_run_images) > 1:
