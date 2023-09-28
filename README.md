@@ -1,6 +1,16 @@
 # casa-distro
 Unified development environment for BrainVISA projects.
 
+## Test Conda packages
+
+```
+CONDA=/tmp/somewhere
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+sh Mambaforge-Linux-x86_64.sh -b -p "$CONDA"
+. "$CONDA/bin/activate"
+mamba install -c https://brainvisa.info/download/conda brainvisa
+```
+
 ## Setup Conda development environment
 
 All compilation dependencies are taken from conda-forge repository except low level OpenGL library that must be installed on the host system. On Debian based distro (such as Ubuntu) this can be done by installing `libglu1-mesa-dev` package with `apt install` command.
