@@ -36,3 +36,6 @@ $PIP3 install sphinx_rtd_theme
 
 # used to make graphs in docs
 $PIP3 install sphinxcontrib-mermaid
+
+# used in populse_mia docs
+$PIP3 install myst-parser

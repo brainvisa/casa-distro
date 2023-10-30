@@ -54,6 +54,7 @@ early_dependencies=(
     libxtst6  # dependency of virtualgl
     libxv1  # dependency of virtualgl
     wget
+    software-properties-common  # dependency of apptainer
 )
 $SUDO apt-get -o Acquire::Retries=5 install --no-install-recommends -y \
       ${early_dependencies[@]}
@@ -69,6 +70,9 @@ $SUDO cp /build/neurodebian.sources.list \
          /etc/apt/sources.list.d/neurodebian.sources.list
 $SUDO cp /build/neurodebian-key.gpg \
       /etc/apt/trusted.gpg.d/neurodebian.asc
+
+# configure apptainer repository
+$SUDO add-apt-repository -y ppa:apptainer/ppa
 
 
 ###############################################################################
@@ -330,6 +334,7 @@ brainvisa_other_dependencies=(
     gsl-bin
     # used in some scripts (snapshots processes in brainvisa) and useful anyway
     imagemagick
+    apptainer  # for nested container calls
 )
 
 # Dependencies that are needed for running BrainVISA tests in casa-run
