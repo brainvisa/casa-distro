@@ -32,7 +32,7 @@ $PIP3 install pre-commit
 $PIP3 install -U "docutils<0.19"
 
 # used in colorado
-$PIP3 install sphinx_rtd_theme
+$PIP3 install "sphinx<7" sphinx_rtd_theme
 
 # used to make graphs in docs
 $PIP3 install sphinxcontrib-mermaid
