@@ -27,7 +27,7 @@ PIP3="$SUDO python3 -m pip --no-cache-dir"
 $PIP3 install pre-commit
 
 # used in colorado
-$PIP3 install sphinx_rtd_theme
+$PIP3 install "sphinx<7" sphinx_rtd_theme
 
 # used to make graphs in docs
 $PIP3 install sphinxcontrib-mermaid
