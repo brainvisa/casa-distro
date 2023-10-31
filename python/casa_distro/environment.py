@@ -384,10 +384,36 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
             yield config
 
 
+def updated_image(image):
+    ''' Return an updated version of the input image.
+
+    If the input image file exists, just return it. Otherwise looks for the
+    latest patch in images files present at the same location on loca disk.
+    '''
+    if osp.exists(image) and osp.exists(image + '.json'):
+        return image
+    ext = image.rsplit('.', 1)[-1]
+    if re.match(f'.*-[0-9]+\\.{ext}$', image):
+        image_pat = re.sub(f'-[0-9]+\\.{ext}$', f'-*.{ext}', image)
+    else:
+        image_pat = image[:-len(ext)-1] + '-*.' + ext
+    if image_pat:
+        images = glob(image_pat)
+        patches = [int(re.match(f'.*-([0-9]+)\\.{ext}$', im).group(1))
+                   for im in images]
+        return images[patches.index(max(patches))]
+    # otherwise, look for image without patch version
+    image_pat = re.sub(f'-[0-9]+\\.{ext}$', f'.{ext}', image)
+    if osp.exists(image_pat):
+        return image_pat
+    return image  # not found
+
+
 def get_run_base_of_dev_image(image, url=None):
     """
     Get the run image associated to a given dev image
     """
+    image = updated_image(image)
     if url is not None:
         base = osp.basename(image)
         dirname = osp.dirname(image)
@@ -771,6 +797,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     else:
         eimage = osp.join(osp.realpath(osp.join(config.get('directory'))),
                           eimage)
+        eimage = updated_image(eimage)
     cid = config.get('image_id')
     if os.path.exists(eimage + '.json') and cid:
         with open(eimage + '.json') as f:
