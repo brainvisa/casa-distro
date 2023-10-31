@@ -64,7 +64,7 @@ Environment specification
     branch=bug_fix
     system=ubuntu-16.04
 
-An environment may also be given as its unique :ref:`name <env_name>` insead of the above variables.
+An environment may also be given as its unique :ref:`name <env_name>` instead of the above variables.
 
 .. _conf_option:
 

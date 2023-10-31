@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Common parameters: &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=808b3635" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=4f6ddb47"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -55,7 +54,7 @@ command.</p>
 </dd>
 </dl>
 <section id="common-parameters">
-<h1>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this heading">¶</a></h1>
+<h1>Common parameters:<a class="headerlink" href="#common-parameters" title="Link to this heading">¶</a></h1>
 <p>Most commands accept more or less the same parameters.</p>
 <p>Many subcommands need <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> selection specifications: <a class="reference internal" href="casa_distro_command.html#environment-options"><span class="std std-ref">see the documentation on how to specify an environment</span></a>.</p>
 <dl>
@@ -67,12 +66,12 @@ can be passed on the commandline, or set via the
 </dl>
 </section>
 <section id="commands">
-<h1>Commands:<a class="headerlink" href="#commands" title="Permalink to this heading">¶</a></h1>
+<h1>Commands:<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h1>
 <section id="help">
-<span id="casa-distro-help-help"></span><h2>help<a class="headerlink" href="#help" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-help-help"></span><h2>help<a class="headerlink" href="#help" title="Link to this heading">¶</a></h2>
 <p>Print global help or help about a command.</p>
 <section id="parameters">
-<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
 <dl class="simple">
 <dt>format</dt><dd><p>format help text in a given text format. Valid values are “text”
 (default) for raw text, or rst (RST/sphinx format).</p>
@@ -84,14 +83,14 @@ documentation in the general help.</p>
 </section>
 </section>
 <section id="distro">
-<span id="casa-distro-distro-help"></span><h2>distro<a class="headerlink" href="#distro" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-distro-help"></span><h2>distro<a class="headerlink" href="#distro" title="Link to this heading">¶</a></h2>
 <p>List all available distro and provide information for each one.</p>
 </section>
 <section id="list">
-<span id="casa-distro-list-help"></span><h2>list<a class="headerlink" href="#list" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-list-help"></span><h2>list<a class="headerlink" href="#list" title="Link to this heading">¶</a></h2>
 <p>List run or dev environments created by “setup”/”setup_dev” command.</p>
 <section id="id1">
-<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -128,14 +127,14 @@ JSON format.</p>
 </section>
 </section>
 <section id="run">
-<span id="casa-distro-run-help"></span><h2>run<a class="headerlink" href="#run" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-run-help"></span><h2>run<a class="headerlink" href="#run" title="Link to this heading">¶</a></h2>
 <p>Start any command in a selected run or dev environment</p>
 <p>example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro</span> <span class="n">branch</span><span class="o">=</span><span class="n">master</span> <span class="n">ls</span> <span class="o">-</span><span class="n">als</span> <span class="o">/</span><span class="n">casa</span>
 </pre></div>
 </div>
 <section id="id2">
-<h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -210,7 +209,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="pull-image">
-<span id="casa-distro-pull-image-help"></span><h2>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-pull-image-help"></span><h2>pull_image<a class="headerlink" href="#pull-image" title="Link to this heading">¶</a></h2>
 <p>Update the container images. By default the current image and
 all images that are used by at least one casa-distro environment
 are selected (these environments are listed by the <code class="docutils literal notranslate"><span class="pre">list</span></code> command).
@@ -250,7 +249,7 @@ pattern having the same <code class="docutils literal notranslate"><span class="
 higher <code class="docutils literal notranslate"><span class="pre">patch</span></code>. If several updated version are available for an image,
 the one with the greatest <code class="docutils literal notranslate"><span class="pre">patch</span></code> is selected.</p>
 <section id="id3">
-<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given distro name.</p>
@@ -298,7 +297,7 @@ and config files would be modified by other modes.</p></li>
 </div></blockquote>
 </dd>
 <dt>cleanup</dt><dd><p>default=yes
-if true (or 1, or yes), remove current image when succesfully finished
+if true (or 1, or yes), remove current image when successfully finished
 to download new one.</p>
 </dd>
 <dt>verbose</dt><dd><p>default=None</p>
@@ -308,11 +307,11 @@ to download new one.</p>
 </section>
 </section>
 <section id="shell">
-<span id="casa-distro-shell-help"></span><h2>shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-shell-help"></span><h2>shell<a class="headerlink" href="#shell" title="Link to this heading">¶</a></h2>
 <p>Start a bash shell in the configured container with the given pository
 configuration.</p>
 <section id="id4">
-<h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -387,7 +386,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="mrun">
-<span id="casa-distro-mrun-help"></span><h2>mrun<a class="headerlink" href="#mrun" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-mrun-help"></span><h2>mrun<a class="headerlink" href="#mrun" title="Link to this heading">¶</a></h2>
 <p>Start any command in one or several container with the given
 repository configuration. By default, command is executed in
 all existing build workflows.</p>
@@ -397,7 +396,7 @@ all existing build workflows.</p>
 </pre></div>
 </div>
 <section id="id5">
-<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -472,11 +471,11 @@ call the container system.</p>
 </section>
 </section>
 <section id="bv-maker">
-<span id="casa-distro-bv-maker-help"></span><h2>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this heading">¶</a></h2>
+<span id="casa-distro-bv-maker-help"></span><h2>bv_maker<a class="headerlink" href="#bv-maker" title="Link to this heading">¶</a></h2>
 <p>Start a bv_maker in the configured container with the given repository
 configuration.</p>
 <section id="id6">
-<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
+<h3>Parameters<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=dev</p>
 <p>If given, select environment having the given type.</p>
@@ -587,8 +586,8 @@ call the container system.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017-2023, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    &#169; Copyright 2017-2023, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>The casa_distro command &#8212; CASA-Distro - BrainVisa / CATI development distribution</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=808b3635" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=4f6ddb47"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="The casa_distro_admin command" href="casa_distro_admin_command.html" />
@@ -38,7 +37,7 @@
           <div class="body" role="main">
             
   <section id="the-casa-distro-command">
-<h1>The casa_distro command<a class="headerlink" href="#the-casa-distro-command" title="Permalink to this heading">¶</a></h1>
+<h1>The casa_distro command<a class="headerlink" href="#the-casa-distro-command" title="Link to this heading">¶</a></h1>
 <p>Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See <a class="reference external" href="http://brainivsa.info/casa-distro">http://brainivsa.info/casa-distro</a> and
@@ -65,7 +64,7 @@ command.</p>
 </dd>
 </dl>
 <section id="common-parameters">
-<h2>Common parameters:<a class="headerlink" href="#common-parameters" title="Permalink to this heading">¶</a></h2>
+<h2>Common parameters:<a class="headerlink" href="#common-parameters" title="Link to this heading">¶</a></h2>
 <p>Most commands accept more or less the same parameters.</p>
 <p>Many subcommands need <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> selection specifications: <a class="reference internal" href="#environment-options"><span class="std std-ref">see the documentation on how to specify an environment</span></a>.</p>
 <dl>
@@ -77,12 +76,12 @@ can be passed on the commandline, or set via the
 </dl>
 </section>
 <section id="commands">
-<h2>Commands:<a class="headerlink" href="#commands" title="Permalink to this heading">¶</a></h2>
+<h2>Commands:<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="help">
-<span id="casa-distro-help-help"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-help-help"></span><h3>help<a class="headerlink" href="#help" title="Link to this heading">¶</a></h3>
 <p>Print global help or help about a command.</p>
 <section id="parameters">
-<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h4>
 <dl class="simple">
 <dt>format</dt><dd><p>format help text in a given text format. Valid values are “text”
 (default) for raw text, or rst (RST/sphinx format).</p>
@@ -94,14 +93,14 @@ documentation in the general help.</p>
 </section>
 </section>
 <section id="distro">
-<span id="casa-distro-distro-help"></span><h3>distro<a class="headerlink" href="#distro" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-distro-help"></span><h3>distro<a class="headerlink" href="#distro" title="Link to this heading">¶</a></h3>
 <p>List all available distro and provide information for each one.</p>
 </section>
 <section id="list">
-<span id="casa-distro-list-help"></span><h3>list<a class="headerlink" href="#list" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-list-help"></span><h3>list<a class="headerlink" href="#list" title="Link to this heading">¶</a></h3>
 <p>List run or dev environments created by “setup”/”setup_dev” command.</p>
 <section id="id1">
-<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -138,14 +137,14 @@ JSON format.</p>
 </section>
 </section>
 <section id="run">
-<span id="casa-distro-run-help"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-run-help"></span><h3>run<a class="headerlink" href="#run" title="Link to this heading">¶</a></h3>
 <p>Start any command in a selected run or dev environment</p>
 <p>example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>master<span class="w"> </span>ls<span class="w"> </span>-als<span class="w"> </span>/casa
 </pre></div>
 </div>
 <section id="id2">
-<h4>Parameters<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -220,7 +219,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="pull-image">
-<span id="casa-distro-pull-image-help"></span><h3>pull_image<a class="headerlink" href="#pull-image" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-pull-image-help"></span><h3>pull_image<a class="headerlink" href="#pull-image" title="Link to this heading">¶</a></h3>
 <p>Update the container images. By default the current image and
 all images that are used by at least one casa-distro environment
 are selected (these environments are listed by the <code class="docutils literal notranslate"><span class="pre">list</span></code> command).
@@ -260,7 +259,7 @@ pattern having the same <code class="docutils literal notranslate"><span class="
 higher <code class="docutils literal notranslate"><span class="pre">patch</span></code>. If several updated version are available for an image,
 the one with the greatest <code class="docutils literal notranslate"><span class="pre">patch</span></code> is selected.</p>
 <section id="id3">
-<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given distro name.</p>
@@ -308,7 +307,7 @@ and config files would be modified by other modes.</p></li>
 </div></blockquote>
 </dd>
 <dt>cleanup</dt><dd><p>default=yes
-if true (or 1, or yes), remove current image when succesfully finished
+if true (or 1, or yes), remove current image when successfully finished
 to download new one.</p>
 </dd>
 <dt>verbose</dt><dd><p>default=None</p>
@@ -318,11 +317,11 @@ to download new one.</p>
 </section>
 </section>
 <section id="shell">
-<span id="casa-distro-shell-help"></span><h3>shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-shell-help"></span><h3>shell<a class="headerlink" href="#shell" title="Link to this heading">¶</a></h3>
 <p>Start a bash shell in the configured container with the given pository
 configuration.</p>
 <section id="id4">
-<h4>Parameters<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -397,7 +396,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="mrun">
-<span id="casa-distro-mrun-help"></span><h3>mrun<a class="headerlink" href="#mrun" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-mrun-help"></span><h3>mrun<a class="headerlink" href="#mrun" title="Link to this heading">¶</a></h3>
 <p>Start any command in one or several container with the given
 repository configuration. By default, command is executed in
 all existing build workflows.</p>
@@ -407,7 +406,7 @@ casa_distro<span class="w"> </span>mrun<span class="w"> </span>bv_maker<span cla
 </pre></div>
 </div>
 <section id="id5">
-<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=None</p>
 <p>If given, select environment having the given type.</p>
@@ -482,11 +481,11 @@ call the container system.</p>
 </section>
 </section>
 <section id="bv-maker">
-<span id="casa-distro-bv-maker-help"></span><h3>bv_maker<a class="headerlink" href="#bv-maker" title="Permalink to this heading">¶</a></h3>
+<span id="casa-distro-bv-maker-help"></span><h3>bv_maker<a class="headerlink" href="#bv-maker" title="Link to this heading">¶</a></h3>
 <p>Start a bv_maker in the configured container with the given repository
 configuration.</p>
 <section id="id6">
-<h4>Parameters<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h4>
+<h4>Parameters<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <dl>
 <dt><a class="reference internal" href="concepts.html#env-type"><span class="std std-ref">type</span></a></dt><dd><p>default=dev</p>
 <p>If given, select environment having the given type.</p>
@@ -529,7 +528,7 @@ call the container system.</p>
 </section>
 </section>
 <section id="the-complexity-of-arguments-parsing">
-<h2>The complexity of arguments parsing<a class="headerlink" href="#the-complexity-of-arguments-parsing" title="Permalink to this heading">¶</a></h2>
+<h2>The complexity of arguments parsing<a class="headerlink" href="#the-complexity-of-arguments-parsing" title="Link to this heading">¶</a></h2>
 <p>As casa_distro runs a chain of sub-commands, each of them passing some user-provided arguments, there may be some ambiguity on who should receive arguments. The argument delimiter <code class="docutils literal notranslate"><span class="pre">--</span></code> should be used appropriately.
 For instance:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>casa_distro<span class="w"> </span>-r<span class="w"> </span>~/casa_distro<span class="w"> </span>run<span class="w"> </span><span class="nv">branch</span><span class="o">=</span>bug_fix<span class="w"> </span><span class="nv">gui</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>anatomist<span class="w"> </span>/casa/tests/some_image.nii
@@ -558,19 +557,19 @@ For instance:</p>
 </div>
 </section>
 <section id="options-common-to-several-commands">
-<h2>Options common to several commands<a class="headerlink" href="#options-common-to-several-commands" title="Permalink to this heading">¶</a></h2>
+<h2>Options common to several commands<a class="headerlink" href="#options-common-to-several-commands" title="Link to this heading">¶</a></h2>
 <section id="environment-specification">
-<span id="environment-options"></span><h3>Environment specification<a class="headerlink" href="#environment-specification" title="Permalink to this heading">¶</a></h3>
+<span id="environment-options"></span><h3>Environment specification<a class="headerlink" href="#environment-specification" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">distro</span><span class="o">=</span>brainvisa
 <span class="nv">branch</span><span class="o">=</span>bug_fix
 <span class="nv">system</span><span class="o">=</span>ubuntu-16.04
 </pre></div>
 </div>
-<p>An environment may also be given as its unique <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a> insead of the above variables.</p>
+<p>An environment may also be given as its unique <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a> instead of the above variables.</p>
 </section>
 </section>
 <section id="environment-variables">
-<span id="conf-option"></span><h2>Environment variables<a class="headerlink" href="#environment-variables" title="Permalink to this heading">¶</a></h2>
+<span id="conf-option"></span><h2>Environment variables<a class="headerlink" href="#environment-variables" title="Link to this heading">¶</a></h2>
 <p>Rather than systematically passing options, some environment variables may be used to specify some parameters to <cite>̀ casa_distro`</cite>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># replaces the -r option</span>
 <span class="nv">CASA_DEFAULT_REPOSITORY</span><span class="o">=</span>/home/someone/casa_distro
@@ -578,7 +577,7 @@ For instance:</p>
 </div>
 </section>
 <section id="environment-configuration-file">
-<h2>Environment configuration file<a class="headerlink" href="#environment-configuration-file" title="Permalink to this heading">¶</a></h2>
+<h2>Environment configuration file<a class="headerlink" href="#environment-configuration-file" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">casa_distro.json</span></code> file found in each <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> subdirectory (in the <code class="docutils literal notranslate"><span class="pre">conf</span></code> subdirectory, actually) is a dictionary which contains variables used to define the environment, the type of container used (docker or singularity), mounted directories in the container image, etc.</p>
 <p>Some variables substitution can occur in the string values, in a “pythonic” shape: <code class="docutils literal notranslate"><span class="pre">%(variable)s</span></code> will be replaced by the contents of a variable <code class="docutils literal notranslate"><span class="pre">variable</span></code>. The following variables are available:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>name
@@ -594,7 +593,7 @@ distro
 </div>
 <p>Moreover some environment variables replacement also takes place, in the shape: <code class="docutils literal notranslate"><span class="pre">${VARIABLE}</span></code>.</p>
 <section id="configuration-dictionary-variables">
-<h3>Configuration dictionary variables<a class="headerlink" href="#configuration-dictionary-variables" title="Permalink to this heading">¶</a></h3>
+<h3>Configuration dictionary variables<a class="headerlink" href="#configuration-dictionary-variables" title="Link to this heading">¶</a></h3>
 <dl class="simple">
 <dt>branch: string</dt><dd><p>name of the source and build branch (<code class="docutils literal notranslate"><span class="pre">master</span></code>, <code class="docutils literal notranslate"><span class="pre">latest_release</span></code>, <code class="docutils literal notranslate"><span class="pre">release_candidate</span></code>)</p>
 </dd>
@@ -718,8 +717,8 @@ distro
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017-2023, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    &#169; Copyright 2017-2023, BrainVISA team &lt;contact@brainvisa.info&gt;.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>
