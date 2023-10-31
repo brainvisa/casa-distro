@@ -373,10 +373,9 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
 
     to_update = {}
     if image:
-        full_image = image
-        if not osp.isabs(full_image):
-            full_image = osp.normpath(osp.join(os.getcwd(), image))
-        to_update[full_image] = []
+        if not osp.isabs(image):
+            image = osp.normpath(osp.join(os.getcwd(), image))
+        to_update[image] = []
     for environment in iter_environments(base_directory,
                                          distro=distro,
                                          branch=branch,
@@ -391,7 +390,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
             full_image = osp.normpath(osp.join(
                 environment.get('directory', os.getcwd()), full_image))
         if image:
-            if image == environment['image']:
+            if image == full_image:
                 to_update[full_image].append(environment)
         else:
             # don't look for a run image associated with a user image
@@ -436,9 +435,9 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
             update_url = updates.get(image)
             if update_url:
                 if update_url not in up_to_date:
-                    print(full_image, '<-', update_url, file=verbose)
+                    print(image, '<-', update_url, file=verbose)
                 else:
-                    print(full_image, '==', update_url, '[done]',
+                    print(image, '==', update_url, '[done]',
                           file=verbose)
                 for e in environments:
                     print('  ->', '{}/conf/casa_distro.json'.format(
