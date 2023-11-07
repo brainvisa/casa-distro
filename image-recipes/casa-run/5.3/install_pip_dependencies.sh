@@ -47,6 +47,9 @@ ${PIP_INSTALL} dipy
 # Runtime dependencies of soma-base
 ${PIP_INSTALL} pycryptodome
 
+# Installation by pip instead of apt until bug fixed: https://github.com/matplotlib/matplotlib/issues/21688
+${PIP_INSTALL} matplotlib
+
 # Runtime dependencies of Morphologist
 ${PIP_INSTALL} torch --extra-index-url https://download.pytorch.org/whl/cu116
 ${PIP_INSTALL} torch-vision --extra-index-url https://download.pytorch.org/whl/cu116
@@ -58,6 +61,7 @@ ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar
 # warning: constraints specified on versions because recent versions of
 # ipykernel and tornado (especially) cause the qtconsole from a running app
 # to fail / hang
+${PIP_INSTALL} -U sphinx nbsphinx sphinx-gallery
 ${PIP_INSTALL} -U ipykernel tornado jupyter_client \
                qtconsole nbconvert ipywidgets ipycanvas ipyevents jupyter \
                jupyterlab_widgets jupyter_console notebook

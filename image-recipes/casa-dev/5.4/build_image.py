@@ -15,6 +15,7 @@ BUILD_FILES = [
     'install_pip_dev_dependencies.sh',
     'install_other_dev_dependencies.sh',
     'install_casa_dev_components.sh',
+    'pip_dev_constraints.txt',
 ]
 """List of files that are copied into /build and removed when done."""
 
