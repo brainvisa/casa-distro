@@ -22,7 +22,7 @@ fi
 # versions, while keeping this file clean.
 
 PIP3="$SUDO python3 -m pip --no-cache-dir"
-PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
+PIP_INSTALL="$PIP3 install -c /build/pip_dev_constraints.txt"
 
 # Python packages that do not exist as APT packages
 $PIP_INSTALL pre-commit
