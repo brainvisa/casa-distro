@@ -31,7 +31,6 @@ $PIP_INSTALL pre-commit
 # sphinxcontrib-mermaid needs >=0.18.1 in order to avoid a bug
 # apt ships 0.17.1 which is not good enough
 $PIP_INSTALL -U "docutils<0.19"
-
 # used in colorado
 $PIP_INSTALL sphinx sphinx_rtd_theme
 
