@@ -121,8 +121,6 @@ documentation_building_packages=(
     graphviz
     jupyter-nbconvert
     pandoc
-    python3-sphinx
-    python3-sphinx-gallery
     texlive-latex-base
     texlive-latex-extra  # needed by doxygen to render LaTeX formulas
     texlive-fonts-recommended

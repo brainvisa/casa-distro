@@ -22,22 +22,23 @@ fi
 # versions, while keeping this file clean.
 
 PIP3="$SUDO python3 -m pip --no-cache-dir"
+PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
 
 # Python packages that do not exist as APT packages
-$PIP3 install pre-commit
+$PIP_INSTALL pre-commit
 
 # sphinx_rtd_theme needs docutils <0.19,
 # sphinxcontrib-mermaid needs >=0.18.1 in order to avoid a bug
 # apt ships 0.17.1 which is not good enough
-$PIP3 install -U "docutils<0.19"
+$PIP_INSTALL -U "docutils<0.19"
 
 # used in colorado
-$PIP3 install "sphinx<7" sphinx_rtd_theme
+$PIP_INSTALL sphinx sphinx_rtd_theme
 
 # used to make graphs in docs
-$PIP3 install sphinxcontrib-mermaid
+$PIP_INSTALL sphinxcontrib-mermaid
 
 # used in populse_mia docs
-$PIP3 install myst-parser
+$PIP_INSTALL myst-parser
 
-$PIP3 install 'sip>6'
+$PIP_INSTALL 'sip>6'
