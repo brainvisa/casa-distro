@@ -11,3 +11,4 @@ notebook<6.0.0
 sphinx<7.0.0
 numpy==1.21.5
 matplotlib<3.8
+qtconsole<5.5
