@@ -70,7 +70,8 @@ ${PIP_INSTALL} -U 'nbconvert<6.4'
 
 # post-install: register jupyter extensions
 $SUDO jupyter nbextension enable --py widgetsnbextension
-$SUDO jupyter nbextension enable --py ipyevents
+$SUDO jupyter nbextension install --py --symlink --sys-prefix ipyevents
+$SUDO jupyter nbextension enable --py --sys-prefix ipyevents
 $SUDO jupyter nbextension enable --py ipycanvas
 
 # useful tool: pip search has stopped working, but pip_search works
