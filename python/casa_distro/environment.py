@@ -399,9 +399,12 @@ def updated_image(image):
         image_pat = image[:-len(ext)-1] + '-*.' + ext
     if image_pat:
         images = glob(image_pat)
+        if len(images) == 1:
+            return images[0]
         patches = [int(re.match(f'.*-([0-9]+)\\.{ext}$', im).group(1))
                    for im in images]
-        return images[patches.index(max(patches))]
+        if patches:
+            return images[patches.index(max(patches))]
     # otherwise, look for image without patch version
     image_pat = re.sub(f'-[0-9]+\\.{ext}$', f'.{ext}', image)
     if osp.exists(image_pat):
@@ -789,9 +792,10 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     if image is not None:
         print('image passed:', image)
         eimage = image
+        eimage1 = osp.normpath(osp.abspath(image))
     else:
         eimage = config.get('image')
-    eimage1 = osp.normpath(osp.join(config.get('directory'), eimage))
+        eimage1 = osp.normpath(osp.join(config.get('directory'), eimage))
     if osp.exists(eimage1):
         eimage = eimage1
     else:
