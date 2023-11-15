@@ -66,7 +66,8 @@ ${PIP_INSTALL} -U 'nbconvert<6.4'
 
 # post-install: register jupyter extensions
 $SUDO jupyter nbextension enable --py widgetsnbextension
-$SUDO jupyter nbextension enable --py ipyevents
+$SUDO jupyter nbextension install --py --symlink --sys-prefix ipyevents
+$SUDO jupyter nbextension enable --py --sys-prefix ipyevents
 $SUDO jupyter nbextension enable --py ipycanvas
 
 # Runtime PyQt6
