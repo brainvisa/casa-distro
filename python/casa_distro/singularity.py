@@ -302,6 +302,7 @@ Bootstrap: localimage
 
         installer = RecipeBuilder(output)
         installer.image_version = metadata['image_version']
+        installer.metadata = metadata
         for step in image_builder.steps:
             if verbose:
                 print('Performing:', step.__doc__, file=verbose)
