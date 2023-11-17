@@ -95,3 +95,11 @@ def casa_dev_components(base_dir, builder):
 def cleanup(base_dir, builder):
     """Clean up build files."""
     builder.run_root('rm -rf /build')
+
+
+@builder.step
+def update_metadata(base_dir, builder):
+    """ Set specific metadata for this image.
+    5.4 images are hidden, for now.
+    """
+    builder.metadata['hidden'] = True
