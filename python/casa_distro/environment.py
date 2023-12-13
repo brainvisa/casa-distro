@@ -393,20 +393,21 @@ def updated_image(image):
     if osp.exists(image) and osp.exists(image + '.json'):
         return image
     ext = image.rsplit('.', 1)[-1]
-    if re.match(f'.*-[0-9]+\\.{ext}$', image):
-        image_pat = re.sub(f'-[0-9]+\\.{ext}$', f'-*.{ext}', image)
+    if re.match('.*-[0-9]+\\.{0}$'.format(ext), image):
+        image_pat = re.sub('-[0-9]+\\.{0}$'.format(ext), '-*.{0}'.format(ext),
+                           image)
     else:
         image_pat = image[:-len(ext)-1] + '-*.' + ext
     if image_pat:
         images = glob(image_pat)
         if len(images) == 1:
             return images[0]
-        patches = [int(re.match(f'.*-([0-9]+)\\.{ext}$', im).group(1))
+        patches = [int(re.match('.*-([0-9]+)\\.{0}$'.format(ext), im).group(1))
                    for im in images]
         if patches:
             return images[patches.index(max(patches))]
     # otherwise, look for image without patch version
-    image_pat = re.sub(f'-[0-9]+\\.{ext}$', f'.{ext}', image)
+    image_pat = re.sub('-[0-9]+\\.{}$'.format(ext), '.{0}'.format(ext), image)
     if osp.exists(image_pat):
         return image_pat
     return image  # not found
