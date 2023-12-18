@@ -29,9 +29,6 @@ The following command (where `{dir}` and `{package}` must be replaced) can be us
 ```shell
 sh <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup) {dir} {package}
 ```
-
-Where `{dir}` is the path of the development directory and `{package}` is 
-
 ## Use a Conda development environment
 
 The usage of a Conda based casa-distro environment uses the activation/deactiavtion system shipped with Conda. In order to "enter" the developpment environment (that means mainly setting environment variables such as PATH, etc.), on can use:
