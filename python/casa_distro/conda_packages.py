@@ -17,7 +17,7 @@ dependencies_translation = {
 packages_metadata = {
     'brainvisa-base': {
         'depends': [
-            'sysroot-conda_2_28-x86_64',
+            # 'sysroot-conda_2_28-x86_64',
             "{{ pin_compatible('sysroot_linux-64', max_pin='x.x') }}",
             "{{ pin_compatible('libstdcxx-ng', min_pin='x.x', max_pin='x') }}",
             "{{ pin_compatible('libgcc-ng', min_pin='x.x', max_pin='x') }}",
