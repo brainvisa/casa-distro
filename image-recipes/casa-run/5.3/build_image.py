@@ -18,6 +18,7 @@ BUILD_FILES = [
     'pip_constraints.txt',
     'install_pip_dependencies.sh',
     'install_compiled_dependencies.sh',
+    'install_other_dependencies.sh',
     'cleanup_build_dependencies.sh',
     'build_sip_pyqt.sh',
 ]
