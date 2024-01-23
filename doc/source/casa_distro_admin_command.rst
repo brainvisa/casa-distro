@@ -6,6 +6,8 @@ Creation and publication of casa-distro releases and container images.
 
 .. include:: casa_distro_admin_command_help.rst
 
+.. highlight:: bash
+
 
 Images and releases creation
 ============================
@@ -121,3 +123,59 @@ Such an image definition directory should contain at least two files:
   The Dockerfile may (should) be based on another image, in the usual way of building docker images. Thus an existing casa-distro image can be the base for a new one.
 
 Once an image is created with docker, it can be converted to singularity using ``casa_distro create_singularity``.
+
+
+Creating a modified BrainVISA distribution
+==========================================
+
+If you are a toolbox developer and want to share a modified BrainVISA distribution with your additional tools and dependencies in it, here is a recipe to build a singularity/apptainer image for your needs. You will need sudo permission on your host system to do so.
+
+* create the modified run image::
+
+      sudo apptainer build -s casa-run-5.3-23 casa-run-5.3-23.sif
+      sudo apptainer run -w casa-run-5.3-23 bash
+
+  in this bash, install whatever you need, like (just examples)::
+
+      apt update
+      apt install -y whatever
+      pip3 install something_else
+      cp -a /home/someone/my_additional_software /usr/local/
+      ln -s /usr/local/my_additional_software/bin/* /usr/local/bin/
+
+  and so on. Then exit the container shell
+
+* Optionally you can test the image with an existing dev environment, using::
+
+      my_environment/bin/bv image=casa-run-5.3-23 bash
+
+  here, test the software you have installed etc. You can test brainvisa tools with the "bv_env" wrapper which sets up env variables and paths::
+
+      /casa/host/build/bin/bv_env anatomist
+
+When you're done, exit the container shell
+
+* recreate a .sif file::
+
+      sudo apptainer build casa-run-mod-5.3-23.sif casa-run-5.3-23
+
+  (the creation of the user image doesn't seem to work using a sandbox as a source image, so we need to convert it back to .sif)
+
+* In order to use the new run image as a base for a new user image, we need to have a .json metadata file. Just copy it from the original .sif one::
+
+      cp casa-run-5.3-23.sif.json casa-run-mod-5.3-23.sif.json
+
+  (well to do things right we should generate another ID and update the md5 there, but never mind)
+
+
+* create the user image::
+
+      # this is not needed after you have done it once
+      sudo apptainer config fakeroot --add $(id -u -n)
+
+      casa_distro_admin create_user_image base_image=$(pwd)/casa-run-mod-5.3-23.sif name=brainvisa-spn image_version=5.3 environment_name=brainvisa-master-ubuntu-22.04 container_type=singularity install_thirdparty="spm12-standalone=/usr/local/spm12-standalone" version=1.0.0
+
+  note that:
+
+  - the new user image will contain brainvisa projects which have been configured and built in your environment (here I use "brainvisa-master-ubuntu-22.04" which is my dev environment), and only them. If you have not all the projects we ship, then your distribution will not contain them.
+  - in our user images we now include a copy of spm12 standalone, which we specify with the parameter install_thirdparty="spm12-standalone=/usr/local/spm12-standalone", which copies an already installed SPM12.
