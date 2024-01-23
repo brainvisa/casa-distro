@@ -187,27 +187,28 @@ try:
     from brainvisa.configuration import neuroConfig
 except ImportError:
     # no axon in the image
-    pass
+    neuroConfig = None
 
-conf = list(neuroConfig.readConfiguration(neuroConfig.mainPath, None, ''))
-siteOptionFile = conf[0][1]
-if siteOptionFile and os.path.exists(siteOptionFile):
-    neuroConfig.app.configuration.load(siteOptionFile)
+if neuroConfig is not None:
+    conf = list(neuroConfig.readConfiguration(neuroConfig.mainPath, None, ''))
+    siteOptionFile = conf[0][1]
+    if siteOptionFile and os.path.exists(siteOptionFile):
+        neuroConfig.app.configuration.load(siteOptionFile)
 
-neuroConfig.app.configuration.SPM.spm12_standalone_path = \
-    '/usr/local/spm12-standalone'
-neuroConfig.app.configuration.SPM.spm12_standalone_command = \
-    '/usr/local/spm12-standalone/run_spm12.sh'
-mcr_paths = glob.glob('/usr/local/spm12-standalone/mcr/v*')
-if len(mcr_paths) != 1:
-    raise RuntimeError("Cannot find the MATLAB Compiler Runtime in the "
-                       "expected location, please check your "
-                       "install_thirdparty setting.")
-neuroConfig.app.configuration.SPM.spm12_standalone_mcr_path = mcr_paths[0]
+    neuroConfig.app.configuration.SPM.spm12_standalone_path = \
+        '/usr/local/spm12-standalone'
+    neuroConfig.app.configuration.SPM.spm12_standalone_command = \
+        '/usr/local/spm12-standalone/run_spm12.sh'
+    mcr_paths = glob.glob('/usr/local/spm12-standalone/mcr/v*')
+    if len(mcr_paths) != 1:
+        raise RuntimeError("Cannot find the MATLAB Compiler Runtime in the "
+                        "expected location, please check your "
+                        "install_thirdparty setting.")
+    neuroConfig.app.configuration.SPM.spm12_standalone_mcr_path = mcr_paths[0]
 
-from pprint import pprint
-pprint(neuroConfig.app.configuration)
-neuroConfig.app.configuration.save(siteOptionFile)
+    from pprint import pprint
+    pprint(neuroConfig.app.configuration)
+    neuroConfig.app.configuration.save(siteOptionFile)
 '''
     scripts = {'/casa/install/templates/brainvisa/spm.py': spm_script}
 
