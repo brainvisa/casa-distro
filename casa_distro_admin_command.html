@@ -650,6 +650,64 @@ The Dockerfile may (should) be based on another image, in the usual way of build
 <p>Once an image is created with docker, it can be converted to singularity using <code class="docutils literal notranslate"><span class="pre">casa_distro</span> <span class="pre">create_singularity</span></code>.</p>
 </section>
 </section>
+<section id="creating-a-modified-brainvisa-distribution">
+<h2>Creating a modified BrainVISA distribution<a class="headerlink" href="#creating-a-modified-brainvisa-distribution" title="Link to this heading">¶</a></h2>
+<p>If you are a toolbox developer and want to share a modified BrainVISA distribution with your additional tools and dependencies in it, here is a recipe to build a singularity/apptainer image for your needs. You will need sudo permission on your host system to do so.</p>
+<ul>
+<li><p>create the modified run image:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apptainer<span class="w"> </span>build<span class="w"> </span>-s<span class="w"> </span>casa-run-5.3-23<span class="w"> </span>casa-run-5.3-23.sif
+sudo<span class="w"> </span>apptainer<span class="w"> </span>run<span class="w"> </span>-w<span class="w"> </span>casa-run-5.3-23<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>in this bash, install whatever you need, like (just examples):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apt<span class="w"> </span>update
+apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>whatever
+pip3<span class="w"> </span>install<span class="w"> </span>something_else
+cp<span class="w"> </span>-a<span class="w"> </span>/home/someone/my_additional_software<span class="w"> </span>/usr/local/
+ln<span class="w"> </span>-s<span class="w"> </span>/usr/local/my_additional_software/bin/*<span class="w"> </span>/usr/local/bin/
+</pre></div>
+</div>
+<p>and so on. Then exit the container shell</p>
+</li>
+<li><p>Optionally you can test the image with an existing dev environment, using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>my_environment/bin/bv<span class="w"> </span><span class="nv">image</span><span class="o">=</span>casa-run-5.3-23<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>here, test the software you have installed etc. You can test brainvisa tools with the “bv_env” wrapper which sets up env variables and paths:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/casa/host/build/bin/bv_env<span class="w"> </span>anatomist
+</pre></div>
+</div>
+</li>
+</ul>
+<p>When you’re done, exit the container shell</p>
+<ul>
+<li><p>recreate a .sif file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apptainer<span class="w"> </span>build<span class="w"> </span>casa-run-mod-5.3-23.sif<span class="w"> </span>casa-run-5.3-23
+</pre></div>
+</div>
+<p>(the creation of the user image doesn’t seem to work using a sandbox as a source image, so we need to convert it back to .sif)</p>
+</li>
+<li><p>In order to use the new run image as a base for a new user image, we need to have a .json metadata file. Just copy it from the original .sif one:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cp<span class="w"> </span>casa-run-5.3-23.sif.json<span class="w"> </span>casa-run-mod-5.3-23.sif.json
+</pre></div>
+</div>
+<p>(well to do things right we should generate another ID and update the md5 there, but never mind)</p>
+</li>
+<li><p>create the user image:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># this is not needed after you have done it once</span>
+sudo<span class="w"> </span>apptainer<span class="w"> </span>config<span class="w"> </span>fakeroot<span class="w"> </span>--add<span class="w"> </span><span class="k">$(</span>id<span class="w"> </span>-u<span class="w"> </span>-n<span class="k">)</span>
+
+casa_distro_admin<span class="w"> </span>create_user_image<span class="w"> </span><span class="nv">base_image</span><span class="o">=</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/casa-run-mod-5.3-23.sif<span class="w"> </span><span class="nv">name</span><span class="o">=</span>brainvisa-spn<span class="w"> </span><span class="nv">image_version</span><span class="o">=</span><span class="m">5</span>.3<span class="w"> </span><span class="nv">environment_name</span><span class="o">=</span>brainvisa-master-ubuntu-22.04<span class="w"> </span><span class="nv">container_type</span><span class="o">=</span>singularity<span class="w"> </span><span class="nv">install_thirdparty</span><span class="o">=</span><span class="s2">&quot;spm12-standalone=/usr/local/spm12-standalone&quot;</span><span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="m">1</span>.0.0
+</pre></div>
+</div>
+<p>note that:</p>
+<ul class="simple">
+<li><p>the new user image will contain brainvisa projects which have been configured and built in your environment (here I use “brainvisa-master-ubuntu-22.04” which is my dev environment), and only them. If you have not all the projects we ship, then your distribution will not contain them.</p></li>
+<li><p>in our user images we now include a copy of spm12 standalone, which we specify with the parameter install_thirdparty=”spm12-standalone=/usr/local/spm12-standalone”, which copies an already installed SPM12.</p></li>
+</ul>
+</li>
+</ul>
+</section>
 </section>
 
 
@@ -711,6 +769,7 @@ The Dockerfile may (should) be based on another image, in the usual way of build
 <li><a class="reference internal" href="#designing-new-images">Designing new images</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#creating-a-modified-brainvisa-distribution">Creating a modified BrainVISA distribution</a></li>
 </ul>
 </li>
 </ul>
