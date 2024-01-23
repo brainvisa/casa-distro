@@ -153,7 +153,7 @@ If you are a toolbox developer and want to share a modified BrainVISA distributi
 
       /casa/host/build/bin/bv_env anatomist
 
-When you're done, exit the container shell
+  When you're done, exit the container shell
 
 * recreate a .sif file::
 
