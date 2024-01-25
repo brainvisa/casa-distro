@@ -23,9 +23,6 @@ if [ -e "$CONDA/bin/mamba" ]; then
     "$conda" update -y mamba
     # "$conda" update -y conda mamba
     # "$conda" install -y conda-build
-
-    # Install libGL.so related development files
-    "$conda" install -y libglvnd-devel-cos7-x86_64
 else
     # mamba is not installed
     export conda="$CONDA/bin/conda"

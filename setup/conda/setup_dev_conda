@@ -112,11 +112,13 @@ brainvisa_standard_dev_dependencies=(
     #! libvtk9-dev
     #! libvtk9-qt-dev
     libxml2 #? was libxml2-dev
-    mesalib # necessary to have GL/gl.h found by Qt CMake files
     #! qttools5-dev
     #! qtmultimedia5-dev
     #! qttools5-dev-tools
     #! zlib1g-dev
+    pytest
+    pytest-cov
+    pytest-html
 )
 
 $conda install $conda_install ${version_control_packages[@]} ${toolchain_packages[@]} ${documentation_building_packages[@]} ${brainvisa_standard_dev_dependencies[@]}

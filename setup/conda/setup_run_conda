@@ -218,7 +218,8 @@ brainvisa_python_runtime_dependencies=(
     # python3-pyqt5.qtwebsockets
     # python3-pyqt5.qtxmlpatterns
     pyqtwebkit
-
+    pyqtwebengine
+    
     pyopengl #? was python3-opengl
 
     plotly
@@ -236,7 +237,6 @@ brainvisa_shared_library_dependencies=(
     cairo
     dcmtk
     libgfortran5
-    mesalib
     libglib
     libglu
     libgomp
