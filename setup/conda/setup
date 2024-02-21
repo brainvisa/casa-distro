@@ -35,8 +35,6 @@ if [ ! -e "$CASA_SRC" ]; then
     # Temporarily force "conda" branches of some projects
     git -C "$CASA_SRC" clone --branch conda https://github.com/brainvisa/casa-distro
     git -C "$CASA_SRC" clone https://github.com/brainvisa/brainvisa-cmake
-    # The following line will be removed when conda branch is merged in master
-    git -C "$CASA_SRC" clone --branch conda https://github.com/brainvisa/axon
 fi
 
 if [ ! -e "$CASA/conf" ]; then
