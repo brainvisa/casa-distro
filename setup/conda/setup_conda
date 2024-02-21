@@ -1,9 +1,7 @@
 #!/bin/sh
 
 
-installer_url=https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
-# installer_url=https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-# installer_url=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+installer_url=https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
 installer=$(echo $installer_url | awk '{split($0, s, "/"); print(s[length(s)])}')
 if [ ! -e "$CASA/$installer" ]; then
     wget -O "$CASA/$installer" $installer_url
@@ -11,22 +9,20 @@ fi
 
 mkdir "$CONDA"
 sh "$CASA/$installer" -u -b -p "$CONDA"
-if [ -e "$CONDA/bin/mamba" ]; then
-    # If mamba is installed
-    export conda="$CONDA/bin/mamba"
-    export conda_install="-y"
+# If mamba is installed
+export conda="$CONDA/bin/mamba"
+export conda_install="-y"
 
-    # Due to an incompatibility between conda an mamba (seen on August 23th, 2023),
-    # force the version of conda and conda-build until a patch is released on mamba
-    # (code is already patched on github, current mamba version is 1.4.9).
-    "$conda" install -y 'conda=23.5.2' 'conda-build=3.25'
-    "$conda" update -y mamba
-    # "$conda" update -y conda mamba
-    # "$conda" install -y conda-build
-else
-    # mamba is not installed
-    export conda="$CONDA/bin/conda"
-    export conda_install="-y --solver=libmamba"
-    # Install packages to use mamba to find packages
-    "$conda" install -y -n base conda-libmamba-solver
-fi
+# Due to an incompatibility between conda an mamba (seen on August 23th, 2023),
+# force the version of conda and conda-build until a patch is released on mamba
+# (code is already patched on github, current mamba version is 1.4.9).
+#"$conda" install -y 'conda=23.5.2' 'conda-build=3.25'
+# "$conda" update -y mamba
+# "$conda" update -y conda mamba
+
+# Packages always installed in an environment:
+#   - mesa-libgl-devel-cos7-x86_64 libglvnd-devel-cos7-x86_64 are necessary
+#     to build OpenGL related software such as Anatomist. I do not know if
+#     they can be removed (or replaced by non devel package) for a user
+#     environement.
+"$conda" install -y mesa-libgl-devel-cos7-x86_64 libglvnd-devel-cos7-x86_64

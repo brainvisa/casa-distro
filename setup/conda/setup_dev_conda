@@ -39,6 +39,7 @@ toolchain_packages=(
     #! pyqt5-dev-tools
     #! python3-sip-dev
     #! qtchooser
+    conda-build
 )
 
 # Development tools and convenience utilities
@@ -122,3 +123,4 @@ brainvisa_standard_dev_dependencies=(
 )
 
 $conda install $conda_install ${version_control_packages[@]} ${toolchain_packages[@]} ${documentation_building_packages[@]} ${brainvisa_standard_dev_dependencies[@]}
+
