@@ -65,5 +65,5 @@ if [ ! -e "$CONDA/mesalib" ]; then
     # be installed otherwise any software using Qt and OpenGL will crash. Therefore,
     # the content of the mesalib package is extracted here and put in "$CONDA/mesalib"
     # directory to be used during compilation but not during execution.
-    "$CONDA/bin/mamba" run python "$CASA_SRC/casa-distro/setup/conda/extract_mesalib.py" "$CASA/mesalib"
+    "$CONDA/bin/mamba" run python "$CASA_SRC/casa-distro/setup/conda/extract_mesalib.py" "$CONDA/mesalib"
 fi
