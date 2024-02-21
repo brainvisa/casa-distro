@@ -39,15 +39,6 @@ if [ ! -e "$CASA_SRC" ]; then
     git -C "$CASA_SRC" clone --branch conda https://github.com/brainvisa/axon
 fi
 
-if [ ! -e "$CONDA/mesalib" ]; then
-    # For the compilation of OpenGL packages, it is necessary to have include files
-    # and dynamic libraries from mesalib packages. However, this package must not
-    # be installed otherwise any software using Qt and OpenGL will crash. Therefore,
-    # the content of the mesalib package is extracted here and put in "$CONDA/mesalib"
-    # directory to be used during compilation but not during execution.
-    "$CONDA/bin/mamba" run python "$CASA_SRC/casa-distro/setup/conda/extract_mesalib.py" "$CASA/mesalib"
-fi
-
 if [ ! -e "$CASA/conf" ]; then
     mkdir "$CASA/conf"
     ln -s ../src/casa-distro/setup/conda/bv_maker.cfg "$CASA/conf"
@@ -68,4 +59,13 @@ if [ ! -e "$CONDA" ]; then
     "$CASA/src/casa-distro/setup/conda/setup_run_conda"
     "$CASA/src/casa-distro/setup/conda/setup_run_compiled"
     "$CASA/src/casa-distro/setup/conda/setup_dev_conda"
+fi
+
+if [ ! -e "$CONDA/mesalib" ]; then
+    # For the compilation of OpenGL packages, it is necessary to have include files
+    # and dynamic libraries from mesalib packages. However, this package must not
+    # be installed otherwise any software using Qt and OpenGL will crash. Therefore,
+    # the content of the mesalib package is extracted here and put in "$CONDA/mesalib"
+    # directory to be used during compilation but not during execution.
+    "$CONDA/bin/mamba" run python "$CASA_SRC/casa-distro/setup/conda/extract_mesalib.py" "$CASA/mesalib"
 fi
