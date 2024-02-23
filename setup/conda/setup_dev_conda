@@ -39,6 +39,7 @@ toolchain_packages=(
     #! pyqt5-dev-tools
     #! python3-sip-dev
     #! qtchooser
+    rattler-build
     conda-build
 )
 
