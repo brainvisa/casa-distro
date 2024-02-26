@@ -250,6 +250,7 @@ cd "$CASA/build"
 unset CONDA_DEFAULT_ENV
 unset CONDA_PREFIX
 env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-$PKG_NAME
+env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-$PKG_NAME-usrdoc
 """
             )
         subprocess.check_call(["rattler-build", "build", "--output-dir", repository, "-r", tmp_str])
