@@ -92,7 +92,7 @@ packages_metadata = {
             "libnetcdf",
             "draco",
             "pyqtwebkit",
-            "pyqtwebengine"
+            "pyqtwebengine",
         ]
     },
 }
@@ -235,9 +235,7 @@ def generate_rattler_recipe(distro, distro_version, build_number=0, build=None):
 
 
 def generate_repository(repository, distro, distro_version, build_number=0, build=None):
-    recipe = generate_rattler_recipe(
-        distro, distro_version, build_number, build
-    )
+    recipe = generate_rattler_recipe(distro, distro_version, build_number, build)
     # Create a temporary directory for hosting package content
     with tempfile.TemporaryDirectory() as tmp_str:
         tmp = pathlib.Path(tmp_str)
@@ -253,7 +251,10 @@ env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-
 env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-$PKG_NAME-usrdoc
 """
             )
-        subprocess.check_call(["rattler-build", "build", "--output-dir", repository, "-r", tmp_str])
+        subprocess.check_call(
+            ["rattler-build", "build", "--output-dir", repository, "-r", tmp_str]
+        )
+
 
 if __name__ == "__main__":
     repository = pathlib.Path(sys.argv[1])
