@@ -16,89 +16,97 @@ dependencies_translation = {
 }
 packages_metadata = {
     "brainvisa-base": {
-        "depends": [
-            "{{ pin_compatible('libstdcxx-ng', min_pin='x.x', max_pin='x') }}",
-            "{{ pin_compatible('libgcc-ng', min_pin='x.x', max_pin='x') }}",
-            "font-ttf-noto-emoji",
-            "lsb-release",
-            "matplotlib 3.4.3",
-            "mesa",
-            "pyqt",
-            "qtconsole",
-            "xorg-libx11",
-            "pydantic >=1.9",
-            "redis-py >=4.2",
-            "nipype",
-            "dipy",
-            "pycryptodome",
-            "cryptography",
-            "html2text",
-            "openpyxl",
-            "paramiko",
-            "pillow",
-            "requests",
-            "six",
-            "sqlalchemy",
-            "traits",
-            "xmltodict",
-            "yaml",
-            "joblib",
-            "configobj",
-            "mpi4py",
-            "nibabel",
-            "pyparsing",
-            "pydot",
-            "pydicom",
-            "cython",
-            "xlrd",
-            "xlwt",
-            "pandas",
-            "lark",
-            "pyzmq",
-            "ipython",
-            "nbsphinx",
-            "sphinx-gallery",
-            "numpy",
-            "fastcluster",
-            "h5py",
-            "scipy",
-            "scikit-image",
-            "pyopengl",
-            "plotly",
-            "pcl",
-            "celery",
-            "pycryptodome",
-            "gdk-pixbuf",
-            "libgfortran5",
-            "cairo",
-            "dcmtk",
-            "libgfortran5",
-            "libglib",
-            "libglu",
-            "libgomp",
-            "hdf5",
-            "libjpeg-turbo",
-            "jxrlib",
-            "libllvm14",
-            "netcdf4",
-            "openjpeg",
-            "libpng",
-            "qwt",
-            "libsigcpp<3",
-            "libsvm",
-            "libtiff",
-            "libxml2",
-            "zstd",
-            "libnetcdf",
-            "draco",
-            "pyqtwebkit",
-            "pyqtwebengine",
-        ]
+        "depends": {
+            "conda-forge": [
+                "{{ pin_compatible('libstdcxx-ng', min_pin='x.x', max_pin='x') }}",
+                "{{ pin_compatible('libgcc-ng', min_pin='x.x', max_pin='x') }}",
+                "font-ttf-noto-emoji",
+                "lsb-release",
+                "matplotlib 3.4.3",
+                "mesa",
+                "pyqt",
+                "qtconsole",
+                "xorg-libx11",
+                "pydantic >=1.9",
+                "redis-py >=4.2",
+                "nipype",
+                "dipy",
+                "pycryptodome",
+                "cryptography",
+                "html2text",
+                "openpyxl",
+                "paramiko",
+                "pillow",
+                "requests",
+                "six",
+                "sqlalchemy",
+                "traits",
+                "xmltodict",
+                "yaml",
+                "joblib",
+                "configobj",
+                "mpi4py",
+                "nibabel",
+                "pyparsing",
+                "pydot",
+                "pydicom",
+                "cython",
+                "xlrd",
+                "xlwt",
+                "pandas",
+                "lark",
+                "pyzmq",
+                "ipython",
+                "nbsphinx",
+                "sphinx-gallery",
+                "numpy",
+                "fastcluster",
+                "h5py",
+                "scipy",
+                "scikit-image",
+                "pyopengl",
+                "plotly",
+                "pcl",
+                "celery",
+                "pycryptodome",
+                "gdk-pixbuf",
+                "libgfortran5",
+                "cairo",
+                "dcmtk",
+                "libgfortran5",
+                "libglib",
+                "libglu",
+                "libgomp",
+                "hdf5",
+                "libjpeg-turbo",
+                "jxrlib",
+                "libllvm14",
+                "netcdf4",
+                "openjpeg",
+                "libpng",
+                "qwt",
+                "libsigcpp<3",
+                "libsvm",
+                "libtiff",
+                "libxml2",
+                "zstd",
+                "libnetcdf",
+                "draco",
+                "pyqtwebkit",
+                "pyqtwebengine",
+                "pytorch",
+                "torchvision",
+                "pywebp",
+            ],
+            "pip": [
+                "pygltflib",
+            ],
+        }
     },
 }
 
 
-def generate_rattler_recipe(distro, distro_version, build_number=0, build=None):
+def generate_rattler_recipe(tmp, distro, distro_version, build_number=0, build=None):
     recipe = {
         "context": {
             "name": distro,
@@ -202,14 +210,13 @@ def generate_rattler_recipe(distro, distro_version, build_number=0, build=None):
         for d in chain(
             component_depends,
             package_info.get("depends", []),
-            metadata.get("depends", []),
+            metadata.get("depends", {}).get("conda-forge", []),
         ):
             m = re.match("^{{(.*)}}", d)
             if m:
                 d = eval(m.group(1))
             depends.add(d)
 
-        # Open the tar.bz2 archive for writing
         info = {
             "package": {
                 "name": package,
@@ -226,21 +233,44 @@ def generate_rattler_recipe(distro, distro_version, build_number=0, build=None):
             info["about"] = about
 
         if component_info:
-            info["build"] = {
-                # "script": f'cd "{os.environ["CASA"]}/build"; env BRAINVISA_INSTALL_PREFIX="$PREFIX" "{os.environ["CASA"]}/conda/bin/mamba" run make install-{package}'
-                "script": "build-component.sh"
-            }
+            build_script = """CASA=$(dirname $(dirname $(dirname $CONDA_PYTHON_EXE)))
+cd "$CASA/build"
+unset CONDA_DEFAULT_ENV
+unset CONDA_PREFIX
+env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-$PKG_NAME
+env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-$PKG_NAME-usrdoc
+"""
+        else:
+            build_script = None
+
+        # Write post install script if there are some
+        # pip dependencies
+        pip_dependencies = metadata.get("depends", {}).get("pip", [])
+        if pip_dependencies:
+            (tmp / "bin").mkdir(exist_ok=True)
+            with open(tmp / "bin" / f".{package}-post-link.sh", "w") as f:
+                print(
+                    f'python -m pip install -q {" ".join(pip_dependencies)} '
+                    '> "$PREFIX/.messages.txt"',
+                    file=f,
+                )
+            if not build_script:
+                build_script = ""
+            build_script += """if [ ! -e "$PREFIX/bin" ]; then mkdir "$PREFIX/bin"; fi
+cp "$RECIPE_DIR/bin/.$PKG_NAME-post-link.sh" "$PREFIX/bin/.$PKG_NAME-post-link.sh"
+"""
+        if build_script:
+            info["build"] = {"script": build_script}
         recipe["outputs"].append(info)
-    return recipe
+    with open(tmp / "recipe.yaml", "w") as f:
+        yaml.dump(recipe, f)
 
 
 def generate_repository(repository, distro, distro_version, build_number=0, build=None):
-    recipe = generate_rattler_recipe(distro, distro_version, build_number, build)
     # Create a temporary directory for hosting package content
     with tempfile.TemporaryDirectory() as tmp_str:
         tmp = pathlib.Path(tmp_str)
-        with open(tmp / "recipe.yaml", "w") as f:
-            yaml.dump(recipe, f)
+        generate_rattler_recipe(tmp, distro, distro_version, build_number, build)
         with open(tmp / "build-component.sh", "w") as f:
             f.write(
                 """CASA=$(dirname $(dirname $(dirname $CONDA_PYTHON_EXE)))
@@ -249,6 +279,9 @@ unset CONDA_DEFAULT_ENV
 unset CONDA_PREFIX
 env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-$PKG_NAME
 env BRAINVISA_INSTALL_PREFIX="$PREFIX" "$CASA/conda/bin/mamba" run make install-$PKG_NAME-usrdoc
+if [ -e "$RECIPE_DIR/bin/$PKG_NAME-post-link.sh" ]; then
+  cp "$RECIPE_DIR/bin/$PKG_NAME-post-link.sh" "$PREFIX/bin/.$PKG_NAME-post-link.sh"
+fi
 """
             )
         subprocess.check_call(
