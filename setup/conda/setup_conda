@@ -13,13 +13,6 @@ sh "$CASA/$installer" -u -b -p "$CONDA"
 export conda="$CONDA/bin/mamba"
 export conda_install="-y"
 
-# Due to an incompatibility between conda an mamba (seen on August 23th, 2023),
-# force the version of conda and conda-build until a patch is released on mamba
-# (code is already patched on github, current mamba version is 1.4.9).
-#"$conda" install -y 'conda=23.5.2' 'conda-build=3.25'
-# "$conda" update -y mamba
-# "$conda" update -y conda mamba
-
 # Packages always installed in an environment:
 #   - mesa-libgl-devel-cos7-x86_64 libglvnd-devel-cos7-x86_64 are necessary
 #     to build OpenGL related software such as Anatomist. I do not know if

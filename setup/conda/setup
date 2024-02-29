@@ -67,3 +67,11 @@ if [ ! -e "$CONDA/mesalib" ]; then
     # directory to be used during compilation but not during execution.
     "$CONDA/bin/mamba" run python "$CASA_SRC/casa-distro/setup/conda/extract_mesalib.py" "$CONDA/mesalib"
 fi
+
+if [ ! -e "$CASA/brainvisa-forge" ]; then
+    cd "$CASA_DISTRO_SRC/setup/conda/rattler-build"
+    for d in *; do
+        rattler-build build -r $d --output-dir "$CASA/brainvisa-forge"
+    done
+    conda config --env --add channels "$CASA/brainvisa-forge"
+fi

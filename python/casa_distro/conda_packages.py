@@ -98,6 +98,9 @@ packages_metadata = {
                 "torchvision",
                 "pywebp",
             ],
+            "brainvisa-forge": [
+                "brainvisa-virtualgl",
+            ],
             "pip": [
                 "pygltflib",
             ],
@@ -211,6 +214,7 @@ def generate_rattler_recipe(tmp, distro, distro_version, build_number=0, build=N
             component_depends,
             package_info.get("depends", []),
             metadata.get("depends", {}).get("conda-forge", []),
+            metadata.get("depends", {}).get("brainvisa-forge", []),
         ):
             m = re.match("^{{(.*)}}", d)
             if m:
