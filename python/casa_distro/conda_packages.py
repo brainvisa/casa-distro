@@ -97,6 +97,7 @@ packages_metadata = {
                 "pytorch",
                 "torchvision",
                 "pywebp",
+                "xorg-x11-server-xvfb-cos7-x86_64",
             ],
             "brainvisa-forge": [
                 "brainvisa-virtualgl",
@@ -294,9 +295,8 @@ fi
 
 
 if __name__ == "__main__":
-    repository = pathlib.Path(sys.argv[1])
-    distro = sys.argv[2]
-    distro_version = sys.argv[3]
+    distro = sys.argv[1]
+    distro_version = sys.argv[2]
 
     conda = os.environ.get("CONDA_PREFIX")
     if not conda:
@@ -305,9 +305,6 @@ if __name__ == "__main__":
             file=sys.stderr,
         )
         sys.exit(1)
-    if repository.exists() and next(repository.iterdir(), None):
-        # repository exists and is not empty
-        print(f"Please delete directory {repository}.", file=sys.stderr)
-        sys.exit(1)
+    repository = pathlib.Path(os.environ["CASA"]) / "brainvisa-forge"
 
     generate_repository(repository, distro, distro_version)
