@@ -374,9 +374,12 @@ Bootstrap: localimage
         if [ -f /casa/host/install/bin/bv_env ]; then
             # try r/w install
             /usr/local/bin/entrypoint /casa/host/install/bin/bv_env "$@"
-        else
+        elif [ -f /casa/install/bin/bv_env ]; then
             # otherwise use the builtin (read-only) install in the image
             /usr/local/bin/entrypoint /casa/install/bin/bv_env "$@"
+        else
+            # fall back to no bv_env if it is missing
+            /usr/local/bin/entrypoint "$@"
         fi
     else
         echo 'The Singularity image has been run without arguments, and'
