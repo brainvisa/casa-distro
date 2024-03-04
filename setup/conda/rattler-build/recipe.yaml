@@ -53,7 +53,7 @@ outputs:
         # Dependencies from brainvisa-forge
         - virtualgl
         - openjpeg
-        
+
         # Build dependencies of libminc
         - hdf5
         - libnetcdf
@@ -275,7 +275,7 @@ outputs:
       number: 0
       script: |
         cmake -G"Unix Makefiles" "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "-DOPENGL_egl_LIBRARY=$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/lib64/libEGL_mesa.so.0" "$SRC_DIR"
-        make -j4
+        make
         make install
 
     requirements:
@@ -320,7 +320,7 @@ outputs:
       number: 0
       script: |
         cmake -DCMAKE_BUILD_TYPE=Release "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_DIR"
-        make -j4
+        make
         make install
 
     requirements:
