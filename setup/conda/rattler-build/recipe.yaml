@@ -1,8 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
 context:
   soma_forge_version: 0.0.1
-  virtualgl_version: 3.1.1
   brainvisa_forge_version: 0.0.1
+  virtualgl_version: 3.1.1
+  openjpeg_version: 2.5.2
 
 outputs:
   - package:
@@ -49,6 +50,10 @@ outputs:
         - libxml2
         - jxrlib
 
+        # Dependencies from brainvisa-forge
+        - virtualgl
+        - openjpeg
+        
         # Build dependencies of libminc
         - hdf5
         - libnetcdf
@@ -270,7 +275,7 @@ outputs:
       number: 0
       script: |
         cmake -G"Unix Makefiles" "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "-DOPENGL_egl_LIBRARY=$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/lib64/libEGL_mesa.so.0" "$SRC_DIR"
-        make -j
+        make -j4
         make install
 
     requirements:
@@ -303,3 +308,34 @@ outputs:
         VirtualGL is a versatile toolkit that optimizes the graphical performance of applications running remotely on a server but displayed locally on a client machine. By intercepting OpenGL commands from the remote application and directing them to the client for rendering, VirtualGL enhances responsiveness and efficiency, particularly for graphics-intensive tasks like CAD, scientific visualization, and gaming. This technology enables smoother, more responsive user experiences in remote computing environments by reducing network bandwidth requirements and ensuring high-quality graphics output.
       documentation: https://virtualgl.org/Documentation/Documentation
       repository: https://github.com/VirtualGL/virtualgl
+  - package:
+      name: openjpeg
+      version: ${{ openjpeg_version }}
+
+    source:
+      git: https://github.com/uclouvain/openjpeg
+      tag:  v${{ openjpeg_version }}
+
+    build:
+      number: 0
+      script: |
+        cmake -DCMAKE_BUILD_TYPE=Release "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_DIR"
+        make -j4
+        make install
+
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - cmake
+        - make
+
+
+    about:
+      homepage: https://github.com/uclouvain/openjpeg
+      summary: OpenJPEG is an open-source JPEG 2000 codec written in C language.
+      description: |
+        OpenJPEG is an open-source JPEG 2000 codec written in C language.
+        It has been developed in order to promote the use of JPEG 2000, a still-image
+        compression standard from the Joint Photographic Experts Group (JPEG). Since
+        April 2015, it is officially recognized by ISO/IEC and ITU-T as a JPEG 2000
+        Reference Software.

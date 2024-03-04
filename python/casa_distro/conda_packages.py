@@ -100,7 +100,8 @@ packages_metadata = {
                 "xorg-x11-server-xvfb-cos7-x86_64",
             ],
             "brainvisa-forge": [
-                "brainvisa-virtualgl",
+                "virtualgl",
+                "openjpeg",
             ],
             "pip": [
                 "pygltflib",
