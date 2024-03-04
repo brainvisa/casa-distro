@@ -15,20 +15,24 @@ mamba install -c https://brainvisa.info/download/conda brainvisa
 
 All compilation dependencies are taken from conda-forge repository.
 
-The up to date setup process is contained in [a shell script that is stored on GitHub](https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup) and requires two parameters:
-- `{dir}`: the path of the development directory that is to be created and setup.
-- `{package}`: the name of a predefined set of software components. This package name is passed to brainvisa-cmake to select components. It can be any package defined in brainvisa-cmake but here are the most useful:
-  - brainvisa-dev: all components whose sources are publicly available.
-  - brainvisa: components included in BrainVISA distribution.
-  - brainvisa-cea: components deployed in Neurospin, MirCEN and SHFJ labs.
-  - brainvisa-cati: components used internally by CATI members.
-  - brainvisa-web: components necessary to build brainvisa.info web site.
-
-The following command (where `{dir}` and `{package}` must be replaced) can be used in a shell to directly download and execute the setup script:
+Al the necessary steps to setup a Conda based developement environment are contained in the package `brainvisa-forge` that can be installed:
 
 ```shell
-sh <(curl -s https://raw.githubusercontent.com/brainvisa/casa-distro/conda/setup/conda/setup) {dir} {package}
+# Install a conda environment that integrates mamba and points to conda-forge by default
+CONDA=/tmp/somewhere
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+sh Miniforge3-Linux-x86_64.sh -b -p "$CONDA"
+
+# Adds BrainVISA repository to the environment
+"$CONDA/bin/mamba" run conda config --env --add channels https://brainvisa.info/download/conda
+# Install brainvisa-forge
+"$CONDA/bin/mamba" install brainvisa-forge
 ```
+
+Now you may want to edit `$CONDA/conf/bv_maker.cfg` select the brainvisa-cmake pakage and branch you want to compile (by default package is `brainvisa`and branch is `master`). You can also edit `$CONDA/conf/bv_maker.cfg` but be aware that it is a symbolic link to a version in casa-distro sources. If you modify it you should replace the symlink by a real copy of the file first.
+
+Then you can activate the environment and run `bv_maker` as described in the following steps.
+
 ## Use a Conda development environment
 
 The usage of a Conda based casa-distro environment uses the activation/deactiavtion system shipped with Conda. In order to "enter" the developpment environment (that means mainly setting environment variables such as PATH, etc.), on can use:
@@ -45,7 +49,7 @@ conda deactivate
 
 ## Software building
 
-Once the development environment is activated, all commands from build tree are in `PATH` and can be used directly, including `bv_maker`. During the environment setup process, source codes for casa-distro and brainvisa-cmake are downloades and put in the PATH. Therefore, `bv_maker` can be directly used when the environment is activated. This will launch the command from the source tree an create a build tree. Next calls to `bv_maker` will use the build tree.
+Once the development environment is activated, all commands from build tree are in `PATH` and can be used directly, including `bv_maker`. During the installation of `brainvisa-forge` package, source codes for casa-distro and brainvisa-cmake are downloades and put in the PATH. Therefore, `bv_maker` can be directly used when the environment is activated. This will launch the command from the source tree an create a build tree. Next calls to `bv_maker` will use the build tree version.
 
 ## Build and publish Conda packages
 

@@ -1,0 +1,305 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+context:
+  soma_forge_version: 0.0.1
+  virtualgl_version: 3.1.1
+  brainvisa_forge_version: 0.0.1
+
+outputs:
+  - package:
+      name: soma-forge
+      version: ${{ soma_forge_version }}
+
+    source:
+      git: https://github.com/brainvisa/casa-distro
+  
+    about:
+      homepage: https://brainvisa.info/
+      summary: Setup de developement environment for the BrainVISA project
+
+    build:
+      number: 0
+      script: |
+        mkdir -p "$PREFIX/etc/conda/activate.d"
+        cp "$RECIPE_DIR/casa-distro_activate.sh" "$PREFIX/etc/conda/activate.d/"
+        mkdir -p "$PREFIX/etc/conda/deactivate.d"
+        cp "$RECIPE_DIR/casa-distro_deactivate.sh" "$PREFIX/etc/conda/deactivate.d/"
+        mkdir "$PREFIX/bin"
+        cp "$RECIPE_DIR/soma-forge-setup.sh" "$PREFIX/bin/.$PKG_NAME-post-link.sh"
+
+    requirements:
+      run:
+        - mesa-libgl-devel-cos7-x86_64
+        - libglvnd-devel-cos7-x86_64
+        - rattler-build
+        - gcc
+        - gxx
+        - gfortran
+        - git
+        - cmake
+        - make
+        - patch
+        - pkg-config
+        - automake
+        - clang
+        - openjpeg
+        - libtiff
+        - cairo
+        - gdk-pixbuf
+        - glib
+        - libxml2
+        - jxrlib
+
+        # Build dependencies of libminc
+        - hdf5
+        - libnetcdf
+
+        # Build dependencies for draco
+        - draco
+
+        # Commented-out packages that needs pyqt package in order
+        # to avoid an upgrade of sip package. The sip command
+        # is only installed with sip package version 4.* but sip
+        # package depends on sip 6.*
+        - pyqt
+        - qtconsole
+        - 'matplotlib==3.4.3'
+
+        # Runtime dependencies of FSL
+        - bc
+        - libblas
+        - tcsh
+
+        # Runtime dependencies of MATLAB
+        - lsb-release
+
+        # Generally useful packages
+        - ipython
+        - notebook
+        - setuptools
+        - tree
+        - unzip
+        - xz
+        - openjdk
+        - font-ttf-noto-emoji
+
+        # Dependencies of headless Anatomist
+        - xorg-libx11
+        - pydantic >=1.9
+        - redis-py >=4.2
+        - nipype
+        - dipy
+        - pycryptodome
+
+        - click  # dependency of nipype
+        - isodate  # dependency of nipype
+        - prov  # dependency of nipype
+        - simplejson  # dependency of nipype
+        - tqdm  # dependency of dipy
+
+        # Python packages needed at runtime by BrainVISA
+        - cryptography  # needed by populse_mia
+        - html2text
+        - openpyxl
+        - paramiko
+        - pillow # used in anatomist, morphologist, nuclear_imaging, snapbase
+        - requests
+        - six
+        - sqlalchemy
+        - traits
+        - xmltodict
+        - yaml
+        - joblib
+        - configobj
+        - mpi4py
+        - nibabel
+        - pyparsing
+        - pydot
+        - pydicom
+
+        - cython
+        - xlrd
+        - xlwt
+        - pandas
+        - lark
+
+        - pyzmq
+        - ipython
+        - nbsphinx
+        - sphinx-gallery
+
+        - numpy
+        - fastcluster
+        - h5py
+        - scipy
+        - scikit-image
+
+        - pyqtwebkit
+        - pyqtwebengine
+        
+        - pyopengl
+
+        - plotly
+        - pcl
+
+        - celery # used by Capsul v3
+
+        - pycryptodome
+
+        - cairo
+        - dcmtk
+        - libgfortran5
+        - libglib
+        - libglu
+        - libgomp
+        - hdf5
+        - autopep8
+        - objgraph
+
+        # Documentation building
+        - doxygen
+        - ghostscript
+        - graphviz
+        - nbconvert
+        - pandoc
+        - sphinx
+        - sphinx-gallery
+        - wkhtmltopdf
+
+        - libblitz
+        - boost-cpp
+        - dcmtk
+        - libexpat
+        - libglib
+        - libglu
+        - libjpeg-turbo
+        - netcdf4
+        - libpng
+        - libsigcpp <3
+        - libsvm
+        - libtiff
+        - libxml2
+        - pytest
+        - pytest-cov
+        - pytest-html
+        - libjpeg-turbo
+        - jxrlib
+        - libllvm14
+        - netcdf4
+        - openjpeg
+        - libpng
+        - qwt
+        - libsigcpp <3
+        - libsvm
+        - libtiff
+        - libxml2
+        - zstd
+
+        # Development tools and convenience utilities
+        - bash-completion
+        - flake8
+        - gdb
+        - autopep8
+        - objgraph
+
+        # Documentation building
+        - doxygen
+        - ghostscript
+        - graphviz
+        - nbconvert
+        - pandoc
+        - sphinx
+        - sphinx-gallery
+        - wkhtmltopdf
+
+        - libblitz
+        - boost-cpp
+        - dcmtk
+        - libexpat
+        - libglib
+        - libglu
+        - libjpeg-turbo
+        - netcdf4
+        - libpng
+        - libsigcpp <3
+        - libsvm
+        - libtiff
+        - libxml2
+        - pytest
+        - pytest-cov
+        - pytest-html
+
+  - package:
+      name: brainvisa-forge
+      version: ${{ brainvisa_forge_version }}
+
+    source:
+      git: https://github.com/brainvisa/casa-distro
+  
+    about:
+      homepage: https://brainvisa.info/
+      summary: Setup de developement environment for the BrainVISA project
+
+    build:
+      number: 0
+      script: |
+        mkdir "$PREFIX/conf"
+        ln -s ../src/casa-distro/setup/conda/bv_maker.cfg "$PREFIX/conf/bv_maker.cfg"
+        cat > "$PREFIX/conf/environment.json" << END_OF_FILE
+        {
+          "CASA_DISTRO": "brainvisa",
+          "CASA_BRANCH": "master"
+        }
+        END_OF_FILE
+
+    requirements:
+      run:
+        - soma-forge
+
+  - package:
+      name: virtualgl
+      version: ${{ virtualgl_version }}
+
+    source:
+      git: https://github.com/VirtualGL/virtualgl
+      tag:  ${{ virtualgl_version }}
+
+    build:
+      # skip:
+      #   - win
+      #   - osx
+      number: 0
+      script: |
+        cmake -G"Unix Makefiles" "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "-DOPENGL_egl_LIBRARY=$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/lib64/libEGL_mesa.so.0" "$SRC_DIR"
+        make -j
+        make install
+
+    requirements:
+      build:
+        - ${{ compiler('cxx') }}
+        - cmake
+        - make
+        - libjpeg-turbo
+        - openjdk
+        - xorg-libx11
+        - xorg-libxi
+        - xorg-libxext
+        - mesalib
+        - cuda-opencl-dev
+        - mesa-libgl-devel-cos7-x86_64
+        - mesa-libegl-devel-cos7-x86_64
+        - mesa-libglu-devel-cos7-x86_64
+        - libstdcxx-ng
+        - libxcb
+        - libxcb-devel-cos7-x86_64
+        - xcb-util-keysyms-devel-cos7-x86_64
+
+    tests:
+      - script: vglrun
+
+    about:
+      homepage: https://www.virtualgl.org/
+      summary: VirtualGL optimizes remote application performance by intercepting and redirecting OpenGL commands for smoother graphics rendering.
+      description: |
+        VirtualGL is a versatile toolkit that optimizes the graphical performance of applications running remotely on a server but displayed locally on a client machine. By intercepting OpenGL commands from the remote application and directing them to the client for rendering, VirtualGL enhances responsiveness and efficiency, particularly for graphics-intensive tasks like CAD, scientific visualization, and gaming. This technology enables smoother, more responsive user experiences in remote computing environments by reducing network bandwidth requirements and ensuring high-quality graphics output.
+      documentation: https://virtualgl.org/Documentation/Documentation
+      repository: https://github.com/VirtualGL/virtualgl

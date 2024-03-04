@@ -35,7 +35,7 @@ requirements:
     - mesalib
     - cuda-opencl-dev
     - mesa-libgl-devel-cos7-x86_64
-    - mesa-libegl-devel-cos7-x86_64
+    - mesa-libegl-devel-cos7-x86_64 =11
     - mesa-libglu-devel-cos7-x86_64
     - libstdcxx-ng
     - libxcb

@@ -9,7 +9,6 @@ fi
 
 mkdir "$CONDA"
 sh "$CASA/$installer" -u -b -p "$CONDA"
-# If mamba is installed
 export conda="$CONDA/bin/mamba"
 export conda_install="-y"
 
