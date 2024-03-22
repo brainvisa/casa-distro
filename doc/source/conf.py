@@ -277,7 +277,7 @@ except ImportError:
     pass
 
 # Example configuration for intersphinx: refer to the Python standard library.
-# intersphinx_mapping = {'http://docs.python.org/': None}
+# intersphinx_mapping = {'https://docs.python.org/': None}
 
 extlinks = {
     'bv-cmake': ('../brainvisa-cmake-' + bv_cmake_version + '/%s',
