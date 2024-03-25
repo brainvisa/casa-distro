@@ -1038,6 +1038,13 @@ class BBIDaily:
                 # annoying message 'No tests were found!!!' is printed to
                 # stderr by ctest, but it exits with return code 0.
                 sys.stderr.write(stderr)
+                log_lines.append('Error in get_test_commands:')
+                log_lines.append('get_test_commands command:')
+                log_lines.append("'" + "' '".join(cmd) + "'")
+                log_lines.append('Error:')
+                log_lines.append(stderr)
+                self.log(log_config_name, 'get test commands', 0,
+                         '\n'.join(log_lines))
                 raise RuntimeError('ctest failed with the above error')
             o = o.split('\n')
             # Extract the third line that follows each line containing ': Test
