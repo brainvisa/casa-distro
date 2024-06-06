@@ -233,6 +233,7 @@ class InstallEditor(Qt.QDialog):
                 wait.show()
                 wait.setValue(0)
                 Qt.QApplication.instance().processEvents()
+                shared_install = not osp.exists('/casa/host/home')
                 thread = threading.Thread(
                     target=setup_user,
                     kwargs=dict(setup_dir='/casa/host', rw_install=True))
@@ -242,6 +243,9 @@ class InstallEditor(Qt.QDialog):
                     Qt.QApplication.instance().processEvents()
                 wait.setValue(1)
                 Qt.QApplication.instance().processEvents()
+                if shared_install and osp.exists('/casa/host/home'):
+                    # it's a shared install without a home dir: remove it again
+                    shutil.rmtree('/casa/host/home')
                 wait.close()
                 del wait
 
