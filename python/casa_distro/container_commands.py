@@ -59,7 +59,7 @@ def setup_user(dir='/casa/setup', rw_install=False,
     """
     rw_install = check_boolean('rw_install', rw_install)
     env_setup_user(dir, rw_install=rw_install,
-                   create_home=not shared_install,
+                   create_homedir=not shared_install,
                    distro=distro, version=version,
                    url=url)
 
