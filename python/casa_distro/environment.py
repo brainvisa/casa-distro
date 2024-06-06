@@ -954,14 +954,18 @@ class BBIDaily:
                                        log_config_name=test_config['name'])
         successful_tests = []
         failed_tests = []
+        srccmdre = re.compile('/casa/host/src/.*/bin/')
         for test, commands in tests.items():
             log = []
             start = time.time()
             success = True
             for command in commands:
                 if test_config['type'] in ('run', 'user'):
+                    # replace paths in build dir with install ones
                     command = command.replace('/casa/host/build',
                                               '/casa/install')
+                    # replace paths in sources with install ones
+                    command = srccmdre.sub('/casa/install/bin/', command)
                 result, output = self.call_output(self.casa_distro_cmd + [
                     'run',
                     'name={0}'.format(test_config['name']),
