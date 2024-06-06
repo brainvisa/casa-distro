@@ -676,23 +676,42 @@ def prepare_environment_homedir(casa_home_host_path, config):
     """
     if not osp.exists(casa_home_host_path):
         os.makedirs(casa_home_host_path)
-        host_home_dir = os.path.abspath(os.path.expanduser('~'))
-        if mounted_in_container(host_home_dir, config):
-            host_home_dir_from_container = host_home_dir
-        else:
-            host_home_dir_from_container = osp.join(
-                '/host', host_home_dir.lstrip(os.sep))
-        # Create symbolic links to config files/directories in CASA_HOST_HOME
-        for config_basename in ('.anatomist', '.brainvisa',
-                                '.soma-workflow', '.soma-workflow.cfg'):
-            container_config_path = osp.join(casa_home_host_path,
-                                             config_basename)
-            # Path to the host home directory seen from within the container
-            host_config_path = osp.join(
-                host_home_dir_from_container, config_basename
-            )
-            if not osp.lexists(container_config_path):
-                os.symlink(host_config_path, container_config_path)
+
+        # Normally, during the initial install of an environment we are running
+        # inside of a container launched directly by the user on the
+        # command-line ('singularity -B ...:/casa/setup'). In that case, HOME
+        # by default points to the user's homedir on the host.
+        #
+        # In some cases (e.g. through te configuration GUI of 'bv') we can be
+        # called from inside casa-distro, in that case CASA_HOST_HOME is the
+        # correct variable to use.
+        host_home_dir = os.environ.get('CASA_HOST_HOME')
+        if not host_home_dir:
+            host_home_dir = os.path.abspath(os.path.expanduser('~'))
+            if host_home_dir == '/casa/home':
+                print("ERROR: unable to determine the user's home directory "
+                      'on the host. Convenience symlinks will not be created.')
+                host_home_dir = None
+        if host_home_dir is not None:
+            if mounted_in_container(host_home_dir, config):
+                host_home_dir_from_container = host_home_dir
+            else:
+                host_home_dir_from_container = osp.join(
+                    '/host', host_home_dir.lstrip(os.sep))
+            # Create symbolic links to config files/directories in
+            # CASA_HOST_HOME
+            for config_basename in ('.anatomist', '.brainvisa',
+                                    '.soma-workflow', '.soma-workflow.cfg'):
+                container_config_path = osp.join(casa_home_host_path,
+                                                 config_basename)
+                # Path to the host home directory seen from within the
+                # container
+                host_config_path = osp.join(
+                    host_home_dir_from_container, config_basename
+                )
+                if not osp.lexists(container_config_path):
+                    os.symlink(host_config_path, container_config_path)
+
     # add a .varlib/xkb directory in order to mount /var/lib/xkb from there:
     # Xvfb may fail if it cannot see and write a valid /var/lib/xkb
     if not osp.exists(osp.join(casa_home_host_path, '.varlib/xkb')):
