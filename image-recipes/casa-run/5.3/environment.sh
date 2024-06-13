@@ -4,4 +4,4 @@ export LANG=C.UTF-8
 # disturbs all software and IO
 export LC_NUMERIC=C
 # add paths for casa-distro container-side tools
-export PATH="/casa/casa-distro/cbin:$PATH"
+export PATH="/casa/host/install/cbin:/casa/host/casa-distro/cbin:/casa/casa-distro/cbin:$PATH"
