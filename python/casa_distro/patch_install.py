@@ -22,7 +22,8 @@ def check_rw_install(install_dir='/casa/host/install'):
 
         return True
     except Exception:
-        raise RuntimeError('Read-write installation is not available')
+        raise RuntimeError('Read-write installation is not available. It is '
+                           'needed for full updates.')
 
 
 def get_distro_version():
@@ -65,17 +66,8 @@ def list_updates(patches_url='https://brainvisa.info/download/updates',
     return done
 
 
-def patch_install(patches_url='https://brainvisa.info/download/updates',
-                  version=None, install_dir='/casa/host/install'):
-    if version is None:
-        version = get_distro_version()
-    url = '%s/%s' % (patches_url, version)
+def patch_files(url, todo, install_dir):
     done = []
-    try:
-        todo = ['%s/%s' % (url, urllib.parse.quote(fname))
-                for fname in url_listdir(url)]
-    except urllib.error.HTTPError:
-        return  # no patches for this version
     while todo:
         item = todo.pop(0)
         if item.endswith('/'):  # directory
@@ -102,6 +94,10 @@ def patch_install(patches_url='https://brainvisa.info/download/updates',
                 os.makedirs(osp.dirname(install_fname))
             with open(install_fname, 'wb') as f:
                 f.write(file_content)
+            if rel_fname.startswith('bin') or rel_fname.startswith('cbin'):
+                # execution flag
+                os.cmod(install_fname,
+                        stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             # set timestamp
             os.utime(install_fname, (t, t))
             # can we get the +x status from request ?
@@ -113,7 +109,35 @@ def patch_install(patches_url='https://brainvisa.info/download/updates',
     return done
 
 
+def patch_install(patches_url='https://brainvisa.info/download/updates',
+                  version=None, install_dir='/casa/host/install'):
+    if version is None:
+        version = get_distro_version()
+    url = '%s/%s' % (patches_url, version)
+    try:
+        todo = ['%s/%s' % (url, urllib.parse.quote(fname))
+                for fname in url_listdir(url)
+                if fname != 'casa-distro']  # exclude casa-distro here
+    except urllib.error.HTTPError:
+        return  # no patches for this version
+    return patch_files(url, todo, install_dir)
+
+
+def patch_casa_distro(patches_url='https://brainvisa.info/download/updates',
+                      version=None, install_dir='/casa/host/casa-distro'):
+    if version is None:
+        version = get_distro_version()
+    url = '%s/%s/casa-distro' % (patches_url, version)
+    try:
+        todo = ['%s/%s' % (url, urllib.parse.quote(fname))
+                for fname in url_listdir(url)]
+    except urllib.error.HTTPError:
+        return  # no patches for this version
+    return patch_files(url, todo, install_dir)
+
+
 if __name__ == '__main__':
+    updated = patch_casa_distro()
     check_rw_install()
-    updated = patch_install()
+    updated += patch_install()
     print('updated files:', updated)
