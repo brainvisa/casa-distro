@@ -131,7 +131,8 @@ def is_writable(dir):
 
 
 def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
-               version=None, url='https://brainvisa.info/download'):
+               version=None, url='https://brainvisa.info/download',
+               create_homedir=True):
     """
     Initialize a user environment directory.
     This function is supposed to be called from a user image.
@@ -250,7 +251,9 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
                             'casa_distro.json'), 'w'),
               indent=4, separators=(',', ': '))
 
-    prepare_environment_homedir(osp.join(setup_dir, 'home'), environment)
+    if create_homedir:
+        prepare_environment_homedir(osp.join(setup_dir, 'home'), environment)
+
     print('The software is now setup in a new user environment.')
     print('Now you can add in the PATH environment variable of your host '
           'system the bin/ subdirectory of the install directory. You may add '

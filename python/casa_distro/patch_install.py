@@ -41,15 +41,17 @@ def list_updates(patches_url='https://brainvisa.info/download/updates',
     url = '%s/%s' % (patches_url, version)
     done = []
     try:
-        todo = ['%s/%s' % (url, fname) for fname in url_listdir(url)]
+        todo = ['%s/%s' % (url, urllib.parse.quote(fname))
+                for fname in url_listdir(url)]
     except urllib.error.HTTPError:
         return  # no patches for this version
     while todo:
         item = todo.pop(0)
         if item.endswith('/'):  # directory
-            todo += ['%s%s' % (item, fname) for fname in url_listdir(item)]
+            todo += ['%s%s' % (item, urllib.parse.quote(fname))
+                     for fname in url_listdir(item)]
         else:
-            rel_fname = item[len(url):]
+            rel_fname = urllib.parse.unquote(item[len(url):])
             install_fname = install_dir + rel_fname
             resp = urlopen(item)
             dt = tparser.parse(resp.getheader('Last-Modified'))
@@ -70,16 +72,18 @@ def patch_install(patches_url='https://brainvisa.info/download/updates',
     url = '%s/%s' % (patches_url, version)
     done = []
     try:
-        todo = ['%s/%s' % (url, fname) for fname in url_listdir(url)]
+        todo = ['%s/%s' % (url, urllib.parse.quote(fname))
+                for fname in url_listdir(url)]
     except urllib.error.HTTPError:
         return  # no patches for this version
     while todo:
         item = todo.pop(0)
         if item.endswith('/'):  # directory
-            todo += ['%s%s' % (item, fname) for fname in url_listdir(item)]
+            todo += ['%s%s' % (item, urllib.parse.quote(fname))
+                     for fname in url_listdir(item)]
         else:
             # print('download:', item)
-            rel_fname = item[len(url):]
+            rel_fname = urllib.parse.unquote(item[len(url):])
             install_fname = install_dir + rel_fname
             # print('install to:', install_fname)
             resp = urlopen(item)

@@ -9,7 +9,8 @@ from casa_distro.container_environment import (setup_user as env_setup_user,
 
 
 @command
-def setup_user(dir='/casa/setup', rw_install=False, distro=None,
+def setup_user(dir='/casa/setup', rw_install=False,
+               shared_install=False, distro=None,
                version=os.environ.get('CASA_VERSION'),
                url='https://brainvisa.info/download'):
     """
@@ -34,6 +35,13 @@ def setup_user(dir='/casa/setup', rw_install=False, distro=None,
         container but on the host filesystem. This install allows to add
         external toolboxes on top of the standard BrainVisa install
 
+    shared_install
+        {shared_install_default}
+        if true, the creation of /casa/host/home will be skipped. This is
+        appropriate for an install shared among multiple users, who will then
+        each have their own home directory stored under
+        ~/.local/share/casa-distro
+
     distro
         {distro_default}
         if specified, the install will download the BrainVisa distro from the
@@ -50,7 +58,9 @@ def setup_user(dir='/casa/setup', rw_install=False, distro=None,
         download URL for use with the distro option.
     """
     rw_install = check_boolean('rw_install', rw_install)
-    env_setup_user(dir, rw_install=rw_install, distro=distro, version=version,
+    env_setup_user(dir, rw_install=rw_install,
+                   create_homedir=not shared_install,
+                   distro=distro, version=version,
                    url=url)
 
 
