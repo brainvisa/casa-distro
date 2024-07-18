@@ -19,8 +19,7 @@ import zipfile
 from casa_distro.command import command, check_boolean
 from casa_distro.defaults import (default_base_directory,
                                   publish_url, default_download_url)
-from casa_distro.environment import (BBIDaily,
-                                     casa_distro_directory,
+from casa_distro.environment import (CasaDistroBBIDaily, casa_distro_directory,
                                      iter_environments,
                                      run_container,
                                      select_environment,
@@ -1191,7 +1190,8 @@ def bbi_daily(distro=None, branch=None, system=None,
                                    jenkins_password)
     else:
         jenkins = None
-    bbi_daily = BBIDaily(base_directory, jenkins=jenkins)
+
+    bbi_daily = CasaDistroBBIDaily(base_directory, jenkins=jenkins)
 
     if update_casa_distro:
         # Update casa_distro with git and restart with update_casa_distro=no
