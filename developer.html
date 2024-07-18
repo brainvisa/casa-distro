@@ -17,7 +17,7 @@
     <link rel="next" title="The bv command" href="bv_command.html" />
     <link rel="prev" title="Technical issues" href="technical.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,7 +41,7 @@
 <section id="installation-and-setup">
 <h2>Installation and setup<a class="headerlink" href="#installation-and-setup" title="Link to this heading">¶</a></h2>
 <ul>
-<li><p>The <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install both a released, compiled, version of BrainVISA (This is what a “regular user” needs), or a developer environment which will build from sources.</p></li>
+<li><p>The <a class="extlink-bv reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install both a released, compiled, version of BrainVISA (This is what a “regular user” needs), or a developer environment which will build from sources.</p></li>
 <li><p>Alternatively it is possible to install Casa-Distro from its sources on GitHub. To get the latest release you can simply download it from <a class="reference external" href="https://github.com/brainvisa/casa-distro">https://github.com/brainvisa/casa-distro</a>, using  the <code class="docutils literal notranslate"><span class="pre">git</span></code> command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/brainvisa/casa-distro.git<span class="w"> </span>/tmp/casa-distro
 </pre></div>
@@ -67,7 +67,7 @@
 <p>This command specifies to setup a developer <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> for the open-source projects set (<code class="docutils literal notranslate"><span class="pre">distro_source=opensource</span></code> is actually the default and can be omitted), for the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch (default is <code class="docutils literal notranslate"><span class="pre">latest_release</span></code>), using a container system based on Ubuntu 18.04.</p>
 <p>Directories and files will be created accordingly in the <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> directory (location of casa-distro container images and <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a>), here the default is <code class="docutils literal notranslate"><span class="pre">$HOME/casa_distro</span></code>.</p>
 <p>The location of casa-distro <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> can be specified either using the <code class="docutils literal notranslate"><span class="pre">base_directory=</span></code> parameter to many sub-commands, or if the environment variable <code class="docutils literal notranslate"><span class="pre">CASA_DEFAULT_REPOSITORY</span></code> is set to an appropriate directory.</p>
-<p>Such an <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> will use source code from BrainVisa code repositories (partly on <a class="reference external" href="https://github.com">https://github.com</a> and partly on <a class="reference external" href="https://bioproj.extra.cea.fr">https://bioproj.extra.cea.fr</a>). The code needs to be downloaded and built using a build system: <a class="reference external" href="../brainvisa-cmake-1.0/index.html">bv_maker</a></p>
+<p>Such an <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> will use source code from BrainVisa code repositories (partly on <a class="reference external" href="https://github.com">https://github.com</a> and partly on <a class="reference external" href="https://bioproj.extra.cea.fr">https://bioproj.extra.cea.fr</a>). The code needs to be downloaded and built using a build system: <a class="extlink-bv-cmake reference external" href="../brainvisa-cmake-1.0/index.html">bv_maker</a></p>
 </li>
 <li><p>Setup credentials for source code reposotories</p>
 <p>This step is optional and is especially not need if just retrieving only the open-source projects.
@@ -78,7 +78,7 @@ The file <code class="docutils literal notranslate"><span class="pre">svn.secret
 </pre></div>
 </div>
 <p>If <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">name</span></a>, <a class="reference internal" href="concepts.html#distro"><span class="std std-ref">distro</span></a>, <a class="reference internal" href="concepts.html#branch"><span class="std std-ref">branch</span></a>, or <a class="reference internal" href="concepts.html#system"><span class="std std-ref">system</span></a> are not provided, all matching <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environments</span></a> will be processed.</p>
-<p>Additional options can be passed to the underlying <a class="reference external" href="../brainvisa-cmake-1.0/index.html">bv_maker</a> command, which will run inside the container. Typically, the documentation can be built, testing and packaging can be performed.</p>
+<p>Additional options can be passed to the underlying <a class="extlink-bv-cmake reference external" href="../brainvisa-cmake-1.0/index.html">bv_maker</a> command, which will run inside the container. Typically, the documentation can be built, testing and packaging can be performed.</p>
 </li>
 </ul>
 </section>
@@ -107,7 +107,7 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
 </section>
 <section id="customizing-projects">
 <h3>Customizing projects<a class="headerlink" href="#customizing-projects" title="Link to this heading">¶</a></h3>
-<p>It is possible to customize the projects list to be retrieved and built. It is done by editing the <a class="reference external" href="../brainvisa-cmake-1.0/configuration.html">bv_maker.cfg file</a> in the environment, which can be found in the directory <code class="docutils literal notranslate"><span class="pre">&lt;repository&gt;/&lt;environment&gt;/host/conf/</span></code></p>
+<p>It is possible to customize the projects list to be retrieved and built. It is done by editing the <a class="extlink-bv-cmake reference external" href="../brainvisa-cmake-1.0/configuration.html">bv_maker.cfg file</a> in the environment, which can be found in the directory <code class="docutils literal notranslate"><span class="pre">&lt;repository&gt;/&lt;environment&gt;/host/conf/</span></code></p>
 <p>where <code class="docutils literal notranslate"><span class="pre">&lt;repository&gt;</span></code> is the base casa-distro <a class="reference internal" href="concepts.html#repository"><span class="std std-ref">repository</span></a> directory (passed as the <code class="docutils literal notranslate"><span class="pre">base_directory</span></code> option of casa_distro if needed), <code class="docutils literal notranslate"><span class="pre">&lt;environment&gt;</span></code> is the <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a> <a class="reference internal" href="concepts.html#env-name"><span class="std std-ref">environment name</span></a>.</p>
 </section>
 </section>
@@ -126,7 +126,7 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -172,7 +172,7 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -187,7 +187,7 @@ On the host, it is possible to <em>source</em> the bash completion scripts. You 
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2017-2024, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.6.
     </div>
   </body>
 </html>

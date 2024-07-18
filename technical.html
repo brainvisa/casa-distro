@@ -17,7 +17,7 @@
     <link rel="next" title="Developing in the Casa-Distro BrainVISA environment" href="developer.html" />
     <link rel="prev" title="Casa-distro concepts" href="concepts.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -39,7 +39,7 @@
   <section id="technical-issues">
 <h1>Technical issues<a class="headerlink" href="#technical-issues" title="Link to this heading">¶</a></h1>
 <ul class="simple">
-<li><p>The <a class="reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install casa-distro and a released, compiled, version of BrainVISA. This is what a “regular user” needs.</p></li>
+<li><p>The <a class="extlink-bv reference external" href="../web-5.0/download.html">BrainVisa download / install section</a> explains how to install casa-distro and a released, compiled, version of BrainVISA. This is what a “regular user” needs.</p></li>
 <li><p>Developers can find information on the <a class="reference internal" href="developer.html"><span class="doc">Developing in the Casa-Distro BrainVISA environment</span></a> section.</p></li>
 </ul>
 <p>This document explains how to setup and use some container systems (Singularity, Docker), and tries to solve some technical issues which can occur when using them.</p>
@@ -91,11 +91,11 @@
 </section>
 <section id="containers-and-distributed-execution">
 <h2>Containers and distributed execution<a class="headerlink" href="#containers-and-distributed-execution" title="Link to this heading">¶</a></h2>
-<p><a class="reference external" href="http://brainvisa.info">BrainVISA</a> can perform distributed execution, using <a class="reference external" href="../soma-workflow-1.0/sphinx/index.html">Soma-Workflow</a>.</p>
+<p><a class="reference external" href="http://brainvisa.info">BrainVISA</a> can perform distributed execution, using <a class="extlink-soma-workflow reference external" href="../soma-workflow-1.0/sphinx/index.html">Soma-Workflow</a>.</p>
 <p>in an installed <a class="reference internal" href="concepts.html#environment"><span class="std std-ref">environment</span></a>, commands are also available via “run scripts”, located in <code class="docutils literal notranslate"><span class="pre">&lt;environment&gt;/host/bin/</span></code>. If this directory is in the computing resource nodes <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable, then the commands will run the container transparently.</p>
 <p>Alternately, soma-workflow 3.1 brings support to spawn Docker or Singularity (or casa_distro) in remote processing. However it needs some additional configuration on server side to specify how to run the containers.</p>
 <p>For commands run directly through the <code class="docutils literal notranslate"><span class="pre">python</span></code> command, more work will be required because the system <code class="docutils literal notranslate"><span class="pre">python</span></code> is, of course, not overloaded in BrainVISA/Casa run scripts.</p>
-<p>Please read <a class="reference external" href="../soma-workflow-1.0/sphinx/install_config.html#running-servers-and-jobs-in-a-container">Soma-Workflow documentation about it</a>.</p>
+<p>Please read <a class="extlink-soma-workflow reference external" href="../soma-workflow-1.0/sphinx/install_config.html#running-servers-and-jobs-in-a-container">Soma-Workflow documentation about it</a>.</p>
 <p>Remember that software running that way live in a container, which is more or less isolated from the host system. To access data, casa_distro will likeky need additional directories mount options. It can be specified on <code class="docutils literal notranslate"><span class="pre">casa_distro</span></code> commandline, or in the file <code class="docutils literal notranslate"><span class="pre">container_options</span></code> item in <code class="docutils literal notranslate"><span class="pre">&lt;casa_distro_environment&gt;/host/conf/casa_distro.json</span></code>.</p>
 </section>
 <section id="developing-in-containers">
@@ -268,7 +268,7 @@ either. Remote GLX rendering has always been a very delicate thing…</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -332,7 +332,7 @@ either. Remote GLX rendering has always been a very delicate thing…</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -347,7 +347,7 @@ either. Remote GLX rendering has always been a very delicate thing…</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2017-2024, BrainVISA team &lt;contact@brainvisa.info&gt;.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.6.
     </div>
   </body>
 </html>
