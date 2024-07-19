@@ -1180,7 +1180,7 @@ def bbi_daily(distro=None, branch=None, system=None,
     if jenkins_server:
         # Import jenkins only if necessary to avoid dependency
         # on requests module
-        from casa_distro.jenkins import BrainVISAJenkins
+        from neuro_forge.soma_forge.jenkins import BrainVISAJenkins
 
         jenkins_auth = jenkins_auth.format(base_directory=base_directory)
         with open(jenkins_auth) as f:
