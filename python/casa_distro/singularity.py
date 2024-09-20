@@ -613,7 +613,7 @@ def _guess_opengl_mode():
         return 'container'
 
 
-def _nv_libs_binds():
+def _nv_libs_binds(image=None):
     '''Workaround for missing NVidia libraries.
 
     This is a workaround for some cases where Singularity with the --nv option
@@ -632,6 +632,7 @@ def _nv_libs_binds():
     _nv_libs_binds() adds the additional missing lib directory (tls/)
 
     '''
+    added_libs = []
     try:
         with open(os.devnull, 'w') as devnull:
             out_data = subprocess.check_output(
@@ -639,13 +640,12 @@ def _nv_libs_binds():
                 bufsize=-1, stderr=devnull,
                 universal_newlines=True,  # return decoded str instead of bytes
             )
+        libs = out_data.strip().split()
     except OSError:
-        return []  # nvidia-container-cli not found
+        libs = []  # nvidia-container-cli not found
     except subprocess.CalledProcessError:
-        return []  # nvidia-container-cli returns an error
+        libs = []  # nvidia-container-cli returns an error
 
-    libs = out_data.strip().split()
-    added_libs = []
     for lib in libs:
         ldir, blib = osp.split(lib)
         if blib.startswith('libnvidia-tls.so'):
@@ -657,6 +657,40 @@ def _nv_libs_binds():
                 # libnvidia-tls...
                 added_libs.append(ldir)
             break
+
+    if image is None:
+        return added_libs
+
+    # check libc versions and use the newer between host and container ones
+    libc_path = '/usr/lib/x86_64-linux-gnu/libc.so.6'
+    host_ver = None
+    cont_ver = None
+    if osp.exists(libc_path):
+        try:
+            out_data = subprocess.check_output([libc_path]).decode()
+            ver_line = out_data.split('\n')[0]
+            m = re.match('^.* version ([0-9.]+)\\.$', ver_line)
+            if m is not None:
+                ver_s = m.group(1)
+                host_ver = [int(x) for x in ver_s.split('.')]
+        except subprocess.CalledProcessError:
+            pass
+    if host_ver is not None:
+        try:
+            cmd = [singularity_executable(), 'run', image, libc_path]
+            out_data = subprocess.check_output(cmd).decode()
+            ver_line = out_data.split('\n')[0]
+            m = re.match('^.* version ([0-9.]+)\\.$', ver_line)
+            if m is not None:
+                ver_s = m.group(1)
+                cont_ver = [int(x) for x in ver_s.split('.')]
+        except subprocess.CalledProcessError:
+            pass
+        if cont_ver is not None and cont_ver < host_ver:
+            added_libs += [
+                '%s:%s' % (libc_path, libc_path),
+                '/lib64/ld-linux-x86-64.so.2:/lib64/ld-linux-x86-64.so.2']
+
     return added_libs
 
 
@@ -790,17 +824,33 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         container_options.remove('--nv')
     container_env.pop('SOFTWARE_OPENGL', None)
 
+    # determine image now
+    if image is None:
+        image = config.get('image')
+        if image is None:
+            raise ValueError(
+                'image is missing from environment configuration file '
+                '(casa_distro.json)')
+    image = osp.join(base_directory, image)
+    if not osp.exists(image):
+        image = osp.join(osp.realpath(base_directory), image)
+        if not osp.exists(image):
+            raise ValueError("'%s' does not exist" % image)
+
     # if needed, write an ini.sh mounted in /casa/start_scripts
     init_script = []
 
     if opengl == 'nv':
         if '--nv' not in container_options:
             container_options.append('--nv')
-        nv_binds = _nv_libs_binds()
+        nv_binds = _nv_libs_binds(image=image)
         for ldir in nv_binds:
-            singularity += ['--bind',
-                            '%s:/usr/local/lib/%s'
-                            % (ldir, osp.basename(ldir))]
+            if ':' in ldir:
+                singularity += ['--bind', ldir]
+            else:
+                singularity += ['--bind',
+                                '%s:/usr/local/lib/%s'
+                                % (ldir, osp.basename(ldir))]
             init_script += [
                 '# add missing nvidia libs in LD_LIBRARY_PATH',
                 'export LD_LIBRARY_PATH=/usr/local/lib/tls'
@@ -828,17 +878,6 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
 
     singularity += container_options
 
-    if image is None:
-        image = config.get('image')
-        if image is None:
-            raise ValueError(
-                'image is missing from environment configuration file '
-                '(casa_distro.json)')
-    image = osp.join(base_directory, image)
-    if not osp.exists(image):
-        image = osp.join(osp.realpath(base_directory), image)
-        if not osp.exists(image):
-            raise ValueError("'%s' does not exist" % image)
     singularity += [image]
     singularity += command
     env_for_singularity = os.environ.copy()
