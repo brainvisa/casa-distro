@@ -170,7 +170,7 @@ opengl
 
     * ``auto``: use a heuristic to choose the best option that is safe
       based on the host configuration
-    * ``container``: passes no special options to Singularity: the mesa
+    * ``container``: passes no special options to apptainer: the mesa
       installed in the container is used
     * ``nv`` tries to mount the proprietary NVidia driver of the host (linux)
       system in the container
@@ -181,7 +181,7 @@ root
     default=False
 
     If ``yes``, ``true`` or ``1``, start execution as system administrator. For
-    Singularity container, this requires administrator privileges on host
+    Apptainer container, this requires administrator privileges on host
     system.
 cwd
     Set current working directory to the given value before launching
@@ -363,7 +363,7 @@ opengl
 
     * ``auto``: use a heuristic to choose the best option that is safe
       based on the host configuration
-    * ``container``: passes no special options to Singularity: the mesa
+    * ``container``: passes no special options to apptainer: the mesa
       installed in the container is used
     * ``nv`` tries to mount the proprietary NVidia driver of the host (linux)
       system in the container
@@ -374,7 +374,7 @@ root
     default=False
 
     If ``yes``, ``true`` or ``1``, start execution as system administrator. For
-    Singularity container, this requires administrator privileges on host
+    Apptainer container, this requires administrator privileges on host
     system.
 cwd
     Set current working directory to the given value before launching
@@ -460,7 +460,7 @@ opengl
 
     * ``auto``: use a heuristic to choose the best option that is safe
       based on the host configuration
-    * ``container``: passes no special options to Singularity: the mesa
+    * ``container``: passes no special options to apptainer: the mesa
       installed in the container is used
     * ``nv`` tries to mount the proprietary NVidia driver of the host (linux)
       system in the container
@@ -471,7 +471,7 @@ root
     default=False
 
     If ``yes``, ``true`` or ``1``, start execution as system administrator. For
-    Singularity container, this requires administrator privileges on host
+    Apptainer container, this requires administrator privileges on host
     system.
 cwd
     Set current working directory to the given value before launching
