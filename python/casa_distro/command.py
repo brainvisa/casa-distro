@@ -92,7 +92,7 @@ param_help = {
 
 {indent}* ``auto``: use a heuristic to choose the best option that is safe
 {indent}  based on the host configuration
-{indent}* ``container``: passes no special options to Singularity: the mesa
+{indent}* ``container``: passes no special options to apptainer: the mesa
 {indent}  installed in the container is used
 {indent}* ``nv`` tries to mount the proprietary NVidia driver of the host (linux)
 {indent}  system in the container
@@ -120,7 +120,7 @@ param_help = {
 {indent}default={root_default}
 
 {indent}If ``yes``, ``true`` or ``1``, start execution as system administrator. For
-{indent}Singularity container, this requires administrator privileges on host
+{indent}Apptainer container, this requires administrator privileges on host
 {indent}system.''',  # noqa: E501
     'version': '''version
 {indent}If given, select environment by its version (only applicable to user
