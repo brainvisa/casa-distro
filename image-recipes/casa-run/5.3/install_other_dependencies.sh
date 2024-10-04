@@ -42,14 +42,15 @@ tmp=$(mktemp -d)
 # node.js
 
 cd $tmp
-wget https://nodejs.org/dist/v18.14.2/node-v18.14.2-linux-x64.tar.xz
+wget https://nodejs.org/dist/v22.9.0/node-v22.9.0-linux-x64.tar.xz
 
 cd /usr/local
-tar xf $tmp/node-v18.14.2-linux-x64.tar.xz
-ln -s node-v18.14.2-linux-x64 node
+tar xf $tmp/node-v22.9.0-linux-x64.tar.xz
+ln -s node-v22.9.0-linux-x64 node
 cd bin
 ln -s ../node/bin/* .
-rm $tmp/node-v18.14.2-linux-x64.tar.xz
+rm $tmp/node-v22.9.0-linux-x64.tar.xz
 
+npm install -g npm
 npm install -g @gltf-transform/core @gltf-transform/extensions @gltf-transform/functions @gltf-transform/cli
 ln -s ../node/bin/gltf-transform /usr/local/bin/
