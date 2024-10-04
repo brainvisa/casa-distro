@@ -87,6 +87,12 @@ def compiled_dependencies(base_dir, builder):
 
 
 @builder.step
+def other_dependencies(base_dir, builder):
+    """Run install_compiled_dependencies.sh."""
+    builder.run_root('/build/install_other_dependencies.sh')
+
+
+@builder.step
 def cleanup_build_dependencies(base_dir, builder):
     """Run cleanup_build_dependencies.sh."""
     builder.run_root('/build/cleanup_build_dependencies.sh')
