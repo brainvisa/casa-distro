@@ -892,7 +892,7 @@ class CasaDistroBBIDaily(bbi_daily.BBIDaily if bbi_daily else object):
         self.casa_distro_admin_cmd = [sys.executable, casa_distro_admin]
 
     def update_casa_distro(self):
-        super().update_casa_distro()
+        self.update_neuroforge()
         start = time.time()
         result, log = self.call_output(['git',
                                         '-C', self.casa_distro_src,
