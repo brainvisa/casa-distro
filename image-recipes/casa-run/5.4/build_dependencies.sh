@@ -14,6 +14,7 @@ build_dependencies=(
     make
     patch
     pkg-config
+    meson
 
     # cmake is a build dependency but it should not be removed after
     # compilations,  because it is needed for running ctest tests.
@@ -42,26 +43,17 @@ build_dependencies=(
     libxml2-dev
     libjxr-dev
 
-    # Build dependencies of libXp
-    # x11proto-print-dev  # does not exist in ubuntu 22.04
-    # xutils-dev # for libXp / printproto
-
-    # Build dependencies of SIP/PyQt
-    libqt5svg5-dev  # qtconsole needs PyQt5.QtSvg
-    libqt5opengl5-dev
-    qttools5-dev
-    qtmultimedia5-dev
-    libqt5webchannel5-dev
-    libqt5webkit5-dev
-    libqt5webview5-dev
-    libqt5x11extras5-dev
-    libqt5xmlpatterns5-dev
-    qtwebengine5-dev  # for PyQt
-
     # Build dependencies of libminc
     libhdf5-dev
     libnetcdf-dev
 
     # Build dependencies for draco
     libeigen3-dev
+
+    bison
+    libcairo-dev
+    libgdk-pixbuf-2.0-dev
+
+    python3-skbuild
+    libdraco-dev
 )

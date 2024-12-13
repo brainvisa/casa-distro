@@ -1,14 +1,16 @@
-dipy==1.5.0
-nibabel==3.2.1
+# dipy==1.5.0
+# nibabel==3.2.1
 nipype==1.8.5
 Pycluster==1.59
-rdflib==6.0.1
-torch==1.13.1
-torch-vision==0.1.6.dev0
-ipykernel<5.0.0
-tornado<5.0.0
-notebook<6.0.0
-sphinx<7.0.0
-numpy==1.21.5
-matplotlib<3.8
-qtconsole<5.5
+# rdflib==6.0.1
+# torch==1.13.1
+# torch-vision==0.1.6.dev0
+# ipykernel<5.0.0
+# tornado<5.0.0
+# notebook<6.0.0
+# sphinx<7.0.0
+# numpy==1.21.5
+# matplotlib<3.8
+# qtconsole<5.5
+traitlets==5.5.0
+jsonschema==4.10.3

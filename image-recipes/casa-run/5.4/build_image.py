@@ -7,7 +7,7 @@ import os.path
 from casa_distro.image_builder import ImageBuilder
 
 
-builder = ImageBuilder('casa-run', base='casa-system-ubuntu-22.04.{extension}')
+builder = ImageBuilder('casa-run', base='casa-system-ubuntu-24.04.{extension}')
 
 
 BUILD_FILES = [

@@ -57,8 +57,8 @@ toolchain_packages=(
     libc-dev
     make
     pkg-config
-    pyqt5-dev
-    pyqt5-dev-tools
+    pyqt6-dev
+    pyqt6-dev-tools
     python3-sip-dev
     qtchooser
 )
@@ -83,7 +83,6 @@ development_tools=(
     locate
     meld
     nano
-    python2  # only for flake8 tests of casa-distro
     python3-autopep8
     python3-objgraph
     python3-venv
@@ -108,8 +107,6 @@ development_tools=(
 #         xargs apt-cache show | grep '^Package:' | sort -u
 debug_symbol_packages=(
     libc6-dbg  # recommended by gdb
-    libjpeg-turbo8-dbg
-    libjpeg8-dbg
     python3-dbg
     # python3-sip-dbg
 )
@@ -123,6 +120,10 @@ documentation_building_packages=(
     pandoc
     python3-sphinx
     python3-sphinx-gallery
+    python3-sphinx-rtd-theme
+    python3-docutils
+    python3-sphinxcontrib-mermaid
+    python3-myst-parser
     texlive-latex-base
     texlive-latex-extra  # needed by doxygen to render LaTeX formulas
     texlive-fonts-recommended
@@ -160,34 +161,35 @@ brainvisa_standard_dev_dependencies=(
     libvtk9-dev
     libvtk9-qt-dev
     libxml2-dev
-    qttools5-dev
-    qtmultimedia5-dev
-    qttools5-dev-tools
-    zlib1g-dev
-    qt6-multimedia-dev
+    qt6-base-dev-tools
+    qt6-base-private-dev
+    qt6-tools-dev-tools
+    qt6-5compat-dev
     qt6-3d-dev
+    qt6-multimedia-dev
+    qt6-webengine-dev
     qt6-webview-dev
     qt6-tools-dev
-    qt6-webengine-dev
+    qt6-tools-private-dev
+    qt6-documentation-tools
+    qt6-image-formats-plugins
+    qt6-image-formats-plugin-pdf
+    libqt6opengl6-dev
+    qt6-l10n-tools
+    zlib1g-dev
     qt6-webengine-dev-tools
     qmake6
     python3-pyqt6.sip
     designer-qt6
     linguist-qt6
-    qt6-tools-dev-tools
-    qt6-image-formats-plugins
-    qt6-base-private-dev
-    qt6-documentation-tools
-    qt6-tools-private-dev
     libqt6core5compat6-dev
-    libqt6opengl6-dev
-    qt6-l10n-tools
+    python3-sipbuild
+    sip-tools
+    pre-commit
 )
 
 
 brainvisa_toolboxes_dev_dependencies=(
-    # Required for building MRtrix3
-    libqt5svg5-dev
 )
 
 
@@ -203,9 +205,7 @@ brainvisa_probable_dev_dependencies=(
     liblapack-dev
     libnifti-dev
     libpcl-dev
-    libqt5webkit5-dev
     mpi-default-dev
-    qtwebengine5-dev
 )
 
 $SUDO apt-get -o Acquire::Retries=20 install \

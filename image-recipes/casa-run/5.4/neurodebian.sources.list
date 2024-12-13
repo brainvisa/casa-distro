@@ -1,4 +1,4 @@
 deb http://neurodebian.g-node.org data main contrib non-free
 #deb-src http://neurodebian.g-node.org data main contrib non-free
-deb http://neurodebian.g-node.org jammy main contrib non-free
-#deb-src http://neurodebian.g-node.org jammy main contrib non-free
+deb http://neurodebian.g-node.org noble main contrib non-free
+#deb-src http://neurodebian.g-node.org noble main contrib non-free

@@ -31,22 +31,8 @@ fi
 # introduce the version constraint in this file and document the reason.
 
 PIP3="$SUDO python3 -m pip --no-cache-dir"
-PIP_INSTALL="$PIP3 install -c /build/pip_constraints.txt"
-${PIP_INSTALL} -U pip
-
-# soma-base v3 needs pydantic >= 1.9, ubuntu 22/apt ships 1.8
-# but 2.x is still incompatible.
-${PIP_INSTALL} -U "pydantic>=1.9,<2"
-
-# Capsul v3 needs redis-py >= 4.2, Ubuntu 22/apt ships 3.5.3
-${PIP_INSTALL} -U "redis>=4.2"
-
-# Packages not available in APT
-${PIP_INSTALL} nipype
-${PIP_INSTALL} dipy
-
-# Runtime dependencies of soma-base
-${PIP_INSTALL} pycryptodome
+PIP_INSTALL="$PIP3 install --break-system-packages -c /build/pip_constraints.txt"
+# ${PIP_INSTALL} -U pip
 
 # Runtime dependencies of Morphologist
 ${PIP_INSTALL} torch --extra-index-url https://download.pytorch.org/whl/cu116
@@ -59,11 +45,12 @@ ${PIP_INSTALL} http://bonsai.hgc.jp/~mdehoon/software/cluster/Pycluster-1.59.tar
 # warning: constraints specified on versions because recent versions of
 # ipykernel and tornado (especially) cause the qtconsole from a running app
 # to fail / hang
-${PIP_INSTALL} -U ipykernel tornado jupyter_client \
-               qtconsole nbconvert ipywidgets ipycanvas ipyevents jupyter \
-               jupyterlab_widgets jupyter_console notebook
+${PIP_INSTALL} -U ipycanvas ipyevents jupyterlab_widgets
+# ${PIP_INSTALL} -U ipykernel tornado jupyter_client \
+#                qtconsole nbconvert ipywidgets ipycanvas ipyevents jupyter \
+#                jupyterlab_widgets jupyter_console notebook
 # override nbconvert (5.6 doesn't work but notebook 5.7 requires nbconvert<6)
-${PIP_INSTALL} -U 'nbconvert<6.4'
+# ${PIP_INSTALL} -U 'nbconvert<6.4'
 
 # post-install: register jupyter extensions
 $SUDO jupyter nbextension enable --py widgetsnbextension
@@ -71,21 +58,21 @@ $SUDO jupyter nbextension install --py --symlink --sys-prefix ipyevents
 $SUDO jupyter nbextension enable --py --sys-prefix ipyevents
 $SUDO jupyter nbextension enable --py ipycanvas
 
-# Runtime PyQt6
-${PIP_INSTALL} PyQt6 PyQt6-sip PyQt6-WebEngine
-
 # useful tool: pip search has stopped working, but pip_search works
 ${PIP_INSTALL} pip-search
 
 # used by fold dico tools (deep_folding etc)
-$PIP3 install 'pqdm' 'GitPython'
+${PIP_INSTALL} 'pqdm' 'GitPython'
 
 # used for GLTF, GLB 3D formats support
 # (+ DracoPy which will be compiled in install_compiled_dependencies.sh)
-$PIP3 install "webp" "pygltflib"
+${PIP_INSTALL} "webp" "pygltflib"
 
-# fix tornado for python 3.10
-$SUDO sed -i s/collections.MutableMapping/collections.abc.MutableMapping/ /usr/local/lib/python3.10/dist-packages/tornado/httputil.py
+# fix tornado for python 3.12
+# $SUDO sed -i s/collections.MutableMapping/collections.abc.MutableMapping/ /usr/local/lib/python3/dist-packages/tornado/httputil.py
 
 # dependencies of populse_mia / mia_processes
-${PIP_INSTALL} boto cmp cfflib nilearn nipy nitime nitransforms pyxnat reportlab statsmodels scikit-learn templateflow
+${PIP_INSTALL} cmp cfflib nilearn nitransforms templateflow
+# "vine<6,>=5.1.0"
+
+${PIP_INSTALL} DracoPy

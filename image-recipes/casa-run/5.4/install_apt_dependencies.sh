@@ -4,7 +4,7 @@
 # contain all run-time dependencies that are needed to run BrainVISA when
 # installed using 'make install-runtime' (see the Release images).
 #
-# This image supports a Python 3 / Qt 5 build of BrainVISA.
+# This image supports a Python 3 / Qt 6 build of BrainVISA.
 #
 # NOTE: This script is run during the creation of the Singularity and
 # VirtualBox casa-run image. Make sure not to include anything specific to a
@@ -98,7 +98,7 @@ freesurfer_runtime_dependencies=(
 
 # Runtime dependencies of MATLAB
 matlab_runtime_dependencies=(
-    lsb-core
+#     lsb-core
     libxext6
     libxt6
     libxmu6
@@ -180,7 +180,7 @@ brainvisa_python_runtime_dependencies=(
     python3-joblib
     python3-configobj
     python3-mpi4py
-    # python3-nipype  # not packaged in APT -> use PIP
+    python3-nipype
     python3-nibabel
     python3-pyparsing
     python3-pydot
@@ -204,6 +204,11 @@ brainvisa_python_runtime_dependencies=(
     python3-qtconsole
     python3-nbsphinx
     python3-sphinx-gallery
+    python3-tornado
+    python3-nbconvert
+    python3-ipywidgets
+    python3-jupyter-console
+    jupyter-qtconsole
 
     python3-pkgconfig  # TODO: check if necessary for h5py installation
     python3-numpy
@@ -215,23 +220,33 @@ brainvisa_python_runtime_dependencies=(
     python3-skimage
 
     python3-sip
-    python3-pyqt5
-    python3-pyqt5.qtmultimedia
-    python3-pyqt5.qtopengl
-    python3-pyqt5.qtsvg
-    python3-pyqt5.qtwebkit
-    python3-pyqt5.qtsql
-    python3-pyqt5.qtwebsockets
-    python3-pyqt5.qtxmlpatterns
+    python3-pyqt6
+    python3-pyqt6.qtmultimedia
+    python3-pyqt6.qtsvg
+    python3-pyqt6.qtwebengine
+    python3-pyqt6.qtwebsockets
 
     python3-opengl
 
     python3-plotly
-    python3-pcl
+    # python3-pcl
 
     python3-celery # used by Capsul v3
 
     python3-pycryptodome
+
+    python3-boto
+    python3-nipy
+    python3-redis
+    python3-pydantic
+    python3-pycryptodome
+    python3-nitime
+    python3-pyxnat
+    python3-reportlab
+    python3-statsmodels
+    python3-sklearn
+    python3-vine  # ? >= 5.1.0
+    python3-dipy
 
 #    python3-torch  # will be installed via pip to get cuda support
 #    python3-torchvision
@@ -251,7 +266,7 @@ brainvisa_python_runtime_dependencies=(
 # variable to store them.
 brainvisa_shared_library_dependencies=(
     libcairo2
-    libdcmtk16
+    libdcmtk17
     libgdk-pixbuf-2.0-0
     libgfortran5
     libglapi-mesa
@@ -266,38 +281,40 @@ brainvisa_shared_library_dependencies=(
     libnetcdf19
     libopenjp2-7
     libpng16-16
-    libpython3.10
-    libqt5core5a
-    libqt5dbus5
-    libqt5designer5
-    libqt5gui5
-    libqt5help5
-    libqt5multimedia5
-    libqt5multimediawidgets5
-    libqt5network5
-    libqt5opengl5
-    libqt5positioning5
-    libqt5printsupport5
-    libqt5qml5
-    libqt5quick5
-    libqt5quickwidgets5
-    libqt5sql5
-    libqt5svg5
-    libqt5test5
-    libqt5webchannel5
-    libqt5webengine5
-    libqt5webenginecore5
-    libqt5webenginewidgets5
-    libqt5webkit5
-    libqt5widgets5
-    libqt5x11extras5
-    libqt5xml5
-    libqt5xmlpatterns5
-    libqwt-qt5-6
+    libpython3.12
+    libqt6core6t64
+    libqt6dbus6t64
+    designer-qt6
+    libqt6designer6
+    libqt6gui6t64
+    libqt6help6
+    libqt6multimedia6
+    libqt6multimediawidgets6
+    libqt6network6t64
+    libqt6opengl6t64
+    libqt6positioning6
+    libqt6printsupport6t64
+    libqt6qml6
+    libqt6quick6
+    libqt6quickwidgets6
+    libqt6sql6t64
+    libqt6svg6
+    libqt6test6t64
+    libqt6webchannel6
+    libqt6webengine6-data
+    libqt6webenginecore6
+    libqt6webenginewidgets6
+    libqt6widgets6
+    libqt6xml6
+    # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
+    # displayed at the start of each executable.
+    libqt6sql6-sqlite
+    libqt6core5compat6
+#     libqwt-qt5-6
     libsigc++-2.0-0v5
     libstdc++6
     libsvm3
-    libtiff5
+    libtiff6
     libx11-6
     libxext6
     libxml2
@@ -311,26 +328,21 @@ brainvisa_misc_runtime_dependencies=(
     sqlite3
     xbitmaps
     redis
-    libqt6multimedia6
-    libqt6webenginecore6
-    libqt6webenginewidgets6
-    libqt6core5compat6
     qt6-image-formats-plugins
     gstreamer1.0-qt5
     gstreamer1.0-plugins-good
     gstreamer1.0-pulseaudio
+    draco
+    cython3
 )
 
 # Other dependencies of BrainVISA (please indicate the installation reason for
 # each dependency).
 brainvisa_other_dependencies=(
-    # To avoid the "QSqlDatabase: QSQLITE driver not loaded" warning that is
-    # displayed at the start of each executable.
-    libqt5sql5-sqlite
     # mcverter command of mriconvert has a dependency on libpng. This makes it
     # difficult to be mounted and used from a host directory when there is a
     # version mismatch for that library.
-    mriconvert
+#     mriconvert
     # dcmtk commandlines (including dcmdjpeg)
     dcmtk
     # needed for matlab
