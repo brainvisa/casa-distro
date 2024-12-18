@@ -5,8 +5,6 @@ This GUI should run inside the container. It is typically started by the
 `bv`command on host side, which runs it inside the container.
 '''
 
-from __future__ import print_function
-
 import sys
 import json
 import subprocess
@@ -20,7 +18,7 @@ import tempfile
 try:
     from soma.qt_gui import qt_backend
     qt_backend.set_qt_backend(compatible_qt5=True)  # for PyQt6
-    from soma.qt_gui.qt_backend import Qt
+    from soma.qt_gui.qt_backend import Qt, QtCore, QtGui, QtWidgets
     from soma.qt_gui.qt_backend.QtCore import Signal
     try:
         from soma.qt_gui.qt_backend import QtWebEngineWidgets
@@ -28,14 +26,16 @@ try:
         print('QtWebEngineWidgets cannot be imported.')
 except ImportError:
     try:
-        from PyQt5 import Qt
-        from PyQt5.QtCore import pyqtSignal as Signal
+        from PyQt6 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
+        from PyQt6.QtCore import pyqtSignal as Signal
     except ImportError:
-        from PyQt4 import Qt
-        from PyQt4.QtCore import pyqtSignal as Signal
-    if not Qt.QApplication.instance():
-        app = Qt.QApplication(sys.argv)
-    Qt.QMessageBox.warning(
+        from PyQt5 import QtCore, QtGui, QtWidgets
+        from PyQt5.QtCore import pyqtSignal as Signal
+    if not QtWidgets.QApplication.instance():
+        QtWidgets.QApplication.setAttribute(
+            QtCore.Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
+        app = QtWidgets.QApplication(sys.argv)
+    QtWidgets.QMessageBox.warning(
         None, 'Problem',
         'soma-base is not installed.\n'
         'Either you are running this program outside of a Casa-Distro '
@@ -51,7 +51,7 @@ from casa_distro.container_environment import (is_writable,
 from casa_distro.environment import update_config
 
 
-class InstallEditor(Qt.QDialog):
+class InstallEditor(QtWidgets.QDialog):
     def __init__(self, conf, conf_path, parent=None):
         super(InstallEditor, self).__init__(parent)
 
@@ -59,11 +59,11 @@ class InstallEditor(Qt.QDialog):
         self.conf_path = conf_path
         self.url = ''
 
-        layout = Qt.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
         self.setWindowTitle('BrainVISA Install options')
 
-        cinstl = Qt.QHBoxLayout()
+        cinstl = QtWidgets.QHBoxLayout()
         layout.addLayout(cinstl)
 
         inst_type = 'None'
@@ -78,61 +78,63 @@ class InstallEditor(Qt.QDialog):
             distro = self.conf['distro']
             dist_text = ' (<b>%s</b>)' % distro
 
-        cinst0 = Qt.QLabel('<b>Current install:</b> %s%s'
-                           % (inst_type, dist_text))
+        cinst0 = QtWidgets.QLabel('<b>Current install:</b> %s%s'
+                                  % (inst_type, dist_text))
         cinstl.addWidget(cinst0)
 
         if 'read-only' in inst_type:
-            inst_rwl = Qt.QGroupBox('install read-write locally:')
+            inst_rwl = QtWidgets.QGroupBox('install read-write locally:')
             layout.addWidget(inst_rwl)
-            inst_rwl_l = Qt.QVBoxLayout()
+            inst_rwl_l = QtWidgets.QVBoxLayout()
             inst_rwl.setLayout(inst_rwl_l)
-            self.unpack_btn = Qt.QCheckBox('install from internal image')
+            self.unpack_btn = QtWidgets.QCheckBox(
+                'install from internal image')
             inst_rwl_l.addWidget(self.unpack_btn)
 
-        dl_grp = Qt.QGroupBox('install toolboxes from downloads:')
+        dl_grp = QtWidgets.QGroupBox('install toolboxes from downloads:')
         self.dl_grp = dl_grp
         layout.addWidget(dl_grp)
-        dl_grp_l = Qt.QVBoxLayout()
+        dl_grp_l = QtWidgets.QVBoxLayout()
         dl_grp.setLayout(dl_grp_l)
         if 'read-only' in inst_type:
-            self.prereq_warn = Qt.QLabel(
+            self.prereq_warn = QtWidgets.QLabel(
                 'Install from internal image must be checked\n'
                 'before additional toolboxes can be installed')
             dl_grp_l.addWidget(self.prereq_warn)
-        self.dl_wid = Qt.QWidget()
+        self.dl_wid = QtWidgets.QWidget()
         dl_grp_l.addWidget(self.dl_wid)
-        hb = Qt.QGridLayout()
+        hb = QtWidgets.QGridLayout()
         hb.setContentsMargins(0, 0, 0, 0)
         self.dl_wid.setLayout(hb)
-        hb.addWidget(Qt.QLabel('url:'), 0, 0)
-        self.url_edit = Qt.QLineEdit('https://brainvisa.info/download')
+        hb.addWidget(QtWidgets.QLabel('url:'), 0, 0)
+        self.url_edit = QtWidgets.QLineEdit('https://brainvisa.info/download')
         hb.addWidget(self.url_edit, 0, 1)
-        hb.addWidget(Qt.QLabel('distro:'), 1, 0)
-        self.distros = Qt.QListWidget()
+        hb.addWidget(QtWidgets.QLabel('distro:'), 1, 0)
+        self.distros = QtWidgets.QListWidget()
         hb.addWidget(self.distros, 1, 1)
         self.distros.setSelectionMode(self.distros.ExtendedSelection)
         self.url_edit.editingFinished.connect(self.url_changed)
 
         update_url = 'https://brainvisa.info/download/updates'
-        upd_grp = Qt.QGroupBox('install bugfix patches:')
+        upd_grp = QtWidgets.QGroupBox('install bugfix patches:')
         self.upd_grp = upd_grp
         layout.addWidget(upd_grp)
-        upd_grp_l = Qt.QVBoxLayout()
+        upd_grp_l = QtWidgets.QVBoxLayout()
         upd_grp.setLayout(upd_grp_l)
         if 'read-only' in inst_type:
-            self.prereq_warn_upd = Qt.QLabel(
+            self.prereq_warn_upd = QtWidgets.QLabel(
                 'Install from internal image must be checked\n'
                 'before updates can be installed')
             upd_grp_l.addWidget(self.prereq_warn_upd)
 
-        self.upd_wid = Qt.QWidget()
+        self.upd_wid = QtWidgets.QWidget()
         upd_grp_l.addWidget(self.upd_wid)
         self.upd_grp_l = upd_grp_l
 
-        lay = Qt.QVBoxLayout()
+        lay = QtWidgets.QVBoxLayout()
         self.upd_wid.setLayout(lay)
-        self.upd_chb = Qt.QCheckBox('install new patches from %s' % update_url)
+        self.upd_chb = QtWidgets.QCheckBox(
+            'install new patches from %s' % update_url)
         lay.addWidget(self.upd_chb)
 
         if 'read-only' in inst_type:
@@ -145,12 +147,16 @@ class InstallEditor(Qt.QDialog):
 
         layout.addStretch(1)
 
-        validation_btns = Qt.QDialogButtonBox(
-            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel
-            | Qt.QDialogButtonBox.Help)
+        validation_btns = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel
+            | QtWidgets.QDialogButtonBox.StandardButton.Help)
         layout.addWidget(validation_btns)
-        validation_btns.button(Qt.QDialogButtonBox.Ok).setDefault(False)
-        validation_btns.button(Qt.QDialogButtonBox.Ok).setAutoDefault(False)
+        validation_btns.button(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok).setDefault(False)
+        validation_btns.button(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok).setAutoDefault(
+            False)
 
         if hasattr(self, 'unpack_btn'):
             self.unpack_btn.toggled.connect(self.local_install_checked)
@@ -210,7 +216,8 @@ class InstallEditor(Qt.QDialog):
         from casa_distro.container_environment import setup_user
         import threading
 
-        if not self.validation_btns.button(Qt.QDialogButtonBox.Ok).hasFocus():
+        if not self.validation_btns.button(
+                QtWidgets.QDialogButtonBox.StandardButton.Ok).hasFocus():
             return
 
         super(InstallEditor, self).accept()
@@ -218,23 +225,23 @@ class InstallEditor(Qt.QDialog):
         if hasattr(self, 'unpack_btn') and self.unpack_btn.isChecked():
             do_it = True
             if osp.exists('/casa/host/install'):
-                res = Qt.QMessageBox.question(
+                res = QtWidgets.QMessageBox.question(
                     None, 'Erase install ?',
                     'An older installation exists. Erase it ?')
                 # print('res:', res)
-                if res != Qt.QMessageBox.Yes:
+                if res != QtWidgets.QMessageBox.Yes:
                     do_it = False
                 else:
                     shutil.rmtree('/casa/host/install')
 
             if do_it:
-                wait = Qt.QProgressDialog('Installing read-write locally...',
-                                          None, 0, 1)
+                wait = QtWidgets.QProgressDialog(
+                    'Installing read-write locally...', None, 0, 1)
                 wait.setWindowTitle('Install in progress')
-                wait.setWindowModality(Qt.Qt.WindowModal)
+                wait.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
                 wait.show()
                 wait.setValue(0)
-                Qt.QApplication.instance().processEvents()
+                QtWidgets.QApplication.instance().processEvents()
                 thread = threading.Thread(
                     target=setup_user,
                     kwargs=dict(setup_dir='/casa/host', rw_install=True,
@@ -242,31 +249,32 @@ class InstallEditor(Qt.QDialog):
                 thread.start()
                 while thread.is_alive():
                     thread.join(0.1)
-                    Qt.QApplication.instance().processEvents()
+                    QtWidgets.QApplication.instance().processEvents()
                 wait.setValue(1)
-                Qt.QApplication.instance().processEvents()
+                QtWidgets.QApplication.instance().processEvents()
                 wait.close()
                 del wait
 
         distros = [item.text() for item in self.distros.selectedItems()]
         if distros:
-            wait = Qt.QProgressDialog('Installing read-write from download...',
-                                      'Cancel', 0, len(distros))
+            wait = QtWidgets.QProgressDialog(
+                'Installing read-write from download...', 'Cancel', 0,
+                len(distros))
             wait.setWindowTitle('Install in progress')
             if len(distros) == 1:
                 # cannot cancel inside a single install
                 wait.setCancelButton(None)
-            wait.setWindowModality(Qt.Qt.WindowModal)
+            wait.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
             wait.show()
-            Qt.QApplication.instance().processEvents()
+            QtWidgets.QApplication.instance().processEvents()
             url = self.url_edit.text()
             installed = []
             cancel_done = False
             for n, distro in enumerate(distros):
                 wait.setLabelText('installing distro: <b>%s</b>' % distro)
-                Qt.QApplication.instance().processEvents()
+                QtWidgets.QApplication.instance().processEvents()
                 wait.setValue(n)
-                Qt.QApplication.instance().processEvents()
+                QtWidgets.QApplication.instance().processEvents()
                 if wait.wasCanceled():
                     print('Cancel.')
                     break
@@ -286,13 +294,13 @@ class InstallEditor(Qt.QDialog):
                                 % distro)
                             wait.setCancelButton(None)
                             wait.show()
-                            Qt.QApplication.instance().processEvents()
+                            QtWidgets.QApplication.instance().processEvents()
                             cancel_done = True
                     thread.join(0.1)
-                    Qt.QApplication.instance().processEvents()
+                    QtWidgets.QApplication.instance().processEvents()
                 installed.append(distro)
             wait.setValue(n)
-            Qt.QApplication.instance().processEvents()
+            QtWidgets.QApplication.instance().processEvents()
             wait.close()
             del wait
             if self.conf['distro'] not in installed or len(installed) != 1:
@@ -311,13 +319,13 @@ class InstallEditor(Qt.QDialog):
         from . import patch_install
         to_update = patch_install.list_updates()
         if not to_update:
-            self.prereq_warn_upd = Qt.QLabel('No new updates available')
+            self.prereq_warn_upd = QtWidgets.QLabel('No new updates available')
             self.upd_grp_l.addWidget(self.prereq_warn_upd)
         else:
             print('updating the following files:', to_update)
             patch_install.patch_install()
 
-            self.prereq_warn_upd = Qt.QLabel('Update done.')
+            self.prereq_warn_upd = QtWidgets.QLabel('Update done.')
             self.upd_grp_l.addWidget(self.prereq_warn_upd)
         self.upd_grp.setEnabled(False)
 
@@ -326,7 +334,7 @@ class InstallEditor(Qt.QDialog):
             self.help_widget = QtWebEngineWidgets.QWebEngineView()
         except Exception:
             print('QWebEngineView failed, using QWebView')
-            self.help_widget = Qt.QWebView()
+            self.help_widget = QtWidgets.QWebView()
         self.help_widget.setWindowTitle('Managing install')
         help_text = '''<style>
 body {
@@ -427,7 +435,7 @@ The read-write install location will be:
         self.help_widget.show()
 
 
-class CasaLauncher(Qt.QDialog):
+class CasaLauncher(QtWidgets.QDialog):
 
     def __init__(self, conf_path):
         super(CasaLauncher, self).__init__()
@@ -456,7 +464,7 @@ class CasaLauncher(Qt.QDialog):
 
     def setup_ui(self):
         self.setWindowTitle('CASA environment configuration')
-        self._main_layout = Qt.QVBoxLayout(self)
+        self._main_layout = QtWidgets.QVBoxLayout(self)
 
         env_path = os.environ.get('CASA_HOST_DIR', None)
         if not env_path:
@@ -465,49 +473,50 @@ class CasaLauncher(Qt.QDialog):
                 env_path = '&lt;none&gt;'
             else:
                 env_path = os.path.dirname(env_path)
-        self._main_layout.addWidget(Qt.QLabel(
+        self._main_layout.addWidget(QtWidgets.QLabel(
             '<b>environment host path:</b> %s' % env_path))
         self.env_path = env_path
         self._mount_manager = MountManager(self.conf, self.global_conf)
 
-        conf_line = Qt.QHBoxLayout()
-        conf_line.addWidget(Qt.QLabel('<b>Configuration:</b>'))
+        conf_line = QtWidgets.QHBoxLayout()
+        conf_line.addWidget(QtWidgets.QLabel('<b>Configuration:</b>'))
         conf_line.addStretch(1)
-        self._conf_btn = Qt.QPushButton('Env...')
+        self._conf_btn = QtWidgets.QPushButton('Env...')
         conf_line.addWidget(self._conf_btn)
-        self._user_conf_btn = Qt.QPushButton('User...')
+        self._user_conf_btn = QtWidgets.QPushButton('User...')
         conf_line.addWidget(self._user_conf_btn)
-        self._conf_help_btn = Qt.QPushButton('?')
+        self._conf_help_btn = QtWidgets.QPushButton('?')
         conf_line.addWidget(self._conf_help_btn)
 
         cont_line = None
         if self.conf['container_type'] == 'singularity':
-            cont_line = Qt.QHBoxLayout()
-            self.container_label = Qt.QLabel()
+            cont_line = QtWidgets.QHBoxLayout()
+            self.container_label = QtWidgets.QLabel()
             self.update_container_status()
             cont_line.addWidget(self.container_label)
             cont_line.addStretch(1)
-            self._container_btn = Qt.QPushButton('...')
+            self._container_btn = QtWidgets.QPushButton('...')
             cont_line.addWidget(self._container_btn)
 
         inst_line = None
         if self.conf['type'] in ('run', 'user'):
-            inst_line = Qt.QHBoxLayout()
-            self.install_label = Qt.QLabel()
+            inst_line = QtWidgets.QHBoxLayout()
+            self.install_label = QtWidgets.QLabel()
             self.update_install_status()
             inst_line.addWidget(self.install_label)
             inst_line.addStretch(1)
-            self._inst_btn = Qt.QPushButton('...')
+            self._inst_btn = QtWidgets.QPushButton('...')
             inst_line.addWidget(self._inst_btn)
 
         self._launchers = Launchers()
 
-        self._errors_label = Qt.QLabel()
+        self._errors_label = QtWidgets.QLabel()
 
-        self._validation_btns = Qt.QDialogButtonBox(
-            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel)
+        self._validation_btns = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
 
-        self._main_layout.addWidget(Qt.QLabel('<b>Mount points:</b>'))
+        self._main_layout.addWidget(QtWidgets.QLabel('<b>Mount points:</b>'))
         self._main_layout.addWidget(self._mount_manager)
         self._main_layout.addLayout(conf_line)
         if cont_line:
@@ -583,12 +592,13 @@ class CasaLauncher(Qt.QDialog):
         self._launchers.disable_for_reload()
 
     def edit_configuration(self):
-        dialog = Qt.QDialog(self)
-        layout = Qt.QVBoxLayout()
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
         dialog.setLayout(layout)
         config_edit = ConfigEditor(self.conf)
-        validation_btns = Qt.QDialogButtonBox(
-            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel)
+        validation_btns = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
 
         layout.addWidget(config_edit)
         layout.addWidget(validation_btns)
@@ -606,12 +616,13 @@ class CasaLauncher(Qt.QDialog):
             self.block_launchers()
 
     def edit_user_configuration(self):
-        dialog = Qt.QDialog(self)
-        layout = Qt.QVBoxLayout()
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
         dialog.setLayout(layout)
         config_edit = ConfigEditor(self.global_conf)
-        validation_btns = Qt.QDialogButtonBox(
-            Qt.QDialogButtonBox.Ok | Qt.QDialogButtonBox.Cancel)
+        validation_btns = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
 
         layout.addWidget(config_edit)
         layout.addWidget(validation_btns)
@@ -731,7 +742,7 @@ on host side, or inside the container:
 
     def edit_install(self):
         dialog = InstallEditor(self.conf, self.conf_path, self)
-        dialog.setWindowModality(Qt.Qt.WindowModal)
+        dialog.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
         if dialog.exec() == dialog.Accepted:
             self.update_install_status()
 
@@ -787,12 +798,12 @@ on host side, or inside the container:
     def edit_container(self):
         dialog = ContainerImageEditor(self.conf, self.container_status,
                                       self.conf_path, self)
-        dialog.setWindowModality(Qt.Qt.WindowModal)
+        dialog.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
         dialog.exec()
         self.update_container_status()
 
 
-class MountManager(Qt.QWidget):
+class MountManager(QtWidgets.QWidget):
 
     def __init__(self, conf, global_conf):
         super(MountManager, self).__init__()
@@ -804,8 +815,8 @@ class MountManager(Qt.QWidget):
         self.mounts.update(
             {k: [v, False] for k, v in self.conf.get('mounts', {}).items()})
 
-        self._red = Qt.QColor(250, 130, 130)
-        self._orange = Qt.QColor(250, 200, 100)
+        self._red = QtGui.QColor(250, 130, 130)
+        self._orange = QtGui.QColor(250, 200, 100)
 
         self.setup_ui()
         self.setup_links()
@@ -813,26 +824,26 @@ class MountManager(Qt.QWidget):
     valueChanged = Signal()
 
     def setup_ui(self):
-        self._main_layout = Qt.QVBoxLayout(self)
+        self._main_layout = QtWidgets.QVBoxLayout(self)
 
-        self._mount_table = Qt.QTableWidget()
+        self._mount_table = QtWidgets.QTableWidget()
         self._mount_table.setColumnCount(3)
         self._mount_table.setRowCount(len(self.mounts))
         self._mount_table.setHorizontalHeaderLabels(['Host', 'Container',
                                                      'Global'])
         self._mount_table.horizontalHeader().setSectionResizeMode(
-            0, Qt.QHeaderView.Stretch)
+            0, QtWidgets.QHeaderView.ResizeMode.Stretch)
         self._mount_table.horizontalHeader().setSectionResizeMode(
-            1, Qt.QHeaderView.Stretch)
+            1, QtWidgets.QHeaderView.ResizeMode.Stretch)
 
         self.update_ui()
 
-        self._error_label = Qt.QLabel()
+        self._error_label = QtWidgets.QLabel()
 
-        self._manager_btns = Qt.QHBoxLayout()
-        self._add_mount = Qt.QPushButton('+')
-        self._remove_mount = Qt.QPushButton('-')
-        self._help_btn = Qt.QPushButton('?')
+        self._manager_btns = QtWidgets.QHBoxLayout()
+        self._add_mount = QtWidgets.QPushButton('+')
+        self._remove_mount = QtWidgets.QPushButton('-')
+        self._help_btn = QtWidgets.QPushButton('?')
         self._manager_btns.addStretch(1)
         self._manager_btns.addWidget(self._add_mount)
         self._manager_btns.addWidget(self._remove_mount)
@@ -856,28 +867,30 @@ class MountManager(Qt.QWidget):
         self._mount_table.clearContents()
         for idx, (container, hostg) in enumerate(self.mounts.items()):
             host, is_global = hostg
-            self._mount_table.setItem(idx, 0, Qt.QTableWidgetItem(host))
-            self._mount_table.setItem(idx, 1, Qt.QTableWidgetItem(container))
-            self._mount_table.item(idx, 0).setData(Qt.Qt.UserRole, container)
-            self._mount_table.setItem(idx, 2, Qt.QTableWidgetItem(''))
+            self._mount_table.setItem(idx, 0, QtWidgets.QTableWidgetItem(host))
+            self._mount_table.setItem(idx, 1,
+                                      QtWidgets.QTableWidgetItem(container))
+            self._mount_table.item(idx, 0).setData(
+                QtCore.Qt.ItemDataRole.UserRole, container)
+            self._mount_table.setItem(idx, 2, QtWidgets.QTableWidgetItem(''))
             if is_global:
-                checked = Qt.Qt.Checked
+                checked = QtCore.Qt.CheckState.Checked
             else:
-                checked = Qt.Qt.Unchecked
+                checked = QtCore.Qt.CheckState.Unchecked
             self._mount_table.item(idx, 2).setCheckState(checked)
 
     def _add_mount_row(self):
         if '' in self.mounts:
-            Qt.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 None,
                 'Malformed mount point',
                 'A mount point has not been assigned a container side '
                 'directory. You must define it, or remove the mount point, '
                 'before adding a new one')
             return
-        host_mount_choice = Qt.QFileDialog(
+        host_mount_choice = QtWidgets.QFileDialog(
             None, 'host side directory (in /host)', '/host')
-        host_mount_choice.setFileMode(Qt.QFileDialog.Directory)
+        host_mount_choice.setFileMode(QtWidgets.QFileDialog.Directory)
         if host_mount_choice.exec():
             self.modified = True
             self.valueChanged.emit()
@@ -887,18 +900,19 @@ class MountManager(Qt.QWidget):
                 host_path = host_path[5:]
             self._mount_table.setItem(
                 self._mount_table.rowCount() - 1, 0,
-                Qt.QTableWidgetItem(host_path))
+                QtWidgets.QTableWidgetItem(host_path))
             self._mount_table.setItem(
                 self._mount_table.rowCount() - 1, 1,
-                Qt.QTableWidgetItem(''))
+                QtWidgets.QTableWidgetItem(''))
             self._mount_table.item(self._mount_table.rowCount() - 1,
-                                   0).setData(Qt.Qt.UserRole, '')
+                                   0).setData(QtCore.Qt.ItemDataRole.UserRole,
+                                              '')
             self._mount_table.setItem(
                 self._mount_table.rowCount() - 1, 2,
-                Qt.QTableWidgetItem(''))
+                QtWidgets.QTableWidgetItem(''))
             self._mount_table.item(
                 self._mount_table.rowCount() - 1, 2).setCheckState(
-                    Qt.Qt.Checked)
+                    QtCore.Qt.CheckState.Checked)
             self.mounts[''] = [host_path, True]
             self.check_all_mounts()
 
@@ -1017,15 +1031,17 @@ See the <a href="https://brainvisa.info/web/configuration.html">BrainVisa config
         host = self._mount_table.item(row, 0).text()
         cont = self._mount_table.item(row, 1).text()
         checked = self._mount_table.item(row, 2).checkState()
-        if checked == Qt.Qt.Checked:
+        if checked == QtCore.Qt.CheckState.Checked:
             is_global = True
         else:
             is_global = False
-        old_cont = self._mount_table.item(row, 0).data(Qt.Qt.UserRole)
+        old_cont = self._mount_table.item(row, 0).data(
+            QtCore.Qt.CheckState.UserRole)
         if old_cont is not None and old_cont != cont:
             del self.mounts[old_cont]
         self.mounts[cont] = [host, is_global]
-        self._mount_table.item(row, 0).setData(Qt.Qt.UserRole, cont)
+        self._mount_table.item(row, 0).setData(QtCore.Qt.ItemDataRole.UserRole,
+                                               cont)
         self.valueChanged.emit()
         self.check_all_mounts()
 
@@ -1059,11 +1075,11 @@ See the <a href="https://brainvisa.info/web/configuration.html">BrainVisa config
 
             elif self.check_mount(host, container):
                 self._mount_table.item(
-                    idx, 0).setBackground(Qt.QColor('white'))
+                    idx, 0).setBackground(QtGui.QColor('white'))
                 self._mount_table.item(
-                    idx, 1).setBackground(Qt.QColor('white'))
+                    idx, 1).setBackground(QtGui.QColor('white'))
                 self._mount_table.item(
-                    idx, 2).setBackground(Qt.QColor('white'))
+                    idx, 2).setBackground(QtGui.QColor('white'))
 
             else:
                 self._mount_table.item(idx, 0).setBackground(self._red)
@@ -1089,7 +1105,7 @@ See the <a href="https://brainvisa.info/web/configuration.html">BrainVisa config
         event.accept()
 
 
-class Launchers(Qt.QWidget):
+class Launchers(QtWidgets.QWidget):
 
     launched = Signal(str)
 
@@ -1101,15 +1117,15 @@ class Launchers(Qt.QWidget):
         self.setup_links()
 
     def setup_ui(self):
-        self._main_layout = Qt.QVBoxLayout(self)
-        self._launchers_container = Qt.QWidget()
-        self._launchers_layout = Qt.QHBoxLayout()
+        self._main_layout = QtWidgets.QVBoxLayout(self)
+        self._launchers_container = QtWidgets.QWidget()
+        self._launchers_layout = QtWidgets.QHBoxLayout()
 
         # self._frame = QFrame(self)
-        # self._layout = Qt.QHBoxLayout(self._frame)
+        # self._layout = QtWidgets.QHBoxLayout(self._frame)
         # self._frame.setFrameShape(QFrame.StyledPanel)
 
-        self._reload_msg = Qt.QLabel()
+        self._reload_msg = QtWidgets.QLabel()
 
         env_path, python_path, build_path = get_env_path()
         if not build_path:
@@ -1118,30 +1134,32 @@ class Launchers(Qt.QWidget):
         axon_doc = glob.glob(os.path.join(build_path, 'share/doc/axon*'))
         if axon_doc:
             icon_path = os.path.join(axon_doc[0], 'images/brainvisa.png')
-        brainvisa_icon = Qt.QPixmap(icon_path)
-        self._brainvisa_btn = Qt.QPushButton(
-            Qt.QIcon(brainvisa_icon), 'BRAINVISA')
+        brainvisa_icon = QtGui.QPixmap(icon_path)
+        self._brainvisa_btn = QtWidgets.QPushButton(
+            QtGui.QIcon(brainvisa_icon), 'BRAINVISA')
         self._brainvisa_btn.setIconSize(
-            Qt.QSize(self.icon_size, self.icon_size))
+            QtCore.QSize(self.icon_size, self.icon_size))
 
         icon_path = None
         ana_doc = glob.glob(os.path.join(build_path, 'share/doc/anatomist*'))
         if ana_doc:
             icon_path = os.path.join(ana_doc[0], 'images/anaLogo.png')
-        anatomist_icon = Qt.QPixmap(icon_path)
-        self._anatomist_btn = Qt.QPushButton(
-            Qt.QIcon(anatomist_icon), 'ANATOMIST')
+        anatomist_icon = QtGui.QPixmap(icon_path)
+        self._anatomist_btn = QtWidgets.QPushButton(
+            QtGui.QIcon(anatomist_icon), 'ANATOMIST')
         self._anatomist_btn.setIconSize(
-            Qt.QSize(self.icon_size, self.icon_size))
+            QtCore.QSize(self.icon_size, self.icon_size))
 
-        term_icon = Qt.QPixmap(
+        term_icon = QtGui.QPixmap(
             '/usr/share/icons/Humanity/apps/64/terminal.svg')
-        self._terminal_btn = Qt.QPushButton(Qt.QIcon(term_icon), 'TERMINAL')
+        self._terminal_btn = QtWidgets.QPushButton(QtGui.QIcon(term_icon),
+                                                   'TERMINAL')
         self._terminal_btn.setIconSize(
-            Qt.QSize(self.icon_size, self.icon_size))
-        self._xterm_btn = Qt.QPushButton(Qt.QIcon(term_icon), 'XTERM')
+            QtCore.QSize(self.icon_size, self.icon_size))
+        self._xterm_btn = QtWidgets.QPushButton(QtGui.QIcon(term_icon),
+                                                'XTERM')
         self._xterm_btn.setIconSize(
-            Qt.QSize(self.icon_size, self.icon_size))
+            QtCore.QSize(self.icon_size, self.icon_size))
 
         self._launchers_layout.addWidget(self._brainvisa_btn)
         self._launchers_layout.addWidget(self._anatomist_btn)
@@ -1185,10 +1203,10 @@ class Launchers(Qt.QWidget):
             "Reloading is needed to launch software/terminal!")
 
 
-class ConfigEditor(Qt.QWidget):
+class ConfigEditor(QtWidgets.QWidget):
 
     def __init__(self, conf, parent=None):
-        super(Qt.QWidget, self).__init__(parent)
+        super(QtWidgets.QWidget, self).__init__(parent)
         try:
             from soma.controller import OpenKeyController
             import traits.api as traits
@@ -1289,7 +1307,7 @@ class ConfigEditor(Qt.QWidget):
         from soma.qt_gui.controller_widget import ScrollControllerWidget
         self.controller_widget = ScrollControllerWidget(self.controller,
                                                         live=True)
-        layout = Qt.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
         layout.addWidget(self.controller_widget)
 
@@ -1300,7 +1318,7 @@ class ConfigEditor(Qt.QWidget):
         return new_conf
 
 
-class ContainerImageEditor(Qt.QDialog):
+class ContainerImageEditor(QtWidgets.QDialog):
     def __init__(self, conf, container_status, conf_path, parent=None):
         super(ContainerImageEditor, self).__init__(parent)
 
@@ -1309,26 +1327,26 @@ class ContainerImageEditor(Qt.QDialog):
         self.conf_path = conf_path
         # print(container_status)
 
-        layout = Qt.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
         self.setWindowTitle('Container image options')
 
-        inst_rw = Qt.QCheckBox('install read-write image directory')
+        inst_rw = QtWidgets.QCheckBox('install read-write image directory')
         inst_rw.setChecked(container_status['write'])
         layout.addWidget(inst_rw)
-        ov_hb = Qt.QHBoxLayout()
+        ov_hb = QtWidgets.QHBoxLayout()
         layout.addLayout(ov_hb)
-        inst_overlay = Qt.QCheckBox('add read-write overlay')
+        inst_overlay = QtWidgets.QCheckBox('add read-write overlay')
         inst_overlay.setChecked(container_status['overlay'] is not None)
         ov_hb.addWidget(inst_overlay)
         self.inst_rw_cb = inst_rw
         self.inst_overlay_cb = inst_overlay
-        self.overlay_count = Qt.QSpinBox()
+        self.overlay_count = QtWidgets.QSpinBox()
         self.overlay_count.setRange(1, 1023)
         self.overlay_count.setValue(500)
         ov_hb.addStretch(1)
         ov_hb.addWidget(self.overlay_count)
-        self.overlay_unit = Qt.QComboBox()
+        self.overlay_unit = QtWidgets.QComboBox()
         self.overlay_unit.addItems(['KB', 'MB', 'GB', 'TB', 'PB'])
         self.overlay_unit.setCurrentIndex(1)
         ov_hb.addWidget(self.overlay_unit)
@@ -1338,11 +1356,14 @@ class ContainerImageEditor(Qt.QDialog):
 
         layout.addStretch(1)
 
-        validation_btns = Qt.QDialogButtonBox(
-            Qt.QDialogButtonBox.Ok)
+        validation_btns = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok)
         layout.addWidget(validation_btns)
-        validation_btns.button(Qt.QDialogButtonBox.Ok).setDefault(True)
-        validation_btns.button(Qt.QDialogButtonBox.Ok).setAutoDefault(True)
+        validation_btns.button(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok).setDefault(True)
+        validation_btns.button(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok).setAutoDefault(
+            True)
 
         validation_btns.accepted.connect(self.accept)
         self.validation_btns = validation_btns
@@ -1367,24 +1388,25 @@ class ContainerImageEditor(Qt.QDialog):
         if not osp.exists(coverlay_file):
             return
 
-        confirm = Qt.QMessageBox.question(
+        confirm = QtWidgets.QMessageBox.question(
             self, 'Erase overlay file ?',
             'Removing the overlay will erase the overlay file:<br/>'
             '<b>%s</b>' % overlay_file)
-        if confirm == Qt.QMessageBox.Yes:
+        if confirm == QtWidgets.QMessageBox.Yes:
             print('erasing')
 
-            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            QtWidgets.QApplication.instance().setOverrideCursor(
+                QtCore.Qt.CursorShape.WaitCursor)
             try:
 
                 os.unlink(overlay_file)
                 self.container_status['overlay'] = None
 
-                Qt.QMessageBox.information(
+                QtWidgets.QMessageBox.information(
                     self, 'Done', 'Overlay has been erased.')
 
             finally:
-                Qt.qApp.restoreOverrideCursor()
+                QtWidgets.QApplication.instance().restoreOverrideCursor()
 
         else:
             self.inst_overlay_cb.blockSignals(True)
@@ -1396,20 +1418,21 @@ class ContainerImageEditor(Qt.QDialog):
         coverlay_file = osp.join('/host', overlay_file[1:])
 
         if osp.exists(coverlay_file):
-            Qt.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self, 'Overlay exists',
                 'The overlay file <b>%s</b> already exists !'
                 % overlay_file)
             return
 
-        confirm = Qt.QMessageBox.question(
+        confirm = QtWidgets.QMessageBox.question(
             self, 'Create overlay file ?',
             'This will create the overlay file:<br/>'
             '<b>%s</b>' % overlay_file)
 
-        if confirm == Qt.QMessageBox.Yes:
+        if confirm == QtWidgets.QMessageBox.Yes:
 
-            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            QtWidgets.QApplication.instance().setOverrideCursor(
+                QtCore.Qt.CursorShape.WaitCursor)
             try:
 
                 n = self.overlay_count.value()
@@ -1429,11 +1452,11 @@ class ContainerImageEditor(Qt.QDialog):
                 shutil.rmtree(tmpd)
                 self.container_status['overlay'] \
                     = os.stat(coverlay_file).st_size
-                Qt.QMessageBox.information(
+                QtWidgets.QMessageBox.information(
                     self, 'Done', 'Overlay has been setup.')
 
             finally:
-                Qt.qApp.restoreOverrideCursor()
+                QtWidgets.QApplication.instance().restoreOverrideCursor()
 
         else:
             self.inst_overlay_cb.blockSignals(True)
@@ -1445,32 +1468,33 @@ class ContainerImageEditor(Qt.QDialog):
         print('remove rw', image)
         sif_image = image + '.sif'
         if not osp.exists(sif_image):
-            Qt.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self, 'No singularty image',
                 'Before removing an image directory, you must ensure to have '
                 'a regular image file next to it. We expect to find the file '
                 '<b>%s</b>, which is not present.<br/>Aborting.' % sif_image)
             return
 
-        confirm = Qt.QMessageBox.question(
+        confirm = QtWidgets.QMessageBox.question(
             self, 'Remove writable directory ?',
             'This will completely remove the system image directory:<br/>'
             '<b>%s</b>.<br>Are you sure ?' % image)
 
-        if confirm == Qt.QMessageBox.Yes:
+        if confirm == QtWidgets.QMessageBox.Yes:
 
-            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            QtWidgets.QApplication.instance().setOverrideCursor(
+                QtCore.Qt.CursorShape.WaitCursor)
             try:
 
                 shutil.rmtree(image)
                 self.conf['image'] = sif_image
                 self.container_status['write'] = False
 
-                Qt.QMessageBox.information(
+                QtWidgets.QMessageBox.information(
                     self, 'Done', 'Image directory has been erased.')
 
             finally:
-                Qt.qApp.restoreOverrideCursor()
+                QtWidgets.QApplication.instance().restoreOverrideCursor()
 
         else:
             self.inst_rw_cb.blockSignals(True)
@@ -1481,7 +1505,7 @@ class ContainerImageEditor(Qt.QDialog):
         image = self.conf['image']
         print('add rw', image)
         if not image.endswith('.sif'):
-            Qt.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self, 'Not a singularity image',
                 'The configured image file <b>%s</b> does not end with the '
                 '<tt>.sif</tt> extension !' % image)
@@ -1489,19 +1513,20 @@ class ContainerImageEditor(Qt.QDialog):
 
         image_dir = image[:-4]
         if osp.exists(image_dir):
-            Qt.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self, 'Image directory exists',
                 'The image directory <b>%s</b> already exists !' % image_dir)
             return
 
-        confirm = Qt.QMessageBox.question(
+        confirm = QtWidgets.QMessageBox.question(
             self, 'Create writable directory ?',
             'This will create the system image directory:<br/>'
             '<b>%s</b>.<br>Are you sure ?' % image_dir)
 
-        if confirm == Qt.QMessageBox.Yes:
+        if confirm == QtWidgets.QMessageBox.Yes:
 
-            Qt.qApp.setOverrideCursor(Qt.Qt.WaitCursor)
+            QtWidgets.QApplication.instance().setOverrideCursor(
+                QtCore.Qt.CursorShape.WaitCursor)
             try:
 
                 cmd = ['singularity', 'build', '--sandbox', image_dir, image]
@@ -1513,7 +1538,7 @@ class ContainerImageEditor(Qt.QDialog):
                     subprocess.check_call(ssh_cmd)
                 except Exception as e:
                     print(e)
-                    Qt.QMessageBox.critical(
+                    QtWidgets.QMessageBox.critical(
                         self,
                         'Image directory creation failed',
                         'The image directory creation has failed. Possibly '
@@ -1526,7 +1551,7 @@ class ContainerImageEditor(Qt.QDialog):
                 self.conf['image'] = image_dir
                 self.container_status['write'] = True
 
-                Qt.QMessageBox.information(
+                QtWidgets.QMessageBox.information(
                     self, 'Done',
                     'Image directory has been setup. Note that:<br> '
                     '- image updates will not work any longer for this '
@@ -1538,7 +1563,7 @@ class ContainerImageEditor(Qt.QDialog):
                     'incompatibe options for singularity.' % image_dir)
 
             finally:
-                Qt.qApp.restoreOverrideCursor()
+                QtWidgets.QApplication.instance().restoreOverrideCursor()
 
         else:
             self.inst_rw_cb.blockSignals(True)
@@ -1574,10 +1599,10 @@ def get_env_path():
 
 
 def main_gui():
-    if not Qt.QApplication.instance():
-        app = Qt.QApplication(sys.argv)
+    if not QtWidgets.QApplication.instance():
+        app = QtWidgets.QApplication(sys.argv)
     else:
-        app = Qt.QApplication.instance()
+        app = QtWidgets.QApplication.instance()
 
     casa_path, _, _ = get_env_path()
     conf_path = os.path.join(casa_path, 'conf/casa_distro.json')
