@@ -677,7 +677,7 @@ def _nv_libs_binds(image=None):
             pass
     if host_ver is not None:
         try:
-            cmd = [singularity_executable(), 'run', image, libc_path]
+            cmd = [singularity_executable(), 'exec', image, libc_path]
             out_data = subprocess.check_output(cmd).decode()
             ver_line = out_data.split('\n')[0]
             m = re.match('^.* version ([0-9.]+)\\.$', ver_line)
