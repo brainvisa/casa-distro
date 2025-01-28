@@ -1184,10 +1184,9 @@ class Launchers(QtWidgets.QWidget):
         self.launch('anatomist')
 
     def _launch_xterm(self):
-        import distutils.spawn
         for prog in ('x-terminal-emulator', 'lxterm', 'konsole',
                      'gnome-terminal', 'xterm'):
-            if distutils.spawn.find_executable(prog):
+            if shutil.which(prog):
                 self.launch(prog)
                 break
 

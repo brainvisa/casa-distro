@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
 
 import socket
 import time
@@ -7,6 +6,7 @@ import os
 import sys
 import subprocess
 import math
+import shutil
 from casa_distro import six
 
 try:
@@ -232,9 +232,7 @@ def wget_command(download_container=True):
             raise RuntimeError('wget command cannot be found.')
         return _wget_command
 
-    import distutils.spawn
-
-    wget = distutils.spawn.find_executable('wget')
+    wget = shutil.which('wget')
     if wget:
         _wget_command = [wget]
         return _wget_command
@@ -245,7 +243,7 @@ def wget_command(download_container=True):
     wget_image = 'mwendler/wget'
 
     # look for singularity
-    singularity = distutils.spawn.find_executable('singularity')
+    singularity = shutil.which('singularity')
 
     if singularity:
         # create a temp repository for singularity
@@ -273,7 +271,7 @@ def wget_command(download_container=True):
     else:
 
         # look for docker
-        docker = distutils.spawn.find_executable('docker')
+        docker = shutil.which('docker')
 
         if docker:
             subprocess.check_call(['docker', 'pull', wget_image])

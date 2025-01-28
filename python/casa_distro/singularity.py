@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
 
 import json
 import locale
@@ -19,10 +18,6 @@ from .log import boolean_value
 from casa_distro.defaults import default_base_directory
 from .thirdparty import install_thirdparty_software
 
-try:
-    from shutil import which as find_executable
-except ImportError:
-    from distutils.spawn import find_executable
 
 quote = shlex.quote
 
@@ -511,9 +506,9 @@ _envvar_prefix = None
 def singularity_executable(exit_if_missing=True):
     global _singularity_executable
     if not _singularity_executable:
-        _singularity_executable = find_executable('apptainer')
+        _singularity_executable = shutil.which('apptainer')
     if not _singularity_executable:
-        _singularity_executable = find_executable('singularity')
+        _singularity_executable = shutil.which('singularity')
     if not _singularity_executable:
         if exit_if_missing:
             sys.exit(
@@ -584,7 +579,7 @@ def _guess_opengl_mode():
     # has been found to generate random failures at runtime, see
     # https://github.com/brainvisa/casa-distro/issues/153.
     if os.access('/dev/nvidiactl', os.R_OK | os.W_OK):
-        if find_executable('nvidia-container-cli'):
+        if shutil.which('nvidia-container-cli'):
             # This is the option that provides the best graphical performance
             # on NVidia hardware, and enables the use of CUDA. It seems to work
             # in all tested configurations (physical X server, CLI, Xvnc,
