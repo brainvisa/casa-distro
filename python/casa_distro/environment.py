@@ -21,30 +21,35 @@ from casa_distro.web import url_listdir
 from casa_distro import downloader
 
 
-def add_soma_forge_path():
+def add_brainvisa_cmake_path():
     try:
-        import neuro_forge  # noqa: F401
+        import brainvisa_cmake  # noqa: F401
         return
     except ImportError:
         pass
 
-    dn = osp.dirname(osp.dirname(osp.dirname(__file__)))
+    # climp dirs up to root, where src/ and build/ reside
+    dn = osp.dirname(__file__)
+    bcm = osp.join(osp.dirname(dn), 'brainvisa_cmake')
+    if osp.exists(bcm):
+        return osp.dirname(dn)
     branch = None
-    if osp.basename(dn) != 'casa_distro':
+    while osp.basename(dn) not in ('build', 'src', 'install'):
         branch = osp.basename(dn)
         dn = osp.dirname(dn)
     dn = osp.dirname(dn)
-    dn = osp.join(dn, 'neuro-forge')
-    if not osp.exists(osp.join(dn, 'neuro_forge')):
-        if branch:
+    dn = osp.join(dn, 'src', 'brainvisa-cmake')
+    if not osp.exists(osp.join(dn, 'python')):
+        if branch and osp.exists(osp.join(dn, branch, 'python')):
             dn = osp.join(dn, branch)
         else:
             d = os.listdir(dn)[0]
             dn = osp.join(dn, d)
+    dn = osp.join(dn, 'python')
     sys.path.append(dn)
 
 
-add_soma_forge_path()
+add_brainvisa_cmake_path()
 try:
     from brainvisa_cmake import bbi_daily
 except ImportError:
