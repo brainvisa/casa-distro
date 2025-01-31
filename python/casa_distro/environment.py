@@ -46,7 +46,7 @@ def add_soma_forge_path():
 
 add_soma_forge_path()
 try:
-    from neuro_forge.soma_forge import bbi_daily
+    from brainvisa_cmake import bbi_daily
 except ImportError:
     bbi_daily = None
 
