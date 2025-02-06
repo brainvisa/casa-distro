@@ -38,15 +38,16 @@ def add_brainvisa_cmake_path():
         branch = osp.basename(dn)
         dn = osp.dirname(dn)
     dn = osp.dirname(dn)
-    dn = osp.join(dn, 'src', 'brainvisa-cmake')
-    if not osp.exists(osp.join(dn, 'python')):
-        if branch and osp.exists(osp.join(dn, branch, 'python')):
-            dn = osp.join(dn, branch)
-        elif osp.exists(dn):
-            d = os.listdir(dn)[0]
-            dn = osp.join(dn, d)
-    dn = osp.join(dn, 'python')
-    sys.path.append(dn)
+    paths = [osp.join(dn, 'src', 'brainvisa-cmake'),
+             osp.join(dn, 'src', 'development', 'brainvisa-cmake')]
+    if branch is not None:
+        paths += [osp.join(dn, 'src', 'brainvisa-cmake', branch),
+                  osp.join(dn, 'src', 'development', 'brainvisa-cmake',
+                           branch)]
+
+    for dn in paths:
+        if osp.exists(osp.join(dn, 'python')):
+            sys.path.append(osp.join(dn, 'python'))
 
 
 add_brainvisa_cmake_path()
