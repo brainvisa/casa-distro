@@ -42,7 +42,7 @@ def add_brainvisa_cmake_path():
     if not osp.exists(osp.join(dn, 'python')):
         if branch and osp.exists(osp.join(dn, branch, 'python')):
             dn = osp.join(dn, branch)
-        else:
+        elif osp.exists(dn):
             d = os.listdir(dn)[0]
             dn = osp.join(dn, d)
     dn = osp.join(dn, 'python')
@@ -897,7 +897,7 @@ class CasaDistroBBIDaily(bbi_daily.BBIDaily if bbi_daily else object):
         self.casa_distro_admin_cmd = [sys.executable, casa_distro_admin]
 
     def update_casa_distro(self):
-        self.update_neuroforge()
+        self.update_brainvisa_cmake()
         start = time.time()
         result, log = self.call_output(['git',
                                         '-C', self.casa_distro_src,
