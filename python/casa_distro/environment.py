@@ -34,7 +34,9 @@ def add_brainvisa_cmake_path():
     if osp.exists(bcm):
         return osp.dirname(dn)
     branch = None
-    while osp.basename(dn) not in ('build', 'src', 'install'):
+    if dn == '/casa/casa-distro/python/casa_distro':
+        return  # in a casa-distro setup installation mode, don't change
+    while osp.basename(dn) not in ('build', 'src', 'install', 'casa', ''):
         branch = osp.basename(dn)
         dn = osp.dirname(dn)
     dn = osp.dirname(dn)
