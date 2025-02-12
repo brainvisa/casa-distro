@@ -387,8 +387,9 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
         compatible_run_images = []
         full_image = environment['image']
         if not osp.isabs(full_image):
-            full_image = osp.normpath(osp.join(
-                environment.get('directory', os.getcwd()), full_image))
+            full_image = osp.join(
+                environment.get('directory', os.getcwd()), full_image)
+        full_image = osp.normpath(full_image)
         if image:
             if image == full_image:
                 to_update[full_image].append(environment)
@@ -409,7 +410,7 @@ def pull_image(distro=None, branch=None, system=None, image_version=None,
                         extension)  # noqa: E261,E128
                 for run_image in glob.glob(g):
                     if osp.exists(run_image):
-                        compatible_run_images.append(run_image)
+                        compatible_run_images.append(osp.normpath(run_image))
         if len(compatible_run_images) == 1:
             to_update[compatible_run_images[0]] = []
         elif len(compatible_run_images) > 1:

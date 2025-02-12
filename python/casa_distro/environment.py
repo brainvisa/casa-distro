@@ -527,6 +527,9 @@ def find_image_update_url(image, url):
         dl_url = '{}/{}-{}-{}.{}'.format(url, name, version, new_patch,
                                          extension)
         if new_patch > patch or not osp.exists(image):
+            new_image = osp.join(osp.dirname(image), osp.basename(dl_url))
+            if osp.exists(new_image):
+                return dl_url, True
             return dl_url, False
         return dl_url, True
     return None, True
