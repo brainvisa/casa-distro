@@ -41,7 +41,6 @@ def add_brainvisa_cmake_path():
         dn = osp.dirname(dn)
         if osp.basename(dn) == 'casa-distro':
             branch = branch_tmp
-        print(dn, branch)
     dn = osp.dirname(dn)
     paths = [osp.join(dn, 'src', 'brainvisa-cmake'),
              osp.join(dn, 'src', 'development', 'brainvisa-cmake')]
