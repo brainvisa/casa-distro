@@ -1,10 +1,3 @@
-/home/runner/work/casa-distro/casa-distro/python None
-/home/runner/work/casa-distro/casa-distro python
-/home/runner/work/casa-distro casa-distro
-/home/runner/work casa-distro
-/home/runner casa-distro
-/home casa-distro
-/ casa-distro
 Casa_distro is the BrainVISA suite distribution swiss knife.
 It allows to setup a virtual environment and launch BrainVISA software.
 See http://brainivsa.info/casa-distro and
