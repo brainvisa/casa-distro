@@ -53,6 +53,24 @@ tmp=$(mktemp -d)
 # sudo make install
 
 
+# SQLite must be in version at least 3.38.0 but Ubuntu 22.04 has 3.37.2.
+# Populse_db need to be able to use -> operator instead of json_extract()
+# function. The latter return literal string values without the json double 
+# quotes. Thus, on the Python side a number and a string containing that number
+# will return exactly the same string. Conversion is not possible without
+# context. On the other hand, the -> operator always return a string containing
+# json.
+cd /tmp
+wget https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz
+tar -zxf sqlite-autoconf-3460100.tar.gz
+cd sqlite-autoconf-3460100
+./configure
+make -j$(nproc)
+sudo make install
+cd ..
+rm -rf sqlite-autoconf-3460100.tar.gz sqlite-autoconf-3460100
+
+
 # Install a software-rendering-only libGL to work around compatibility issues
 # e.g. with X2Go, see https://github.com/brainvisa/casa-distro/issues/321.
 # This corresponds to the opengl=software option of 'bv'.

@@ -204,13 +204,13 @@ def create_base_image(type,
       casa-system image::
 
           cd "$CASA_BASE_DIRECTORY"
-          singularity pull ubuntu-18.04.sif docker://ubuntu:18.04
+          singularity pull ubuntu-22.04.sif docker://ubuntu:22.04
 
       Then you can directly use the ubuntu image as base for the run image. You
       may build a "system" image as follows, but it's not needed::
 
-          casa_distro_admin create_base_image base=ubuntu-18.04.sif \\
-              type=system image_version=5.0
+          casa_distro_admin create_base_image base=ubuntu-22.04.sif \\
+              type=system image_version=5.3
 
     - For VirtualBox:
 
