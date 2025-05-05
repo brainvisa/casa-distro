@@ -122,13 +122,13 @@ Go language is not included in the final package.</p>
 <li><p>For Singularity you need to run these commands in order to create the
 casa-system image:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="s2">&quot;$CASA_BASE_DIRECTORY&quot;</span>
-<span class="n">singularity</span> <span class="n">pull</span> <span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span> <span class="n">docker</span><span class="p">:</span><span class="o">//</span><span class="n">ubuntu</span><span class="p">:</span><span class="mf">18.04</span>
+<span class="n">singularity</span> <span class="n">pull</span> <span class="n">ubuntu</span><span class="o">-</span><span class="mf">22.04</span><span class="o">.</span><span class="n">sif</span> <span class="n">docker</span><span class="p">:</span><span class="o">//</span><span class="n">ubuntu</span><span class="p">:</span><span class="mf">22.04</span>
 </pre></div>
 </div>
 <p>Then you can directly use the ubuntu image as base for the run image. You
 may build a “system” image as follows, but it’s not needed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro_admin</span> <span class="n">create_base_image</span> <span class="n">base</span><span class="o">=</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">18.04</span><span class="o">.</span><span class="n">sif</span> \
-    <span class="nb">type</span><span class="o">=</span><span class="n">system</span> <span class="n">image_version</span><span class="o">=</span><span class="mf">5.0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casa_distro_admin</span> <span class="n">create_base_image</span> <span class="n">base</span><span class="o">=</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">22.04</span><span class="o">.</span><span class="n">sif</span> \
+    <span class="nb">type</span><span class="o">=</span><span class="n">system</span> <span class="n">image_version</span><span class="o">=</span><span class="mf">5.3</span>
 </pre></div>
 </div>
 </li>
