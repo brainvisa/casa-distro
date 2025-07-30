@@ -26,6 +26,7 @@ from casa_distro.environment import (CasaDistroBBIDaily, casa_distro_directory,
                                      get_run_base_of_dev_image)
 from casa_distro.log import verbose_file, boolean_value
 import casa_distro.singularity
+import casa_distro.apptainer_pixi
 import casa_distro.vbox
 import casa_distro.docker
 from casa_distro.hash import file_hash
@@ -233,7 +234,7 @@ def create_base_image(type,
     type
         type of image to publish. Either "system" for a base system image, or
         "run" for an image used in a user environment, or "dev" for a developer
-        image.
+        image, or "pixi" for a pixi-based image.
 
     {name}
 
@@ -306,8 +307,9 @@ def create_base_image(type,
     """  # noqa: E501
     verbose = verbose_file(verbose)
 
-    if type not in ('system', 'run', 'dev'):
-        raise ValueError('Image type can only be "system", "run" or "dev"')
+    if type not in ('system', 'run', 'dev', 'pixi'):
+        raise ValueError(
+            'Image type can only be "system", "run", "dev", or "pixi"')
 
     if container_type == 'singularity':
         origin_extension = 'sif'
@@ -784,19 +786,29 @@ def create_user_image(
     zip = check_boolean('zip', zip)
 
     verbose = verbose_file(verbose)
+    envtype = 'dev'
+    if container_type in ('apptainer_pixi', 'singularity_pixi'):
+        envtype = 'pixi'
     config = select_environment(base_directory,
-                                type='dev',
+                                type=envtype,
                                 distro=distro,
                                 branch=branch,
                                 system=system,
                                 image_version=image_version,
                                 name=environment_name,
                                 container_type='singularity')
-    if container_type != 'vbox':
+    print('based on config:')
+    print(config)
+
+    print('create_user_image type:', container_type)
+    if container_type in (None, ''):
         container_type = config['container_type']
     if container_type == 'singularity':
         extension = '.sif'
         module = casa_distro.singularity
+    if container_type in ('singularity_pixi', 'apptainer_pixi'):
+        extension = '.sif'
+        module = casa_distro.apptainer_pixi
     elif container_type == 'vbox':
         extension = '.ova'
         module = casa_distro.vbox
@@ -815,12 +827,13 @@ def create_user_image(
     force = boolean_value(force)
 
     # update distro name
-    distro = config['distro']
+    distro = config.get('distro', distro)
+    config['distro'] = distro
 
     metadata = {
         'name': name,
         'type': 'user',
-        'distro': config['distro'],
+        'distro': distro,
         'system': config['system'],
         'image_version': config['image_version'],
         'version': version,

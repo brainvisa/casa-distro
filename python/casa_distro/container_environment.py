@@ -120,6 +120,27 @@ def download_install(install_dir, distro, version, url):
         os.unlink(local_zip)
 
 
+def download_install_pixi(install_dir, distro, version, url):
+    if not osp.exists(install_dir):
+        os.makedirs(install_dir)
+    subprocess.check_call(['pixi', 'init', '-c', 'pytorch', '-c', 'nvidia',
+                           '-c', 'conda-forge', '-c',
+                           'https://brainvisa.info/neuro-forge'],
+                          cwd=install_dir)
+    pixi_toml = osp.join(install_dir, 'pixi.toml')
+    with open(pixi_toml) as f:
+        lines = list(f.readlines())
+    lines.insert(1, 'channel-priority = "disabled"\\n')
+    lines += ['\n',
+              '[pypi-dependencies]\n',
+              'dracopy = ">=1.4.2, <2"\n',
+              ]
+    with open(pixi_toml, 'w') as f:
+        f.write(''.join(lines))
+    subprocess.check_call(['pixi', 'add', f'{distro}=={version}'],
+                          cwd=install_dir)
+
+
 def is_writable(dir):
     try:
         x = tempfile.mkstemp(dir=dir)
@@ -181,6 +202,143 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
         'casa_distro_compatibility': str(casa_distro.version_major),
         'type': 'user',
         'container_type': 'singularity',
+        # This is specific for soma-workflow but how useful to run jobs inside
+        # containers. This way users don't have to setup that themselves
+        'env': {
+            'SOMAWF_INPUT_PARAMS': '$SOMAWF_INPUT_PARAMS',
+            'SOMAWF_OUTPUT_PARAMS': '$SOMAWF_OUTPUT_PARAMS',
+        }
+    }
+    environment['distro'] = os.getenv('CASA_DISTRO')
+    if not environment['distro']:
+        environment['distro'] = 'unkown_distro'
+    environment['system'] = os.getenv('CASA_SYSTEM')
+    if not environment['system']:
+        environment['system'] = \
+            '-'.join(platform.linux_distribution()[:2]).lower()
+    if 'CASA_BRANCH' in os.environ:
+        environment['branch'] = os.environ['CASA_BRANCH']
+    if 'CASA_VERSION' in os.environ:
+        environment['version'] = os.environ['CASA_VERSION']
+    environment['image'] = (os.getenv('SINGULARITY_CONTAINER')
+                            or os.getenv('APPTAINER_CONTAINER'))
+    # test consistency: on Mac there is a problem here
+    image = environment['image']
+    sing_name = os.getenv('SINGULARITY_NAME') or os.getenv('APPTAINER_NAME')
+    if image and osp.basename(image) != sing_name:
+        # on mac/singularity 3 beta, we get:
+        # SINGULARITY_CONTAINER=/dev/sda
+        # SINGULARITY_NAME=brainvisa-5.0.0-test10.sif
+        if 'SINGCWD' in os.environ:
+            # hope the image was in the current directory, we cannot do better
+            image = osp.join(os.getenv('SINGCWD'), sing_name)
+            environment['image'] = image
+        print(
+            '** WARNING **\n'
+            'We could not determine automatically from the container '
+            'where the container image is. Please edit the file '
+            '/casa/host/conf/casa_distro.json (in the container) and '
+            'fix the path to the image file on the host filesystem.')
+    if not image:
+        environment['image'] = 'unknown.sif'
+    elif osp.isabs(image):
+        env_dir = get_env_host_dir(environment['container_type'])
+        if env_dir:
+            if not osp.isabs(env_dir):
+                print('The image path will be installed as an absolute path '
+                      '(non-movable). If you need a relative image path in '
+                      'Casa-Distro config, then please run the setup using '
+                      'the absolute path of the install enviromnemnt '
+                      'directory in the mount point option (-B or --bind for '
+                      'singularity)')
+            else:
+                # set as relative path to the env directory
+                image = osp.relpath(image, env_dir)
+                environment['image'] = image
+
+    environment['name'] = osp.splitext(sing_name)[0]
+    if not environment['name']:
+        environment['name'] = '{}-{}'.format(environment['distro'],
+                                             time.strftime('%Y%m%d'))
+
+    # keep image ID in metadata
+    if osp.exists('/casa/image_id'):
+        with open('/casa/image_id') as f:
+            image_id = json.load(f)
+        environment['image_id'] = image_id['image_id']
+
+    json.dump(environment,
+              open(osp.join(setup_dir, 'conf',
+                            'casa_distro.json'), 'w'),
+              indent=4, separators=(',', ': '))
+
+    if create_homedir:
+        prepare_environment_homedir(osp.join(setup_dir, 'home'), environment)
+
+    print('The software is now setup in a new user environment.')
+    print('Now you can add in the PATH environment variable of your host '
+          'system the bin/ subdirectory of the install directory. You may add '
+          'it in your $HOME/.bashrc config file:\n')
+    print('export PATH="<install_dir>/bin:$PATH"\n')
+    print('(replacing "<install_dir> with the install directory). Then, after '
+          'opening a new terminal, or sourcing the $HOME/.bashrc file, you '
+          'can run programs like "bv", "anatomist", "brainvisa" etc.')
+    print('The "bv" program without arguments runs a configuration interface '
+          'that allows to customize the installation settings, environment '
+          'variables, mount points in the virtual image, etc.')
+
+
+def setup_user_pixi(setup_dir='/casa/setup', rw_install=False, distro=None,
+                    version=None, url='https://brainvisa.info/download',
+                    create_homedir=True):
+    """
+    Initialize a user environment directory.
+    This function is supposed to be called from a user image.
+    """
+    if not osp.exists(setup_dir):
+        os.makedirs(setup_dir)
+
+    if not osp.exists(osp.join(setup_dir, 'conf')):
+        os.makedirs(osp.join(setup_dir, 'conf'))
+    bin = osp.join(setup_dir, 'bin')
+    if not osp.exists(bin):
+        os.makedirs(bin)
+
+    bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
+                  'bin', 'bv')
+    dest = osp.join(bin, 'bv')
+    shutil.copy(bv, dest)
+
+    install_dir = '/casa/install'
+    if distro is None and not osp.exists('/casa/install'):
+        distro = 'brainvisa'
+    if distro is not None:
+        print('Downloading BrainVisa distro %s from the web site...' % distro)
+        if not is_writable('/casa/install'):
+            install_dir = osp.join(setup_dir, 'install')
+        if version is None:
+            version = os.environ['CASA_VERSION']
+        download_install_pixi(install_dir, distro, version, url)
+    elif rw_install:
+        if is_writable('/casa_install'):
+            print('The install directory is already writable. No need to copy '
+                  'files.')
+        else:
+            print('copying BrainVisa installation into a writable '
+                  'directory...')
+            shutil.copytree('/casa/install', osp.join(setup_dir, 'install'))
+            install_dir = osp.join(setup_dir, 'install')
+
+    create_environment_bin_commands(osp.dirname(bv), bin)
+    create_environment_bin_commands(osp.join(install_dir, 'bin'), bin)
+
+    casa_distro_dir = osp.join(setup_dir, 'casa-distro')
+    install_casa_distro(casa_distro_dir)
+
+    environment = {
+        'casa_distro_compatibility': str(casa_distro.version_major),
+        'type': 'user',
+        'container_type': 'apptainer_pixi',
         # This is specific for soma-workflow but how useful to run jobs inside
         # containers. This way users don't have to setup that themselves
         'env': {

@@ -360,12 +360,17 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
     base directory. For each one, yield a dictionary corresponding to the
     casa_distro.json file with the "directory" item added.
     """
-    casa_distro_jsons = set(glob(osp.join(base_directory, '*',
-                                          'conf', 'casa_distro.json')))
-    casa_dir = os.environ.get('CASA_DIR')
-    if casa_dir:
-        casa_distro_jsons.update(glob(osp.join(casa_dir, 'conf',
-                                               'casa_distro.json')))
+    im_type = filter.get('type')
+    if im_type in ('run', 'pixi'):
+        casa_distro_jsons = set(glob(osp.join(base_directory, '*.json')))
+        filter = {k: v for k, v in filter.items() if k not in ('distro', )}
+    else:
+        casa_distro_jsons = set(glob(osp.join(base_directory, '*',
+                                              'conf', 'casa_distro.json')))
+        casa_dir = os.environ.get('CASA_DIR')
+        if casa_dir:
+            casa_distro_jsons.update(glob(osp.join(casa_dir, 'conf',
+                                                   'casa_distro.json')))
     for casa_distro_json in sorted(casa_distro_jsons):
         with open(casa_distro_json) as f:
             environment_config = json.load(f)
@@ -415,6 +420,8 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
         else:
             match = True
         if match:
+            if im_type in ('run', 'pixi'):
+                config['image'] = casa_distro_json[:-5]
             yield config
 
 
