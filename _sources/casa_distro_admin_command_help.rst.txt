@@ -118,7 +118,7 @@ Parameters
 type
     type of image to publish. Either "system" for a base system image, or
     "run" for an image used in a user environment, or "dev" for a developer
-    image.
+    image, or "pixi" for a pixi-based image.
 
 :ref:`name <env_name>`
     default=casa-{type}-{image_version}
