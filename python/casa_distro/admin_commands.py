@@ -797,6 +797,8 @@ def create_user_image(
                                 image_version=image_version,
                                 name=environment_name,
                                 container_type='singularity')
+    if 'distro' not in config and distro is not None:
+        config['distro'] = distro
     print('based on config:')
     print(config)
 
@@ -886,6 +888,9 @@ def create_user_image(
         else:
             raise ValueError('No matching run image found from dev metadata')
 
+    if not osp.isabs(base_image):
+        base_image = osp.join(os.getcwd(), base_image)
+
     print('using run image:', base_image)
     metadata['origin_run'] = base_metadata.get('image_id')
 
@@ -905,7 +910,8 @@ def create_user_image(
                 raise ValueError(
                     'The base run image is not compatible with the dev image')
 
-    if install:
+    if install and container_type not in ('apptainer_pixi',
+                                          'singularity_pixi'):
         # Always empty the directory before installing to avoid files left over
         # from a previous install.
         shutil.rmtree(osp.join(config['directory'], 'install'))
@@ -1002,6 +1008,8 @@ def create_user_image(
         # filter kwargs to avoid passing unexpected or duplicate parameters
         kwargs = {k: v for k, v in kwargs.items()
                   if k in ('fakeroot', )}
+        if container_type in ('apptainer_pixi', 'singularity_pixi'):
+            kwargs['install'] = install
         image_id, msg = module.create_user_image(
             base_image=base_image,
             dev_config=config,

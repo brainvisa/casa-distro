@@ -371,6 +371,16 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
         if casa_dir:
             casa_distro_jsons.update(glob(osp.join(casa_dir, 'conf',
                                                    'casa_distro.json')))
+
+    # remove duplicates via symlinks
+    for casa_distro_json in sorted(casa_distro_jsons):
+        if osp.islink(casa_distro_json):
+            link = os.readlink(casa_distro_json)
+            if not osp.isabs(link):
+                link = osp.join(osp.dirname(casa_distro_json), link)
+            if link in casa_distro_jsons:
+                casa_distro_jsons.remove(casa_distro_json)
+
     for casa_distro_json in sorted(casa_distro_jsons):
         with open(casa_distro_json) as f:
             environment_config = json.load(f)

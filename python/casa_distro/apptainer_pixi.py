@@ -7,6 +7,7 @@ import tempfile
 import subprocess
 import sys
 import getpass
+import os.path as osp
 
 
 class RecipeBuilder(apptainer.RecipeBuilder):
@@ -20,7 +21,7 @@ class RecipeBuilder(apptainer.RecipeBuilder):
         self.run_root(
             f'cd ${{SINGULARITY_ROOTFS}}/{env_dir}'
         )
-        self.run_root(
+        self.run_user(
             '/usr/local/bin/pixi init -c pytorch -c nvidia -c conda-forge '
             '-c https://brainvisa.info/neuro-forge'
         )
@@ -47,15 +48,15 @@ with open(pixi_toml, 'w') as f:
 '''
             )
 
-        self.copy_root(tmpscr, '/tmp')
-        self.run_root(
+        self.copy_user(tmpscr, '/tmp')
+        self.run_user(
             'chmod +x /tmp/edit_pixpitoml.py')
-        self.run_root(
+        self.run_user(
             'python3 /tmp/edit_pixpitoml.py')
-        self.run_root(
+        self.run_user(
             'rm -f /tmp/edit_pixpitoml.py')
 
-    def install_distrib(self, install_dir, distro, version):
+    def install_distrib(self, install_dir, distro, version, install=True):
         self.run_user(f'cd {install_dir}')
         self.run_user(
             'echo export SOMA_ROOT="$PIXI_PROJECT_ROOT" > '
@@ -66,12 +67,18 @@ with open(pixi_toml, 'w') as f:
             f' >> {install_dir}/activate.sh')
         self.run_user(
             f'echo export LC_NUMERIC=C > {install_dir}/activate.sh')
+        if install:
+            self.run_user(f'/usr/local/bin/pixi add {distro}={version}')
+            self.run_user('/usr/local/bin/pixi run bv_update_bin_links')
+
         self.run_user(
-            f'/usr/local/bin/pixi add morphologist={version}'
+            f'if [ ! -d {install_dir}/bin ]; then '
+            f'mkdir -p  {install_dir}/bin; fi'
         )
-        self.run_user(
-            '/usr/local/bin/pixi run bv_update_bin_links'
-        )
+        source = osp.dirname(osp.dirname(osp.dirname(__file__)))
+        self.copy_user(
+            f'{source}/image-recipes/casa-pixi/5.4/bv_install_environment',
+            '/casa/install/bin')
 
 
 def create_user_image(base_image,
@@ -83,7 +90,8 @@ def create_user_image(base_image,
                       base_directory=default_base_directory,
                       verbose=None,
                       install_thirdparty='all',
-                      cleanup=True):
+                      cleanup=True,
+                      install=True):
     '''
     Returns
     -------
@@ -176,7 +184,7 @@ Bootstrap: localimage
 
         rb.run_user('echo "{\\"image_id\\": \\"%s\\"}" > /casa/image_id'
                     % rb.image_id)
-        rb.install_distrib(inst_dir, distro, version)
+        rb.install_distrib(inst_dir, distro, version, install=install)
 
         rb.install_casa_distro('/casa/casa-distro')
         rb.write(recipe)

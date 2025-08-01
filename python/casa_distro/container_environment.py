@@ -59,6 +59,10 @@ def create_environment_bin_commands(source, dest):
     Create, in dest, a symlink pointing to 'bv' for each file present in
     source except those in exclude_from_bin.
     """
+    if not osp.exists(source):
+        # nothing to do
+        return
+
     commands = {'casa_distro', 'casa_distro_admin'}
     commands.update(os.listdir(source))
     for command in commands:
@@ -267,10 +271,16 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
             image_id = json.load(f)
         environment['image_id'] = image_id['image_id']
 
+    conf_file = osp.join(setup_dir, 'conf', 'casa_distro.json')
     json.dump(environment,
-              open(osp.join(setup_dir, 'conf',
-                            'casa_distro.json'), 'w'),
+              open(conf_file, 'w'),
               indent=4, separators=(',', ': '))
+
+    # pixi R/W install
+    if osp.exists('/casa/install/bin/bv_install_environment') \
+            and not osp.exists('/casa/install/.pixi'):
+        subprocess.call(['/casa/install/bin/bv_install_environment',
+                         '-c', conf_file, '-i', f'{setup_dir}/install'])
 
     if create_homedir:
         prepare_environment_homedir(osp.join(setup_dir, 'home'), environment)

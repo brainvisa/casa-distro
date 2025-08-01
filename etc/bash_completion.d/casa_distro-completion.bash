@@ -59,7 +59,7 @@ function _complete_casa_distro_option_()
         COMPREPLY=($(compgen -W "$sys" -- "${word}"))
         ;;
     container_type|convert_from)
-        COMPREPLY=($(compgen -W "singularity docker vbox" -- "${word}"))
+        COMPREPLY=($(compgen -W "singularity docker vbox apptainer_pixi" -- "${word}"))
         ;;
     name|environment_name)
         if [ -z "$CASA_ENVIRONMENT" ]; then
@@ -213,7 +213,7 @@ function _complete_casa_distro_image_names_tag_()
             local sys
             if [ ! -d "$SHARE" ]; then
                 # no share dir (zip distrib): use builtin list
-                sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04 windows-7-32 windows-7-64"
+                sys="centos-7.4 ubuntu-12.04 ubuntu-14.04 ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04 windows-7-32 windows-7-64"
             else
                 for system in "$SHARE/docker/casa-dev"/*/; do
                     sys="$sys $(basename $system)"

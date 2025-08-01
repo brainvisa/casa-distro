@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import os.path as osp
+import sys
+import argparse
+import subprocess
+import json
+
+
+def read_conf(conf_file):
+    try:
+        with open(conf_file) as f:
+            conf = json.load(f)
+        return conf
+    except FileNotFoundError:
+        return {}
+
+
+conf_file = '/casa/host/conf/casa_distro.json'
+conf = read_conf(conf_file)
+
+parser = argparse.ArgumentParser(description='bof')
+parser.add_argument('-i', '--install-dir',
+                    help='installation directory. Default: taken from config')
+parser.add_argument('-c', '--config', default=conf_file,
+                    help=f'config file location. Default: {conf_file}')
+parser.add_argument('-v', '--version',
+                    help='main package version to install. Default: '
+                    'taken from config')
+parser.add_argument('distro', nargs='?',
+                    help='distro: main package to install. Default: taken '
+                    'from config')
+
+options = parser.parse_args(sys.argv[1:])
+
+print(options)
+env_dir = options.install_dir
+distro = options.distro
+version = options.version
+if options.config != conf_file:
+    conf_file = options.config
+    conf = read_conf(conf_file)
+if distro is None:
+    distro = conf.get('distro', 'soma-python')
+if env_dir is None:
+    env_dir = conf.get('install_dir', '/casa/host/install')
+if version is None:
+    version = conf.get('version', '0.0')
+
+if not osp.exists(env_dir):
+    os.makedirs(env_dir)
+
+os.chdir(env_dir)
+subprocess.check_call(['pixi', 'init', '-c', 'pytorch', '-c', 'nvidia',
+                       '-c', 'conda-forge',
+                       '-c', 'https://brainvisa.info/neuro-forge'])
+
+pixi_toml = osp.join(env_dir, 'pixi.toml')
+with open(pixi_toml) as f:
+    lines = list(f.readlines())
+lines.insert(1, 'channel-priority = "disabled"\n')
+lines += ['\n',
+          '[pypi-dependencies]\n',
+          'dracopy = ">=1.4.2, <2"\n',
+          ]
+with open(pixi_toml, 'w') as f:
+    f.write(''.join(lines))
+
+activate_sh = osp.join(env_dir, 'activate.sh')
+with open(activate_sh, 'w') as f:
+    print('export SOMA_ROOT="$PIXI_PROJECT_ROOT"', file=f)
+    print('export PATH="$PATH:'
+          '$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/bin"',
+          file=f)
+    print('export LC_NUMERIC=C', file=f)
+
+subprocess.check_call(['pixi', 'add', f'{distro}={version}'])
+subprocess.check_call(['pixi', 'run', 'bv_update_bin_links'])
