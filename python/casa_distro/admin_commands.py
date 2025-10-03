@@ -715,6 +715,11 @@ def create_user_image(
         default={container_type_default}
         Type of virtual appliance to use. Either "singularity", "vbox" or
         "docker".
+        "apptainer_pixi" or "singularity_pixi" creates an apptainer container
+        with pixi installed in it. For this, the base image "casa-pixi" should
+        previously be built using the command
+        "casa_distro_admin create_base_image type=pixi image_version=5.4
+        base=ubuntu-24.04.sif" and pasded as the base_image argument.
     output
         default={output_default}
         Path of the output image.
