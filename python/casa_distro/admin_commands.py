@@ -813,7 +813,7 @@ def create_user_image(
     if container_type == 'singularity':
         extension = '.sif'
         module = casa_distro.singularity
-    if container_type in ('singularity_pixi', 'apptainer_pixi'):
+    elif container_type in ('singularity_pixi', 'apptainer_pixi'):
         extension = '.sif'
         module = casa_distro.apptainer_pixi
     elif container_type == 'vbox':
