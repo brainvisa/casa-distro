@@ -230,6 +230,7 @@ brainvisa_python_runtime_dependencies=(
     python3-celery # used by Capsul v3
 
     python3-pycryptodome
+    python3-pytest
 
 #    python3-torch  # will be installed via pip to get cuda support
 #    python3-torchvision

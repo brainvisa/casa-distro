@@ -247,6 +247,7 @@ brainvisa_python_runtime_dependencies=(
     python3-sklearn
     python3-vine  # ? >= 5.1.0
     python3-dipy
+    python3-pytest
 
 #    python3-torch  # will be installed via pip to get cuda support
 #    python3-torchvision

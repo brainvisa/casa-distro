@@ -55,7 +55,7 @@ tmp=$(mktemp -d)
 
 # SQLite must be in version at least 3.38.0 but Ubuntu 22.04 has 3.37.2.
 # Populse_db need to be able to use -> operator instead of json_extract()
-# function. The latter return literal string values without the json double 
+# function. The latter return literal string values without the json double
 # quotes. Thus, on the Python side a number and a string containing that number
 # will return exactly the same string. Conversion is not possible without
 # context. On the other hand, the -> operator always return a string containing
@@ -74,9 +74,12 @@ rm -rf sqlite-autoconf-3460100.tar.gz sqlite-autoconf-3460100
 # Install a software-rendering-only libGL to work around compatibility issues
 # e.g. with X2Go, see https://github.com/brainvisa/casa-distro/issues/321.
 # This corresponds to the opengl=software option of 'bv'.
-MESA_VERSION=22.0.5  # same version as distributed with Ubuntu 22.04
+# MESA_VERSION=22.0.5  # same version as distributed with Ubuntu 22.04
+# 22.0.5 is not available any longer...
+MESA_VERSION=24.0.9  # same version as distributed with Ubuntu 24.04
 MESA_FILENAME=mesa-${MESA_VERSION}.tar.xz
-MESA_SHA256SUM=5ee2dc06eff19e19b2867f12eb0db0905c9691c07974f6253f2f1443df4c7a35
+# MESA_SHA256SUM=5ee2dc06eff19e19b2867f12eb0db0905c9691c07974f6253f2f1443df4c7a35
+MESA_SHA256SUM=51aa686ca4060e38711a9e8f60c8f1efaa516baf411946ed7f2c265cd582ca4c
 cd "$tmp"
 wget "https://archive.mesa3d.org/$MESA_FILENAME"
 if ! [ "$(sha256sum "$MESA_FILENAME")" \
@@ -88,12 +91,11 @@ tar -Jxf "$MESA_FILENAME"
 cd mesa-"$MESA_VERSION"
 mkdir build
 cd build
-meson \
+meson setup \
     -D glx=xlib \
     -D gallium-drivers=swrast \
     -D platforms=x11 \
-    -D dri3=false \
-    -D dri-drivers= \
+    -D dri3=disabled \
     -D vulkan-drivers= \
     -D buildtype=release
 ninja
@@ -103,7 +105,7 @@ cp -d src/gallium/targets/libgl-xlib/libGL.so \
    src/gallium/targets/libgl-xlib/libGL.so.1.5.0 \
    /usr/local/lib/mesa
 cd ../..
-rm -rf mesa-"$MESA_VERSION"
+rm -rf mesa-"$MESA_VERSION" "$MESA_FILENAME"
 
 
 # MIRCen's fork of openslide with support for CZI format
