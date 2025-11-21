@@ -19,6 +19,12 @@ else
     SUDO=sudo
 fi
 
+# Defines the build_dependencies bash array variable, which is used at the
+# bottom of this script (see below). The build_dependencies.sh file is expected
+# to be found in the same directory as this script.
+. "$(dirname -- "$0")"/build_dependencies.sh
+
+
 ###############################################################################
 # Install dependencies of this script and configure repositories
 ###############################################################################
@@ -86,7 +92,8 @@ gl_dependencies=(
 # rules).
 $SUDO apt-get -o Acquire::Retries=20 install --no-install-recommends -y \
     ${generally_useful_packages[@]} \
-    ${gl_dependencies[@]}
+    ${gl_dependencies[@]} \
+    ${build_dependencies[@]}
 
 ###############################################################################
 # Free disk space by removing APT caches

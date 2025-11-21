@@ -12,6 +12,9 @@ builder = ImageBuilder('casa-run', base='casa-system-ubuntu-24.04.{extension}')
 
 BUILD_FILES = [
     'install_apt_dependencies.sh',
+    'build_dependencies.sh',
+    'install_compiled_dependencies.sh',
+    'cleanup_build_dependencies.sh',
 ]
 """List of files that are copied into /build and removed when done."""
 
@@ -63,6 +66,18 @@ def copy_build_files(base_dir, builder):
 def apt_dependencies(base_dir, builder):
     """Run install_apt_dependencies.sh."""
     builder.run_root('/build/install_apt_dependencies.sh')
+
+
+@builder.step
+def compiled_dependencies(base_dir, builder):
+    """Run install_compiled_dependencies.sh."""
+    builder.run_root('/build/install_compiled_dependencies.sh')
+
+
+@builder.step
+def cleanup_build_dependencies(base_dir, builder):
+    """Run cleanup_build_dependencies.sh."""
+    builder.run_root('/build/cleanup_build_dependencies.sh')
 
 
 @builder.step
