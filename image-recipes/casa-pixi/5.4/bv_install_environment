@@ -65,6 +65,11 @@ lines += ['\n',
           '[pypi-dependencies]\n',
           'dracopy = ">=1.4.2, <2"\n',
           ]
+dep = lines.index('[dependencies]\n')
+# plan install but delay it to next pixi run/shell command
+# because the install path must eb the definitive one (/casa/host/install,
+# not /casa/setup/install)
+lines.insert(dep + 1, f'{distro} = "{version}.*"\n')
 with open(pixi_toml, 'w') as f:
     f.write(''.join(lines))
 
@@ -75,6 +80,13 @@ with open(activate_sh, 'w') as f:
           '$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/bin"',
           file=f)
     print('export LC_NUMERIC=C', file=f)
+    # print('if [ -f "$PIXI_PROJECT_ROOT/.bv_update_links" ]; then', file=f)
+    # print('    bv_update_bin_links', file=f)
+    # print('    rm "$PIXI_PROJECT_ROOT/.bv_update_links"', file=f)
+    # print('fi', file=f)
 
-subprocess.check_call(['pixi', 'add', f'{distro}={version}'])
-subprocess.check_call(['pixi', 'run', 'bv_update_bin_links'])
+with open(osp.join(env_dir, '.bv_update_links'), 'w'):
+    pass
+
+# subprocess.check_call(['pixi', 'add', f'{distro}={version}'])
+# subprocess.check_call(['pixi', 'run', 'bv_update_bin_links'])
