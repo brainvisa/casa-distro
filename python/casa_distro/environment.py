@@ -852,7 +852,7 @@ def run_container(config, command, gui, opengl, root, cwd, env, image,
     prepare_user_config()
 
     container_type = config.get('container_type')
-    if container_type == 'singularity':
+    if container_type in ('singularity', 'apptainer', 'apptainer_pixi'):
         module = singularity
     elif container_type == 'vbox':
         raise NotImplementedError(

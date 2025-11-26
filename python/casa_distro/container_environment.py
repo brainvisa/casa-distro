@@ -171,6 +171,14 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
     if not osp.exists(bin):
         os.makedirs(bin)
 
+    # pixi R/W install
+    if osp.exists('/casa/install/bin/bv_install_environment'):
+        container_type = 'apptainer_pixi'
+        if not osp.exists('/casa/install/.pixi'):
+            rw_install = True
+    else:
+        container_type = 'singularity'
+
     bv = osp.join(osp.dirname(osp.dirname(osp.dirname(__file__))),
                   'bin', 'bv')
     dest = osp.join(bin, 'bv')
@@ -179,14 +187,15 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
     install_dir = '/casa/install'
     if distro is None and not osp.exists('/casa/install'):
         distro = 'brainvisa'
-    if distro is not None:
+    if distro is not None and rw_install:
         print('Downloading BrainVisa distro %s from the web site...' % distro)
         if not is_writable('/casa/install'):
             install_dir = osp.join(setup_dir, 'install')
         if version is None:
             version = os.environ['CASA_VERSION']
-        download_install(install_dir, distro, version, url)
-    elif rw_install:
+        if container_type != 'apptainer_pixi':
+            download_install(install_dir, distro, version, url)
+    elif rw_install and container_type != 'apptainer_pixi':
         if is_writable('/casa_install'):
             print('The install directory is already writable. No need to copy '
                   'files.')
@@ -205,7 +214,7 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
     environment = {
         'casa_distro_compatibility': str(casa_distro.version_major),
         'type': 'user',
-        'container_type': 'singularity',
+        'container_type': container_type,
         # This is specific for soma-workflow but how useful to run jobs inside
         # containers. This way users don't have to setup that themselves
         'env': {
@@ -213,7 +222,7 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
             'SOMAWF_OUTPUT_PARAMS': '$SOMAWF_OUTPUT_PARAMS',
         }
     }
-    environment['distro'] = os.getenv('CASA_DISTRO')
+    environment['distro'] = distro  # os.getenv('CASA_DISTRO')
     if not environment['distro']:
         environment['distro'] = 'unkown_distro'
     environment['system'] = os.getenv('CASA_SYSTEM')
@@ -246,7 +255,7 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
     if not image:
         environment['image'] = 'unknown.sif'
     elif osp.isabs(image):
-        env_dir = get_env_host_dir(environment['container_type'])
+        env_dir = get_env_host_dir(container_type)
         if env_dir:
             if not osp.isabs(env_dir):
                 print('The image path will be installed as an absolute path '
@@ -277,10 +286,14 @@ def setup_user(setup_dir='/casa/setup', rw_install=False, distro=None,
               indent=4, separators=(',', ': '))
 
     # pixi R/W install
-    if osp.exists('/casa/install/bin/bv_install_environment') \
-            and not osp.exists('/casa/install/.pixi'):
-        subprocess.call(['/casa/install/bin/bv_install_environment',
-                         '-c', conf_file, '-i', f'{setup_dir}/install'])
+    if container_type == 'apptainer_pixi' and rw_install:
+        cmd = ['/casa/install/bin/bv_install_environment',
+               '-c', conf_file, '-i', f'{setup_dir}/install']
+        if version is not None:
+            cmd += ['-v', version]
+        if distro is not None:
+            cmd.append(distro)
+        subprocess.call(cmd)
 
     if create_homedir:
         prepare_environment_homedir(osp.join(setup_dir, 'home'), environment)
@@ -323,21 +336,10 @@ def setup_user_pixi(setup_dir='/casa/setup', rw_install=False, distro=None,
     if distro is None and not osp.exists('/casa/install'):
         distro = 'brainvisa'
     if distro is not None:
-        print('Downloading BrainVisa distro %s from the web site...' % distro)
         if not is_writable('/casa/install'):
             install_dir = osp.join(setup_dir, 'install')
         if version is None:
             version = os.environ['CASA_VERSION']
-        download_install_pixi(install_dir, distro, version, url)
-    elif rw_install:
-        if is_writable('/casa_install'):
-            print('The install directory is already writable. No need to copy '
-                  'files.')
-        else:
-            print('copying BrainVisa installation into a writable '
-                  'directory...')
-            shutil.copytree('/casa/install', osp.join(setup_dir, 'install'))
-            install_dir = osp.join(setup_dir, 'install')
 
     create_environment_bin_commands(osp.dirname(bv), bin)
     create_environment_bin_commands(osp.join(install_dir, 'bin'), bin)
@@ -356,7 +358,7 @@ def setup_user_pixi(setup_dir='/casa/setup', rw_install=False, distro=None,
             'SOMAWF_OUTPUT_PARAMS': '$SOMAWF_OUTPUT_PARAMS',
         }
     }
-    environment['distro'] = os.getenv('CASA_DISTRO')
+    environment['distro'] = distro
     if not environment['distro']:
         environment['distro'] = 'unkown_distro'
     environment['system'] = os.getenv('CASA_SYSTEM')

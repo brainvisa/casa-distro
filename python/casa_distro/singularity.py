@@ -731,6 +731,7 @@ def run(config, command, gui, opengl, root, cwd, env, image, container_options,
         if retcode == 0:
             config['mounts']['/casa/Xauthority'] = xauthority_tmpfile
             configured_env['XAUTHORITY'] = '/casa/Xauthority'
+            configured_env['DISPLAY'] = os.environ['DISPLAY']
 
     # Make the host ssh-agent usable in the container
     if 'SSH_AUTH_SOCK' in os.environ:

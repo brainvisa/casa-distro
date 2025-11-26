@@ -75,6 +75,8 @@ gl_dependencies=(
     libglib2.0-0
     libglu1-mesa
     libx11-6
+    libllvm18
+    libunwind8
 )
 
 
