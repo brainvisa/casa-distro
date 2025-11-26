@@ -18,7 +18,7 @@ if [ -f "/casa/host/install/.bv_update_links" ]; then
     pixi run bv_update_bin_links
     rm "/casa/host/install/.bv_update_links"
     for f in /casa/host/install/bin/*; do
-        if [ $(readlink $f) = "bv" ]; then
+        if [ "$(readlink $f)" = "bv" ]; then
             b=$(basename $f)
             if [ ! -f "/casa/host/bin/$b" ]; then
                 ln -s bv "/casa/host/bin/$b"
@@ -32,9 +32,6 @@ fi
 
 # add paths for casa-distro container-side tools
 export PATH="/casa/host/install/cbin:/casa/host/casa-distro/cbin:/casa/casa-distro/cbin:$PATH"
-
-echo _run_bv: $_run_bv
-echo DISPLAY: $DISPLAY
 
 if [ -n "$_run_bv" ]; then
     exec /casa/host/install/bin/bv "$@"
