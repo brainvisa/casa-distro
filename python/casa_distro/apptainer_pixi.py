@@ -69,6 +69,10 @@ with open(pixi_toml, 'w') as f:
             f'echo export LC_NUMERIC=C > {install_dir}/activate.sh')
         if install:
             self.run_user(f'/usr/local/bin/pixi add {distro}={version}')
+            self.run_user(
+                'if [ -x "$(/usr/local/bin/pixi run which brainvisa)" ]; then'
+                '    /usr/local/bin/pixi run brainvisa -b --setup; '
+                'fi')
             self.run_user('/usr/local/bin/pixi run bv_update_bin_links')
 
         self.run_user(
