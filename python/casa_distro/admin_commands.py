@@ -801,7 +801,8 @@ def create_user_image(
                                 system=system,
                                 image_version=image_version,
                                 name=environment_name,
-                                container_type='singularity')
+                                container_type='singularity',
+                                image=base_image)
     if 'distro' not in config and distro is not None:
         config['distro'] = distro
     print('based on config:')

@@ -362,8 +362,12 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
     """
     im_type = filter.get('type')
     if im_type in ('run', 'pixi'):
-        casa_distro_jsons = set(glob(osp.join(base_directory, '*.json')))
-        filter = {k: v for k, v in filter.items() if k not in ('distro', )}
+        image = filter.get('image')
+        if image is not None:
+            casa_distro_jsons = set(glob(osp.join(base_directory,
+                                                  f'{image}*.json')))
+        else:
+            casa_distro_jsons = set(glob(osp.join(base_directory, '*.json')))
     else:
         casa_distro_jsons = set(glob(osp.join(base_directory, '*',
                                               'conf', 'casa_distro.json')))
@@ -372,6 +376,8 @@ def iter_environments(base_directory=casa_distro_directory(), **filter):
             casa_distro_jsons.update(glob(osp.join(casa_dir, 'conf',
                                                    'casa_distro.json')))
 
+    filter = {k: v for k, v in filter.items()
+              if k not in ('distro', 'image', )}
     # remove duplicates via symlinks
     for casa_distro_json in sorted(casa_distro_jsons):
         if osp.islink(casa_distro_json):
@@ -642,6 +648,7 @@ def select_environment(base_directory, **kwargs):
     if len(env_list) == 1:
         return env_list[0]
     if len(env_list) > 1:
+        print('select_environment, kwargs:', kwargs)
         raise ValueError(
             'Several environments found, use a more selective criterion: {0}'
             .format(', '.join(i['name'] for i in env_list))
