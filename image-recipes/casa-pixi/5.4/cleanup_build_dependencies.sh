@@ -11,6 +11,13 @@
 set -e  # stop the script on error
 set -x  # display commands before running them
 
+if [ $(id -u) -eq 0 ]; then
+    SUDO=
+else
+    # -E option allow to pass environment variables through sudo
+    SUDO="sudo -E"
+fi
+
 ###############################################################################
 # Clean up build dependencies that were required for
 # install_pip_dependencies.sh and install_compiled_dependencies.sh
@@ -24,7 +31,5 @@ set -x  # display commands before running them
 # Mark build dependencies as automatically installed, so that 'apt-get
 # autoremove' will remove them.
 export DEBIAN_FRONTEND=noninteractive
-# -E option allow to pass environment variables through sudo
-sudo -E apt-mark auto ${build_dependencies[@]}
-sudo -E apt-get -o APT::Autoremove::SuggestsImportant=0 \
-                autoremove --yes
+$SUDO apt-mark auto ${build_dependencies[@]}
+$SUDO apt-get -o APT::Autoremove::SuggestsImportant=0 autoremove --yes
